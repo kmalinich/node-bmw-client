@@ -88,6 +88,8 @@ function parse_out(data) {
         case 0xAF:
           data.value = data.value+'off';
           status.rad.audio_control = data.value;
+					omnibus.BMBT.power_on_if_ready();
+					omnibus.MID.power_on_if_ready();
           break;
 
         case 0xA1:
