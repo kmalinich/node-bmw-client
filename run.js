@@ -5,6 +5,7 @@ convert = require('node-unit-conversion');
 moment  = require('moment');
 now     = require('performance-now');
 os      = require('os');
+pad     = require('pad');
 suncalc = require('suncalc');
 
 // Global objects
@@ -94,6 +95,7 @@ function load_modules(callback) {
 
 	// WebSocket client
 	socket_client = require('socket-client');
+	socket_client.startup(() => {});
 
 	if (typeof callback === 'function') { callback(); }
 }
