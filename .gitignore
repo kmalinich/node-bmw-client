@@ -1,0 +1,8 @@
+*.json
+*.log
+*.swo
+*.swp
+.DS_Store
+._*
+node_modules/
+test/
