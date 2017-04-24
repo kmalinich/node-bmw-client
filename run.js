@@ -16,12 +16,8 @@ json         = require('json');
 log          = require('log-output');
 
 function load_modules(callback) {
-	// WebSocket client
-	socket_client = require('socket-client');
-
 	// Everything connection object
 	omnibus = {
-		// IBUS libraries - these should be combined
 		data_handler : require('data-handler'), // Data handler/router
 
 		// Data bus module libraries
@@ -95,6 +91,9 @@ function load_modules(callback) {
 		HDMI : require('HDMI'),
 		kodi : require('kodi'),
 	};
+
+	// WebSocket client
+	socket_client = require('socket-client');
 
 	if (typeof callback === 'function') { callback(); }
 }
