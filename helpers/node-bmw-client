@@ -5,7 +5,7 @@
 
 export PATH="/bin:/usr/bin"
 
-UNIT="node-bmw"
+UNIT="node-bmw-client"
 
 DIR_APP="/usr/local/${UNIT}"
 DIR_SYSTEMD="/etc/systemd/system"

@@ -1,6 +1,6 @@
 [Unit]
 After       = network.target
-Description = node-bmw-client daemon
+Description = node-bmw-client-client daemon
 Requires    = network.target
 
 [Service]
@@ -8,13 +8,13 @@ Nice             = -19
 OOMScoreAdjust   = -1000
 Group            = pi
 User             = pi
-Environment      = NODE_PATH=/usr/lib/node_modules:/usr/lib/nodejs:/usr/local/lib/node_modules:/usr/local/node-bmw-client/node_modules:/usr/share/javascript
-ExecStart        = /usr/bin/env node --stack-size=2048 --throw-deprecation --trace-warnings --preserve-symlinks /usr/local/node-bmw-client/run.js
+Environment      = NODE_PATH=/usr/lib/node_modules:/usr/lib/nodejs:/usr/local/lib/node_modules:/usr/local/node-bmw-client-client/node_modules:/usr/share/javascript
+ExecStart        = /usr/bin/env node --stack-size=2048 --throw-deprecation --trace-warnings --preserve-symlinks /usr/local/node-bmw-client-client/run.js
 Restart          = on-failure
 StandardError    = syslog
 StandardOutput   = syslog
-SyslogIdentifier = node-bmw-client
-WorkingDirectory = /usr/local/node-bmw-client
+SyslogIdentifier = node-bmw-client-client
+WorkingDirectory = /usr/local/node-bmw-client-client
 
 [Install]
 WantedBy = multi-user.target
