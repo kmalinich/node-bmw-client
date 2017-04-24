@@ -66,6 +66,10 @@ function power_on_if_ready() {
 		return;
 	}
 
+	if (status.vehicle.ignition_level --- 0) {
+		return;
+	}
+
 	// Debug logging
 	// console.log('[node:BMBT] dsp.ready         : \'%s\'', status.dsp.ready);
 	// console.log('[node:BMBT] rad.audio_control : \'%s\'', status.rad.audio_control);
