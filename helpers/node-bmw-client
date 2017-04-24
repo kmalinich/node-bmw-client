@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+
+
+#### Variables ==start ####
+
+export PATH="/bin:/usr/bin"
+
+UNIT="node-bmw"
+
+DIR_APP="/usr/local/${UNIT}"
+DIR_SYSTEMD="/etc/systemd/system"
+
+SYSTEMD_UNIT="${UNIT}.service"
+SYSTEMD_UNIT_FILE="${DIR_SYSTEMD}/${SYSTEMD_UNIT}"
+
+OLD_PWD=${PWD}
+
+#### Variables ==final ####
+
+
+#### Functions ==start ####
+
+log() {
+	sudo logger -s -t "${UNIT}" "${1}" 2>&1
+}
+
+sleep_msg() {
+	log "Sleeping"
+	sleep 0.5
+}
+
+follow() {
+	sudo journalctl -u ${UNIT} -f -n 5 | sed "s/$(hostname -s)\ ${UNIT}\[.*.]:\ //g"
+}
+
+status() {
+	echo -e "Checking status of ${UNIT}\n"
+	sudo systemctl status ${UNIT}
+}
+
+restart() {
+	stop
+	sleep_msg
+	start
+	sleep_msg
+	status
+}
+
+uninstall() {
+	log "Uninstalling ${SYSTEMD_UNIT}"
+	if [[ -s ${SYSTEMD_UNIT_FILE} ]]; then
+		if ! sudo rm -f ${SYSTEMD_UNIT_FILE}; then
+			log "Failed to remove existing systemd unit file, cannot continue"
+			exit 1
+		fi
+	fi
+
+	if ! sudo systemctl daemon-reload; then
+		log "Failed to reload systemd, cannot continue"
+		exit 3
+	fi
+
+	log "Uninstalled systemd unit successfully"
+}
+
+install() {
+	log "Installing ${SYSTEMD_UNIT}"
+	if [[ -s ${SYSTEMD_UNIT_FILE} ]]; then
+		if ! sudo rm -f ${SYSTEMD_UNIT_FILE}; then
+			log "Failed to remove existing systemd unit file, cannot continue"
+			exit 1
+		fi
+	fi
+
+	if ! sudo cp ${DIR_APP}/helpers/${SYSTEMD_UNIT} ${SYSTEMD_UNIT_FILE}; then
+		log "Failed to copy systemd unit file, cannot continue"
+		exit 2
+	fi
+
+	if ! sudo systemctl daemon-reload; then
+		log "Failed to reload systemd, cannot continue"
+		exit 3
+	fi
+
+	log "Installed systemd unit successfully"
+}
+
+disable() {
+	log "Disabling ${SYSTEMD_UNIT}"
+	sudo systemctl disable ${SYSTEMD_UNIT}
+	sleep_msg
+	if ! sudo systemctl -q is-enabled ${SYSTEMD_UNIT}; then
+		log "Disabled ${SYSTEMD_UNIT} successfully"
+	else
+		log "Failed to disable ${SYSTEMD_UNIT}"
+	fi
+}
+
+enable() {
+	log "Enabling ${SYSTEMD_UNIT}"
+	sudo systemctl enable ${SYSTEMD_UNIT}
+	sleep_msg
+	if sudo systemctl -q is-enabled ${SYSTEMD_UNIT}; then
+		log "Enabled ${SYSTEMD_UNIT} successfully"
+	else
+		log "Failed to enable ${SYSTEMD_UNIT}"
+	fi
+}
+
+stop() {
+	log "Stopping ${SYSTEMD_UNIT}"
+	sudo systemctl stop ${SYSTEMD_UNIT}
+	sleep_msg
+	if ! sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
+		log "Stopped ${SYSTEMD_UNIT} successfully"
+	else
+		log "Failed to stop ${SYSTEMD_UNIT}"
+		echo
+		status
+	fi
+}
+
+start() {
+	log "Starting ${SYSTEMD_UNIT}"
+	sudo systemctl start ${SYSTEMD_UNIT}
+	sleep_msg
+	if ! sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
+		log "Stopped ${SYSTEMD_UNIT} successfully"
+	else
+		log "Failed to stop ${SYSTEMD_UNIT}"
+		echo
+		status
+	fi
+}
+
+update() {
+	cd ${DIR_APP}
+
+	GIT_BRANCH="$(git branch | grep '*' | sed 's/^*\ //g')"
+	git fetch origin ${GIT_BRANCH} &> /dev/null
+
+	GIT_LOG="$(git log HEAD..origin/${GIT_BRANCH} --oneline)"
+	[[ -z "${GIT_LOG}" ]] && log "No ${UNIT} update needed" && return
+
+	log "${UNIT} update available!"
+
+	log "Downloading ${UNIT} update"
+	git pull
+
+	log "Performing npm global update"
+	npm -g update
+
+	log "Performing local npm install"
+	npm install
+
+	log "Performing local npm update"
+	npm update
+
+	log "Performing --unsafe-perm install of serialport"
+	npm install --unsafe-perm --build-from-source serialport
+
+	restart
+
+	cd ${OLD_PWD}
+}
+
+#### Functions ==final ####
+
+${1-status}

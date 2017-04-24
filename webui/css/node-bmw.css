@@ -1,0 +1,21 @@
+/* Live WebSocket data table */
+.table-live {
+	height   : 300px !important;
+	overflow : auto;
+}
+
+
+/* Navbar logo */
+/*
+.navbar-brand {
+	padding-left   : 3px;
+	padding-right  : 3px;
+	padding-top    : 3px;
+	padding-bottom : 3px;
+}
+*/
+
+.navbar-brand-img {
+	width  : 32px;
+	height : 32px;
+}

@@ -1,0 +1,39 @@
+The DS2 protocol consists of groups of two-digit hexidecimal bytes sent and received in the following format:
+
+[Address] [Length] [Data1] [Data2] ... [Data n] [Checkum]
+
+[Address]  The address of the module being queried
+[Length]   Total number of bytes in the message (in hex)
+[Data]     One or more bytes which comprise either the command (from you) or the response (from the module)
+[Checksum] is an XOR checksum, based on all of the preceding bytes. This serves as basic error correction.
+
+Address examples:
+00 (body/general module)
+12 (Bosch DME)
+80 (instrument cluster)
+
+Messages from the scanner to the car's modules consist of the module address, the number of bytes, a command, and a checksum.
+
+For example, the scanner might send the following:
+"12 05 04 01 12"
+
+This command asks the Bosch DME (12), in a 5-byte message (05), to send codes (04 01).
+The 12 is a checksum.
+
+The module response uses the same format.
+The address is typically the modules's own address, then the length byte, and then one of the following:
+
+A0 (acknowledge)
+A1 (module busy)
+FF (no acknowledge -- bad command, etc.)
+
+Followed by data.
+
+For example, in response to a request for fault codes, the ECU might respond with the following:
+"12 06 A0 00 00 B4"
+
+12    - The address
+06    - Number of bytes
+A0    - Acknowledge
+00 00 - Number of codes stored
+B4    - Checksum

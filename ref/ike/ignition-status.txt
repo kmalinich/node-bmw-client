@@ -1,0 +1,4 @@
+80 04 BF 11 00 2A,IKE->GLO : Ignition status, Off
+80 04 BF 11 01 2B,IKE->GLO : Ignition status, Pos1_Acc
+80 04 BF 11 03 29,IKE->GLO : Ignition status, Pos1_Acc Pos2_On
+80 04 BF 11 07 2D,IKE->GLO : Ignition status, Pos1_Acc Pos2_On Pos3_Start

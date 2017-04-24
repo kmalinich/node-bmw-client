@@ -1,0 +1,50 @@
+
+68 18 01       RAD->CDC Device status request
+18 FF 02 01    CDC->LOC Device status ready
+68 18 38 00 00 RAD->CDC CD_control Status_Request
+
+M# = Mode:
+	00 = Stop
+	01 = Pause
+	02 = Play
+	03 = Fast forward
+	04 = Fast reverse
+	07 = End
+	08 = Loading
+F# = Function:
+	09 = Request Play
+E# = Errors:
+	02 = HIGH_TEMP
+	08 = NO_DISC
+	10 = NO_DISCS
+I# = Bitmask of which CDs are inserted
+	00 = None
+	01 = CD1
+	02 = CD2
+	04 = CD3
+	08 = CD4
+	10 = CD5
+	20 = CD6
+D# = CD number (not a bitmask)
+T# = Track number (not a bitmask)
+
+
+         M# F# E# I#    D# T#
+18 68 39 02 09 00 3F 00 01 00 CDC->RAD CD_status Play  Request=Play  CD=1  Track=0  CDs_Loaded=P1,P2,P3,P4,P5,P6
+18 68 39 02 09 00 01 00 01 00 CDC->RAD CD_status Play  Request=Play  CD=1  Track=0  CDs_Loaded=P1
+
+Steps:
+
+CDC sends cdc_loc_device_ready_after_reset
+loop {
+	RAD sends rad_cdc_device_status_request
+	CDC sends cdc_loc_device_ready
+}
+
+RAD sends rad_cdc_get_current_track
+if playing {
+	CDC sends cdc_startplaying01
+}
+else {
+	CDC sends cdc_rad_status_not_playing
+}

@@ -1,0 +1,4 @@
+50 LL 5B 3A 01 34 CK // Recirc pressed
+50 LL 5B 3A 01 35 CK // Recirc released
+
+3F LL 5B 07 04 00 00 6C 01 64 CK // Blower 100?

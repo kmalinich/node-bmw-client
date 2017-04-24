@@ -1,0 +1,5 @@
+30a                   = nothing
+right lic plate light = both lights
+left lic plate light  = nothing
+clamp 15              = cold monitoring
+rear fog only comes on with front fog on too

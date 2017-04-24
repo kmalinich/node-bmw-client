@@ -1,0 +1,130 @@
+00 04 BF 72 06 CF,GM     --> GLO  : ChkCtrl Remote Central Locking: No_Button_Pressed
+00 04 BF 72 16 DF,GM     --> GLO  : ChkCtrl Remote Central Locking: Lock_Pressed
+00 04 BF 72 26 EF,GM     --> GLO  : ChkCtrl Remote Central Locking: Unlock_Pressed
+00 04 BF 76 00 CD,GM     --> GLO  : Crash Alarm: No_Crash
+00 04 BF 76 02 CF,GM     --> GLO  : Crash Alarm: DB1=0x02
+00 05 BF 7A 10 08 D8,GM     --> GLO  : door/flap status: Open: WndwPgrRr Ctrl_Locking: Unlocked
+00 05 BF 7A 11 08 D9,GM     --> GLO  : door/flap status: Open: DvrDoorFr WndwPgrRr Ctrl_Locking: Unlocked
+00 05 BF 7A 30 08 F8,GM     --> GLO  : door/flap status: Open: WndwPgrRr Ctrl_Locking: Unlocked
+00 05 BF 7A 50 08 98,GM     --> GLO  : door/flap status: Open: WndwPgrRr Ctrl_Locking: Unlocked
+00 05 BF 7A 50 28 B8,GM     --> GLO  : door/flap status: Open: WndwPgrRr Boot Ctrl_Locking: Unlocked
+00 05 BF 7A 51 08 99,GM     --> GLO  : door/flap status: Open: DvrDoorFr WndwPgrRr Ctrl_Locking: Unlocked
+18 03 80 16 8D,CDC  --> IKE  : Odometer request
+18 0A 68 39 00 02 00 01 00 01 00 41,CDC  --> RAD  : CD_status: Stop Request=Pause CD=1 Track=0 CDs_Loaded=P1
+18 0A 68 39 00 02 00 01 00 01 01 40,CDC  --> RAD  : CD_status: Stop Request=Pause CD=1 Track=1 CDs_Loaded=P1
+30 04 BF 51 00 DA,CCM  --> GLO  : Checkcontrol sensors:
+30 04 BF 51 04 DE,CCM  --> GLO  : Checkcontrol sensors: Key_in_Ignition
+30 06 44 73 00 00 80 81,CCM  --> EWS  : Immobiliser status request, Data="00 00 80"
+30 19 80 1A 30 00 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 83,CCM  --> IKE  : IKE  Text/Gong: " " Immediate Clear Gong_off Warning_symbol_off
+3B 03 80 10 A8,GT   --> IKE  : Ignition status request
+3B 03 80 14 AC,GT   --> IKE  : Country coding status request
+3B 03 D0 5A B2,GT   --> LCM  : Lamp status request
+3B 04 68 45 00 12,GT   --> RAD  : Radio status request, Data="00"
+3B 04 6A 34 28 49,GT   --> DSP  : DSP  equaliser button, Data="28"
+3B 04 BB 4F 02 C9,GT   --> NAJ  : RGB control: LCD_off GT
+3B 04 BB 4F 12 D9,GT   --> NAJ  : RGB control: LCD_on GT
+3B 04 F0 4F 02 82,GT   --> BMBT: RGB control: LCD_off GT
+3B 04 F0 4F 12 92,GT   --> BMBT: RGB control: LCD_on GT
+3B 05 68 4E 00 00 18,GT   --> RAD  : Audio source selection
+3B 05 80 41 01 01 FF,GT   --> IKE  : On-board computer data request: Time: current value request
+3B 05 80 41 02 01 FC,GT   --> IKE  : On-board computer data request: Date: current value request
+3B 05 80 41 03 01 FD,GT   --> IKE  : On-board computer data request: Outside_Temp: current value request
+3B 05 80 41 04 01 FA,GT   --> IKE  : On-board computer data request: Consumption_1: current value request
+3B 05 80 41 05 01 FB,GT   --> IKE  : On-board computer data request: Consumption_2: current value request
+3B 05 80 41 06 01 F8,GT   --> IKE  : On-board computer data request: Range: current value request
+3B 05 80 41 07 01 F9,GT   --> IKE  : On-board computer data request: Distance: current value request
+3B 05 80 41 08 01 F6,GT   --> IKE  : On-board computer data request: Arrival: current value request
+3B 05 80 41 09 01 F7,GT   --> IKE  : On-board computer data request: Limit: current value request
+3B 05 80 41 09 02 F4,GT   --> IKE  : On-board computer data request: Limit: status request
+3B 05 80 41 0A 01 F4,GT   --> IKE  : On-board computer data request: Average_Speed: current value request
+3B 05 80 41 0D 02 F0,GT   --> IKE  : On-board computer data request: Code: status request
+3B 05 80 41 0E 03 F2,GT   --> IKE  : On-board computer data request: Stopwatch: current value request: status request
+3B 05 80 41 0F 01 F1,GT   --> IKE  : On-board computer data request: Timer_1: current value request
+3B 05 80 41 10 01 EE,GT   --> IKE  : On-board computer data request: Timer_2: current value request
+3B 05 80 41 1A 01 E4,GT   --> IKE  : On-board computer data request: Interim_Time: current value request
+3B 05 80 41 1B 03 E7,GT   --> IKE  : On-board computer data request: Aux_Heat/Vent: current value request: status request
+3B 05 FF 20 02 0C EF,GT   --> LOC  : Display status: TEL _short Show_TEL _Menu Show_TEL _Main
+3F 06 00 0C 01 39 00 0D,DIA --> GM   : Set IO status, Data="01 39 00" [ 9 ]
+3F 06 00 0C 01 39 01 0C,DIA --> GM   : Set IO status, Data="01 39 01" [ 9 ]
+3F 06 00 0C 01 3A 00 0E,DIA --> GM   : Set IO status, Data="01 3A 00" [ : ]
+3F 06 00 0C 01 3A 01 0F,DIA --> GM   : Set IO status, Data="01 3A 01" [ : ]
+3F 06 00 0C 02 39 00 0E,DIA --> GM   : Set IO status, Data="02 39 00" [ 9 ]
+3F 06 00 0C 02 39 01 0F,DIA --> GM   : Set IO status, Data="02 39 01" [ 9 ]
+3F 06 00 0C 02 3A 00 0D,DIA --> GM   : Set IO status, Data="02 3A 00" [ : ]
+3F 06 00 0C 02 3A 01 0C,DIA --> GM   : Set IO status, Data="02 3A 01" [ : ]
+44 05 BF 74 00 FF 75,EWS  --> GLO  : Immobiliser status: No_key_detected Vehicle_immobilised
+44 05 BF 74 01 FF 74,EWS  --> GLO  : Immobiliser status: Immobilisation_deactivated Vehicle_immobilised
+44 05 BF 74 04 04 8A,EWS  --> GLO  : Immobiliser status: Valid_key_detected Key_4
+44 05 BF 74 05 04 8B,EWS  --> GLO  : Immobiliser status: Immobilisation_deactivated Valid_key_detected Key_4
+50 04 C8 3B 80 27,MFL  --> TEL  : Radio/Telephone control: Send/End_pressed
+50 04 C8 3B 90 37,MFL  --> TEL  : Radio/Telephone control: Send/End_pressed_long
+50 04 C8 3B A0 07,MFL  --> TEL  : Radio/Telephone control: Send/End_released
+50 04 FF 3B 80 10,MFL  --> LOC  : Radio/Telephone control: Send/End_pressed
+68 03 80 14 FF,RAD  --> IKE  : Country coding status request
+68 04 3B 46 01 10,RAD  --> GT   : LCD clear: No display required
+68 04 F0 4A 00 D6,RAD  --> BMBT: Cassette control: Power_Off
+68 04 F0 4A 5A 8C,RAD  --> BMBT: Cassette control: State_unknown, Data="5A"
+68 04 F0 4A 90 46,RAD  --> BMBT: Cassette control: State_unknown, Data="90"
+68 05 18 38 00 00 4D,RAD  --> CDC  : CD_control: Status_Request
+80 03 D0 53 00,IKE  --> LCM  : Vehicle data request
+80 04 30 1B 00 AF,IKE  --> CCM  : IKE  text status: 0 text messages acknowledged
+80 04 BF 11 00 2A,IKE  --> GLO  : Ignition status: Off
+80 04 BF 11 01 2B,IKE  --> GLO  : Ignition status: Pos1_Acc
+80 04 BF 11 03 29,IKE  --> GLO  : Ignition status: Pos1_Acc Pos2_On
+80 05 BF 18 00 00 22,IKE  --> GLO  : Speed/RPM: Speed 0 km/h, 0 RPM
+80 05 E7 2A 00 00 48,IKE  --> ANZV: On-board computer special indicators: Aux_Heating_LED = Off
+80 06 60 07 00 00 00 E1,IKE  --> PDC  : Gong status, Data="00 00 00"
+80 06 BF 19 14 5E 00 6A,IKE  --> GLO  : Temperature: Outside 20°C, Coolant 94°C
+80 06 BF 19 14 5F 00 6B,IKE  --> GLO  : Temperature: Outside 20°C, Coolant 95°C
+80 06 BF 19 14 60 00 54,IKE  --> GLO  : Temperature: Outside 20°C, Coolant 96°C
+80 07 BF 15 01 04 00 42 6A,IKE  --> GLO  : Country coding status: Ntwk=E38/E39 Lang=GB_English Clock=24h OutTemp=°C AvgSpd=km/h Limit=km Dist=km ArrTime=24h Consump=l/100_km Motor=Petrol
+80 0A BF 13 00 00 00 00 00 00 43 65,IKE  --> GLO  : IKE  sensor status:
+80 0A BF 13 02 00 00 00 00 00 43 67,IKE  --> GLO  : IKE  sensor status: Oil_Pressure_Low
+80 0A BF 13 02 B0 00 00 00 00 43 D7,IKE  --> GLO  : IKE  sensor status: Oil_Pressure_Low Gear_P
+80 0A BF 13 03 00 00 00 00 00 43 66,IKE  --> GLO  : IKE  sensor status: Handbrake_On Oil_Pressure_Low
+80 0A BF 13 03 00 00 02 00 00 43 64,IKE  --> GLO  : IKE  sensor status: Handbrake_On Oil_Pressure_Low
+80 0A BF 13 03 B0 00 00 00 00 43 D6,IKE  --> GLO  : IKE  sensor status: Handbrake_On Oil_Pressure_Low Gear_P
+80 0A BF 13 03 B0 00 02 00 00 43 D4,IKE  --> GLO  : IKE  sensor status: Handbrake_On Oil_Pressure_Low Gear_P
+80 0A BF 17 1F 30 02 C0 60 32 CC 51,IKE  --> GLO  : Odometer: 143,391 km
+80 0C E7 24 01 00 31 37 3A 34 39 20 20 7F,IKE  --> ANZV: Update Text: Layout=Time Flags= F0="17:49 "
+80 0C E7 24 01 00 31 37 3A 35 30 20 20 77,IKE  --> ANZV: Update Text: Layout=Time Flags= F0="17:50 "
+80 0C E7 24 03 00 2B 32 30 2E 35 A8 43 95,IKE  --> ANZV: Update Text: Layout=Outside_Temp Flags= F0="+20.5°C"
+80 0C E7 24 06 00 35 35 36 20 4B 4D 20 79,IKE  --> ANZV: Update Text: Layout=Range Flags= F0="556 KM "
+80 0C E7 24 08 00 2D 2D 3A 2D 2D 20 20 7D,IKE  --> ANZV: Update Text: Layout=Arrival Flags= F0="--:-- "
+80 0C E7 24 0F 00 2D 2D 3A 2D 2D 20 20 7A,IKE  --> ANZV: Update Text: Layout=Timer_1 Flags= F0="--:-- "
+80 0C E7 24 10 00 2D 2D 3A 2D 2D 20 20 65,IKE  --> ANZV: Update Text: Layout=Timer_2 Flags= F0="--:-- "
+80 0D E7 24 07 00 2D 2D 2D 2D 20 4B 4D 20 4F,IKE  --> ANZV: Update Text: Layout=Distance Flags= F0="---- KM "
+80 0D E7 24 09 00 2D 2D 2D 20 4B 4D 2F 48 2B,IKE  --> ANZV: Update Text: Layout=Limit Flags= F0="--- KM/H"
+80 0E E7 24 0A 00 34 33 2E 38 20 4B 4D 2F 48 17,IKE  --> ANZV: Update Text: Layout=Average_Speed Flags= F0="43.8 KM/H"
+80 0E E7 24 0E 00 20 31 2E 37 20 20 53 45 43 1E,IKE  --> ANZV: Update Text: Layout=Stopwatch Flags= F0=" 1.7 SEC"
+80 0E E7 24 1A 00 20 30 2E 30 20 20 53 45 43 0C,IKE  --> ANZV: Update Text: Layout=Interim_Time Flags= F0=" 0.0 SEC"
+80 0F E7 24 02 00 30 34 2E 30 35 2E 32 30 31 31 4D,IKE  --> ANZV: Update Text: Layout=Date Flags= F0="04.05.2011"
+80 0F E7 24 04 00 31 34 2E 32 20 4C 2F 31 30 30 23,IKE  --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="14.2 L/100"
+80 0F E7 24 05 00 31 34 2E 39 20 4C 2F 31 30 30 29,IKE  --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="14.9 L/100"
+A4 06 BF 70 00 00 1A 77,AB   --> GLO  : Remote control central locking status, Data="00 00 1A"
+A4 06 BF 70 01 00 1A 76,AB   --> GLO  : Remote control central locking status, Data="01 00 1A"
+A4 06 BF 70 02 00 0A 65,AB   --> GLO  : Remote control central locking status, Data="02 00 0A"
+A4 06 BF 70 03 00 0A 64,AB   --> GLO  : Remote control central locking status, Data="03 00 0A"
+A4 06 BF 70 03 00 1A 74,AB   --> GLO  : Remote control central locking status, Data="03 00 1A"
+AC 04 BF 61 01 77,EHC  --> GLO  : Suspension control, Data="01"
+C8 04 E7 2B 00 00,TEL  --> ANZV: Telephone indicators: All_off
+C8 04 E7 2C 90 97,TEL  --> ANZV: Telephone status: Phone_On
+C8 05 E7 A6 00 00 8C,TEL  --> ANZV: Special indicators: Request
+C8 06 7F A9 31 00 00 29,TEL  --> NAV : Telephone data, Telematics_settings_request
+C8 11 3B 23 00 20 53 45 41 52 43 48 49 4E 47 2E 2E 2E 81,TEL  --> GT   : Display Text: Layout=0x00: Flags=CLS F0="SEARCHING..."
+C8 13 3B 23 00 20 41 43 54 49 56 41 54 45 20 50 48 4F 4E 45 86,TEL  --> GT   : Display Text: Layout=0x00: Flags=CLS F0="ACTIVATE PHONE"
+D0 05 BF 5C FF 00 C9,LCM  --> GLO  : Light dimmer: 255 (max)
+D0 07 BF 5B 00 00 00 00 33,LCM  --> GLO  : Lamp status: All_Off All_OK
+D0 10 80 54 4C 4E 83 01 70 05 99 42 91 00 00 06 D3 7E,LCM  --> IKE  : Vehicle data status: VIN LN83017; Total dist 143300 kms; SI-L 6570 litres since last service; ; SI-T 0 days since last service
+ED 03 80 10 7E,VID  --> IKE  : Ignition status request
+ED 03 80 12 7C,VID  --> IKE  : IKE  sensor status request
+ED 05 80 41 01 01 29,VID  --> IKE  : On-board computer data request: Time: current value request
+ED 05 80 41 02 01 2A,VID  --> IKE  : On-board computer data request: Date: current value request
+ED 05 80 41 1B 02 30,VID  --> IKE  : On-board computer data request: Aux_Heat/Vent: status request
+ED 05 F0 4F 12 11 54,VID  --> BMBT: RGB control: LCD_on GT
+F0 03 00 79 8A,BMBT --> GM   : door/flap status request
+F0 03 D0 5D 7E,BMBT --> LCM  : Light dimmer status request
+F0 04 3B 48 05 82,BMBT --> GT   : BM Button: BM_Knob_pressed
+F0 04 3B 48 85 02,BMBT --> GT   : BM Button: BM_Knob_released
+F0 04 3B 49 01 87,BMBT --> GT   : BM_Knob: Left 1 step
+F0 04 68 4B 05 D2,BMBT --> RAD  : Cassette status: No_Tape

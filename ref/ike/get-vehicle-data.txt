@@ -1,0 +1,5 @@
+// Vehicle data request
+80 03 D0 53 00
+
+// Ack VIN GC95646; Total dist 199,500 kms [123,964 mls]; SI-L 140 litres since last service; SI-T 0 days since last service]
+D0 10 80 54 47 43 95 64 60 07 CB 00 0E 00 00 00 00 43

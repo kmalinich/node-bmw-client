@@ -1,0 +1,62 @@
+The various ECUs in my car vary in their addressing and responses.
+I'm including my notes from what I've found so far.
+Brackets are added by me to show groupings of numbers.
+Look for better organization later:
+
+Central Body (00)
+ID:
+  Sent     : 00 04 00 04 (L-line)
+  Received : 00 10 A0 8[8 36 94 82] 15 03 02 00 [39 98] 19 14 A0
+
+  Analysis : 61 35 [8 369 482] = uncoded Body Control Unit, [39/98] = date?
+
+ECU (12)
+ID:
+  Sent     : 12 04 00 16 (K-line)
+  Received : 12 2E A0 31 34 32 39 38 36 31 31 31 30 31 33 30 32 31 33 31 39 38 30 30 30 30 31 31 35 38 35 32 34 31 30 31 39 38 33 31 32 32 33 38 33 9A
+
+  Analysis : Output is in hex. Converting to ASCII yields the following:
+              [1429861]110130213198 0000115852 4101983122383
+
+ Analysis  : 14 12 [1 429 861] = BMW part number for an MS41.0 ECU, used until 1/99 on 320i, 323i, 323ti, 328i
+
+Faults:
+  Sent     : 12 05 04 01 12
+  Received : 12 06 A0 00 00 B4 (06=6 bytes, A0=ack, no faults)
+
+
+Immobilizer (44)
+ID:
+   Sent     : 44 04 00 40 (K-line)
+   Received : 44 10 A0 8[8 38 46 78] 01 82 82 07 [41 98] 06 05 A6
+   Analysis :            8 384 678 = partial EWS control unit part number, 41/98 = date?
+
+
+ABS (36 00)
+ID:
+   Sent     : 36 00 05 00 33 (L-line)
+   Received : 36 00 0B 00 00 00 B4 00 00 00 89 (reply: 0B=11 bytes, type B4)
+Faults:
+   Sent     : 36 00 05 07 34
+   Received : 36 00 06 07 00 37 (no faults?)
+
+
+Cluster (80)
+ID:
+   Sent     : 80 04 00 nn
+   Received : 80 12 A0 F8 38 18 88 02 02 90 00 41 98 10 09 02 55 65
+Faults:
+   Sent     : 80 05 04 01 nn
+   Received : 80 14 A0 02 C7 81 00 8C 84 00 00 00 00 00 00 00 00 00 00 78
+              (20 bytes, ACK, 2 faults, C7h (199d) and 81h (129d), 78=checksum)
+
+Airbag (A4)
+  No response via A4 04 00 A0 or 41 00 05 00 44
+  UPDATE:  Airbag ECU was bad.  New ECU does respond.
+
+
+Mystery Computer (B9 00) (Remote?)
+ID:
+  Sent     : B9 00 05 00 BC (L-line)
+  Received : B9 00 0B 00 02 04 04 00 [40 98] 68
+  Analysis : Unknown -- Type 04? 40/98 date?

@@ -1,0 +1,25 @@
+10       :: VID ---> IKE : Ignition status request
+12       :: VID ---> IKE : IKE sensor status request
+14       :: RAD ---> IKE : Country coding status request
+16       :: CDC ---> IKE : Odometer request
+1D C5    :: IHKA --> IKE : Temperature request
+41 01 01 :: VID ---> IKE : OBC request: Time: current value request
+41 01 01 :: GT ----> IKE : OBC request: Time: current value request
+41 02 01 :: VID ---> IKE : OBC request: Date: current value request
+41 02 01 :: GT ----> IKE : OBC request: Date: current value request
+41 03 01 :: GT ----> IKE : OBC request: Outside_Temp: current value request
+41 04 01 :: GT ----> IKE : OBC request: Consumption_1: current value request
+41 05 01 :: GT ----> IKE : OBC request: Consumption_2: current value request
+41 06 01 :: GT ----> IKE : OBC request: Range: current value request
+41 07 01 :: GT ----> IKE : OBC request: Distance: current value request
+41 08 01 :: GT ----> IKE : OBC request: Arrival: current value request
+41 09 01 :: GT ----> IKE : OBC request: Limit: current value request
+41 09 02 :: GT ----> IKE : OBC request: Limit: status request
+41 0A 01 :: GT ----> IKE : OBC request: Average_Speed: current value request
+41 0D 02 :: GT ----> IKE : OBC request: Code: status request
+41 0E 03 :: GT ----> IKE : OBC request: Stopwatch: current value request: status request
+41 0F 01 :: GT ----> IKE : OBC request: Timer_1: current value request
+41 10 01 :: GT ----> IKE : OBC request: Timer_2: current value request
+41 1A 01 :: GT ----> IKE : OBC request: Interim_Time: current value request
+41 1B 02 :: VID ---> IKE : OBC request: Aux_Heat/Vent: status request
+41 1B 03 :: GT ----> IKE : OBC request: Aux_Heat/Vent: current value request: status request

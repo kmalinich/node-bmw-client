@@ -1,0 +1,26 @@
+[DIA->LCM] command: <Buffer 00>
+[DIA->LCM] command: <Buffer 04 00>
+[DIA->LCM] command: <Buffer 04 01>
+[DIA->LCM] command: <Buffer 04 02>
+[DIA->LCM] command: <Buffer 04 03>
+[DIA->LCM] command: <Buffer 04 04>
+[DIA->LCM] command: <Buffer 04 05>
+[DIA->LCM] command: <Buffer 04 06>
+[DIA->LCM] command: <Buffer 04 07>
+[DIA->LCM] command: <Buffer 04 08>
+[DIA->LCM] command: <Buffer 04 09>
+[DIA->LCM] command: <Buffer 04 0a>
+[DIA->LCM] command: <Buffer 04 0b>
+[DIA->LCM] command: <Buffer 04 0c>
+[DIA->LCM] command: <Buffer 05 01>
+[DIA->LCM] command: <Buffer 05 02>
+[DIA->LCM] command: <Buffer 05 03>
+[DIA->LCM] command: <Buffer 05 04>
+[DIA->LCM] command: <Buffer 05 05>
+[DIA->LCM] command: <Buffer 05 06>
+[DIA->LCM] command: <Buffer 05 07>
+[DIA->LCM] command: <Buffer 05 08>
+[DIA->LCM] command: <Buffer 05 09>
+[DIA->LCM] command: <Buffer 05 0a>
+[DIA->LCM] command: <Buffer 05 0b>
+[DIA->LCM] command: <Buffer 05 0c>

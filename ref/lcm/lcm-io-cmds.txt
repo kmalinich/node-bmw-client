@@ -1,0 +1,19 @@
+LCM IO Status
+
+command (1st byte): A0 // Reading IO status
+command (1st byte): 0C // Writing IO status
+
+send =
+src: 0x3F, // DIA
+dst: 0xD0, // LCM
+msg: [0x0B] // Get IO status
+
+to read the LCM's IO status.
+
+Then the LCM will reply with:
+A0 C1 C0 00 20 00 00 00 00 00 A0 00 00 88 14 84 E4 FF 00 0A 00 00 00 00 00 00 00 00 00 00 FF FF FE
+
+To apply IO status:
+
+0C C1 C0 00 20 00 00 00 00 00 A0 00 00 88 14 84 E4 FF 00 0A 00 00 00 00 00 00 00 00 00 00 FF FF FE
+and send it to IBUS.

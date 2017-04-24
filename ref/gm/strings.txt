@@ -1,0 +1,214 @@
+src: 0x3F // DIA
+dst: 0x00 // ZKE (body module)
+cmd: 0xC0 // Set IO status
+
+LF left  front
+RF right front
+LR left  rear
+RR right rear
+SR sunroof
+
+
+- Front
+-- Left
+--- Down
+---- 01 36 01
+--- Up
+---- 01 1A 01
+-- Right
+--- Down
+---- 02 20 01
+--- Up
+---- 02 22 01
+
+- Rear
+-- Left
+--- Down
+---- 00 00 01
+--- Up
+----
+-- Right
+--- Down
+---- 00 03 01
+--- Up
+----
+
+- Roof
+--- Down (2x)
+---- 03 01 01
+--- Up (2x)
+---- 03 02 01
+--- Lift
+---- 03 00 01
+
+
+
+// Extras
+
+LF D P : 01 18 01
+LF D P : 01 36 01
+LR D F : 00 45 01
+RF U P : 02 32 01
+RR D F : 00 47 01
+RR U P : 00 04 01
+RR U P : 00 46 01
+
+00 65  : front windows fully down // Working
+00 66  : Sunroof open
+
+
+// Driver's seat
+
+05 00 01 : Driver seat forward
+05 01 01 : Driver seat backward
+05 02 01 : Driver seat up
+05 03 01 : Driver seat down
+05 04 01 : Driver seat tilt forward
+05 05 01 : Driver seat tilt backward
+05 06 01 : Driver seat backrest forward
+05 07 01 : Driver seat backrest backward
+05 08 01 : Driver seat headrest up
+05 09 01 : Driver seat headrest down
+05 0A 01 : ?? Possibly sport bolster
+05 0B 01 : ?? Possibly sport bolster
+05 0C 01 : Driver seat upper backwards
+05 0D 01 : Driver seat upper forwards
+
+
+// Steering wheel
+
+05 0E 01 : Steering wheel up
+05 0F 01 : Steering wheel down
+05 10 01 : Steering wheel forwards
+05 11 01 : Steering wheel backwards
+
+
+
+// Locks (tested)
+
+00 0B 01 : toggle (only 'outside' locks)
+03 01    : nothing
+34 01    : nothing
+9E 01    : nothing
+9F 01    : nothing
+01 52 01 : unlock LF
+
+// Locks (need tested)
+
+00 0B    : lock all
+00 40    : soft close
+00 41    : lock rear doors, trunk and gas cap
+00 41 01 : lock rear doors
+00 42    : lock gas cap
+00 42 01 : unlock rear doors
+4F 01    : lock all but LF
+97 01    : toggle
+
+52 01 : LF window open
+53 01 : LF window close
+47 01 : LF lock
+
+
+54 01 : RF window open
+55 01 : RF window close
+46 01 : RF lock
+
+
+41 01 : LR window open
+42 01 : LR window close
+
+
+44 01 : RR window open
+43 01 : RR window close
+
+
+// Trunk (need tested)
+
+00 09 01 : trunk
+02 01    : trunk
+05 01    : trunk
+95 01    : trunk
+63 01    : trunk (3 seconds)
+
+
+// Sunroof
+
+7E 01 : open sunroof
+7F 01 : close sunroof
+
+
+// Wipers
+
+00 02 : Wipers+washer
+00 4B : Washer only
+00 14 : Wipers (one wipe?)
+00 15 : Wipers (auto?)
+00 38 : Wipers (3 wipes, stay up [maint. position?])
+
+
+// Seat memory
+
+3F 06 72 02 01 00 : move driver seat to memory 1
+3F 06 72 02 02 00 : move driver seat to memory 2
+3F 06 72 02 04 00 : move driver seat to memory 3
+72 05 BF 78 05 00 : driver seat save memory 1
+
+
+// Power mirrors
+
+src  : 0x9B (Power mirror 2)
+dst  : 0x51 (Power mirror 1)
+cmd  : 0x6D (move?)
+0x41 : passenger mirror move out
+0x42 : passenger mirror move in
+0x44 : passenger mirror move up
+0x48 : passenger mirror move down
+0x40 : passenger mirror stop (motor won't stop until you tell it)
+
+// with normal GM cmd
+01 31 01 : left in
+01 30 01 : left out
+02 31 01 : right in
+02 30 01 : right out
+
+
+// Misc
+
+00 10 : Wheel up, interior on
+00 17 : Interior on, no fade
+00 3C : Red nose on for 3 sec
+00 56 : ALARM!!!
+00 91 : Interior light, hazard button
+00 AE : Red nose flash for 3 sec
+00 B1 : wheel up, down
+4E 01 : turn on the 'clown nose' for 3 seconds
+60 01 : turn on interior lights for 3 seconds
+62 01 : spray windshield washer fluid
+63 01 : trigger trunk relay for 3 seconds
+68 01 : fade out interior lights
+70 01 : flash hazards + turn on interior lights
+73 01 : trigger many door relays, don't know what it does
+75 01 : flash hazards for 3 seconds (no blinker in-dash)
+
+
+// Key fob messages
+cmd: 0x72 // Key fob message
+
+0x00 : no button pressed
+0x10 : lock down
+0x20 : unlock down
+0x40 : trunk down
+
+
+
+
+
+
+
+01 3A 01 : LF unlock (CL)
+01 39 01 : LF lock (CL)
+02 3A 01 : RF unlock (CL)
+02 39 01 : RF lock (CL)
+
+01 41 01 : Rear lock
+01 42 02 : Rear unlock

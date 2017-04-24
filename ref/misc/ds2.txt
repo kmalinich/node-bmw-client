@@ -1,0 +1,19 @@
+
+The DS2 protocol consists of groups of two-digit hexidecimal bytes sent and received in the following format:
+
+[Address] [Length] [Data1] [Data2] ... [Data n] [Checkum]
+
+[Address] is the address of the computer being queried.  Examples are 00 (central body computer), 12 (Motronic ECU), and 80 (instrument cluster).
+
+[Length] is the total number of bytes in the message (in hex).
+
+[Data] is one or more bytes which comprise either the command (from you) or the response (from the computer).  These are discussed below.
+
+[Checksum] is an XOR checksum, based on all of the preceding bytes.  This serves as basic error correction.
+
+
+Messages from the scanner to the car's computers consist of the desired computer's address, the number of bytes, a command, and a checksum.  For example, the scanner might send the following: "12 05 04 01 12".  This command asks the Motronic ECU (12), in a 5-byte message (05), to send codes (04 01).  The 12 is a checksum.  More examples can be found on the DS Commands page.
+
+The computer's response uses the same format. The address is typically the computer's own address, then the length byte, and then one of the following: A0 (acknowledge), A1 (computer busy), or FF (no acknowledge -- bad command, etc.), followed by data.  For example, in response to a request for fault codes, the ECU might respond "12 06 A0 00 00 B4", with 12 being the address, 06 being the number of bytes, A0 for acknowledge, 00 00 for the number of codes stored, and B4 the checksum.  Examples of the some computers' responses can be found on the ECU Responses page.
+
+

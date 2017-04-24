@@ -1,0 +1,42 @@
+src: 0xD0 // LCM
+dst: 0xBF // GLO
+cmd: 0x5B // Lamp status
+
+Byte 1 // Lights on
+  0x00 = All_Off
+  0x01 = Park
+  0x02 = Low_Beam
+  0x04 = High_Beam
+  0x08 = Fog_Front
+  0x10 = Fog_Rear
+  0x20 = Indicator_Left
+  0x40 = Indicator_Right
+  0x80 = Indicator_Fast_Blink
+Byte 2 // Faulty
+  0x00 = All_OK
+  0x01 = Park
+  0x02 = Low_Beam
+  0x04 = High_Beam
+  0x08 = Fog_Front
+  0x10 = Fog_Rear
+  0x20 = Indicator_Left
+  0x40 = Indicator_Right
+  0x80 = License_Plate
+Byte 3 // Lights on
+  0x01 =
+  0x02 = Brake
+  0x04 = Indicator_sync
+  0x08 = Tail
+  0x10 = Trailer
+  0x20 = Reverse
+  0x40 = Trailer?
+  0x80 = Hazard
+Byte 4 // Faulty
+  0x01 = Brake_Right
+  0x02 = Brake_Left
+  0x04 = Tail_Right
+  0x08 = Tail_Left
+  0x10 = Low_Beam_Right
+  0x20 = Low_Beam_Left
+  0x40 =
+  0x80 =

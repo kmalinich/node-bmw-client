@@ -1,0 +1,233 @@
+1
+2
+4
+8
+16
+32
+64
+128
+
+1+2+4+8+16+32+64
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Devices
+00 Broadcast, GM
+08 SHD
+
+18 CD Player
+
+24 HKM
+28 FUM
+
+30 CCM
+3B NAV, GT
+3F DIA
+
+40 FBZV
+43 Menu Screen, GTF
+44 EWS
+46 CID
+47 FMBT
+
+50 MFL, Multi Functional Steering Wheel Buttons
+51 MML
+5B IHK
+
+60 PDC
+66 CDCD
+68 RAD, Radio
+6A DSP
+
+70 RDC
+72 SM
+73 SDRS
+76 CDCD
+7F NAVE
+
+80 IKE
+
+9B MMR
+9C CVM
+
+A0 FMID
+A4 ACM
+A7 FHK
+A8 NAVC
+AC EHC
+
+B0 SES
+BB TV, NAVJ
+BF LCM, Light Control Module. GLO
+
+C0 MID, Multi Information Display
+C8 Telephone
+
+D0 Navigation Location, LKM
+D7 USED BY ME: PC
+D8 USED BY ME: GPS and Powercontrol Module
+DA SMAD
+
+E0 IRIS
+E7 OBC Textbar, ANZV
+E8 ISP
+ED Lights, wipers, seat memory, TV
+
+F0 Bordmonitor Buttons
+F5 CSU
+FF Broadcast, LOC
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Operations
+01 closed without CD. "I am alive". Poll CD.
+02 Unlock (quick press) or CD self anounce ("02 01") or poll responce ("02 00")
+10 Request Ignition status
+0C External lights and open boot or lock/unlock car
+11 Ignition status (and "flash low small"?) (and poll)
+13 <IKE Sensor Status> (reverse gear)
+14 Country coding request
+15 Country coding response?. Set unit on IKE.
+18 Speed and rpm
+1A 35 00 Followed by text to panel
+23 62 30 Write value to NAV field 0
+24 IKE data request (text data update, E39)
+2B LED command to BM
+2C Display Phone symbol
+31 60 00 nn NAV to radio. Change to CD 'nn'
+32 Left BM nob turn (and steeringwheel '+' & '-')
+38 Request CD and track info
+39 CD status and track info response
+3B Steering wheel buttons except vol+ and -
+40 Set date and time
+41 OBC get and reset value
+46 Menu commands to NAV
+47 BM info button
+48 BM buttons
+49 Right BM nob turn
+4A LED on left BM button
+4F Power message ? Switch off NAV screen
+5D ?
+6D Sideview Mirror
+72 Remote key
+74 Ignition lock
+76 External lights
+79 ?
+7A Window and door message, interior light control
+A2 NAV position and time
+A5 62 01 nn Write value to nav field nn
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Ignition status
+
+11 dd
+
+dd : (bit mapped)
+Bit 0 = KL_R (Pos1_Acc). Radio Position
+Bit 1 = KL_15 (Pos2_On). Ignition
+Bit 2 = KL_50 (Pos3_Start). Starter
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+IKE Sensor Status
+
+13 02 10 00 00 00 00 38 // in reverse
+13 02 00 00 00 00 00 38 // out of reverse
+
+handbrake on
+oil pressure low
+brake pads worn
+transmission emergency program
+gearbox not in P
+motor running
+vehicle driving
+reverse not plausible
+Gear R
+Gear 1
+Gear 2
+Gear D
+alarm horn on
+immobiliser on
+aux heating on
+aux ventillation on
+temp deg F
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Speed message
+
+18 ss rr
+
+ss = speed / 2 [km/h] (512km/h max)
+rr = revs / 100 rpm
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+LED control messages
+
+2B Data1 Data2 Data3 Data4
+
+Data:
+76 54 32 10
+00 gg yy rr
+
+00: off
+01: on
+11: on/flashing
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Request CD and track info
+
+38 00 Request CD and track info
+38 01 Stop play
+38 03 Start play
+38 04 Fast Scan
+38 06 Load CD
+38 07 Scan Mode
+38 08 Random Mode
+38 0A Change track
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+CD status and track info
+
+39 00 02 00 3F 00 dd tt 00 CD and Track Status Not Playing Response
+39 00 09 00 3F 00 dd tt 00 CD and Track Status Playing Response
+39 02 09 00 3F 00 dd tt 00 Track Start Playing
+39 03 09 00 3F 00 dd tt 00 CD Status Scan Forward
+39 04 09 00 3F 00 dd tt 00 CD Status Scan Backward
+39 07 09 00 3F 00 dd tt 00 Track End Playing
+39 08 09 00 3F 00 dd tt 00 CD Seeking
+39 08 09 00 3F 00 dd tt 00 Loaded CD 1,2,3,4,5,6
+39 08 09 00 3F 00 dd tt 00 CD # dd
+39 08 09 00 3F 00 dd tt 00 Track # tt
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Set date and time
+
+40 01 0C 3B
+40 = OBC Set data
+01 = Time
+0C = hours in hex
+3B = minutes in hex
+
+40 02 1B 05 08
+40 = OBC Set data
+02 = Date
+1B = day in hex
+05 = month in hex
+08 = year in hex
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Turning on an off LED next to left knob
+
+4A FF switch on and
+4A 00 to switch it off."
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Sideview mirror
+
+6D 40 right
+6D 80 left
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Remote key
+
+72 22 unlock in
+72 12 lock in
+72 42 boot in
+72 02
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+When key is inserted into the ignition lock these messages are sent
+
+74 04 01 in
+74 00 FF out
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Window and door message
+
+7A 51 20

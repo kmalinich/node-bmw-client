@@ -1,0 +1,449 @@
+00 BF 72 06,GM --> GLO : ChkCtrl Remote Central Locking: No_Button_Pressed
+00 BF 7A 10 02,GM --> GLO : door/flap status: Open: WndwPgr Ctrl_Locking: Unlocked
+00 BF 7A 50 02,GM --> GLO : door/flap status: Open: WndwPgr Ctrl_Locking: Unlocked
+00 BF 7A 53 5F,GM --> GLO : door/flap status: Open: DvrDoorFr PgrDoorFr WndwDvr WndwPgr WndwDvrRr WndwPgrRr Sunroof Bonnet Ctrl_Locking: Unlocked
+18 68 39 01 0C 00 14 00 05 01,CDC --> RAD : CD_status: Pause CD=5 Track=1 CDs_Loaded=P3,P5
+18 FF 02 00,CDC --> LOC : Device status ready
+30 44 73 00 00 80,CCM --> EWS : Immobiliser status request, Data="00 00 80"
+30 80 10,CCM --> IKE : Ignition status request
+30 80 12,CCM --> IKE : IKE sensor status request
+30 80 14,CCM --> IKE : Country coding status request
+30 80 1A 30 00 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20,CCM --> IKE : IKE Text/Gong: " " Immediate Clear Gong_off Warning_symbol_off
+30 80 1A 30 00,CCM --> IKE : IKE Text/Gong: "" Immediate Clear Gong_off Warning_symbol_off
+30 80 1A 35 00 20 20 43 48 45 43 4B 20 43 4F 4E 54 52 4F 4C 20 4F 4B 20 20,CCM --> IKE : IKE Text/Gong: " CHECK CONTROL OK " Immediate Clear Gong_off Warning_symbol_off
+30 BF 02 00,CCM --> GLO : Device status ready
+30 BF 51 00,CCM --> GLO : Checkcontrol sensors:
+30 BF 51 04,CCM --> GLO : Checkcontrol sensors: Key_in_Ignition
+3B 3F A0 00 FF FF FF 47 47 38 37 39 37 33 11 03,GT --> DIA : Diagnostic command acknowledged, Data="00 FF FF FF 47 47 38 37 39 37 33 11 03"
+3B 3F A0 34 31 30 35 30 36 32 32 31 30 32 30 32 30 39 34 35 39 39 30 31 30 33 37 30 38 2E 32 31 38 31,GT --> DIA : Diagnostic command acknowledged, Data="34 31 30 35 30 36 32 32 31 30 32 30 32 30 39 34 35 39 39 30 31 30 33 37 30 38 2E 32 31 38 31"
+3B 68 22 00 00,GT --> RAD : Text display confirmation: Screen Text: 1 text message acknowledged
+3B 68 45 02,GT --> RAD : Radio status request, Data="02"
+3B 68 4E 00 00,GT --> RAD : Audio source selection
+3B 6A 01,GT --> DSP : Device status request
+3B 6A 34 28,GT --> DSP : DSP equaliser button, Data="28"
+3B 80 01,GT --> IKE : Device status request
+3B 80 10,GT --> IKE : Ignition status request
+3B 80 14,GT --> IKE : Country coding status request
+3B 80 40 01 10 30,GT --> IKE : On-board computer set data: Set Time = 16:48
+3B 80 40 01 11 01,GT --> IKE : On-board computer set data: Set Time = 17:01
+3B 80 40 01 16 10,GT --> IKE : On-board computer set data: Set Time = 22:16
+3B 80 40 02 05 08 0B,GT --> IKE : On-board computer set data: Set Date = 05/08/11
+3B 80 40 02 0F 0A 0B,GT --> IKE : On-board computer set data: Set Date = 15/10/11
+3B 80 40 02 16 08 0B,GT --> IKE : On-board computer set data: Set Date = 22/08/11
+3B 80 41 01 01,GT --> IKE : On-board computer data request: Time: current value request
+3B 80 41 02 01,GT --> IKE : On-board computer data request: Date: current value request
+3B 80 41 03 01,GT --> IKE : On-board computer data request: Outside_Temp: current value request
+3B 80 41 04 01,GT --> IKE : On-board computer data request: Consumption_1: current value request
+3B 80 41 05 01,GT --> IKE : On-board computer data request: Consumption_2: current value request
+3B 80 41 06 01,GT --> IKE : On-board computer data request: Range: current value request
+3B 80 41 07 01,GT --> IKE : On-board computer data request: Distance: current value request
+3B 80 41 08 01,GT --> IKE : On-board computer data request: Arrival: current value request
+3B 80 41 09 01,GT --> IKE : On-board computer data request: Limit: current value request
+3B 80 41 09 02,GT --> IKE : On-board computer data request: Limit: status request
+3B 80 41 0A 01,GT --> IKE : On-board computer data request: Average_Speed: current value request
+3B 80 41 0D 02,GT --> IKE : On-board computer data request: Code: status request
+3B 80 41 0E 01,GT --> IKE : On-board computer data request: Stopwatch: current value request
+3B 80 41 0F 01,GT --> IKE : On-board computer data request: Timer_1: current value request
+3B 80 41 10 01,GT --> IKE : On-board computer data request: Timer_2: current value request
+3B 80 41 1A 01,GT --> IKE : On-board computer data request: Interim_Time: current value request
+3B BB 4F 02 00,GT --> NAJ : RGB control: LCD_off GT
+3B BF 02 40,GT --> GLO : Device status ready Bit6
+3B C8 01,GT --> TEL : Device status request
+3B D0 5A,GT --> LCM : Lamp status request
+3B ED 01,GT --> VID : Device status request
+3F 3B 00,DIA --> GT : Read identity
+3F 3B 08 00 00 20,DIA --> GT : Read coding data, Data="00 00 20"
+3F 3B 11,DIA --> GT : Read OS boot mode
+3F 60 00,DIA --> PDC : Read identity
+3F 60 1B,DIA --> PDC : Read config data
+3F C8 00,DIA --> TEL : Read identity
+3F C8 08 00,DIA --> TEL : Read coding data, Data="00"
+3F D0 00,DIA --> LCM : Read identity
+3F D0 08 00,DIA --> LCM : Read coding data, Data="00"
+3F D0 09 00 86 00 08 01 00 01 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00,DIA --> LCM : Write coding data, Data="00 86 00 08 01 00 01 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00"
+3F D0 09 00 86 00 08 01 00 1D 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00,DIA --> LCM : Write coding data, Data="00 86 00 08 01 00 1D 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00"
+3F D0 09 00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 2D 00 4E 40 90 00 00 0B 80 00 00 00 28 2C 01 00 00,DIA --> LCM : Write coding data, Data="00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 2D 00 4E 40 90 00 00 0B 80 00 00 00 28 2C 01 00 00"
+3F D0 09 00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00,DIA --> LCM : Write coding data, Data="00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00"
+3F ED 00,DIA --> VID : Read identity
+3F ED 06 03 00 00 00 02,DIA --> VID : Read memory, Data="03 00 00 00 02"
+44 BF 74 05 05,EWS --> GLO : Immobiliser status: Immobilisation_deactivated Valid_key_detected Key_5
+50 68 3B 01,MFL --> RAD : Radio/Telephone control: Search_Up_pressed
+50 68 3B 21,MFL --> RAD : Radio/Telephone control: Search_Up_released
+60 3F A0 00 FF FF FF FF FF FF FF FF 46 02,PDC --> DIA : Diagnostic command acknowledged, Data="00 FF FF FF FF FF FF FF FF 46 02"
+60 3F A0 00 FF FF FF FF FF FF FF FF C6 02,PDC --> DIA : Diagnostic command acknowledged, Data="00 FF FF FF FF FF FF FF FF C6 02"
+60 3F A0 86 90 40 23 01 03 01 01 43 99 14 13,PDC --> DIA : Diagnostic command acknowledged, Data="86 90 40 23 01 03 01 01 43 99 14 13"
+68 18 01,RAD --> CDC : Device status request
+68 18 38 02 00,RAD --> CDC : CD_control: Pause
+68 3B 23 62 30 20 07 20 20 20 20 20 08 20 4E 44 52 20 32 20 20 20 20,RAD --> GT : Display Text: Layout=RadioDisplay Flags=Bit4,CLS F0=" " F7:" " F8:" NDR 2 "
+68 3B 23 62 30 20 07 20 20 20 20 20 08 57 69 6C 6C 69 61 6D 73 20 20,RAD --> GT : Display Text: Layout=RadioDisplay Flags=Bit4,CLS F0=" " F7:" " F8:"Williams "
+68 3B 46 01,RAD --> GT : LCD clear: No display required
+68 3B 46 0C,RAD --> GT : LCD clear: Select menu off: Tone menu off
+68 3B A5 62 01 02 20 50 20 34 20,RAD --> GT : Screen Text: Layout=RadioDisplay FC2=0x01 Fld2,EndTx=" P 4 "
+68 3B A5 62 01 04 20 54 20 20 20,RAD --> GT : Screen Text: Layout=RadioDisplay FC2=0x01 Fld4,EndTx=" T "
+68 3B A5 62 01 06 20 20 20 20 20 4C 4F 43 41 4C 2D 20 33 20 20 20 20 20 20 20,RAD --> GT : Screen Text: Layout=RadioDisplay FC2=0x01 Fld6,EndTx=" LOCAL- 3 "
+68 6A 01,RAD --> DSP : Device status request
+68 7F A8 30 01 0A 00 00 00 30 A2 D2 04 19 BE,RAD --> NAV : TMC data: Type30: Group0Data="01 0A 00 00 00" Type30: GroupA: Data="A2 D2 04 19 BE"
+68 7F A8 30 01 0A F4 00 00,RAD --> NAV : TMC data: Type30: Group0Data="01 0A F4 00 00"
+68 7F A8 30 01 0A F5 8F C0 30 82 58 D7 6B 06,RAD --> NAV : TMC data: Type30: Group0Data="01 0A F5 8F C0" Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 01 10 30 C8 8D 30 41 B3 8A EE C4 30 82 85 DD 13 84,RAD --> NAV : TMC data: Type30: Group0Data="01 10 30 C8 8D" Type30: Group4_Clock_Date_&_Time: UTC_2011/07/07_14:59_+2h Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=4996 Evnt=1501 Dir=Neg Extnt=0 ConIndex=2
+68 7F A8 30 01 10 30 C8 8D 30 82 D3 23 54 6B,RAD --> NAV : TMC data: Type30: Group0Data="01 10 30 C8 8D" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=21611 Evnt=803 Dir=Neg Extnt=2 ConIndex=2
+68 7F A8 30 01 4E 95 7A 00 30 82 0A F5 81 00,RAD --> NAV : TMC data: Type30: Group0Data="01 4E 95 7A 00" Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 01 58 84 E9 58 30 82 03 F0 00 00 30 03 82 BD 30 44,RAD --> NAV : TMC data: Type30: Group0Data="01 58 84 E9 58" Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group0Data="03 82 BD 30 44"
+68 7F A8 30 01 58 FD E9 57,RAD --> NAV : TMC data: Type30: Group0Data="01 58 FD E9 57"
+68 7F A8 30 01 83 07 5A B8,RAD --> NAV : TMC data: Type30: Group0Data="01 83 07 5A B8"
+68 7F A8 30 01 86 7D C0 73 30 21 48 F6 00 00,RAD --> NAV : TMC data: Type30: Group0Data="01 86 7D C0 73" Type30: Group2: Data="21 48 F6 00 00"
+68 7F A8 30 01 90 6C 30 58 30 01 41 C4 B0 00,RAD --> NAV : TMC data: Type30: Group0Data="01 90 6C 30 58" Type30: Group0Data="01 41 C4 B0 00"
+68 7F A8 30 01 C8 6D 30 5B,RAD --> NAV : TMC data: Type30: Group0Data="01 C8 6D 30 5B"
+68 7F A8 30 02 04 40 00 00 30 83 93 31 28 F3 30 A3 4E 93 F2 00,RAD --> NAV : TMC data: Type30: Group0Data="02 04 40 00 00" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=10483 Evnt=817 Dir=Neg Extnt=2 ConIndex=3 Type30: GroupA: Data="A3 4E 93 F2 00"
+68 7F A8 30 02 45 68 65 80 30 83 D9 D5 B4 F6 30 A3 58 FF E9 64,RAD --> NAV : TMC data: Type30: Group0Data="02 45 68 65 80" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=46326 Evnt=469 Dir=Neg Extnt=3 ConIndex=3 Type30: GroupA: Data="A3 58 FF E9 64"
+68 7F A8 30 02 51 50 B1 D3 30 A3 58 FE E9 57,RAD --> NAV : TMC data: Type30: Group0Data="02 51 50 B1 D3" Type30: GroupA: Data="A3 58 FE E9 57"
+68 7F A8 30 02 58 D7 6B 06 30 83 4E 93 F2 00,RAD --> NAV : TMC data: Type30: Group0Data="02 58 D7 6B 06" Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=3
+68 7F A8 30 02 81 91 97 AC,RAD --> NAV : TMC data: Type30: Group0Data="02 81 91 97 AC"
+68 7F A8 30 02 89 91 D8 9E 30 02 51 51 DF D2 30 22 0B 0D 81 00,RAD --> NAV : TMC data: Type30: Group0Data="02 89 91 D8 9E" Type30: Group0Data="02 51 51 DF D2" Type30: Group2: Data="22 0B 0D 81 00"
+68 7F A8 30 02 8A DF 6F 2D,RAD --> NAV : TMC data: Type30: Group0Data="02 8A DF 6F 2D"
+68 7F A8 30 02 D9 91 B1 77,RAD --> NAV : TMC data: Type30: Group0Data="02 D9 91 B1 77"
+68 7F A8 30 03 0A 00 00 00 30 85 81 91 1E 81 30 85 4E 96 56 00,RAD --> NAV : TMC data: Type30: Group0Data="03 0A 00 00 00" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=7809 Evnt=401 Dir=Neg Extnt=0 ConIndex=5 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=5
+68 7F A8 30 03 0C C1 00 00 30 88 0F EE 29 35 30 24 82 C3 D3 8F,RAD --> NAV : TMC data: Type30: Group0Data="03 0C C1 00 00" Type30: Group8_TMC_Data: User_Msg, Loc=10549 Evnt=2030 Dir=Neg Extnt=1 Dur=0 Type30: Group2: Data="24 82 C3 D3 8F"
+68 7F A8 30 03 46 0C 00 00,RAD --> NAV : TMC data: Type30: Group0Data="03 46 0C 00 00"
+68 7F A8 30 03 4E 93 28 00 30 A8 0A DF 87 21,RAD --> NAV : TMC data: Type30: Group0Data="03 4E 93 28 00" Type30: GroupA: Data="A8 0A DF 87 21"
+68 7F A8 30 03 51 51 AB D2,RAD --> NAV : TMC data: Type30: Group0Data="03 51 51 AB D2"
+68 7F A8 30 03 51 51 CC C0 30 03 04 00 00 00,RAD --> NAV : TMC data: Type30: Group0Data="03 51 51 CC C0" Type30: Group0Data="03 04 00 00 00"
+68 7F A8 30 03 58 FD E9 F8,RAD --> NAV : TMC data: Type30: Group0Data="03 58 FD E9 F8"
+68 7F A8 30 03 68 E3 E9 57,RAD --> NAV : TMC data: Type30: Group0Data="03 68 E3 E9 57"
+68 7F A8 30 03 C1 97 29 B7 30 23 06 00 00 00,RAD --> NAV : TMC data: Type30: Group0Data="03 C1 97 29 B7" Type30: Group2: Data="23 06 00 00 00"
+68 7F A8 30 03 D9 91 B1 77,RAD --> NAV : TMC data: Type30: Group0Data="03 D9 91 B1 77"
+68 7F A8 30 04 02 04 00 00 30 88 4A 71 30 5B 30 05 82 BD 4E 79,RAD --> NAV : TMC data: Type30: Group0Data="04 02 04 00 00" Type30: Group8_TMC_Data: User_Msg, Loc=12379 Evnt=625 Dir=Neg Extnt=1 Dur=0 Type30: Group0Data="05 82 BD 4E 79"
+68 7F A8 30 04 02 04 00 00,RAD --> NAV : TMC data: Type30: Group0Data="04 02 04 00 00"
+68 7F A8 30 04 0A 00 00 00 30 85 0B 01 8F C0 30 06 EE E7 29 AF,RAD --> NAV : TMC data: Type30: Group0Data="04 0A 00 00 00" Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=5 Type30: Group0Data="06 EE E7 29 AF"
+68 7F A8 30 04 0A 00 00 00 30 85 D3 23 54 78 30 85 4E 93 28 00,RAD --> NAV : TMC data: Type30: Group0Data="04 0A 00 00 00" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=21624 Evnt=803 Dir=Neg Extnt=2 ConIndex=5 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=5
+68 7F A8 30 04 0A C0 80 00 30 A5 89 91 B9 FE,RAD --> NAV : TMC data: Type30: Group0Data="04 0A C0 80 00" Type30: GroupA: Data="A5 89 91 B9 FE"
+68 7F A8 30 04 41 5D 28 04,RAD --> NAV : TMC data: Type30: Group0Data="04 41 5D 28 04"
+68 7F A8 30 04 42 28 00 00 30 A6 CC 27 6F 7F,RAD --> NAV : TMC data: Type30: Group0Data="04 42 28 00 00" Type30: GroupA: Data="A6 CC 27 6F 7F"
+68 7F A8 30 04 57 18 8D 9E 30 A4 09 32 2C 06,RAD --> NAV : TMC data: Type30: Group0Data="04 57 18 8D 9E" Type30: GroupA: Data="A4 09 32 2C 06"
+68 7F A8 30 04 93 31 28 F1 30 04 5E 93 F3 D2,RAD --> NAV : TMC data: Type30: Group0Data="04 93 31 28 F1" Type30: Group0Data="04 5E 93 F3 D2"
+68 7F A8 30 04 93 31 28 F1,RAD --> NAV : TMC data: Type30: Group0Data="04 93 31 28 F1"
+68 7F A8 30 04 93 31 30 2A 30 A5 CA 02 30 5B,RAD --> NAV : TMC data: Type30: Group0Data="04 93 31 30 2A" Type30: GroupA: Data="A5 CA 02 30 5B"
+68 7F A8 30 04 C9 91 D8 9F 30 04 4E 95 86 00,RAD --> NAV : TMC data: Type30: Group0Data="04 C9 91 D8 9F" Type30: Group0Data="04 4E 95 86 00"
+68 7F A8 30 04 CA 02 30 5B,RAD --> NAV : TMC data: Type30: Group0Data="04 CA 02 30 5B"
+68 7F A8 30 04 CC 27 6F 7F 30 04 45 68 65 80 30 85 81 91 97 AC,RAD --> NAV : TMC data: Type30: Group0Data="04 CC 27 6F 7F" Type30: Group0Data="04 45 68 65 80" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=38828 Evnt=401 Dir=Neg Extnt=0 ConIndex=5
+68 7F A8 30 04 D9 D5 B4 F6 30 04 58 FF E9 64,RAD --> NAV : TMC data: Type30: Group0Data="04 D9 D5 B4 F6" Type30: Group0Data="04 58 FF E9 64"
+68 7F A8 30 05 51 51 F3 D2 30 A8 13 2C 29 14,RAD --> NAV : TMC data: Type30: Group0Data="05 51 51 F3 D2" Type30: GroupA: Data="A8 13 2C 29 14"
+68 7F A8 30 05 58 E6 E9 32 30 05 0E C0 60 00,RAD --> NAV : TMC data: Type30: Group0Data="05 58 E6 E9 32" Type30: Group0Data="05 0E C0 60 00"
+68 7F A8 30 05 58 FD E9 57 30 88 42 A1 29 E5,RAD --> NAV : TMC data: Type30: Group0Data="05 58 FD E9 57" Type30: Group8_TMC_Data: User_Msg, Loc=10725 Evnt=673 Dir=Neg Extnt=0 Dur=0
+68 7F A8 30 05 82 BD 30 36,RAD --> NAV : TMC data: Type30: Group0Data="05 82 BD 30 36"
+68 7F A8 30 06 02 00 00 00 30 81 C9 91 8C 85,RAD --> NAV : TMC data: Type30: Group0Data="06 02 00 00 00" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=35973 Evnt=401 Dir=Neg Extnt=1 ConIndex=1
+68 7F A8 30 06 46 6F 00 00 30 A1 0A F5 8F C0,RAD --> NAV : TMC data: Type30: Group0Data="06 46 6F 00 00" Type30: GroupA: Data="A1 0A F5 8F C0"
+68 7F A8 30 06 51 51 39 D2,RAD --> NAV : TMC data: Type30: Group0Data="06 51 51 39 D2"
+68 7F A8 30 06 58 CB E9 57 30 06 0B D2 00 40,RAD --> NAV : TMC data: Type30: Group0Data="06 58 CB E9 57" Type30: Group0Data="06 0B D2 00 40"
+68 7F A8 30 06 58 FD E9 00,RAD --> NAV : TMC data: Type30: Group0Data="06 58 FD E9 00"
+68 7F A8 30 06 81 91 1E 81 30 26 4E 96 56 00,RAD --> NAV : TMC data: Type30: Group0Data="06 81 91 1E 81" Type30: Group2: Data="26 4E 96 56 00"
+68 7F A8 30 06 C9 F9 30 5D 30 26 4E 91 92 00,RAD --> NAV : TMC data: Type30: Group0Data="06 C9 F9 30 5D" Type30: Group2: Data="26 4E 91 92 00"
+68 7F A8 30 06 CB 23 A9 1F 30 26 06 00 00 00,RAD --> NAV : TMC data: Type30: Group0Data="06 CB 23 A9 1F" Type30: Group2: Data="26 06 00 00 00"
+68 7F A8 30 08 0A BD D3 74 30 A4 0F D2 AF 40,RAD --> NAV : TMC data: Type30: Group0Data="08 0A BD D3 74" Type30: GroupA: Data="A4 0F D2 AF 40"
+68 7F A8 30 08 11 4E 29 55 30 83 D2 02 29 B8,RAD --> NAV : TMC data: Type30: Group0Data="08 11 4E 29 55" Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=10680 Evnt=514 Dir=Neg Extnt=2 ConIndex=3
+68 7F A8 30 08 46 44 66 92 30 A8 57 EC 29 1B,RAD --> NAV : TMC data: Type30: Group0Data="08 46 44 66 92" Type30: GroupA: Data="A8 57 EC 29 1B"
+68 7F A8 30 08 4B EC 54 AC 30 A6 02 00 00 00,RAD --> NAV : TMC data: Type30: Group0Data="08 4B EC 54 AC" Type30: GroupA: Data="A6 02 00 00 00"
+68 7F A8 30 23 8B 9B 29 B0,RAD --> NAV : TMC data: Type30: Group2: Data="23 8B 9B 29 B0"
+68 7F A8 30 24 0E 00 00 00,RAD --> NAV : TMC data: Type30: Group2: Data="24 0E 00 00 00"
+68 7F A8 30 24 98 6C 27 9A 30 41 B3 C4 EB C4,RAD --> NAV : TMC data: Type30: Group2: Data="24 98 6C 27 9A" Type30: Group4_Clock_Date_&_Time: UTC_2011/08/05_14:47_+2h
+68 7F A8 30 24 C9 91 8B 76,RAD --> NAV : TMC data: Type30: Group2: Data="24 C9 91 8B 76"
+68 7F A8 30 25 0A F4 00 00,RAD --> NAV : TMC data: Type30: Group2: Data="25 0A F4 00 00"
+68 7F A8 30 25 58 84 E9 64 30 05 06 00 00 00,RAD --> NAV : TMC data: Type30: Group2: Data="25 58 84 E9 64" Type30: Group0Data="05 06 00 00 00"
+68 7F A8 30 26 0B D2 00 40,RAD --> NAV : TMC data: Type30: Group2: Data="26 0B D2 00 40"
+68 7F A8 30 26 89 91 56 50,RAD --> NAV : TMC data: Type30: Group2: Data="26 89 91 56 50"
+68 7F A8 30 26 D3 23 54 6B,RAD --> NAV : TMC data: Type30: Group2: Data="26 D3 23 54 6B"
+68 7F A8 30 26 EE E7 29 AF 30 26 46 6F 00 00,RAD --> NAV : TMC data: Type30: Group2: Data="26 EE E7 29 AF" Type30: Group2: Data="26 46 6F 00 00"
+68 7F A8 30 41 B4 67 58 84 30 01 4E 93 F6 00,RAD --> NAV : TMC data: Type30: Group4_Clock_Date_&_Time: UTC_2011/10/25_21:34_+2h Type30: Group0Data="01 4E 93 F6 00"
+68 7F A8 30 81 10 30 C8 8D 30 02 CC 27 6F 7F,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=1 Type30: Group0Data="02 CC 27 6F 7F"
+68 7F A8 30 81 4E 93 28 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=1
+68 7F A8 30 81 51 51 B3 D2,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=1
+68 7F A8 30 81 51 51 F2 C0 30 22 51 51 F3 D2,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=1 Type30: Group2: Data="22 51 51 F3 D2"
+68 7F A8 30 81 51 51 FB D2 30 81 0A F5 81 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=1 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=1
+68 7F A8 30 81 6B 6F 45 E9,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=1
+68 7F A8 30 81 81 91 97 AC,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=38828 Evnt=401 Dir=Neg Extnt=0 ConIndex=1
+68 7F A8 30 81 D1 91 B5 0C 30 A1 0A 00 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=46348 Evnt=401 Dir=Neg Extnt=2 ConIndex=1 Type30: GroupA: Data="A1 0A 00 00 00"
+68 7F A8 30 82 0B 01 8F C0 30 03 81 98 29 95,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group0Data="03 81 98 29 95"
+68 7F A8 30 82 0B D2 00 40,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 82 0C C0 60 00 30 03 58 B4 E9 32,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group0Data="03 58 B4 E9 32"
+68 7F A8 30 82 10 30 C8 8D 30 82 06 00 00 00 30 08 06 5B AE D1,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group0Data="08 06 5B AE D1"
+68 7F A8 30 82 10 30 C8 8D,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 82 4E 93 28 00 30 23 D3 23 54 78,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group2: Data="23 D3 23 54 78"
+68 7F A8 30 82 51 51 FB D2 30 28 11 8C 29 09,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group2: Data="28 11 8C 29 09"
+68 7F A8 30 82 5E 90 02 C5 30 82 08 00 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 82 65 19 15 1F,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 82 81 91 97 AC 30 82 6B 6F 45 E9,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=38828 Evnt=401 Dir=Neg Extnt=0 ConIndex=2 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 82 89 91 D8 9E 30 03 CA DF 6F 82,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=55454 Evnt=401 Dir=Neg Extnt=1 ConIndex=2 Type30: Group0Data="03 CA DF 6F 82"
+68 7F A8 30 82 DB 31 AA 03 30 82 5E 93 EB D2 30 82 01 B1 83 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=43523 Evnt=817 Dir=Neg Extnt=3 ConIndex=2 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=2
+68 7F A8 30 83 0A C0 80 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=3
+68 7F A8 30 83 0D D2 AF 40 30 24 CA 02 19 AA,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=3 Type30: Group2: Data="24 CA 02 19 AA"
+68 7F A8 30 83 51 51 F5 D2 30 83 0A F4 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=3 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=3
+68 7F A8 30 83 C1 98 30 53 30 83 48 FA 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=12371 Evnt=408 Dir=Neg Extnt=0 ConIndex=3 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=3
+68 7F A8 30 83 D1 91 D8 A6 30 A3 07 74 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=55462 Evnt=401 Dir=Neg Extnt=2 ConIndex=3 Type30: GroupA: Data="A3 07 74 00 00"
+68 7F A8 30 83 D2 02 29 B8 30 83 0A F4 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=10680 Evnt=514 Dir=Neg Extnt=2 ConIndex=3 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=3
+68 7F A8 30 84 41 D1 CE 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=4
+68 7F A8 30 84 51 51 CF D2 30 05 81 98 29 94,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=4 Type30: Group0Data="05 81 98 29 94"
+68 7F A8 30 84 82 BD AD FE 30 84 06 61 81 00 30 25 8A 02 D1 FF,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=44542 Evnt=701 Dir=Neg Extnt=0 ConIndex=4 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=4 Type30: Group2: Data="25 8A 02 D1 FF"
+68 7F A8 30 84 91 8A 30 2B 30 05 81 97 29 12,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=12331 Evnt=394 Dir=Neg Extnt=2 ConIndex=4 Type30: Group0Data="05 81 97 29 12"
+68 7F A8 30 84 D2 03 27 90 30 26 C7 CF 2A 02,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=10128 Evnt=515 Dir=Neg Extnt=2 ConIndex=4 Type30: Group2: Data="26 C7 CF 2A 02"
+68 7F A8 30 85 0E C0 60 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=5
+68 7F A8 30 85 58 63 E9 57 30 85 0A 00 00 00 30 26 8A 02 8C 4C,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=5 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=5 Type30: Group2: Data="26 8A 02 8C 4C"
+68 7F A8 30 85 92 BD 8A DA 30 85 48 99 00 00 30 08 43 9B D4 74,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=35546 Evnt=701 Dir=Neg Extnt=2 ConIndex=5 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=5 Type30: Group0Data="08 43 9B D4 74"
+68 7F A8 30 85 93 31 30 2A 30 06 8A 02 8C 4C,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=12330 Evnt=817 Dir=Neg Extnt=2 ConIndex=5 Type30: Group0Data="06 8A 02 8C 4C"
+68 7F A8 30 85 CC 27 6F 7F 30 06 51 5D 28 0D,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=28543 Evnt=1063 Dir=Neg Extnt=1 ConIndex=5 Type30: Group0Data="06 51 5D 28 0D"
+68 7F A8 30 86 08 30 00 00 30 21 5E 93 2C C0,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=6 Type30: Group2: Data="21 5E 93 2C C0"
+68 7F A8 30 86 58 E5 E9 58,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=6
+68 7F A8 30 86 58 F7 E9 57 30 01 92 BD 8A DA 30 21 48 81 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=6 Type30: Group0Data="01 92 BD 8A DA" Type30: Group2: Data="21 48 81 00 00"
+68 7F A8 30 86 93 23 8C 61 30 86 58 D7 E9 3E 30 A6 08 00 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=35937 Evnt=803 Dir=Neg Extnt=2 ConIndex=6 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=6 Type30: GroupA: Data="A6 08 00 00 00"
+68 7F A8 30 86 98 CC 27 8B 30 86 6E 95 31 46 30 86 10 9F 45 39,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg,Multi_Grp,First_Grp Loc=10123 Evnt=204 Dir=Neg Extnt=3 ConIndex=6 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=6 Type30: Group8_TMC_Data: User_Msg,Multi_Grp ConIndex=6
+68 7F A8 30 88 62 C1 30 67 30 03 51 51 CC C0 30 A3 04 00 00 00,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg, Loc=12391 Evnt=705 Dir=Neg Extnt=4 Dur=0 Type30: Group0Data="03 51 51 CC C0" Type30: GroupA: Data="A3 04 00 00 00"
+68 7F A8 30 88 68 3F 30 46 30 01 D1 91 B5 0C,RAD --> NAV : TMC data: Type30: Group8_TMC_Data: User_Msg, Loc=12358 Evnt=63 Dir=Neg Extnt=5 Dur=0 Type30: Group0Data="01 D1 91 B5 0C"
+68 7F A8 30 A1 51 51 F3 D2,RAD --> NAV : TMC data: Type30: GroupA: Data="A1 51 51 F3 D2"
+68 7F A8 30 A1 81 91 97 AC,RAD --> NAV : TMC data: Type30: GroupA: Data="A1 81 91 97 AC"
+68 7F A8 30 A2 4E 95 86 00,RAD --> NAV : TMC data: Type30: GroupA: Data="A2 4E 95 86 00"
+68 7F A8 30 A6 06 00 00 00,RAD --> NAV : TMC data: Type30: GroupA: Data="A6 06 00 00 00"
+68 7F A8 30 A6 0D 44 F0 A0,RAD --> NAV : TMC data: Type30: GroupA: Data="A6 0D 44 F0 A0"
+68 7F A8 30 A6 C1 96 2B 32,RAD --> NAV : TMC data: Type30: GroupA: Data="A6 C1 96 2B 32"
+68 7F A8 30 A6 D3 31 30 32 30 A6 67 46 86 5E,RAD --> NAV : TMC data: Type30: GroupA: Data="A6 D3 31 30 32" Type30: GroupA: Data="A6 67 46 86 5E"
+68 7F A8 30 A8 4B EC 54 AC 30 06 8A BD 27 9F,RAD --> NAV : TMC data: Type30: GroupA: Data="A8 4B EC 54 AC" Type30: Group0Data="06 8A BD 27 9F"
+68 BF 02 00,RAD --> GLO : Device status ready
+68 FF 36 AF,RAD --> LOC : Audio_control: Source = Off
+6A 3B 35 04 04 23 05 23 41 72 91 A9 C9,DSP --> GT : Car memory response, Data="04 04 23 05 23 41 72 91 A9 C9"
+6A FF 02 00,DSP --> LOC : Device status ready
+70 BF 62 00 00,RDC --> GLO : RDC status, Data="00 00"
+7F 80 1F 40 14 58 07 00 07 20 11,NAV --> IKE : Time & date: UTC 14:58 07 Juli 2011
+7F 80 1F 40 14 59 07 00 07 20 11,NAV --> IKE : Time & date: UTC 14:59 07 Juli 2011
+7F 80 1F 40 16 35 24 00 07 20 11,NAV --> IKE : Time & date: UTC 16:35 24 Juli 2011
+7F 80 1F 40 19 05 13 00 10 20 11,NAV --> IKE : Time & date: UTC 19:05 13 October 2011
+7F 80 1F 40 20 07 12 00 10 20 11,NAV --> IKE : Time & date: UTC 20:07 12 Oktober 2011
+7F 80 1F 40 20 07 20 00 07 20 11,NAV --> IKE : Time & date: UTC 20:07 20 Juli 2011
+7F 80 1F 40 20 08 12 00 10 20 11,NAV --> IKE : Time & date: UTC 20:08 12 Oktober 2011
+7F 80 1F 40 20 08 20 00 07 20 11,NAV --> IKE : Time & date: UTC 20:08 20 Juli 2011
+7F 80 1F 40 20 15 22 00 08 20 11,NAV --> IKE : Time & date: UTC 20:15 22 August 2011
+7F 80 1F 40 20 16 22 00 08 20 11,NAV --> IKE : Time & date: UTC 20:16 22 August 2011
+7F 80 1F 40 21 26 06 00 07 20 11,NAV --> IKE : Time & date: UTC 21:26 06 Juli 2011
+7F 80 1F 40 21 27 06 00 07 20 11,NAV --> IKE : Time & date: UTC 21:27 06 Juli 2011
+7F 80 1F 40 21 28 06 00 07 20 11,NAV --> IKE : Time & date: UTC 21:28 06 Juli 2011
+7F 80 1F 40 21 28 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:28 25 October 2011
+7F 80 1F 40 21 29 06 00 07 20 11,NAV --> IKE : Time & date: UTC 21:29 06 Juli 2011
+7F 80 1F 40 21 29 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:29 25 October 2011
+7F 80 1F 40 21 30 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:30 25 October 2011
+7F 80 1F 40 21 31 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:31 25 October 2011
+7F 80 1F 40 21 32 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:32 25 October 2011
+7F 80 1F 40 21 33 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:33 25 October 2011
+7F 80 1F 40 21 34 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:34 25 October 2011
+7F 80 1F 40 21 35 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:35 25 October 2011
+7F 80 1F 40 21 36 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:36 25 October 2011
+7F 80 1F 40 21 37 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:37 25 October 2011
+7F 80 1F 40 21 38 25 00 10 20 11,NAV --> IKE : Time & date: UTC 21:38 25 October 2011
+7F C8 A2 00 00 54 20 42 40 00 13 25 41 00 00 00 00 00 00 00,NAV --> TEL : Current position: 54°20'42.4"N 13°25'41.0"E
+7F C8 A2 00 00 54 20 44 20 00 13 30 05 00 00 00 00 00 00 00,NAV --> TEL : Current position: 54°20'44.2"N 13°30'5.0"E
+7F C8 A2 00 00 54 20 55 10 00 13 27 44 90 00 00 00 00 00 00,NAV --> TEL : Current position: 54°20'55.1"N 13°27'44.9"E
+7F C8 A2 00 00 54 20 55 60 00 13 27 44 80 00 00 00 23 25 00,NAV --> TEL : Current position: 54°20'55.6"N 13°27'44.8"E
+7F C8 A2 00 00 54 20 55 60 00 13 27 44 80 00 00 00 23 26 00,NAV --> TEL : Current position: 54°20'55.6"N 13°27'44.8"E
+7F C8 A2 00 00 54 20 55 60 00 13 27 44 80 00 00 00 23 27 00,NAV --> TEL : Current position: 54°20'55.6"N 13°27'44.8"E
+7F C8 A2 00 00 54 20 55 60 00 13 27 44 80 00 00 00 23 28 00,NAV --> TEL : Current position: 54°20'55.6"N 13°27'44.8"E
+7F C8 A2 00 00 54 20 55 70 00 13 27 44 70 00 00 00 00 00 00,NAV --> TEL : Current position: 54°20'55.7"N 13°27'44.7"E
+7F C8 A2 00 00 54 20 55 70 00 13 27 44 80 00 00 00 00 00 00,NAV --> TEL : Current position: 54°20'55.7"N 13°27'44.8"E
+7F C8 A2 00 00 54 20 55 80 00 13 27 44 80 00 00 00 00 00 00,NAV --> TEL : Current position: 54°20'55.8"N 13°27'44.8"E
+7F C8 A2 00 00 54 20 55 80 00 13 27 44 80 00 00 00 16 48 00,NAV --> TEL : Current position: 54°20'55.8"N 13°27'44.8"E
+7F C8 A2 00 00 54 20 55 90 00 13 27 45 20 00 00 00 16 57 00,NAV --> TEL : Current position: 54°20'55.9"N 13°27'45.2"E
+7F C8 A2 00 00 54 20 55 90 00 13 27 45 20 00 00 00 16 58 00,NAV --> TEL : Current position: 54°20'55.9"N 13°27'45.2"E
+7F C8 A2 00 00 54 20 57 00 00 13 27 40 10 00 00 00 00 00 00,NAV --> TEL : Current position: 54°20'57.0"N 13°27'40.1"E
+7F C8 A2 00 00 54 21 01 30 00 13 27 40 30 00 00 00 00 00 00,NAV --> TEL : Current position: 54°21'1.3"N 13°27'40.3"E
+7F C8 A2 00 00 54 21 01 30 00 13 27 40 30 00 00 00 22 16 00,NAV --> TEL : Current position: 54°21'1.3"N 13°27'40.3"E
+7F C8 A2 00 00 54 22 07 40 00 13 28 44 50 00 00 00 00 00 00,NAV --> TEL : Current position: 54°22'7.4"N 13°28'44.5"E
+7F C8 A4 00 01 50 55 54 42 55 53 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00,NAV --> TEL : Current location: Town = PUTBUS
+7F C8 A4 00 02 3B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00,NAV --> TEL : Current location: Street = ;
+7F C8 A4 00 02 4C 32 39 3B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00,NAV --> TEL : Current location: Street = L29;
+7F C8 A4 00 02 50 41 52 4B 3B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00,NAV --> TEL : Current location: Street = PARK;
+80 30 1B 00,IKE --> CCM : IKE text status: 0 text messages acknowledged
+80 68 01,IKE --> RAD : Device status request
+80 68 31 00 00 04,IKE --> RAD : Button: VOLUME_+_pressed
+80 68 31 00 00 09,IKE --> RAD : Button: FM_pressed
+80 68 31 00 00 0B,IKE --> RAD : Button: TONE_pressed
+80 68 31 00 00 24,IKE --> RAD : Button: VOLUME_+_pressed_long
+80 68 31 00 00 2D,IKE --> RAD : Button: MEM_pressed_long
+80 68 31 00 00 44,IKE --> RAD : Button: VOLUME_+_released
+80 68 31 00 00 49,IKE --> RAD : Button: FM_released
+80 68 31 00 00 4B,IKE --> RAD : Button: TONE_released
+80 BF 02 00,IKE --> GLO : Device status ready
+80 BF 02 01,IKE --> GLO : Device status ready after Reset after Reset
+80 BF 11 00,IKE --> GLO : Ignition status: Off
+80 BF 11 01,IKE --> GLO : Ignition status: Pos1_Acc
+80 BF 11 03,IKE --> GLO : Ignition status: Pos1_Acc Pos2_On
+80 BF 13 00 00 00 00 00 00 10,IKE --> GLO : IKE sensor status:
+80 BF 13 00 B1 00 00 00 00 1F,IKE --> GLO : IKE sensor status: Motor_Running Gear_P
+80 BF 13 02 00 00 00 00 00 10,IKE --> GLO : IKE sensor status: Oil_Pressure_Low
+80 BF 15 00 04 80 42,IKE --> GLO : Country coding status: Ntwk=E38/E39 Lang=DE_German Clock=24h OutTemp=°C AvgSpd=km/h Limit=km Dist=km ArrTime=24h Consump=l/100_km Motor=Petrol
+80 BF 17 01 4A 03 80 1F 02 CC,IKE --> GLO : Odometer: 215.553 km
+80 BF 17 49 4C 03 80 1F 02 CC,IKE --> GLO : Odometer: 216.137 km
+80 BF 17 53 5D 03 80 1E 02 CC,IKE --> GLO : Odometer: 220,499 km
+80 BF 17 7B 51 03 80 1F 02 CC,IKE --> GLO : Odometer: 217.467 km
+80 BF 17 A0 4E 03 80 1F 02 CC,IKE --> GLO : Odometer: 216.736 km
+80 BF 17 D4 58 03 80 1E 02 CC,IKE --> GLO : Odometer: 219.348 km
+80 BF 17 E0 49 03 80 1F 02 CC,IKE --> GLO : Odometer: 215.520 km
+80 BF 18 00 00,IKE --> GLO : Speed/RPM: Speed 0 km/h, 0 RPM
+80 BF 18 00 05,IKE --> GLO : Speed/RPM: Speed 0 km/h, 500 RPM
+80 BF 18 00 06,IKE --> GLO : Speed/RPM: Speed 0 km/h, 600 RPM
+80 BF 19 09 4B 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 75°C
+80 BF 19 09 4C 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 76°C
+80 BF 19 09 4E 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 78°C
+80 BF 19 09 4F 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 79°C
+80 BF 19 09 50 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 80°C
+80 BF 19 09 51 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 81°C
+80 BF 19 09 52 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 82°C
+80 BF 19 09 53 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 83°C
+80 BF 19 09 54 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 84°C
+80 BF 19 09 55 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 85°C
+80 BF 19 09 56 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 86°C
+80 BF 19 09 57 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 87°C
+80 BF 19 09 58 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 88°C
+80 BF 19 09 59 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 89°C
+80 BF 19 09 5A 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 90°C
+80 BF 19 09 5B 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 91°C
+80 BF 19 09 5C 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 92°C
+80 BF 19 09 5D 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 93°C
+80 BF 19 09 5E 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 94°C
+80 BF 19 09 5F 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 95°C
+80 BF 19 09 60 00,IKE --> GLO : Temperature: Outside 9°C, Coolant 96°C
+80 BF 19 0E 0D 00,IKE --> GLO : Temperature: Outside 14°C, Coolant 13°C
+80 BF 19 0E 0E 00,IKE --> GLO : Temperature: Outside 14°C, Coolant 14°C
+80 BF 19 0F 66 00,IKE --> GLO : Temperature: Outside 15°C, Coolant 102°C
+80 BF 19 0F 67 00,IKE --> GLO : Temperature: Outside 15°C, Coolant 103°C
+80 BF 19 0F 68 00,IKE --> GLO : Temperature: Outside 15°C, Coolant 104°C
+80 BF 19 10 44 00,IKE --> GLO : Temperature: Outside 16°C, Coolant 68°C
+80 BF 19 10 45 00,IKE --> GLO : Temperature: Outside 16°C, Coolant 69°C
+80 BF 19 10 46 00,IKE --> GLO : Temperature: Outside 16°C, Coolant 70°C
+80 BF 19 10 47 00,IKE --> GLO : Temperature: Outside 16°C, Coolant 71°C
+80 BF 19 10 48 00,IKE --> GLO : Temperature: Outside 16°C, Coolant 72°C
+80 E7 24 01 00 2D 2D 3A 2D 2D 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="--:-- "
+80 E7 24 01 00 31 36 3A 34 38 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="16:48 "
+80 E7 24 01 00 31 36 3A 35 38 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="16:58 "
+80 E7 24 01 00 31 36 3A 35 39 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="16:59 "
+80 E7 24 01 00 31 37 3A 30 31 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="17:01 "
+80 E7 24 01 00 32 32 3A 31 36 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="22:16 "
+80 E7 24 01 00 32 33 3A 32 36 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="23:26 "
+80 E7 24 01 00 32 33 3A 32 37 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="23:27 "
+80 E7 24 01 00 32 33 3A 32 38 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="23:28 "
+80 E7 24 01 00 32 33 3A 32 39 20 20,IKE --> ANZV: Update Text: Layout=Time Flags= F0="23:29 "
+80 E7 24 02 00 2D 2D 2E 2D 2D 2E 32 30 31 31,IKE --> ANZV: Update Text: Layout=Date Flags= F0="--.--.2011"
+80 E7 24 02 00 30 35 2E 30 38 2E 32 30 31 31,IKE --> ANZV: Update Text: Layout=Date Flags= F0="05.08.2011"
+80 E7 24 02 00 31 35 2E 31 30 2E 32 30 31 31,IKE --> ANZV: Update Text: Layout=Date Flags= F0="15.10.2011"
+80 E7 24 02 00 32 32 2E 30 38 2E 32 30 31 31,IKE --> ANZV: Update Text: Layout=Date Flags= F0="22.08.2011"
+80 E7 24 03 00 20 2B 39 2E 35 A8 43,IKE --> ANZV: Update Text: Layout=Outside_Temp Flags= F0=" +9.5°C"
+80 E7 24 04 00 31 34 2E 32 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="14.2 L/100"
+80 E7 24 04 00 31 34 2E 33 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="14.3 L/100"
+80 E7 24 04 00 31 34 2E 37 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="14.7 L/100"
+80 E7 24 04 00 31 34 2E 38 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="14.8 L/100"
+80 E7 24 04 00 31 34 2E 39 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="14.9 L/100"
+80 E7 24 04 00 31 35 2E 30 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="15.0 L/100"
+80 E7 24 04 00 31 35 2E 31 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_1 Flags= F0="15.1 L/100"
+80 E7 24 05 00 31 34 2E 32 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="14.2 L/100"
+80 E7 24 05 00 31 34 2E 33 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="14.3 L/100"
+80 E7 24 05 00 31 34 2E 37 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="14.7 L/100"
+80 E7 24 05 00 31 34 2E 38 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="14.8 L/100"
+80 E7 24 05 00 31 34 2E 39 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="14.9 L/100"
+80 E7 24 05 00 31 35 2E 30 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="15.0 L/100"
+80 E7 24 05 00 31 35 2E 31 20 4C 2F 31 30 30,IKE --> ANZV: Update Text: Layout=Consumption_2 Flags= F0="15.1 L/100"
+80 E7 24 06 00 32 35 35 20 4B 4D 20,IKE --> ANZV: Update Text: Layout=Range Flags= F0="255 KM "
+80 E7 24 07 00 2D 2D 2D 2D 20 4B 4D 20,IKE --> ANZV: Update Text: Layout=Distance Flags= F0="---- KM "
+80 E7 24 08 00 2D 2D 3A 2D 2D 20 20,IKE --> ANZV: Update Text: Layout=Arrival Flags= F0="--:-- "
+80 E7 24 08 00 31 33 3A 31 36 20 20,IKE --> ANZV: Update Text: Layout=Arrival Flags= F0="13:16 "
+80 E7 24 08 00 31 33 3A 31 37 20 20,IKE --> ANZV: Update Text: Layout=Arrival Flags= F0="13:17 "
+80 E7 24 09 00 2D 2D 2D 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Limit Flags= F0="--- KM/H"
+80 E7 24 0A 00 32 36 2E 32 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.2 KM/H"
+80 E7 24 0A 00 32 36 2E 33 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.3 KM/H"
+80 E7 24 0A 00 32 36 2E 34 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.4 KM/H"
+80 E7 24 0A 00 32 36 2E 35 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.5 KM/H"
+80 E7 24 0A 00 32 36 2E 36 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.6 KM/H"
+80 E7 24 0A 00 32 36 2E 37 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.7 KM/H"
+80 E7 24 0A 00 32 36 2E 38 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.8 KM/H"
+80 E7 24 0A 00 32 36 2E 39 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="26.9 KM/H"
+80 E7 24 0A 00 33 35 2E 33 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="35.3 KM/H"
+80 E7 24 0A 00 33 35 2E 34 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="35.4 KM/H"
+80 E7 24 0A 00 33 35 2E 35 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="35.5 KM/H"
+80 E7 24 0A 00 33 35 2E 36 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="35.6 KM/H"
+80 E7 24 0A 00 33 35 2E 37 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="35.7 KM/H"
+80 E7 24 0A 00 33 35 2E 38 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="35.8 KM/H"
+80 E7 24 0A 00 33 35 2E 39 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="35.9 KM/H"
+80 E7 24 0A 00 33 36 2E 30 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.0 KM/H"
+80 E7 24 0A 00 33 36 2E 31 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.1 KM/H"
+80 E7 24 0A 00 33 36 2E 32 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.2 KM/H"
+80 E7 24 0A 00 33 36 2E 33 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.3 KM/H"
+80 E7 24 0A 00 33 36 2E 34 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.4 KM/H"
+80 E7 24 0A 00 33 36 2E 35 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.5 KM/H"
+80 E7 24 0A 00 33 36 2E 36 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.6 KM/H"
+80 E7 24 0A 00 33 36 2E 37 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.7 KM/H"
+80 E7 24 0A 00 33 36 2E 38 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.8 KM/H"
+80 E7 24 0A 00 33 36 2E 39 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="36.9 KM/H"
+80 E7 24 0A 00 33 37 2E 30 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.0 KM/H"
+80 E7 24 0A 00 33 37 2E 31 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.1 KM/H"
+80 E7 24 0A 00 33 37 2E 32 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.2 KM/H"
+80 E7 24 0A 00 33 37 2E 33 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.3 KM/H"
+80 E7 24 0A 00 33 37 2E 34 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.4 KM/H"
+80 E7 24 0A 00 33 37 2E 35 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.5 KM/H"
+80 E7 24 0A 00 33 37 2E 36 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.6 KM/H"
+80 E7 24 0A 00 33 37 2E 37 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.7 KM/H"
+80 E7 24 0A 00 33 37 2E 38 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.8 KM/H"
+80 E7 24 0A 00 33 37 2E 39 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="37.9 KM/H"
+80 E7 24 0A 00 33 38 2E 30 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.0 KM/H"
+80 E7 24 0A 00 33 38 2E 31 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.1 KM/H"
+80 E7 24 0A 00 33 38 2E 32 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.2 KM/H"
+80 E7 24 0A 00 33 38 2E 33 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.3 KM/H"
+80 E7 24 0A 00 33 38 2E 34 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.4 KM/H"
+80 E7 24 0A 00 33 38 2E 35 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.5 KM/H"
+80 E7 24 0A 00 33 38 2E 36 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.6 KM/H"
+80 E7 24 0A 00 33 38 2E 37 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.7 KM/H"
+80 E7 24 0A 00 33 38 2E 38 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.8 KM/H"
+80 E7 24 0A 00 33 38 2E 39 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="38.9 KM/H"
+80 E7 24 0A 00 33 39 2E 30 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="39.0 KM/H"
+80 E7 24 0A 00 33 39 2E 31 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="39.1 KM/H"
+80 E7 24 0A 00 33 39 2E 32 20 4B 4D 2F 48,IKE --> ANZV: Update Text: Layout=Average_Speed Flags= F0="39.2 KM/H"
+80 E7 24 0E 00 20 30 2E 30 20 20 53 45 43,IKE --> ANZV: Update Text: Layout=Stopwatch Flags= F0=" 0.0 SEC"
+80 E7 24 0F 00 2D 2D 3A 2D 2D 20 20,IKE --> ANZV: Update Text: Layout=Timer_1 Flags= F0="--:-- "
+80 E7 24 10 00 2D 2D 3A 2D 2D 20 20,IKE --> ANZV: Update Text: Layout=Timer_2 Flags= F0="--:-- "
+80 E7 24 1A 00 20 30 2E 30 20 20 53 45 43,IKE --> ANZV: Update Text: Layout=Interim_Time Flags= F0=" 0.0 SEC"
+80 E7 2A 00 00,IKE --> ANZV: On-board computer special indicators: Aux_Heating_LED = Off
+80 FF 57 01,IKE --> LOC : Check Control button: CHECK_pressed
+80 FF 57 02,IKE --> LOC : Check Control button: BC_pressed
+80 FF 57 41,IKE --> LOC : Check Control button: CHECK_released
+C0 68 31 00 00 03,MID --> RAD : Button: TP_MUTE_pressed
+C0 68 31 00 00 04,MID --> RAD : Button: VOLUME_+_pressed
+C0 68 31 00 00 06,MID --> RAD : Button: SEEK_<_pressed
+C0 68 31 00 00 07,MID --> RAD : Button: SEEK_>_pressed
+C0 68 31 00 00 08,MID --> RAD : Button: CC/CD_pressed
+C0 68 31 00 00 09,MID --> RAD : Button: FM_pressed
+C0 68 31 00 00 0B,MID --> RAD : Button: TONE_pressed
+C0 68 31 00 00 0C,MID --> RAD : Button: MAN_pressed
+C0 68 31 00 00 0D,MID --> RAD : Button: MEM_pressed
+C0 68 31 00 00 0E,MID --> RAD : Button: SC/RP_pressed
+C0 68 31 00 00 43,MID --> RAD : Button: TP_MUTE_released
+C0 68 31 00 00 44,MID --> RAD : Button: VOLUME_+_released
+C0 68 31 00 00 46,MID --> RAD : Button: SEEK_<_released
+C0 68 31 00 00 47,MID --> RAD : Button: SEEK_>_released
+C0 68 31 00 00 48,MID --> RAD : Button: CC/CD_released
+C0 68 31 00 00 49,MID --> RAD : Button: FM_released
+C0 68 31 00 00 4B,MID --> RAD : Button: TONE_released
+C0 68 31 00 00 4C,MID --> RAD : Button: MAN_released
+C0 68 31 00 00 4D,MID --> RAD : Button: MEM_released
+C0 68 31 00 00 4E,MID --> RAD : Button: SC/RP_released
+C8 3F A0 86 90 70 46 09 00 04 07 00 00 23 11,TEL --> DIA : Diagnostic command acknowledged, Data="86 90 70 46 09 00 04 07 00 00 23 11"
+C8 3F A0 FF FF FF FF FF FF FF FF FF FF,TEL --> DIA : Diagnostic command acknowledged, Data="FF FF FF FF FF FF FF FF FF FF"
+C8 7F A9 0B 00 00 04,TEL --> NAV : Telephone data, Data="0B 00 00 04"
+C8 E7 2B 03,TEL --> ANZV: Telephone indicators: Red_blink
+C8 FF 02 30,TEL --> LOC : Device status ready Assist_ready_after_Reset Bit5
+D0 3F A0 00 86 00 08 01 00 01 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00,LCM --> DIA : Diagnostic command acknowledged, Data="00 86 00 08 01 00 01 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00"
+D0 3F A0 00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 2D 00 4E 40 90 00 00 0B 80 00 00 00 28 2C 01 00 00,LCM --> DIA : Diagnostic command acknowledged, Data="00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 2D 00 4E 40 90 00 00 0B 80 00 00 00 28 2C 01 00 00"
+D0 3F A0 00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00,LCM --> DIA : Diagnostic command acknowledged, Data="00 86 00 08 01 00 65 6E 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00"
+D0 3F A0 00 86 00 08 01 00 65 71 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00,LCM --> DIA : Diagnostic command acknowledged, Data="00 86 00 08 01 00 65 71 00 00 00 00 00 00 00 AD 00 4E 40 90 08 00 0B 80 00 00 00 28 2C 01 00 00"
+D0 3F A0 08 38 62 08 01 18 13 00 46 99 09 41,LCM --> DIA : Diagnostic command acknowledged, Data="08 38 62 08 01 18 13 00 46 99 09 41"
+D0 3F A0,LCM --> DIA : Diagnostic command acknowledged
+D0 BF 5B 00 00 00 00,LCM --> GLO : Lamp status: All_Off All_OK
+D0 BF 5B 03 00 00 00,LCM --> GLO : Lamp status: Park Low_Beam All_OK
+D0 BF 5C EB 00,LCM --> GLO : Light dimmer: 235
+D0 BF 5C FF 00,LCM --> GLO : Light dimmer: 255 (max)
+ED 3B 02 00,VID --> GT : Device status ready
+ED 3F A0 1F CA,VID --> DIA : Diagnostic command acknowledged, Data="1F CA"
+ED 3F A0 86 90 37 27 04 02 02 10 46 99 09 11,VID --> DIA : Diagnostic command acknowledged, Data="86 90 37 27 04 02 02 10 46 99 09 11"
+ED F0 4F 12 01,VID --> BMBT: RGB control: LCD_on GT
+F0 68 01,BMBT --> RAD : Device status request

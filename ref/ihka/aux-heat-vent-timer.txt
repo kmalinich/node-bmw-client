@@ -1,0 +1,25 @@
+3B 80 41 12 Request aux heating on
+3B 80 41 11 Request aux heating off
+3B 80 41 14 Request aux vent on
+3B 80 41 13 Request aux vent off
+
+
+SET TIMER:
+3B 80 40 TT HH MM
+
+TT = Timer 1(0F), Timer 2(10)
+HH = Hour (24h)
+MM = Minute
+
+Timer 1 Switch:
+ON  = 3B 80 41 0F 04
+OFF = 3B 80 41 0F 08
+
+Timer 2 Switch:
+ON  = 3B 80 41 10 04
+OFF = 3B 80 41 10 08
+
+
+80 E7 2A 00 00 Aux_Heating_LED = Off
+80 E7 2A 00 04 Aux_Heating_LED = On
+80 E7 2A 00 08 Aux_Heating_LED = Flash

@@ -1,0 +1,26 @@
+Diagnostic port
+D2  packet:       C8 10 A0 89 12 98 51 50 05 21 12 20 06 23 37 7E
+                  AD LA [----data-segment--------------------] CS
+CDC port
+ibus packet:   C8 0F 3F A0 89 12 98 51 50 05 21 12 20 06 23 37 5E
+               TX LL RX [----data-segment--------------------] CS
+
+D2 packet:      C8 05 40 91 CS
+                AD LA [dat] CS
+
+ibus packet: 3F 04 C8 40 91 22
+             TX LL RX [dat] CS
+
+
+ibus packet:
+TX = sender address
+LL = length of following bytes (packet length - 2)
+RX = receiver address
+..Data...
+CS = Checksum
+
+D2 packet:
+AD = Device address (who is talking to Diagnostics)
+LA = Length all bytes (entire packet)
+..Data...
+CS = Checksum

@@ -1,0 +1,90 @@
+src: 0x3F // DIA
+dst: 0xD0 // LCM
+cmd: 0x0C // Set IO status
+
+// CAPS = untested
+
+00 00 00 00 00 00 00 00 00 E4 FF 00 : clamp 58g
+00 00 00 00 00 00 00 00 00 E4 FF 00 : trailer fog lamp
+00 00 00 00 00 00 00 00 01 E4 FF 00 : failsafe
+00 00 00 00 00 00 00 00 04 E4 FF 00 : hazard switch LED
+00 00 00 00 00 00 00 00 08 E4 FF 00 : light switch LED
+00 00 00 00 00 00 00 00 20 E4 FF 00 : trailer reverse
+00 00 00 00 00 00 00 00 40 E4 FF 00 : sleep mode
+00 00 00 00 00 00 00 02 00 E4 FF 00 : rear right turn signal
+00 00 00 00 00 00 00 04 00 E4 FF 00 : left fog lamp
+00 00 00 00 00 00 00 08 00 E4 FF 00 : rear right inner standing light
+00 00 00 00 00 00 00 10 00 E4 FF 00 : rear right outer standing light
+00 00 00 00 00 00 00 40 00 E4 FF 00 : front left turn signal
+00 00 00 00 00 00 00 80 00 E4 FF 00 : right reverse
+00 00 00 00 00 00 01 06 XX XX XX XX : FOG LIGHTS
+00 00 00 00 00 00 02 00 00 E4 FF 00 : vertical headlights aim control
+00 00 00 00 00 00 04 00 00 E4 FF 00 : right license plate light
+00 00 00 00 00 00 08 00 00 E4 FF 00 : rear left outer standing light
+00 00 00 00 00 00 08 06 XX XX XX XX : RIGHT BRAKE LIGHT DIM
+00 00 00 00 00 00 10 00 00 E4 FF 00 : middle brake light
+00 00 00 00 00 00 20 00 00 E4 FF 00 : right front standing light
+00 00 00 00 00 00 20 06 XX XX XX XX : LEFT SIDE MARKER + LEFT REAR TURN (STAY LIT)
+00 00 00 00 00 00 40 00 00 E4 FF 00 : front right turn signal
+00 00 00 00 00 00 80 00 00 E4 FF 00 : rear left turn signal
+00 00 00 00 00 00 80 06 XX XX XX XX : RIGHT SIDE MARKER + RIGHT REAR TURN (STAY LIT)
+00 00 00 00 00 01 00 00 00 E4 FF 00 : front left standing light
+00 00 00 00 00 02 00 00 00 E4 FF 00 : rear left inner standing light
+00 00 00 00 00 02 00 06 XX XX XX XX : RIGHT LOW BEAM (XENON)
+00 00 00 00 00 04 00 00 00 E4 FF 00 : left fog light
+00 00 00 00 00 04 00 06 XX XX XX XX : LEFT LOW BEAM (XENON)
+00 00 00 00 00 08 00 00 00 E4 FF 00 : left reverse
+00 00 00 00 00 10 00 00 00 E4 FF 00 : left low beam
+00 00 00 00 00 10 00 06 XX XX XX XX : LEFT HIGH BEAM
+00 00 00 00 00 20 00 00 00 E4 FF 00 : right low beam
+00 00 00 00 00 20 00 06 XX XX XX XX : RIGHT HIGH BEAM
+00 00 00 00 00 40 00 00 00 E4 FF 00 : right fog light
+00 00 00 00 00 40 00 06 XX XX XX XX : LEFT BRAKE LIGHT DIM
+00 00 00 00 00 80 00 00 00 E4 FF 00 : left brake light
+00 00 00 00 00 80 00 00 00 E4 FF 00 : right fog lamp
+00 00 00 00 01 00 00 06 XX XX XX XX : HIGH BRAKE LIGHT
+00 00 00 00 04 00 00 00 00 E4 FF 00 : left license plate light
+00 00 00 00 08 00 00 06 XX XX XX XX : LEFT BRAKE LIGHT
+00 00 00 00 10 00 00 00 00 E4 FF 00 : right brake light
+00 00 00 00 10 00 00 06 XX XX XX XX : RIGHT BRAKE LIGHT
+00 00 00 00 20 00 00 00 00 E4 FF 00 : right high beam
+00 00 00 00 20 00 00 06 XX XX XX XX : FRONT LEFT TURN (STAY LIT)
+00 00 00 00 40 00 00 00 00 E4 FF 00 : left high beam
+00 00 00 00 40 00 00 06 XX XX XX XX : FRONT RIGHT TURN (STAY LIT)
+00 00 00 01 00 00 00 00 00 E4 FF 00 : input air suspension (armoured car)
+00 00 00 02 00 00 00 00 00 E4 FF 00 : input hold up alarm
+00 00 00 04 00 00 00 00 00 E4 FF 00 : input washer fluid level
+00 00 00 08 00 00 00 00 00 E4 FF 00 : switch 2 lowbeam
+00 00 00 10 00 00 00 00 00 E4 FF 00 : switch 1 low beam
+00 00 00 20 00 00 00 00 00 E4 FF 00 : clamp 15
+00 00 00 40 00 00 00 00 00 E4 FF 00 : input engine failsafe program
+00 00 00 40 00 00 00 06 XX XX XX XX : FLASH TO LEFT
+00 00 00 80 00 00 00 00 00 E4 FF 00 : input tire defect
+00 00 00 80 00 00 00 06 XX XX XX XX : FLASH TO RIGHT
+00 00 01 00 00 00 00 00 00 E4 FF 00 : brake lights switch
+00 00 02 00 00 00 00 00 00 E4 FF 00 : high beam switch
+00 00 04 00 00 00 00 00 00 E4 FF 00 : fog lights switch
+00 00 10 00 00 00 00 00 00 E4 FF 00 : fog lamps switch
+00 00 20 00 00 00 00 00 00 E4 FF 00 : standing lights switch
+00 00 40 00 00 00 00 00 00 E4 FF 00 : switch right turn
+00 00 80 00 00 00 00 00 00 E4 FF 00 : switch left turn
+00 00 80 00 00 00 00 06 XX XX XX XX : BOTH HIGH BEAMS + IN-DASH INDICATOR
+00 01 00 00 00 00 00 00 00 E4 FF 00 : input key in ignition lock (ZSK)
+00 01 00 00 00 00 00 06 XX XX XX XX : PARKING LIGHTS (XENON ACTUATOR MOVES)
+00 02 00 00 00 00 00 00 00 E4 FF 00 : input seat belts lock (GKFA)
+00 02 00 00 00 00 00 06 XX XX XX XX : PARKING LIGHTS (XENON ACTUATOR MOVES)
+00 04 00 00 00 00 00 00 00 E4 FF 00 : headlight flasher switch
+00 10 00 00 00 00 00 00 00 E4 FF 00 : hazard warning flasher switch
+00 10 00 00 00 00 00 06 XX XX XX XX : BOTH BRAKE LIGHTS + HIGH BRAKE LIGHT
+00 20 00 00 00 00 00 00 00 E4 FF 00 : input KFN
+00 40 00 00 00 00 00 00 00 E4 FF 00 : input armoured door (armoured car)
+00 80 00 00 00 00 00 00 00 E4 FF 00 : input brake fluid level (BRFN)
+01 00 00 00 00 00 00 00 00 E4 FF 00 : clamp 30a
+02 00 00 00 00 00 00 00 00 E4 FF 00 : input fire extinguisher
+04 00 00 00 00 00 00 00 00 E4 FF 00 : input preheating/fuel injection
+10 00 00 00 00 00 00 00 00 E4 FF 00 : input CARB
+10 00 00 00 00 00 00 06 XX XX XX XX : DAY-TIME RUNNING LIGHTS
+20 00 00 00 00 00 00 06 XX XX XX XX : HAZARDS
+40 00 00 00 00 00 00 00 00 E4 FF 00 : clamp r
+80 00 00 00 00 00 00 00 00 E4 FF 00 : clamp 30b
+80 00 00 00 00 00 00 06 XX XX XX XX : PARKING LIGHTS (XENON ACTUATOR MOVES)

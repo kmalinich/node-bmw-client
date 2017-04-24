@@ -1,0 +1,18 @@
+GT telling IKE to set the time:
+
+3B 06 80 40 01 0C 3B cc
+GT –> IKE : On-board computer set data: Set Time = 12:59
+40 = OBC  Set data
+01 = Time
+0C = hours in hex
+3B = minutes in hex
+
+GT telling IKE to set the date:
+
+3B 07 80 40 02 1B 05 08 cc
+GT –> IKE : On-board computer set data: Set Date = 27/05/08
+40 = OBC Set data
+02 = Date
+1B = day in hex
+05 = month in hex
+08 = year in hex

@@ -1,0 +1,229 @@
+/*
+ * Notes
+ */
+
+Adjustable values = {
+	Frequency bands
+	Reverb	
+	Room size
+}
+
+Frequency bands = {
+	80Hz
+	200Hz,
+	500Hz,
+	1KHz,
+	2KHz,
+	5KHz,
+	12KHz
+}
+
+// Some modes do not allow the driver mode to be turned on.
+DSP modes = {
+	concert hall,
+	jazz club,
+	cathedral,
+	memory 1,
+	memory 2,
+	memory 3,
+	DSP off
+}
+
+68 6A 01,RAD --> DSP: Device status request
+68 6A 32 10,RAD --> DSP: Volume -1
+68 6A 32 11,RAD --> DSP: Volume +1
+68 6A 32 20,RAD --> DSP: Volume -2
+68 6A 32 21,RAD --> DSP: Volume +2
+68 6A 32 30,RAD --> DSP: Volume -3
+68 6A 32 31,RAD --> DSP: Volume +3
+68 6A 32 40,RAD --> DSP: Volume -4
+68 6A 32 41,RAD --> DSP: Volume +4
+68 6A 32 50,RAD --> DSP: Volume -5
+68 6A 32 51,RAD --> DSP: Volume +5
+68 6A 32 60,RAD --> DSP: Volume -6
+68 6A 32 61,RAD --> DSP: Volume +6
+68 6A 32 70,RAD --> DSP: Volume -7
+68 6A 32 71,RAD --> DSP: Volume +7
+68 6A 32 80,RAD --> DSP: Volume -8
+68 6A 32 81,RAD --> DSP: Volume +8
+68 6A 32 90,RAD --> DSP: Volume -9
+68 6A 32 91,RAD --> DSP: Volume +9
+68 6A 32 A0,RAD --> DSP: Volume -10
+68 6A 32 A1,RAD --> DSP: Volume +10
+68 6A 32 B0,RAD --> DSP: Volume -11
+68 6A 32 B1,RAD --> DSP: Volume +11
+68 6A 32 C0,RAD --> DSP: Volume -12
+68 6A 32 C1,RAD --> DSP: Volume +12
+68 6A 32 D0,RAD --> DSP: Volume -13
+68 6A 32 D1,RAD --> DSP: Volume +13
+68 6A 32 E0,RAD --> DSP: Volume -14
+68 6A 32 E1,RAD --> DSP: Volume +14
+68 6A 32 F0,RAD --> DSP: Volume -15
+68 6A 32 F1,RAD --> DSP: Volume +15
+68 6A 34 08,RAD --> DSP: Get DSP memory
+68 6A 34 09,RAD --> DSP: DSP equalizer button Data="" // concert hall
+68 6A 34 0A,RAD --> DSP: DSP equalizer button Data="" // jazz club
+68 6A 34 0B,RAD --> DSP: DSP equalizer button Data="" // cathedral
+68 6A 34 0C,RAD --> DSP: DSP equalizer button Data="" // memory 1
+68 6A 34 0D,RAD --> DSP: DSP equalizer button Data="" // memory 2
+68 6A 34 0E,RAD --> DSP: DSP equalizer button Data="" // memory 3
+68 6A 34 0F,RAD --> DSP: DSP equalizer button Data="" // DSP off
+68 6A 34 28,RAD --> DSP: DSP equalizer button Data=""
+68 6A 34 90 00,RAD --> DSP: DSP equalizer button M-Audio off
+68 6A 34 91 00,RAD --> DSP: DSP equalizer button M-Audio on
+
+68 6A 34 95,RAD --> DSP: Set DSP memory
+
+// B1: DSP mode
+// B2: Reverb
+// B3: Room size
+// B4: Frequency band 1: 80Hz
+// B5: Frequency band 2: 200Hz
+// B6: Frequency band 3: 500Hz
+// B7: Frequency band 4: 1KHz
+// B8: Frequency band 5: 2KHz
+// B9: Frequency band 6: 5KHz
+// BA: Frequency band 7: 12KHz
+
+         B1 B2 B3 B4 B5 B6 B7 B8 B9 BA
+6A 68 35 04 04 21 0A 27 45 71 84 A9 CA,DSP --> RAD: Read DSP memory
+6A 68 35 04 04 23 05 23 41 72 91 A9 C9,DSP --> RAD: Read DSP memory
+6A 68 35 05 01 23 08 22 42 61 82 A5 C8,DSP --> RAD: Read DSP memory
+
+68 6A 36 30,RAD --> DSP: Audio_control DSP_Function 0
+68 6A 36 40,RAD --> DSP: Audio_control Balance = Center
+68 6A 36 41,RAD --> DSP: Audio_control Balance = Left 1
+68 6A 36 42,RAD --> DSP: Audio_control Balance = Left 2
+68 6A 36 43,RAD --> DSP: Audio_control Balance = Left 3
+68 6A 36 44,RAD --> DSP: Audio_control Balance = Left 4
+68 6A 36 45,RAD --> DSP: Audio_control Balance = Left 5
+68 6A 36 46,RAD --> DSP: Audio_control Balance = Left 6
+68 6A 36 47,RAD --> DSP: Audio_control Balance = Left 7
+68 6A 36 48,RAD --> DSP: Audio_control Balance = Left 8
+68 6A 36 49,RAD --> DSP: Audio_control Balance = Left 9
+68 6A 36 4A,RAD --> DSP: Audio_control Balance = Left 10
+68 6A 36 4B,RAD --> DSP: Audio_control Balance = Left 11
+68 6A 36 4C,RAD --> DSP: Audio_control Balance = Left 12
+68 6A 36 4D,RAD --> DSP: Audio_control Balance = Left 13
+68 6A 36 4E,RAD --> DSP: Audio_control Balance = Left 14
+68 6A 36 4F,RAD --> DSP: Audio_control Balance = Left 15
+68 6A 36 51,RAD --> DSP: Audio_control Balance = Right 1
+68 6A 36 52,RAD --> DSP: Audio_control Balance = Right 2
+68 6A 36 53,RAD --> DSP: Audio_control Balance = Right 3
+68 6A 36 54,RAD --> DSP: Audio_control Balance = Right 4
+68 6A 36 55,RAD --> DSP: Audio_control Balance = Right 5
+68 6A 36 56,RAD --> DSP: Audio_control Balance = Right 6
+68 6A 36 57,RAD --> DSP: Audio_control Balance = Right 7
+68 6A 36 58,RAD --> DSP: Audio_control Balance = Right 8
+68 6A 36 59,RAD --> DSP: Audio_control Balance = Right 9
+68 6A 36 5A,RAD --> DSP: Audio_control Balance = Right 10
+68 6A 36 5B,RAD --> DSP: Audio_control Balance = Right 11
+68 6A 36 5C,RAD --> DSP: Audio_control Balance = Right 12
+68 6A 36 5D,RAD --> DSP: Audio_control Balance = Right 13
+68 6A 36 5E,RAD --> DSP: Audio_control Balance = Right 14
+68 6A 36 5F,RAD --> DSP: Audio_control Balance = Right 15
+68 6A 36 60,RAD --> DSP: Audio_control Bass = 0
+68 6A 36 61,RAD --> DSP: Audio_control Bass = +1
+68 6A 36 62,RAD --> DSP: Audio_control Bass = +2
+68 6A 36 63,RAD --> DSP: Audio_control Bass = +3
+68 6A 36 64,RAD --> DSP: Audio_control Bass = +4
+68 6A 36 65,RAD --> DSP: Audio_control Bass = +5
+68 6A 36 66,RAD --> DSP: Audio_control Bass = +6
+68 6A 36 67,RAD --> DSP: Audio_control Bass = +7
+68 6A 36 68,RAD --> DSP: Audio_control Bass = +8
+68 6A 36 69,RAD --> DSP: Audio_control Bass = +9
+68 6A 36 6A,RAD --> DSP: Audio_control Bass = +10
+68 6A 36 6B,RAD --> DSP: Audio_control Bass = +11
+68 6A 36 6C,RAD --> DSP: Audio_control Bass = +12
+68 6A 36 6D,RAD --> DSP: Audio_control Bass = +13
+68 6A 36 6E,RAD --> DSP: Audio_control Bass = +14
+68 6A 36 6F,RAD --> DSP: Audio_control Bass = +15
+68 6A 36 71,RAD --> DSP: Audio_control Bass = -1
+68 6A 36 72,RAD --> DSP: Audio_control Bass = -2
+68 6A 36 73,RAD --> DSP: Audio_control Bass = -3
+68 6A 36 74,RAD --> DSP: Audio_control Bass = -4
+68 6A 36 75,RAD --> DSP: Audio_control Bass = -5
+68 6A 36 76,RAD --> DSP: Audio_control Bass = -6
+68 6A 36 77,RAD --> DSP: Audio_control Bass = -7
+68 6A 36 78,RAD --> DSP: Audio_control Bass = -8
+68 6A 36 79,RAD --> DSP: Audio_control Bass = -9
+68 6A 36 7A,RAD --> DSP: Audio_control Bass = -10
+68 6A 36 7B,RAD --> DSP: Audio_control Bass = -11
+68 6A 36 7C,RAD --> DSP: Audio_control Bass = -12
+68 6A 36 7D,RAD --> DSP: Audio_control Bass = -13
+68 6A 36 7E,RAD --> DSP: Audio_control Bass = -14
+68 6A 36 7F,RAD --> DSP: Audio_control Bass = -15
+68 6A 36 80,RAD --> DSP: Audio_control Fader = Center
+68 6A 36 81,RAD --> DSP: Audio_control Fader = Front 1
+68 6A 36 82,RAD --> DSP: Audio_control Fader = Front 2
+68 6A 36 83,RAD --> DSP: Audio_control Fader = Front 3
+68 6A 36 84,RAD --> DSP: Audio_control Fader = Front 4
+68 6A 36 85,RAD --> DSP: Audio_control Fader = Front 5
+68 6A 36 86,RAD --> DSP: Audio_control Fader = Front 6
+68 6A 36 87,RAD --> DSP: Audio_control Fader = Front 7
+68 6A 36 88,RAD --> DSP: Audio_control Fader = Front 8
+68 6A 36 89,RAD --> DSP: Audio_control Fader = Front 9
+68 6A 36 8A,RAD --> DSP: Audio_control Fader = Front 10
+68 6A 36 8B,RAD --> DSP: Audio_control Fader = Front 11
+68 6A 36 8C,RAD --> DSP: Audio_control Fader = Front 12
+68 6A 36 8D,RAD --> DSP: Audio_control Fader = Front 13
+68 6A 36 8E,RAD --> DSP: Audio_control Fader = Front 14
+68 6A 36 8F,RAD --> DSP: Audio_control Fader = Front 15
+68 6A 36 91,RAD --> DSP: Audio_control Fader = Rear 1
+68 6A 36 92,RAD --> DSP: Audio_control Fader = Rear 2
+68 6A 36 93,RAD --> DSP: Audio_control Fader = Rear 3
+68 6A 36 94,RAD --> DSP: Audio_control Fader = Rear 4
+68 6A 36 95,RAD --> DSP: Audio_control Fader = Rear 5
+68 6A 36 96,RAD --> DSP: Audio_control Fader = Rear 6
+68 6A 36 97,RAD --> DSP: Audio_control Fader = Rear 7
+68 6A 36 98,RAD --> DSP: Audio_control Fader = Rear 8
+68 6A 36 99,RAD --> DSP: Audio_control Fader = Rear 9
+68 6A 36 9A,RAD --> DSP: Audio_control Fader = Rear 10
+68 6A 36 9B,RAD --> DSP: Audio_control Fader = Rear 11
+68 6A 36 9C,RAD --> DSP: Audio_control Fader = Rear 12
+68 6A 36 9D,RAD --> DSP: Audio_control Fader = Rear 13
+68 6A 36 9E,RAD --> DSP: Audio_control Fader = Rear 14
+68 6A 36 9F,RAD --> DSP: Audio_control Fader = Rear 15
+68 6A 36 A0,RAD --> DSP: Audio_control Source = CD
+68 6A 36 A1,RAD --> DSP: Audio_control Source = Tuner/Tape
+68 6A 36 AF,RAD --> DSP: Audio_control Source = Off
+68 6A 36 C0,RAD --> DSP: Audio_control Treble = 0
+68 6A 36 C1,RAD --> DSP: Audio_control Treble = +1
+68 6A 36 C2,RAD --> DSP: Audio_control Treble = +2
+68 6A 36 C3,RAD --> DSP: Audio_control Treble = +3
+68 6A 36 C4,RAD --> DSP: Audio_control Treble = +4
+68 6A 36 C5,RAD --> DSP: Audio_control Treble = +5
+68 6A 36 C6,RAD --> DSP: Audio_control Treble = +6
+68 6A 36 C7,RAD --> DSP: Audio_control Treble = +7
+68 6A 36 C8,RAD --> DSP: Audio_control Treble = +8
+68 6A 36 C9,RAD --> DSP: Audio_control Treble = +9
+68 6A 36 CA,RAD --> DSP: Audio_control Treble = +10
+68 6A 36 CB,RAD --> DSP: Audio_control Treble = +11
+68 6A 36 CC,RAD --> DSP: Audio_control Treble = +12
+68 6A 36 CD,RAD --> DSP: Audio_control Treble = +13
+68 6A 36 CE,RAD --> DSP: Audio_control Treble = +14
+68 6A 36 CF,RAD --> DSP: Audio_control Treble = +15
+68 6A 36 D1,RAD --> DSP: Audio_control Treble = -1
+68 6A 36 D2,RAD --> DSP: Audio_control Treble = -2
+68 6A 36 D3,RAD --> DSP: Audio_control Treble = -3
+68 6A 36 D4,RAD --> DSP: Audio_control Treble = -4
+68 6A 36 D5,RAD --> DSP: Audio_control Treble = -5
+68 6A 36 D6,RAD --> DSP: Audio_control Treble = -6
+68 6A 36 D7,RAD --> DSP: Audio_control Treble = -7
+68 6A 36 D8,RAD --> DSP: Audio_control Treble = -8
+68 6A 36 D9,RAD --> DSP: Audio_control Treble = -9
+68 6A 36 DA,RAD --> DSP: Audio_control Treble = -10
+68 6A 36 DB,RAD --> DSP: Audio_control Treble = -11
+68 6A 36 DD,RAD --> DSP: Audio_control Treble = -12
+68 6A 36 DD,RAD --> DSP: Audio_control Treble = -13
+68 6A 36 DE,RAD --> DSP: Audio_control Treble = -14
+68 6A 36 DF,RAD --> DSP: Audio_control Treble = -15
+68 6A 36 E1,RAD --> DSP: Audio_control DSP_Function 1
+68 6A 36 E2,RAD --> DSP: Audio_control DSP_Function 2
+68 6A 36 E3,RAD --> DSP: Audio_control DSP_Function 3
+68 6A 36 E4,RAD --> DSP: Audio_control DSP_Function 4
+68 6A 36 E5,RAD --> DSP: Audio_control DSP_Function 5
+68 6A 36 E6,RAD --> DSP: Audio_control DSP_Function 6
+68 6A 36 E7,RAD --> DSP: Audio_control DSP_Function 7
+6A FF 02 00,DSP --> LOC: Device status ready
+6A FF 02 01,DSP --> LOC: Device status ready after Reset

@@ -1,0 +1,27 @@
+executeJob('ihka39_4.prg'): 'BLOWER_CONTROLLER'
+ (Send): 5B 0A 07 01 00 01 C1 01 01 97
+ (Resp): 5B 04 A0 FF
+ (Send): 5B 0A 07 04 00 00 6C 01 64 5B
+ (Resp): 5B 04 A0 FF
+executeJob('ihka39_4.prg'): 'BLOWER_CONTROLLER'
+ (Send): 5B 0A 07 01 00 01 C1 01 01 97
+ (Resp): 5B 04 A0 FF
+ (Send): 5B 0A 07 04 00 00 6C 01 32 0D
+ (Resp): 5B 04 A0 FF
+executeJob('ihka39_4.prg'): 'BLOWER_CONTROLLER'
+ (Send): 5B 0A 07 01 00 01 C1 01 01 97
+ (Resp): 5B 04 A0 FF
+ (Send): 5B 0A 07 04 00 00 6C 01 19 26
+ (Resp): 5B 04 A0 FF
+executeJob('ihka39_4.prg'): 'BLOWER_CONTROLLER'
+ (Send): 5B 0A 07 01 00 01 C1 01 01 97
+ (Resp): 5B 04 A0 FF
+ (Send): 5B 0A 07 04 00 00 6C 01 00 3F
+ (Resp): 5B 04 A0 FF
+
+5B 0A 07 01 00 01 C1 01 01 97
+
+5B 0A 07 04 00 00 6C 01 64 5B
+5B 0A 07 04 00 00 6C 01 32 0D
+5B 0A 07 04 00 00 6C 01 19 26
+5B 0A 07 04 00 00 6C 01 00 3F

@@ -1,0 +1,7 @@
+src: 0x50 // MFL
+dst: 0xC8 // TEL
+cmd: 0x3B // Button pressed
+
+0x80 : send/end pressed short
+0x90 : send/end pressed long
+0xA0 : send/end released

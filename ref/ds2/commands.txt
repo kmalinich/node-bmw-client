@@ -1,0 +1,36 @@
+00 -- ECU Identification
+
+This command requests the module to return a string of information about itself.
+
+Example: "12 04 00 16"
+Tells the Motronic module (address = 12) to send information about itself.
+(The "04" means four bytes in the message, and "16" is the checksum.)
+
+The information returned varies among the different modules, but in many cases, the first seven digits that the module returns (after the headers) is a partial BMW part number for that module.
+In the case of the Motronic ECU, the data returned must be converted from hex to ASCII to be read.
+
+
+04 01 -- Check fault codes
+
+This command causes the module to return a string containing the number of fault codes, followed by the numbers of the codes.
+
+Example: "12 05 04 01 12"
+Tells the Motronic ECU to send any fault codes.
+
+
+04 nn -- Check specific fault code
+Once you have the number, you can get more information about one specific fault by using its number.
+
+
+05 -- Clear trouble codes
+
+Once the problem has been corrected, codes can be cleared with this command
+Example: "12 04 05 [cs]"
+
+9F = diagnostic end
+9E = diagnostic mode enable and wait tester
+53 = read supplier ID
+0B = read car coded data, read IO-status
+09 = write car coded data
+31 = test program download
+32 = test program start

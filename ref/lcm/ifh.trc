@@ -1,0 +1,11 @@
+executeJob('lcm_iv.prg'): 'IDENT'
+	(Send): D0 00
+	(Resp): D0 A0 FF FF FF 62 05 20 14 00 17 03 06 51
+
+executeJob('lcm_iv.prg'): 'STATUS_LESEN'
+	(Send): D0 00
+	(Resp): D0 A0 FF FF FF 62 05 20 14 00 17 03 06 51
+	(Send): D0 08 00
+	(Resp): D0 A0 00 02 00 40 01 00 08 00 00 00 00 00 00 00 00 23 20 4E 21 90 00 00 4B 00 00 02 00 5A 16 00 00 00
+	(Send): D0 0B
+	(Resp): D0 A0 C1 C0 00 20 00 00 00 00 00 9E 00 00 00 00 00 E4 00 00 29 00 00 00 00 00 00 00 00 00 00 FF FF 00

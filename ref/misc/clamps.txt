@@ -1,0 +1,5 @@
+
+Clamp 30A/B : Battery power with time-based switchoff
+Clamp 15    : Ignition on
+Clamp R     : Accessory
+Clamp 58G   : Regulated Heating and AC E39

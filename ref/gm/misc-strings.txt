@@ -1,0 +1,63 @@
+// Length and checksum removed
+
+3F 72 0C 02 01 00 Move driver seat to memory 1
+3F 72 0C 02 02 00 Move driver seat to memory 2
+3F 72 0C 02 04 00 Move driver seat to memory 3
+
+9B 51 6D 41 Passenger mirror move out
+9B 51 6D 42 Passenger mirror move in
+9B 51 6D 44 Passenger mirror move up
+9B 51 6D 48 Passenger mirror move down
+9B 51 6D 40 Passenger mirror stop (motor won't stop until you tell it)
+
+
+// Below:
+// src : DIA
+// dst : GM
+// cmd : 0x0C (Set IO status)
+
+01 01 Turn off interior lights
+02 01 Open trunk
+03 01 Lock doors + fade out interior lights
+05 01 Open trunk (again??)
+13 01 Return some data, relating to light control? (unsure)
+30 01 Turn on key buzzer for 2 seconds + fade-in/out interior lights
+34 01 Lock/unlock doors
+
+41 01 Open  rear left window
+42 01 Close rear left window
+
+43 01 Close rear right window
+44 01 Open  rear right window
+
+45 01 Trigger unknown relay (coming from rear doors?)
+
+46 01 Lock front right door only
+47 01 Lock front left  door only
+
+49 01 Trigger wipers
+4A 01 Trigger unknown relay (under cluster)
+4B 01 Trigger windshield washer pump for 3 seconds (no liquid sprayed)
+4E 01 Turn-on clown nose for 3 seconds
+
+4F 01 Lock all but left door
+
+52 01 Open  front left window
+53 01 Close front left window
+
+54 01 Open  front right window
+55 01 Close front right window
+
+60 01 Turn on interior lights for 3 seconds
+62 01 Spray windshield washer fluid
+63 01 Trigger trunk relay for 3 seconds (use 95 01 or 02 01 instead for release only)
+68 01 Fade out interior lights
+70 01 Flash hazards + turn on interior lights
+73 01 Trigger many door relays, don't know what it does
+75 01 Flash hazards for 3 seconds (no blinker in-dash)
+
+7E 01 Open  sunroof
+7F 01 Close sunroof
+
+95 01 Open trunk (yes, again!)
+97 01 Lock/unlock doors

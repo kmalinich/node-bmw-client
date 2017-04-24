@@ -1,0 +1,17 @@
+@font-face {
+	font-family : '.sf-regular';
+	src         : local('SFNS Display'), url('/fonts/sf-regular.woff2') format('woff2'), url('/fonts/sf-regular.woff') format('woff'), url('/fonts/sf-regular.ttf') format('truetype');
+	font-style  : normal;
+}
+
+@font-face {
+	font-family : '.sf-thin';
+	src         : local('SFNS Display'), url('/fonts/sf-thin.woff2') format('woff2'), url('/fonts/sf-thin.woff') format('woff'), url('/fonts/sf-thin.ttf') format('truetype');
+	font-style  : normal;
+}
+
+@font-face {
+	font-family : '.sf-ultralight';
+	src         : url('/fonts/sf-ultralight.woff2') format('woff2'), url('/fonts/sf-ultralight.woff') format('woff'), url('/fonts/sf-ultralight.ttf') format('truetype');
+	font-style  : normal;
+}

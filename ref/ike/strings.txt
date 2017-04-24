@@ -1,0 +1,11 @@
+//// NOPE!
+
+
+// Start/keep diagnosing (keepalive signal)
+3F LL 80 9E CS
+
+// Stop diagnosing
+3F LL 80 9F CS
+
+// Set speedometer needle to 88deg
+3F LL 80 0C 0A 00 FA CS

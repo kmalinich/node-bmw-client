@@ -1,0 +1,72 @@
+// Checksum and length removed
+
+5B 80 83 D8 A0 IHKA->IKE:Air conditioning compressor status, On
+5B 80 83 00 00 IHKA->IKE:Air conditioning compressor status, Off
+
+// IKHA->* messages from logs
+
+// Commands
+0x71: Rain sensor status
+0xA0: Diagnostic command acknowledged
+0xFF: Diagnostic command not acknowledged
+0x02: Device status
+	0x00: Ready
+	0x01: Ready after reset
+0x82: Not sure
+
+
+5B 00 71
+5B 3F A0
+5B 3F FF
+5B 80 10
+5B 80 12
+5B 80 1D
+5B 80 83 00 00
+5B 80 83 00 08
+5B 80 83 00 10
+5B 80 83 00 18
+5B 80 83 00 60
+5B 80 83 00 70
+5B 80 83 80 00
+5B 80 83 80 08
+5B 80 83 80 10
+5B 80 83 80 18
+5B 80 83 D1 10
+5B 80 83 D1 18
+5B 80 83 D1 20
+5B 80 83 D1 28
+5B 80 83 D1 30
+5B 80 83 D1 38
+5B 80 83 D1 40
+5B 80 83 D1 48
+5B 80 83 D1 50
+5B 80 83 D1 60
+5B 80 83 D1 70
+5B 80 83 D6 58
+5B 80 83 D6 60
+5B 80 83 D6 68
+5B 80 83 D6 70
+5B 80 83 D6 78
+5B 80 83 D6 88
+5B 80 83 D6 98
+5B 80 83 D8 40
+5B 80 83 D8 48
+5B 80 83 D8 50
+5B 80 83 D8 58
+5B 80 83 D8 60
+5B 80 83 D8 68
+5B 80 83 D8 70
+5B 80 83 D8 78
+5B 80 83 D8 80
+5B 80 83 D8 88
+5B 80 83 D8 90
+5B 80 83 D8 98
+5B 80 83 D8 A0
+5B 80 83 D8 A8
+5B 80 83 D8 B0
+5B 80 83 D8 B8
+5B BF 02 00
+5B BF 02 01
+5B BF 82 01
+5B BF 82 03
+5B BF 82 83

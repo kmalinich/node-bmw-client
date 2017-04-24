@@ -1,0 +1,70 @@
+// Captured with E39/E53 (ish) LCM IV
+
+// Read coding data [0x08, ${block_number}]
+[DIA->LCM] command: <Buffer 08 00>
+[DIA->LCM] command: <Buffer 08 01>
+[DIA->LCM] command: <Buffer 08 02>
+[DIA->LCM] command: <Buffer 08 03>
+[DIA->LCM] command: <Buffer 08 04>
+[DIA->LCM] command: <Buffer 08 05>
+[DIA->LCM] command: <Buffer 08 06>
+[DIA->LCM] command: <Buffer 08 07>
+[DIA->LCM] command: <Buffer 08 08>
+[DIA->LCM] command: <Buffer 08 09>
+[DIA->LCM] command: <Buffer 08 0a>
+[DIA->LCM] command: <Buffer 08 0b>
+[DIA->LCM] command: <Buffer 08 0c>
+[DIA->LCM] command: <Buffer 08 0d>
+[DIA->LCM] command: <Buffer 08 0e>
+[DIA->LCM] command: <Buffer 08 0f>
+[DIA->LCM] command: <Buffer 08 10>
+[DIA->LCM] command: <Buffer 08 11>
+[DIA->LCM] command: <Buffer 08 12>
+[DIA->LCM] command: <Buffer 08 13>
+[DIA->LCM] command: <Buffer 08 14>
+
+// Replies
+[LCM->DIA] reply: <Buffer a0 00 02 00 40 01 00 08 00 00 00 00 00 00 00 00 23 20 4e 21 90 00 00 4b 00 00 02 00 5a 16 00 00 00>
+[LCM->DIA] reply: <Buffer a0 01 00 00 00 00 00 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[LCM->DIA] reply: <Buffer a0 02 20 20 20 20 20 20 20 20 20 72 72 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 b5 3f 5a 55 00>
+[LCM->DIA] reply: <Buffer a0 03 98 08 00 00 98 08 00 00 00 00 00 00 0a 10 64 14 01 20 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[LCM->DIA] reply: <Buffer a0 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[LCM->DIA] reply: <Buffer a0 05 03 00 00 00 9a 93 5c 5c 56 ec 07 37 7c 88 88 88 88 71 5e 51 47 3f 36 2f 2f 2f 2f 2f 2f 2f 00>
+[LCM->DIA] reply: <Buffer a0 06 3f 15 fd 15 fe 15 18 fd 18 fe 18 6b ac 56 3a 9c db 8b 48 a0 a0 0a 13 31 72 42 61 c0 18 f8 2d>
+[LCM->DIA] reply: <Buffer a0 07 f0 7d ff 00 00 5a 21 3f 02 28 5a 14 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[LCM->DIA] reply: <Buffer a0 08 ff ff ff ff f1 03 38 00 fc ff 0f fc c7 8f ff c7 71 00 ff 0f 1c ff ff ff ff 66 66 46 00 00 00>
+[LCM->DIA] reply: <Buffer a0 09 7f 7f 8f 8b 85 81 00 00 00 00 00 00 00 7f 7f 7f 7f 7f 01 03 f5 00 62 0a 00 00 00 00 00 00 00>
+[LCM->DIA] reply: <Buffer a0 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[LCM->DIA] reply: <Buffer a0 0c 00 7b 27 45 65 35 33 74 6f 67 6e 61 76 00 00 00 00 20 05 f6 05 ce 04 21 65 f6 02 7b 27 60 f6>
+[LCM->DIA] reply: <Buffer a0 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[LCM->DIA] reply: <Buffer a0 0c 00 7b 27 45 65 35 33 74 6f 67 6e 61 76 00 00 00 00 20 05 f6 05 ce 04 21 65 f6 02 7b 27 60 f6>
+[LCM->DIA] reply: <Buffer a0 0e f6 05 90 f1 07 91 27 04 c7 87 5c f7 f6 07 91 20 2c c1 52 26 2b 1e 0d 8a 10 0f 1f 07 b5 04 06>
+[LCM->DIA] reply: <Buffer a0 0f 1c 07 b5 01 20 04 1d 07 b5 01 f6 02 7b 27 0c f6 05 90 f1 07 93 27 04 c7 87 5c f7 f6 07 93 7b>
+[LCM->DIA] reply: <Buffer a0 10 05 90 f6 06 87 c4 30 c1 10 26 07 c6 01 7b 05 8e 20 03 79 05 8e f6 02 7b 26 0a f6 09 31 26 05>
+[LCM->DIA] reply: <Buffer a0 11 f6 05 8e 26 10 f6 02 7b 26 05 f6 09 32 26 06 f6 09 30 04 21 45 f6 05 1d c1 60 26 39 79 09 30>
+[LCM->DIA] reply: <Buffer a0 12 c6 3f 7b 04 c7 86 0a 7a 04 c8 79 04 c9 c6 07 7b 04 ca 79 04 cb 79 04 cc 79 04 cd 7b 04 ce c6>
+[LCM->DIA] reply: <Buffer a0 13 41 7b 04 cf c6 01 7b 04 d0 79 04 d1 c6 75 7b 04 d2 4a bc e9 31 20 05 c6 01 7b 09 30 f6 05 8e>
+[LCM->DIA] reply: <Buffer a0 14 7b 09 31 f6 02 7b 7b 09 32 0a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+
+// Write coding data
+[DIA->LCM] command: <Buffer 09 00 02 00 40 01 00 08 00 00 00 00 00 00 00 00 23 20 4e 21 90 00 00 4b 00 00 02 00 5a 16 00 00 00>
+[DIA->LCM] command: <Buffer 09 01 00 00 00 00 00 00 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[DIA->LCM] command: <Buffer 09 02 20 20 20 20 20 20 20 20 20 72 72 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 b5 3f 5a 55 00>
+[DIA->LCM] command: <Buffer 09 03 98 08 00 00 98 08 00 00 00 00 00 00 0a 10 64 14 01 20 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[DIA->LCM] command: <Buffer 09 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[DIA->LCM] command: <Buffer 09 05 03 00 00 00 9a 93 5c 5c 56 ec 07 37 7c 88 88 88 88 71 5e 51 47 3f 36 2f 2f 2f 2f 2f 2f 2f 00>
+[DIA->LCM] command: <Buffer 09 06 3f 15 fd 15 fe 15 18 fd 18 fe 18 6b ac 56 3a 9c db 8b 48 a0 a0 0a 13 31 72 42 61 c0 18 f8 2d>
+[DIA->LCM] command: <Buffer 09 07 f0 7d ff 00 00 5a 21 3f 02 28 5a 14 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[DIA->LCM] command: <Buffer 09 08 ff ff ff ff f1 03 38 00 fc ff 0f fc c7 8f ff c7 71 00 ff 0f 1c ff ff ff ff 66 66 46 00 00 00>
+[DIA->LCM] command: <Buffer 09 09 7f 7f 8f 8b 85 81 00 00 00 00 00 00 00 7f 7f 7f 7f 7f 01 03 f5 00 62 0a 00 00 00 00 00 00 00>
+[DIA->LCM] command: <Buffer 09 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[DIA->LCM] command: <Buffer 09 0c 00 7b 27 45 65 35 33 74 6f 67 6e 61 76 00 00 00 00 20 05 f6 05 ce 04 21 65 f6 02 7b 27 60 f6>
+[DIA->LCM] command: <Buffer 09 0b 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>
+[DIA->LCM] command: <Buffer 09 0c 00 7b 27 45 65 35 33 74 6f 67 6e 61 76 00 00 00 00 20 05 f6 05 ce 04 21 65 f6 02 7b 27 60 f6>
+[DIA->LCM] command: <Buffer 09 0e f6 05 90 f1 07 91 27 04 c7 87 5c f7 f6 07 91 20 2c c1 52 26 2b 1e 0d 8a 10 0f 1f 07 b5 04 06>
+[DIA->LCM] command: <Buffer 09 0f 1c 07 b5 01 20 04 1d 07 b5 01 f6 02 7b 27 0c f6 05 90 f1 07 93 27 04 c7 87 5c f7 f6 07 93 7b>
+[DIA->LCM] command: <Buffer 09 10 05 90 f6 06 87 c4 30 c1 10 26 07 c6 01 7b 05 8e 20 03 79 05 8e f6 02 7b 26 0a f6 09 31 26 05>
+[DIA->LCM] command: <Buffer 09 11 f6 05 8e 26 10 f6 02 7b 26 05 f6 09 32 26 06 f6 09 30 04 21 45 f6 05 1d c1 60 26 39 79 09 30>
+[DIA->LCM] command: <Buffer 09 12 c6 3f 7b 04 c7 86 0a 7a 04 c8 79 04 c9 c6 07 7b 04 ca 79 04 cb 79 04 cc 79 04 cd 7b 04 ce c6>
+[DIA->LCM] command: <Buffer 09 13 41 7b 04 cf c6 01 7b 04 d0 79 04 d1 c6 75 7b 04 d2 4a bc e9 31 20 05 c6 01 7b 09 30 f6 05 8e>
+[DIA->LCM] command: <Buffer 09 14 7b 09 31 f6 02 7b 7b 09 32 0a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00>

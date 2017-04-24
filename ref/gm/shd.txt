@@ -1,0 +1,3 @@
+// Checksum and length removed
+
+7D 00 00,GM,SHD,Sunroof control,Lock
