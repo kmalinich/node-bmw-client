@@ -1,0 +1,38 @@
+{
+  "name": "node-bmw-client",
+  "version": "0.0.1",
+  "description": "NodeJS-powered BMW IBUS client interface",
+  "main": "launch.sh",
+  "devDependencies": {},
+  "author": "kdm <kennygprs@gmail.com>",
+  "license": "ISC",
+  "homepage": "https://github.com/kmalinich/node-bmw-client#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kmalinich/node-bmw-client.git"
+  },
+  "keywords": [
+    "bmw",
+    "dbus",
+    "ibus",
+    "kbus"
+  ],
+  "bugs": {
+    "url": "https://github.com/kmalinich/node-bmw-client/issues"
+  },
+  "dependencies": {
+    "dbus-native": "^0.2.0",
+    "jsonfile": "^2.4.0",
+    "kodi-ws": "^2.4.3",
+    "moment": "^2.18.1",
+    "node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
+    "node-unit-conversion": "^0.1.1",
+    "os": "^0.1.1",
+    "pad": "^1.1.0",
+    "performance-now": "^2.1.0",
+    "pi-temperature": "^1.0.0",
+    "socket.io": "^1.7.3",
+    "socket.io-client": "^1.7.3",
+    "suncalc": "^1.8.0"
+  }
+}
