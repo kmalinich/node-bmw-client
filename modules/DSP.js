@@ -29,7 +29,7 @@ function request(value) {
 			break;
 	}
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: src,
 		dst: 'DSP',
 		msg: cmd,
@@ -66,7 +66,7 @@ function dsp_mode(mode) {
 			break;
 	}
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'RAD',
 		dst: 'DSP',
 		msg: cmd,
@@ -88,7 +88,7 @@ function m_audio(value) {
 			break;
 	}
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'RAD',
 		dst: 'DSP',
 		msg: cmd,
@@ -119,7 +119,7 @@ function parse_out(data) {
 
 // Send EQ data to DSP
 function eq_send(msg) {
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src : 'DSPC',
 		dst : 'DSP',
 		msg : msg,

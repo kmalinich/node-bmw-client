@@ -16,8 +16,8 @@ function parse_out(data) {
 			break;
 
 		case 0xA0: // Broadcast: Diagnostic command reply
-			data.command = 'diagnostic command';
-			data.value   = 'acknowledged: '+data.msg;
+			data.command = 'rep';
+			data.value   = 'diagnostic command acknowledged: '+data.msg;
 			break;
 
 		default:
@@ -43,7 +43,7 @@ function aux(type, action) {
     case true : cmd++; break;
   }
 
-  omnibus.data_send.send({
+  socket_client.data_send({
     src: 'GT',
     dst: 'IKE',
     msg: [0x41, cmd],

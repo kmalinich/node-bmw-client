@@ -42,7 +42,7 @@ function text(message) {
 	var message_hex = message_hex.concat(ascii2hex(message));
 	// var message_hex = message_hex.concat(0x04);
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'IKE',
 		dst: 'MID',
 		msg: message_hex,
@@ -291,7 +291,7 @@ function send_button(button) {
 	var packet_down = [command, button_down];
 	var packet_up = [command, button_up];
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'MID',
 		dst: 'RAD',
 		msg: packet_down,
@@ -300,7 +300,7 @@ function send_button(button) {
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
 		console.log('[MID::RAD] Sending button up: %s', button);
-		omnibus.data_send.send({
+		socket_client.data_send({
 			src: 'MID',
 			dst: 'RAD',
 			msg: packet_up,

@@ -52,15 +52,15 @@ function decode_status_keyfob(data) {
     return;
   }
 
-  if (bitmask.bit_test(data[1], 0x10)) {
+  if (bitmask.bit_test(data.msg[1], 0x10)) {
     data.value = 'lock';
     omnibus.LCM.welcome_lights(false);
   }
-  else if (bitmask.bit_test(data[1], 0x20)) {
+  else if (bitmask.bit_test(data.msg[1], 0x20)) {
     data.value = 'unlock';
     omnibus.LCM.welcome_lights(true);
   }
-  else if (bitmask.bit_test(data[1], 0x40)) {
+  else if (bitmask.bit_test(data.msg[1], 0x40)) {
     data.value = 'trunk';
   }
   else {
@@ -136,7 +136,7 @@ function io_set(packet) {
   packet.unshift(0x0C);
 
   // Set IO status
-  omnibus.data_send.send({
+  socket_client.data_send({
     src: 'DIA',
     dst: module_name.toUpperCase(),
     msg: packet,
@@ -343,7 +343,7 @@ module.exports = {
         break;
     }
 
-    omnibus.data_send.send({
+    socket_client.data_send({
       src : src,
       dst : module_name.toUpperCase(),
       msg : cmd,
