@@ -1,6 +1,5 @@
 var module_name = __filename.slice(__dirname.length + 1, -3);
 
-var pad    = require('pad');
 var pitemp = require('pi-temperature');
 
 // Pad string for IKE text screen length (20 characters)
@@ -27,7 +26,7 @@ function ascii2hex(str) {
 // Cluster/interior backlight
 function backlight(value) {
 	console.log('[node::IKE] Setting LCD screen backlight to %s', value);
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'LCM',
 		dst: 'GLO',
 		msg: [0x5C, value.toString(16), 0x00]
@@ -55,7 +54,7 @@ function ignition(value) {
 			break;
 	}
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'IKE',
 		dst: 'GLO',
 		msg: [0x11, status],
@@ -69,14 +68,14 @@ function obc_clock() {
 	var time = moment();
 
 	// Time
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'GT',
 		dst: 'IKE',
 		msg: [0x40, 0x01, time.format('H'), time.format('m')],
 	});
 
 	// Date
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'GT',
 		dst: 'IKE',
 		msg: [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
@@ -135,7 +134,7 @@ function obc_data(action, value, target) {
 
 	// console.log('[node::IKE] Performing \'%s\' on OBC value \'%s\'', action, value);
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'GT',
 		dst: 'IKE',
 		msg: msg,
@@ -144,7 +143,7 @@ function obc_data(action, value, target) {
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'CCM',
 		dst: 'IKE',
 		msg: [0x1A, 0x30, 0x00],
@@ -167,25 +166,40 @@ function decode_ignition_status(data) {
 	if (data.msg[1] > status.vehicle.ignition_level) {
 		switch (data.msg[1]) { // Evaluate new ignition state
 			case 1: // Accessory
-				console.log('[node::IKE] Trigger: powerup state');
+				log.msg({
+					src : 'IKE',
+					msg : 'Powerup state',
+				});
 				omnibus.IKE.state_powerup = true;
 				break;
 			case 3: // Run
 				if (status.vehicle.ignition_level === 0) {
-					console.log('[node::IKE] Trigger: powerup state');
+					log.msg({
+						src : 'IKE',
+						msg : 'Powerup state',
+					});
 					omnibus.IKE.state_powerup = true;
 				}
 
-				console.log('[node::IKE] Trigger: run state');
+				log.msg({
+					src : 'IKE',
+					msg : 'Run state',
+				});
 				omnibus.IKE.state_run = true;
 				break;
 			case 7: // Start
 				if (status.vehicle.ignition_level === 0) {
-					console.log('[node::IKE] Trigger: powerup state');
+					log.msg({
+						src : 'IKE',
+						msg : 'Powerup state',
+					});
 					omnibus.IKE.state_powerup = true;
 				}
 
-				console.log('[node::IKE] Trigger: start-begin state');
+				log.msg({
+					src : 'IKE',
+					msg : 'Start-begin state',
+				});
 				omnibus.IKE.state_start_begin = true;
 		}
 	}
@@ -195,31 +209,46 @@ function decode_ignition_status(data) {
 		switch (data.msg[1]) { // Evaluate new ignition state
 			case 0: // Off
 				if (status.vehicle.ignition_level === 3) {
-					console.log('[node::IKE] Trigger: powerdown state');
+					log.msg({
+						src : 'IKE',
+						msg : 'Powerdown state',
+					});
 					omnibus.IKE.state_powerdown = true;
 				}
 
-				console.log('[node::IKE] Trigger: poweroff state');
+				log.msg({
+					src : 'IKE',
+					msg : 'Poweroff state',
+				});
 				omnibus.IKE.state_poweroff = true;
 				break;
 			case 1: // Accessory
-				console.log('[node::IKE] Trigger: powerdown state');
+				log.msg({
+					src : 'IKE',
+					msg : 'Powerdown state',
+				});
 				omnibus.IKE.state_powerdown = true;
 				break;
 			case 3: // Run
-				console.log('[node::IKE] Trigger: start-end state');
+				log.msg({
+					src : 'IKE',
+					msg : 'Start-end state',
+				});
 				omnibus.IKE.state_start_end = true;
 		}
 	}
 
 	// Set ignition status value
 	if (status.vehicle.ignition_level != data.msg[1]) {
-		console.log('[node::IKE] Ignition level change \'%s\' => \'%s\'', status.vehicle.ignition_level, data.msg[1]);
+		log.msg({
+			src : 'IKE',
+			msg : 'Ignition level change \''+status.vehicle.ignition_level+'\' => \''+data.msg[1]+'\'',
+		});
 		status.vehicle.ignition_level = data.msg[1];
 	}
 
-  // Activate autolights if we got 'em
-  omnibus.LCM.auto_lights_check();
+	// Activate autolights if we got 'em
+	omnibus.LCM.auto_lights_check();
 
 	switch (data.msg[1]) {
 		case 0  : status.vehicle.ignition = 'off';       break;
@@ -233,7 +262,10 @@ function decode_ignition_status(data) {
 	if (omnibus.IKE.state_poweroff === true) {
 		// Disable HUD refresh
 		clearInterval(omnibus.IKE.interval_data_refresh, () => {
-			console.log('[node::IKE] Cleared data refresh interval');
+			log.msg({
+				src : 'IKE',
+				msg : 'Cleared data refresh interval',
+			});
 		});
 
 		// Disable BMBT/MID keepalive
@@ -790,19 +822,19 @@ module.exports = {
 
 		// Bounce if the override is active
 		if(omnibus.IKE.hud_override === true) {
-      log.msg({
-        src : module_name,
-        msg : 'HUD refresh: override active',
-      });
+			log.msg({
+				src : module_name,
+				msg : 'HUD refresh: override active',
+			});
 			return;
 		}
 
 		// Bounce if the last update was less than 3 sec ago
 		if (time_now-omnibus.IKE.last_hud_refresh <= 3000) {
-      log.msg({
-        src : module_name,
-        msg : 'HUD refresh: too soon ('+(time_now-omnibus.IKE.last_hud_refresh).toFixed(0)+' ms)',
-      });
+			log.msg({
+				src : module_name,
+				msg : 'HUD refresh: too soon ('+(time_now-omnibus.IKE.last_hud_refresh).toFixed(0)+' ms)',
+			});
 			return;
 		}
 
@@ -849,7 +881,7 @@ module.exports = {
 		var load_1m = status.pi.temperature+'¨|'+load_1m+'%';
 
 		// Format the output
-    var load_1m = pad(load_1m, 8);
+		var load_1m = pad(load_1m, 8);
 
 		// Add space to left-most string (consumption 1)
 		if (string_cons.length === 4) {
@@ -857,10 +889,10 @@ module.exports = {
 		}
 
 		if (status.vehicle.ignition_level < 1) {
-      log.msg({
-        src : module_name,
-        msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1 ('+(time_now-omnibus.IKE.last_hud_refresh)+' ms)',
-      });
+			log.msg({
+				src : module_name,
+				msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1 ('+(time_now-omnibus.IKE.last_hud_refresh)+' ms)',
+			});
 			return;
 		}
 		else {
@@ -873,7 +905,10 @@ module.exports = {
 
 	// Refresh OBC data
 	obc_refresh : () => {
-		console.log('[node::IKE] Refreshing all OBC data');
+		log.msg({
+			src : 'IKE',
+			msg : 'Refreshing all OBC data',
+		});
 
 		// LCM data
 		omnibus.LCM.request('vehicledata');
@@ -948,7 +983,7 @@ module.exports = {
 				src = 'IKE';
 				for (var dst in bus_modules.modules) {
 					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
-						omnibus.data_send.send({
+						socket_client.data_send({
 							src: src,
 							dst: dst,
 							msg: [0x01],
@@ -960,7 +995,7 @@ module.exports = {
 				src = 'IKE';
 				for (var dst in bus_modules.modules) {
 					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
-						omnibus.data_send.send({
+						socket_client.data_send({
 							src: src,
 							dst: dst,
 							msg: [0x01],
@@ -976,7 +1011,7 @@ module.exports = {
 		}
 
 		if (cmd !== null) {
-			omnibus.data_send.send({
+			socket_client.data_send({
 				src: src,
 				dst: dst,
 				msg: cmd,
@@ -1000,7 +1035,7 @@ module.exports = {
 		var message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
 		var message_hex = message_hex.concat(ascii2hex(message.ike_pad()));
 
-		omnibus.data_send.send({
+		socket_client.data_send({
 			src : 'CCM',
 			dst : 'IKE',
 			msg : message_hex,
@@ -1017,7 +1052,7 @@ module.exports = {
 		var message_hex = [0x1A, 0x35, 0x00];
 		var message_hex = message_hex.concat(ascii2hex(message.ike_pad()));
 
-		omnibus.data_send.send({
+		socket_client.data_send({
 			src : 'CCM',
 			dst : 'IKE',
 			msg : message_hex,
@@ -1027,11 +1062,11 @@ module.exports = {
 		setTimeout(() => {
 			text_urgent_off();
 		}, timeout);
-  },
+	},
 
-  // IKE cluster text send message, override other messages
-  text_override : (message, timeout = 2500) => {
-    var max_length   = 20;
+	// IKE cluster text send message, override other messages
+	text_override : (message, timeout = 2500) => {
+		var max_length   = 20;
 		var scroll_delay = 300;
 
 		// Delare that we're currently first up
@@ -1085,7 +1120,7 @@ module.exports = {
 		var message_hex = message_hex.concat(ascii2hex(message.ike_pad().substring(0, max_length)));
 		var message_hex = message_hex.concat(0x04);
 
-		omnibus.data_send.send({
+		socket_client.data_send({
 			src: 'RAD',
 			dst: 'IKE',
 			msg: message_hex,

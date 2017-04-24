@@ -3,7 +3,10 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 // Request various things from EWS
 function request(value) {
 	var cmd;
-	console.log('[node::EWS] Requesting \'%s\'', value);
+	log.msg({
+		src : 'EWS',
+		msg : 'Requesting \''+value+'\'',
+	});
 
 	switch (value) {
 		case 'immobiliserstatus':
@@ -12,7 +15,7 @@ function request(value) {
 			break;
 	}
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'CCM',
 		dst: 'EWS',
 		msg: cmd,

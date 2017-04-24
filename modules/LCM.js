@@ -99,7 +99,7 @@ function auto_lights_process() {
 function coding_get() {
 	// Get all 20 blocks of coding data
 	for (var byte = 0; byte < 21; byte++) {
-		omnibus.data_send.send({
+		socket_client.data_send({
 			src: 'DIA',
 			dst: 'LCM',
 			msg: [0x08, byte],
@@ -211,7 +211,10 @@ function decode(data) {
 			// This message also has days since service and total kms, but, baby steps...
 			var vin_string     = hex.hex2a(data.msg[1].toString(16))+hex.hex2a(data.msg[2].toString(16))+data.msg[3].toString(16)+data.msg[4].toString(16)+data.msg[5].toString(16)[0];
 			status.vehicle.vin = vin_string;
-			console.log('[node::LCM] Decoded VIN string: \'%s\'', vin_string);
+			log.msg({
+				src : 'LCM',
+				msg : 'VIN: \''+vin_string+'\'',
+			});
 			break;
 
 		case 0x5B: // Decode a light status message from the LCM and act upon the results
@@ -501,7 +504,7 @@ function io_encode(object) {
 function io_set(packet) {
 	// console.log('[node::LCM] Sending \'Set IO status\' message');
 	packet.unshift(0x0C);
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'DIA',
 		dst: 'LCM',
 		msg: packet,
@@ -634,7 +637,7 @@ module.exports = {
 				cmd = [0x53];
 		}
 
-		omnibus.data_send.send({
+		socket_client.data_send({
 			src: src,
 			dst: 'LCM',
 			msg: cmd,

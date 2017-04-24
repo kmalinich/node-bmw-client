@@ -141,7 +141,7 @@ function parse_out(data) {
 
 // Say we have no tape in the player
 function send_cassette_status() {
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'BMBT',
 		dst: 'RAD',
 		msg: [0x4B, 0x05],
@@ -174,7 +174,7 @@ function send_button(button) {
 	var packet_down = [command, button_down];
 	var packet_up   = [command, button_up];
 
-	omnibus.data_send.send({
+	socket_client.data_send({
 		src: 'BMBT',
 		dst: 'RAD',
 		msg: packet_down,
@@ -183,7 +183,7 @@ function send_button(button) {
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
 		console.log('[BMBT::RAD] Sending button up: %s', button);
-		omnibus.data_send.send({
+		socket_client.data_send({
 			src: 'BMBT',
 			dst: 'RAD',
 			msg: packet_up,

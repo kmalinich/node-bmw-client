@@ -164,7 +164,7 @@ function led(object) {
 
   // Send message
   console.log('[node::RAD] Sending \'RAD LED\' packet');
-  omnibus.data_send.send({
+  socket_client.data_send({
     src: 'TEL',
     dst: 'OBC',
     msg: [command, byte], // Turn on radio LED
