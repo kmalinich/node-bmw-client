@@ -124,10 +124,10 @@ start() {
 	log "Starting ${SYSTEMD_UNIT}"
 	sudo systemctl start ${SYSTEMD_UNIT}
 	sleep_msg
-	if ! sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
-		log "Stopped ${SYSTEMD_UNIT} successfully"
+	if sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
+		log "Started ${SYSTEMD_UNIT} successfully"
 	else
-		log "Failed to stop ${SYSTEMD_UNIT}"
+		log "Failed to start ${SYSTEMD_UNIT}"
 		echo
 		status
 	fi
