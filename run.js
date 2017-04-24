@@ -1,6 +1,6 @@
 var module_name = __filename.slice(__dirname.length + 1, -3);
 
-// Global libraries
+// npm libraries
 convert = require('node-unit-conversion');
 moment  = require('moment');
 now     = require('performance-now');
@@ -8,13 +8,14 @@ os      = require('os');
 pad     = require('pad');
 suncalc = require('suncalc');
 
-// Global objects
-bitmask      = require('bitmask');
-bus_commands = require('bus-commands');
-bus_modules  = require('bus-modules');
-hex          = require('hex');
-json         = require('json');
-log          = require('log-output');
+// node-bmw libraries
+log           = require('log-output');
+bitmask       = require('bitmask');
+bus_commands  = require('bus-commands');
+bus_modules   = require('bus-modules');
+hex           = require('hex');
+json          = require('json');
+socket_client = require('socket-client');
 
 function load_modules(callback) {
 	// Everything connection object
@@ -93,11 +94,19 @@ function load_modules(callback) {
 		kodi : require('kodi'),
 	};
 
-	// WebSocket client
-	socket_client = require('socket-client');
-	socket_client.startup(() => {});
+	log.msg({
+		src : module_name,
+		msg : 'Loaded modules',
+	});
 
 	if (typeof callback === 'function') { callback(); }
+}
+
+function started() {
+	log.msg({
+		src : module_name,
+		msg : 'Started',
+	});
 }
 
 
@@ -111,14 +120,11 @@ function startup() {
 	json.read(() => { // Read JSON config and status files
 		json.reset(() => { // Reset status and module vars pertinent to launching app
 			load_modules(() => { // Load IBUS module node modules
+				socket_client.startup(() => { // Start WebSocket client
 
-				omnibus.HDMI.startup(() => { // Open HDMI-CEC
-					omnibus.BT.autoconfig(() => { // Open Bluetooth connection
-						omnibus.kodi.autoconfig_loop(true, () => { // Open Kodi websocket
-							log.msg({
-								src : module_name,
-								msg : 'Started',
-							});
+					omnibus.HDMI.startup(() => { // Open HDMI-CEC
+						omnibus.BT.autoconfig(() => { // Open Bluetooth connection
+							omnibus.kodi.autoconfig_loop(true, started); // Open Kodi websocket
 						});
 					});
 				});
@@ -134,13 +140,10 @@ function shutdown() {
 		msg : 'Shutting down',
 	});
 
-	omnibus.HDMI.shutdown(() => { // Close HDMI-CEC
-		omnibus.kodi.shutdown(() => { // Close Kodi websocket/clean up
-
-			json.reset(() => { // Reset status and module vars pertinent to launching app
-				json.write(() => { // Write JSON config and status files
-					process.exit();
-				});
+	socket_client.shutdown(() => { // Stop WebSocket client
+		omnibus.HDMI.shutdown(() => { // Close HDMI-CEC
+			omnibus.kodi.shutdown(() => { // Close Kodi websocket/clean up
+				process.exit();
 			});
 		});
 	});
