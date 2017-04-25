@@ -9,7 +9,7 @@ OOMScoreAdjust   = -1000
 Group            = pi
 User             = pi
 Environment      = NODE_PATH=/usr/lib/node_modules:/usr/lib/nodejs:/usr/local/lib/node_modules:/usr/local/node-bmw-client/node_modules:/usr/share/javascript
-ExecStart        = /usr/bin/env node --throw-deprecation --trace-warnings --preserve-symlinks /usr/local/node-bmw-client/run.js
+ExecStart        = /usr/bin/env node --throw-deprecation --trace-warnings --preserve-symlinks /usr/local/node-bmw-client/main.js
 Restart          = on-failure
 StandardError    = syslog
 StandardOutput   = syslog

@@ -10,6 +10,8 @@ UNIT="node-bmw-client"
 DIR_APP="/usr/local/${UNIT}"
 DIR_SYSTEMD="/etc/systemd/system"
 
+FILE_APP="${DIR_APP}/main.js"
+
 SYSTEMD_UNIT="${UNIT}.service"
 SYSTEMD_UNIT_FILE="${DIR_SYSTEMD}/${SYSTEMD_UNIT}"
 
@@ -27,6 +29,18 @@ log() {
 sleep_msg() {
 	log "Sleeping"
 	sleep 0.5
+}
+
+debug() {
+	stop > /dev/null 2>&1
+	ps -ef | awk "/${UNIT}/ {print \$2}" | xargs kill -9 > /dev/null 2>&1
+	${DIR_APP}/debug.sh
+}
+
+launch() {
+	stop > /dev/null 2>&1
+	ps -ef | awk "/${UNIT}/ {print \$2}" | xargs kill -9 > /dev/null 2>&1
+	${DIR_APP}/launch.sh
 }
 
 follow() {
@@ -86,9 +100,15 @@ install() {
 }
 
 disable() {
+	if ! sudo systemctl -q is-enabled ${SYSTEMD_UNIT}; then
+		log "${SYSTEMD_UNIT} is already disabled"
+		return
+	fi
+
 	log "Disabling ${SYSTEMD_UNIT}"
 	sudo systemctl disable ${SYSTEMD_UNIT}
 	sleep_msg
+
 	if ! sudo systemctl -q is-enabled ${SYSTEMD_UNIT}; then
 		log "Disabled ${SYSTEMD_UNIT} successfully"
 	else
@@ -97,9 +117,19 @@ disable() {
 }
 
 enable() {
+	if sudo systemctl -q is-enabled ${SYSTEMD_UNIT}; then
+		log "${SYSTEMD_UNIT} is already enabled"
+		return
+	fi
+
+	if [[ ! -s ${SYSTEMD_UNIT_FILE} ]]; then
+		install
+	fi
+
 	log "Enabling ${SYSTEMD_UNIT}"
 	sudo systemctl enable ${SYSTEMD_UNIT}
 	sleep_msg
+
 	if sudo systemctl -q is-enabled ${SYSTEMD_UNIT}; then
 		log "Enabled ${SYSTEMD_UNIT} successfully"
 	else
@@ -108,9 +138,15 @@ enable() {
 }
 
 stop() {
+	if ! sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
+		log "${SYSTEMD_UNIT} is already inactive"
+		return
+	fi
+
 	log "Stopping ${SYSTEMD_UNIT}"
 	sudo systemctl stop ${SYSTEMD_UNIT}
 	sleep_msg
+
 	if ! sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
 		log "Stopped ${SYSTEMD_UNIT} successfully"
 	else
@@ -121,9 +157,15 @@ stop() {
 }
 
 start() {
+	if sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
+		log "${SYSTEMD_UNIT} is already active"
+		return
+	fi
+
 	log "Starting ${SYSTEMD_UNIT}"
 	sudo systemctl start ${SYSTEMD_UNIT}
 	sleep_msg
+
 	if sudo systemctl -q is-active ${SYSTEMD_UNIT}; then
 		log "Started ${SYSTEMD_UNIT} successfully"
 	else
