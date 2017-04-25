@@ -7,8 +7,10 @@ export PATH="/bin:/usr/bin"
 
 UNIT="node-bmw-client"
 
-DIR_APP="/usr/local/${UNIT}"
 DIR_SYSTEMD="/etc/systemd/system"
+
+DIR_APP="/usr/local/${UNIT}"
+[[ -d ${HOME}/code/${UNIT} ]] && DIR_APP="${HOME}/code/${UNIT}"
 
 FILE_APP="${DIR_APP}/main.js"
 
@@ -187,17 +189,8 @@ update() {
 	log "Downloading ${UNIT} update"
 	git pull
 
-	log "Performing npm global update"
-	npm -g update
-
-	log "Performing local npm install"
+	log "Performing npm install"
 	npm install
-
-	log "Performing local npm update"
-	npm update
-
-	log "Performing --unsafe-perm install of serialport"
-	npm install --unsafe-perm --build-from-source serialport
 
 	restart
 
