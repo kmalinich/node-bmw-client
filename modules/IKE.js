@@ -780,7 +780,7 @@ module.exports = {
 				data.value   = Buffer.from(data.msg);
 		}
 
-		log.out(data);
+		log.bus(data);
 	},
 
 	// Handle incoming commands from API
