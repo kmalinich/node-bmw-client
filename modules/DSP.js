@@ -16,7 +16,7 @@ function request(value) {
 	var src;
 	var cmd;
 
-	console.log('[node::DSP] Requesting \'%s\'', value);
+	log.msg({ src : module_name, msg : 'Requesting \''+value+'\'' });
 
 	switch (value) {
 		case 'io-status':
@@ -38,7 +38,7 @@ function request(value) {
 
 // Select DSP mode
 function dsp_mode(mode) {
-	console.log('[node::DSP] Setting DSP mode to \'%s\'', mode);
+	log.msg({ src : module_name, msg : 'DSP mode set to \''+mode+'\'' });
 
 	var cmd;
 
@@ -75,7 +75,7 @@ function dsp_mode(mode) {
 
 // Set M-Audio on/off
 function m_audio(value) {
-	console.log('[node::DSP] Setting M-Audio to \'%s\'', value);
+	log.msg({ src : module_name, msg : 'Setting M-Audio to \''+value+'\'' });
 
 	var cmd;
 
@@ -125,7 +125,7 @@ function eq_send(msg) {
 		msg : msg,
 	});
 
-	console.log('[node::DSP] Sent DSP EQ message');
+	log.msg({ src : module_name, msg : 'DSP EQ sent' });
 }
 
 // Parse message from DSP amp
@@ -165,7 +165,7 @@ function eq_decode(data) {
 	status.dsp.eq.band5  = band[5];
 	status.dsp.eq.band6  = band[6];
 
-	console.log('[node::DSP] Decoded DSP EQ');
+	log.msg({ src : module_name, msg : 'DSP EQ decoded' });
 }
 
 function eq_encode(data) {
@@ -181,7 +181,7 @@ function eq_encode(data) {
 		eq_send(band_out);
 	}
 
-	console.log('[node::DSP] Encoded DSP EQ');
+	log.msg({ src : module_name, msg : 'DSP EQ encoded' });
 }
 
 module.exports = {
