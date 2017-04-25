@@ -54,11 +54,11 @@ function decode_status_keyfob(data) {
 
   if (bitmask.bit_test(data.msg[1], 0x10)) {
     data.value = 'lock';
-    omnibus.LCM.welcome_lights(false);
+    LCM.welcome_lights(false);
   }
   else if (bitmask.bit_test(data.msg[1], 0x20)) {
     data.value = 'unlock';
-    omnibus.LCM.welcome_lights(true);
+    LCM.welcome_lights(true);
   }
   else if (bitmask.bit_test(data.msg[1], 0x40)) {
     data.value = 'trunk';
@@ -136,7 +136,7 @@ function io_set(packet) {
   packet.unshift(0x0C);
 
   // Set IO status
-  socket_client.data_send({
+  bus_client.data_send({
     src: 'DIA',
     dst: module_name.toUpperCase(),
     msg: packet,
@@ -222,15 +222,15 @@ function parse_out(data) {
 // This is a horrible trainwreck
 function api_command(data) {
   if (typeof data['interior-light'] !== 'undefined') {
-    omnibus.GM.interior_light(data['interior-light']);
+    GM.interior_light(data['interior-light']);
   }
 
   // Sort-of.. future-mode.. JSON command.. object? maybe..
   else if (typeof data['command'] !== 'undefined') {
     switch (data['command']) {
-      case 'io-status'   : omnibus.GM.request('io-status');   break; // Get IO status
-      case 'door-status' : omnibus.GM.request('door-status'); break; // Get IO status
-      case 'locks'       : omnibus.GM.locks();                break; // Toggle central locking
+      case 'io-status'   : GM.request('io-status');   break; // Get IO status
+      case 'door-status' : GM.request('door-status'); break; // Get IO status
+      case 'locks'       : GM.locks();                break; // Toggle central locking
       default: // Dunno what I sent
         console.log('[node:::GM] unknown API: \'%s\'', data['command']);
         break;
@@ -239,7 +239,7 @@ function api_command(data) {
 
   // Window control
   else if (typeof data['window'] !== 'undefined') {
-    omnibus.GM.windows(data['window'], data['window-action']);
+    GM.windows(data['window'], data['window-action']);
   }
 
   else {
@@ -322,8 +322,8 @@ module.exports = {
 
     // Send the cluster and Kodi a notification
     var notify_message = 'Toggling door locks';
-    omnibus.kodi.notify('GM', notify_message);
-    omnibus.IKE.text_override(notify_message)
+    kodi.notify('GM', notify_message);
+    IKE.text_override(notify_message)
   },
 
   // Request various things from GM
@@ -343,7 +343,7 @@ module.exports = {
         break;
     }
 
-    socket_client.data_send({
+    bus_client.data_send({
       src : src,
       dst : module_name.toUpperCase(),
       msg : cmd,

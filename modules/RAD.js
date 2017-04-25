@@ -88,8 +88,8 @@ function parse_out(data) {
         case 0xAF:
           data.value = data.value+'off';
           status.rad.audio_control = data.value;
-					omnibus.BMBT.power_on_if_ready();
-					omnibus.MID.power_on_if_ready();
+					BMBT.power_on_if_ready();
+					MID.power_on_if_ready();
           break;
 
         case 0xA1:
@@ -166,7 +166,7 @@ function led(object) {
 
   // Send message
   console.log('[node::RAD] Sending \'RAD LED\' packet');
-  socket_client.data_send({
+  bus_client.data_send({
     src: 'TEL',
     dst: 'OBC',
     msg: [command, byte], // Turn on radio LED
