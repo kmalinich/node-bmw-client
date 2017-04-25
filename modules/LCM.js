@@ -606,7 +606,7 @@ module.exports = {
 				data.value   = Buffer.from(data.msg);
 		}
 
-		log.out(data);
+		log.bus(data);
 	},
 
 	// Request various things from LCM

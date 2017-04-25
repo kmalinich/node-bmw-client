@@ -48,7 +48,7 @@ function decode_status_keyfob(data) {
   // 0x00 : no buttons
   if (data.msg[1] == 0x00) {
     data.value = 'key fob button: none';
-    log.out(data);
+    log.bus(data);
     return;
   }
 
@@ -68,7 +68,7 @@ function decode_status_keyfob(data) {
   }
 
   data.value = 'key fob button: '+data.value;
-  log.out(data);
+  log.bus(data);
 }
 
 // [0x7A] Decode a door status message from the GM and act upon the results
@@ -216,7 +216,7 @@ function parse_out(data) {
       break;
   }
 
-  log.out(data);
+  log.bus(data);
 }
 
 // This is a horrible trainwreck

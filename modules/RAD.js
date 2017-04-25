@@ -140,7 +140,7 @@ function parse_out(data) {
       data.value   = Buffer.from(data.msg);
   }
 
-  log.out(data);
+  log.bus(data);
 }
 
 // Turn on/off/flash the RAD LED by encoding a bitmask from an input object

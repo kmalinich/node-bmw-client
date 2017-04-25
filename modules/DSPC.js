@@ -19,7 +19,7 @@ function parse_in(data) {
 			break;
 	}
 
-	log.out(data);
+	log.bus(data);
 }
 
 // Parse data sent from DSPC module
@@ -31,7 +31,7 @@ function parse_out(data) {
 			break;
 	}
 
-	log.out(data);
+	log.bus(data);
 }
 
 module.exports = {
