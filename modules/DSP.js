@@ -110,7 +110,7 @@ function parse_out(data) {
 			break;
 	}
 
-	log.out(data);
+	log.bus(data);
 }
 
 // Speaker test

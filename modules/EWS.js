@@ -55,7 +55,7 @@ function parse_out(data) {
 			}
 
 			data.value = 'key presence : \''+data.value+'\'';
-			log.out(data);
+			log.bus(data);
 
 			// Start over again
 			data.value = null;
@@ -83,7 +83,7 @@ function parse_out(data) {
 			break;
 	}
 
-	log.out(data);
+	log.bus(data);
 }
 
 module.exports = {

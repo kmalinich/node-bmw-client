@@ -8,7 +8,7 @@ function parse_out(data) {
 			data.value   = Buffer.from(data.msg);
 	}
 
-	log.out(data);
+	log.bus(data);
 }
 
 module.exports = {
