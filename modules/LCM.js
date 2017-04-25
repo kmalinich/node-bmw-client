@@ -16,7 +16,7 @@ function auto_lights(action) {
 
 	switch (action) {
 		case false:
-			clearInterval(omnibus.LCM.interval_auto_lights);
+			clearInterval(LCM.interval_auto_lights);
 			console.log('[node::IKE] Cleared autolights interval');
 
 			// Set status variables
@@ -34,7 +34,7 @@ function auto_lights(action) {
 
 			// Process/send LCM data on 7 second interval
 			// LCM diag command timeout is 15 seconds
-			omnibus.LCM.interval_auto_lights = setInterval(() => {
+			LCM.interval_auto_lights = setInterval(() => {
 				// Process auto lights
 				auto_lights_process();
 			}, 7000);
@@ -99,7 +99,7 @@ function auto_lights_process() {
 function coding_get() {
 	// Get all 20 blocks of coding data
 	for (var byte = 0; byte < 21; byte++) {
-		socket_client.data_send({
+		bus_client.data_send({
 			src: 'DIA',
 			dst: 'LCM',
 			msg: [0x08, byte],
@@ -185,7 +185,7 @@ function comfort_turn(data) {
 		status.lights.turn.comfort_cool = false;
 		reset();
 
-		omnibus.IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed);
+		IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed);
 
 		// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
 		setTimeout(() => {
@@ -504,14 +504,14 @@ function io_encode(object) {
 function io_set(packet) {
 	// console.log('[node::LCM] Sending \'Set IO status\' message');
 	packet.unshift(0x0C);
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'DIA',
 		dst: 'LCM',
 		msg: packet,
 	});
 
 	// Request the IO status after
-	omnibus.LCM.request('io-status');
+	LCM.request('io-status');
 }
 
 // Make things.. how they should be?
@@ -637,7 +637,7 @@ module.exports = {
 				cmd = [0x53];
 		}
 
-		socket_client.data_send({
+		bus_client.data_send({
 			src: src,
 			dst: 'LCM',
 			msg: cmd,
@@ -647,7 +647,7 @@ module.exports = {
 	// Handle incoming commands from API
 	api_command : (data) => {
 		if (typeof data['lcm-get'] !== 'undefined') {
-			omnibus.LCM.request('io-status');
+			LCM.request('io-status');
 		}
 		else {
 			// Dirty assumption

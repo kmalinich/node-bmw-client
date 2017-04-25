@@ -14,13 +14,13 @@ function parse_out(data) {
 				case 0x10:
 					data.value = data.value+' decrease 1 step';
 					if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-						omnibus.kodi.volume('down');
+						kodi.volume('down');
 					}
 					break;
 				case 0x11:
 					data.value = data.value+' increase 1 step';
 					if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-						omnibus.kodi.volume('up');
+						kodi.volume('up');
 					}
 					break;
 			}
@@ -68,18 +68,18 @@ function parse_out(data) {
 
 			// BT control version
 			if (config.media.bluetooth === true && config.media.kodi.enable === false) {
-				if      (button == 'left'     && action == 'depress')      { omnibus.BT.command('previous'); }
-				else if (button == 'right'    && action == 'depress')      { omnibus.BT.command('next');     }
-				else if (button == 'send/end' && action == 'depress')      { omnibus.BT.command('pause');    } // Think about it...
-				else if (button == 'send/end' && action == 'long depress') { omnibus.BT.command('play');     }
+				if      (button == 'left'     && action == 'depress')      { BT.command('previous'); }
+				else if (button == 'right'    && action == 'depress')      { BT.command('next');     }
+				else if (button == 'send/end' && action == 'depress')      { BT.command('pause');    } // Think about it...
+				else if (button == 'send/end' && action == 'long depress') { BT.command('play');     }
 			}
 
 			// Kodi version
 			if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-				if      (button == 'left'     && action == 'depress')      { omnibus.kodi.command('previous'); }
-				else if (button == 'right'    && action == 'depress')      { omnibus.kodi.command('next');     }
-				else if (button == 'send/end' && action == 'depress')      { omnibus.kodi.command('pause');    }
-				//else if (button == 'send/end' && action == 'long depress') { omnibus.kodi.command('play');     }
+				if      (button == 'left'     && action == 'depress')      { kodi.command('previous'); }
+				else if (button == 'right'    && action == 'depress')      { kodi.command('next');     }
+				else if (button == 'send/end' && action == 'depress')      { kodi.command('pause');    }
+				//else if (button == 'send/end' && action == 'long depress') { kodi.command('play');     }
 			}
 			break;
 

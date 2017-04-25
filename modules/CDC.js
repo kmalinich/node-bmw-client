@@ -74,7 +74,7 @@ function send_cd_status(status) {
 			break;
 	}
 
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'CDC',
 		dst: 'RAD',
 		msg: msg,

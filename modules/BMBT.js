@@ -10,7 +10,7 @@ function status_loop(action) {
 		action = false;
 	}
 
-	if (omnibus.BMBT.status_status_loop == action) {
+	if (BMBT.status_status_loop == action) {
 		return;
 	}
 
@@ -21,10 +21,10 @@ function status_loop(action) {
 
 	switch (action) {
 		case false:
-			clearInterval(omnibus.BMBT.interval_status_loop);
+			clearInterval(BMBT.interval_status_loop);
 
 			// Set status variables
-			omnibus.BMBT.status_status_loop = false;
+			BMBT.status_status_loop = false;
 
 			status.rad.audio_control = 'audio off';
 
@@ -38,12 +38,12 @@ function status_loop(action) {
 			break;
 		case true:
 			// Set status variable
-			omnibus.BMBT.status_status_loop = true;
+			BMBT.status_status_loop = true;
 
 			// Send a couple through to prime the pumps
 			refresh_status();
 
-			omnibus.BMBT.interval_status_loop = setInterval(() => {
+			BMBT.interval_status_loop = setInterval(() => {
 				refresh_status();
 			}, 20000);
 			break;
@@ -145,7 +145,7 @@ function parse_out(data) {
 
 // Say we have no tape in the player
 function send_cassette_status() {
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'BMBT',
 		dst: 'RAD',
 		msg: [0x4B, 0x05],
@@ -178,7 +178,7 @@ function send_button(button) {
 	var packet_down = [command, button_down];
 	var packet_up   = [command, button_up];
 
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'BMBT',
 		dst: 'RAD',
 		msg: packet_down,
@@ -187,7 +187,7 @@ function send_button(button) {
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
 		console.log('[BMBT::RAD] Sending button up: %s', button);
-		socket_client.data_send({
+		bus_client.data_send({
 			src: 'BMBT',
 			dst: 'RAD',
 			msg: packet_up,
