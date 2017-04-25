@@ -94,7 +94,7 @@ function bit_sample(dsc, packet, callback) {
 		// Display the bitmask for the two array positions
 		gm_bitmask_display(dsc, packet);
 
-		omnibus.ibus.send({
+		bus_client.send({
 			src: 'DIA',
 			dst: 'GM',
 			msg: [0x0C, packet],
