@@ -31,20 +31,14 @@ sleep_msg() {
 	sleep 0.5
 }
 
-kill() {
-	ps -ef | awk "/node\ ${UNIT}/ {print \$2}" | xargs kill -9 > /dev/null 2>&1
-}
-
 debug() {
 	stop > /dev/null 2>&1
-	kill
-	${DIR_APP}/debug.sh
+	/usr/bin/env node --trace-warnings --preserve-symlinks ${FILE_APP}
 }
 
 launch() {
 	stop > /dev/null 2>&1
-	kill
-	${DIR_APP}/launch.sh
+	/usr/bin/env node --throw-deprecation --trace-warnings --preserve-symlinks ${FILE_APP}
 }
 
 follow() {
