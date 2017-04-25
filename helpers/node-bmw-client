@@ -31,15 +31,19 @@ sleep_msg() {
 	sleep 0.5
 }
 
+kill() {
+	ps -ef | awk "/node\ ${UNIT}/ {print \$2}" | xargs kill -9 > /dev/null 2>&1
+}
+
 debug() {
 	stop > /dev/null 2>&1
-	ps -ef | awk "/${UNIT}/ {print \$2}" | xargs kill -9 > /dev/null 2>&1
+	kill
 	${DIR_APP}/debug.sh
 }
 
 launch() {
 	stop > /dev/null 2>&1
-	ps -ef | awk "/${UNIT}/ {print \$2}" | xargs kill -9 > /dev/null 2>&1
+	kill
 	${DIR_APP}/launch.sh
 }
 
@@ -69,7 +73,7 @@ uninstall() {
 		fi
 	fi
 
-	if ! sudo systemctl daemon-reload; then
+	if ! sudo systemctl client-reload; then
 		log "Failed to reload systemd, cannot continue"
 		exit 3
 	fi
@@ -91,7 +95,7 @@ install() {
 		exit 2
 	fi
 
-	if ! sudo systemctl daemon-reload; then
+	if ! sudo systemctl client-reload; then
 		log "Failed to reload systemd, cannot continue"
 		exit 3
 	fi
