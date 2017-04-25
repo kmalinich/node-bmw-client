@@ -15,7 +15,7 @@ function request(value) {
 			break;
 	}
 
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'CCM',
 		dst: 'EWS',
 		msg: cmd,

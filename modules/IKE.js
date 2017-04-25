@@ -26,7 +26,7 @@ function ascii2hex(str) {
 // Cluster/interior backlight
 function backlight(value) {
 	console.log('[node::IKE] Setting LCD screen backlight to %s', value);
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'LCM',
 		dst: 'GLO',
 		msg: [0x5C, value.toString(16), 0x00]
@@ -54,7 +54,7 @@ function ignition(value) {
 			break;
 	}
 
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'IKE',
 		dst: 'GLO',
 		msg: [0x11, status],
@@ -68,14 +68,14 @@ function obc_clock() {
 	var time = moment();
 
 	// Time
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'GT',
 		dst: 'IKE',
 		msg: [0x40, 0x01, time.format('H'), time.format('m')],
 	});
 
 	// Date
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'GT',
 		dst: 'IKE',
 		msg: [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
@@ -134,7 +134,7 @@ function obc_data(action, value, target) {
 
 	// console.log('[node::IKE] Performing \'%s\' on OBC value \'%s\'', action, value);
 
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'GT',
 		dst: 'IKE',
 		msg: msg,
@@ -143,24 +143,24 @@ function obc_data(action, value, target) {
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-	socket_client.data_send({
+	bus_client.data_send({
 		src: 'CCM',
 		dst: 'IKE',
 		msg: [0x1A, 0x30, 0x00],
 	});
-	omnibus.IKE.hud_refresh();
+	IKE.hud_refresh();
 }
 
 function decode_ignition_status(data) {
 	// Below is a s**t hack workaround while I contemplate firing actual events
 
 	// Init power-state vars
-	omnibus.IKE.state_powerdown   = false;
-	omnibus.IKE.state_poweroff    = false;
-	omnibus.IKE.state_powerup     = false;
-	omnibus.IKE.state_run         = false;
-	omnibus.IKE.state_start_begin = false;
-	omnibus.IKE.state_start_end   = false;
+	IKE.state_powerdown   = false;
+	IKE.state_poweroff    = false;
+	IKE.state_powerup     = false;
+	IKE.state_run         = false;
+	IKE.state_start_begin = false;
+	IKE.state_start_end   = false;
 
 	// Ignition going up
 	if (data.msg[1] > status.vehicle.ignition_level) {
@@ -170,7 +170,7 @@ function decode_ignition_status(data) {
 					src : 'IKE',
 					msg : 'Powerup state',
 				});
-				omnibus.IKE.state_powerup = true;
+				IKE.state_powerup = true;
 				break;
 			case 3: // Run
 				if (status.vehicle.ignition_level === 0) {
@@ -178,14 +178,14 @@ function decode_ignition_status(data) {
 						src : 'IKE',
 						msg : 'Powerup state',
 					});
-					omnibus.IKE.state_powerup = true;
+					IKE.state_powerup = true;
 				}
 
 				log.msg({
 					src : 'IKE',
 					msg : 'Run state',
 				});
-				omnibus.IKE.state_run = true;
+				IKE.state_run = true;
 				break;
 			case 7: // Start
 				if (status.vehicle.ignition_level === 0) {
@@ -193,14 +193,14 @@ function decode_ignition_status(data) {
 						src : 'IKE',
 						msg : 'Powerup state',
 					});
-					omnibus.IKE.state_powerup = true;
+					IKE.state_powerup = true;
 				}
 
 				log.msg({
 					src : 'IKE',
 					msg : 'Start-begin state',
 				});
-				omnibus.IKE.state_start_begin = true;
+				IKE.state_start_begin = true;
 		}
 	}
 
@@ -213,28 +213,28 @@ function decode_ignition_status(data) {
 						src : 'IKE',
 						msg : 'Powerdown state',
 					});
-					omnibus.IKE.state_powerdown = true;
+					IKE.state_powerdown = true;
 				}
 
 				log.msg({
 					src : 'IKE',
 					msg : 'Poweroff state',
 				});
-				omnibus.IKE.state_poweroff = true;
+				IKE.state_poweroff = true;
 				break;
 			case 1: // Accessory
 				log.msg({
 					src : 'IKE',
 					msg : 'Powerdown state',
 				});
-				omnibus.IKE.state_powerdown = true;
+				IKE.state_powerdown = true;
 				break;
 			case 3: // Run
 				log.msg({
 					src : 'IKE',
 					msg : 'Start-end state',
 				});
-				omnibus.IKE.state_start_end = true;
+				IKE.state_start_end = true;
 		}
 	}
 
@@ -248,7 +248,7 @@ function decode_ignition_status(data) {
 	}
 
 	// Activate autolights if we got 'em
-	omnibus.LCM.auto_lights_check();
+	LCM.auto_lights_check();
 
 	switch (data.msg[1]) {
 		case 0  : status.vehicle.ignition = 'off';       break;
@@ -259,9 +259,9 @@ function decode_ignition_status(data) {
 	}
 
 	// Ignition changed to off
-	if (omnibus.IKE.state_poweroff === true) {
+	if (IKE.state_poweroff === true) {
 		// Disable HUD refresh
-		clearInterval(omnibus.IKE.interval_data_refresh, () => {
+		clearInterval(IKE.interval_data_refresh, () => {
 			log.msg({
 				src : 'IKE',
 				msg : 'Cleared data refresh interval',
@@ -269,63 +269,63 @@ function decode_ignition_status(data) {
 		});
 
 		// Disable BMBT/MID keepalive
-		omnibus.BMBT.status_loop(false);
-		omnibus.MID.status_loop(false);
+		BMBT.status_loop(false);
+		MID.status_loop(false);
 
 		// Toggle media playback
-		omnibus.kodi.command('pause');
-		omnibus.BT.command('disconnect');
+		kodi.command('pause');
+		BT.command('disconnect');
 
 		// Set modules as not ready
 		json.modules_reset();
 
 		// Turn off HDMI display after 2 seconds
 		setTimeout(() => {
-			omnibus.HDMI.command('poweroff');
+			HDMI.command('poweroff');
 		}, 2000);
 
 		json.write(); // Write JSON config and status files
 	}
 
 	// Ignition changed to accessory, from off
-	if (omnibus.IKE.state_powerup === true) {
-		omnibus.IKE.state_powerup = false;
+	if (IKE.state_powerup === true) {
+		IKE.state_powerup = false;
 
 		// Enable BMBT/MID keepalive
-		omnibus.BMBT.status_loop(true);
-		omnibus.MID.status_loop(true);
+		BMBT.status_loop(true);
+		MID.status_loop(true);
 
 		// Toggle media playback
-		omnibus.kodi.command('pause');
-		omnibus.BT.command('connect');
+		kodi.command('pause');
+		BT.command('connect');
 
 		// Welcome message
-		omnibus.IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*100)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+		IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*100)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
 
 		// Refresh OBC data
-		omnibus.IKE.obc_refresh();
+		IKE.obc_refresh();
 
 		// Refresh OBC HUD once every 5 seconds, by requesting current temperatures
-		omnibus.IKE.interval_data_refresh = setInterval(() => {
+		IKE.interval_data_refresh = setInterval(() => {
 			// Get+save RPi temp
 			pitemp.measure((temperature) => {
 				status.pi.temperature = parseFloat(temperature.toFixed(0));
 			});
-			omnibus.IKE.request('temperature');
+			IKE.request('temperature');
 		}, 5000);
 	}
 
 	// Ignition changed to accessory, from run
-	if (omnibus.IKE.state_powerdown === true) {
-		omnibus.IKE.state_powerdown = false;
+	if (IKE.state_powerdown === true) {
+		IKE.state_powerdown = false;
 		if (status.vehicle.locked && status.doors.sealed) { // If the doors are closed and locked
-			omnibus.GM.locks(); // Send message to GM to toggle door locks
+			GM.locks(); // Send message to GM to toggle door locks
 		}
 	}
 
 	// Ignition changed to run, from off/accessory
-	if (omnibus.IKE.state_run === true) {
-		omnibus.IKE.state_run = false;
+	if (IKE.state_run === true) {
+		IKE.state_run = false;
 		json.write(); // Write JSON config and status files
 	}
 }
@@ -349,7 +349,7 @@ function decode_sensor_status(data) {
 		status.engine.running = bitmask.bit_test(data.msg[2], bitmask.bit[0]);
 		// If the engine is newly running, power up HDMI display
 		if (status.engine.running === true) {
-			omnibus.HDMI.command('powerup');
+			HDMI.command('powerup');
 		}
 	}
 
@@ -357,7 +357,7 @@ function decode_sensor_status(data) {
 		status.vehicle.reverse = bitmask.bit_test(data.msg[2], bitmask.bit[4]);
 		// If the vehicle is newly in reverse, send message
 		if (status.vehicle.reverse === true) {
-			omnibus.IKE.text_override('you\'re in reverse..');
+			IKE.text_override('you\'re in reverse..');
 		}
 	}
 }
@@ -389,7 +389,7 @@ function decode_temperature_values(data) {
 	status.temperature.coolant.f  = Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit'));
 
 	// Trigger a HUD refresh
-	omnibus.IKE.hud_refresh();
+	IKE.hud_refresh();
 }
 
 function decode_aux_heat_led(data) {
@@ -794,7 +794,7 @@ module.exports = {
 				ignition(data.value);
 				break;
 			case 'ike-text': // Display text string in cluster
-				omnibus.IKE.text(data.value);
+				IKE.text(data.value);
 				break;
 			case 'obc-clock': // Set OBC clock
 				obc_clock();
@@ -803,7 +803,7 @@ module.exports = {
 				obc_gong(data.value);
 				break;
 			case 'obc-get-all': // Refresh all OBC data value
-				omnibus.IKE.obc_refresh();
+				IKE.obc_refresh();
 				break;
 			case 'obc-get': // Refresh specific OBC data value
 				obc_data('get', data.value);
@@ -821,7 +821,7 @@ module.exports = {
 		var time_now = now();
 
 		// Bounce if the override is active
-		if(omnibus.IKE.hud_override === true) {
+		if(IKE.hud_override === true) {
 			log.msg({
 				src : module_name,
 				msg : 'HUD refresh: override active',
@@ -830,10 +830,10 @@ module.exports = {
 		}
 
 		// Bounce if the last update was less than 3 sec ago
-		if (time_now-omnibus.IKE.last_hud_refresh <= 3000) {
+		if (time_now-IKE.last_hud_refresh <= 3000) {
 			log.msg({
 				src : module_name,
-				msg : 'HUD refresh: too soon ('+(time_now-omnibus.IKE.last_hud_refresh).toFixed(0)+' ms)',
+				msg : 'HUD refresh: too soon ('+(time_now-IKE.last_hud_refresh).toFixed(0)+' ms)',
 			});
 			return;
 		}
@@ -854,7 +854,7 @@ module.exports = {
 		}
 
 		if (status.temperature.coolant.c === null) {
-			omnibus.IKE.request('temperature');
+			IKE.request('temperature');
 			string_temp = '  ';
 		}
 		else {
@@ -891,14 +891,14 @@ module.exports = {
 		if (status.vehicle.ignition_level < 1) {
 			log.msg({
 				src : module_name,
-				msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1 ('+(time_now-omnibus.IKE.last_hud_refresh)+' ms)',
+				msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1 ('+(time_now-IKE.last_hud_refresh)+' ms)',
 			});
 			return;
 		}
 		else {
 			var hud_string = load_1m+string_temp+spacing2+string_time;
-			omnibus.IKE.text(hud_string, () => {
-				omnibus.IKE.last_hud_refresh = now();
+			IKE.text(hud_string, () => {
+				IKE.last_hud_refresh = now();
 			});
 		}
 	},
@@ -911,23 +911,23 @@ module.exports = {
 		});
 
 		// LCM data
-		omnibus.LCM.request('vehicledata');
-		omnibus.LCM.request('light-status');
-		omnibus.LCM.request('dimmer');
-		omnibus.LCM.request('io-status');
+		LCM.request('vehicledata');
+		LCM.request('light-status');
+		LCM.request('dimmer');
+		LCM.request('io-status');
 
 		// Immo+GM data
-		omnibus.EWS.request('immobiliserstatus');
-		// omnibus.GM.request('io-status');
-		omnibus.GM.request('door-status');
+		EWS.request('immobiliserstatus');
+		// GM.request('io-status');
+		GM.request('door-status');
 
 		// IKE data
-		omnibus.IKE.request('coding'     );
-		omnibus.IKE.request('ignition'   );
-		omnibus.IKE.request('odometer'   );
-		omnibus.IKE.request('sensor'     );
-		omnibus.IKE.request('temperature');
-		omnibus.IKE.request('vin'        );
+		IKE.request('coding'     );
+		IKE.request('ignition'   );
+		IKE.request('odometer'   );
+		IKE.request('sensor'     );
+		IKE.request('temperature');
+		IKE.request('vin'        );
 
 		// OBC data
 		obc_data('get', 'arrival'      );
@@ -948,7 +948,7 @@ module.exports = {
 		obc_data('get', 'timer'        );
 
 		// Blow it out
-		// omnibus.IKE.request('status-glo');
+		// IKE.request('status-glo');
 	},
 
 	// Request various things from IKE
@@ -983,7 +983,7 @@ module.exports = {
 				src = 'IKE';
 				for (var dst in bus_modules.modules) {
 					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
-						socket_client.data_send({
+						bus_client.data_send({
 							src: src,
 							dst: dst,
 							msg: [0x01],
@@ -995,7 +995,7 @@ module.exports = {
 				src = 'IKE';
 				for (var dst in bus_modules.modules) {
 					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
-						socket_client.data_send({
+						bus_client.data_send({
 							src: src,
 							dst: dst,
 							msg: [0x01],
@@ -1011,7 +1011,7 @@ module.exports = {
 		}
 
 		if (cmd !== null) {
-			socket_client.data_send({
+			bus_client.data_send({
 				src: src,
 				dst: dst,
 				msg: cmd,
@@ -1035,7 +1035,7 @@ module.exports = {
 		var message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
 		var message_hex = message_hex.concat(ascii2hex(message.ike_pad()));
 
-		socket_client.data_send({
+		bus_client.data_send({
 			src : 'CCM',
 			dst : 'IKE',
 			msg : message_hex,
@@ -1052,7 +1052,7 @@ module.exports = {
 		var message_hex = [0x1A, 0x35, 0x00];
 		var message_hex = message_hex.concat(ascii2hex(message.ike_pad()));
 
-		socket_client.data_send({
+		bus_client.data_send({
 			src : 'CCM',
 			dst : 'IKE',
 			msg : message_hex,
@@ -1070,13 +1070,13 @@ module.exports = {
 		var scroll_delay = 300;
 
 		// Delare that we're currently first up
-		omnibus.IKE.hud_override      = true;
-		omnibus.IKE.hud_override_text = message;
+		IKE.hud_override      = true;
+		IKE.hud_override_text = message;
 
 		// Equal to or less than 20 char
 		if (message.length-max_length <= 0) {
-			if (omnibus.IKE.hud_override_text == message) {
-				omnibus.IKE.text(message);
+			if (IKE.hud_override_text == message) {
+				IKE.text(message);
 			}
 		}
 		else {
@@ -1084,8 +1084,8 @@ module.exports = {
 			timeout = timeout+(scroll_delay*5)+(scroll_delay*(message.length-max_length));
 
 			// Send initial string if we're currently the first up
-			if (omnibus.IKE.hud_override_text == message) {
-				omnibus.IKE.text(message);
+			if (IKE.hud_override_text == message) {
+				IKE.text(message);
 			}
 
 			// Add a time buffer before scrolling starts
@@ -1093,8 +1093,8 @@ module.exports = {
 				for (var scroll = 0; scroll <= message.length-max_length ; scroll++) {
 					setTimeout((current_scroll, message_full) => {
 						// Only send the message if we're currently the first up
-						if (omnibus.IKE.hud_override_text == message_full) {
-							omnibus.IKE.text(message.substring(current_scroll, current_scroll+max_length));
+						if (IKE.hud_override_text == message_full) {
+							IKE.text(message.substring(current_scroll, current_scroll+max_length));
 						}
 					}, scroll_delay*scroll, scroll, message);
 				}
@@ -1104,9 +1104,9 @@ module.exports = {
 		// Clear the override flag
 		setTimeout((message_full) => {
 			// Only deactivate the override if we're currently first up
-			if (omnibus.IKE.hud_override_text == message_full) {
-				omnibus.IKE.hud_override = false;
-				omnibus.IKE.hud_refresh();
+			if (IKE.hud_override_text == message_full) {
+				IKE.hud_override = false;
+				IKE.hud_refresh();
 			}
 		}, timeout, message);
 	},
@@ -1120,7 +1120,7 @@ module.exports = {
 		var message_hex = message_hex.concat(ascii2hex(message.ike_pad().substring(0, max_length)));
 		var message_hex = message_hex.concat(0x04);
 
-		socket_client.data_send({
+		bus_client.data_send({
 			src: 'RAD',
 			dst: 'IKE',
 			msg: message_hex,
