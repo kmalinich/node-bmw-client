@@ -46,7 +46,7 @@ function decode_status_keyfob(data) {
   data.command = 'bro';
 
   // 0x00 : no buttons
-  if (data.msg[1] == 0x00) {
+  if (data.msg[1] === 0x00 || data.msg[1] === 0x02) {
     data.value = 'key fob button: none';
     log.bus(data);
     return;
