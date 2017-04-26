@@ -3,21 +3,15 @@ var welcome_lights_timeout;
 
 // Automatic lights handling
 function auto_lights(action) {
-	if (status.vehicle.ignition_level < 1) {
-		action = false;
-	}
+	if (status.vehicle.ignition_level < 1) { action = false; }
+	if (status.lights.auto.active === action) { return; }
 
-	if (status.lights.auto.active != action) {
-		console.log('[node::LCM] Auto lights \'%s\' => \'%s\'', status.lights.auto.active, action);
-	}
-	else {
-		return;
-	}
+	log.msg({ src : module_name, msg : 'Auto lights \''+status.lights.auto.active+'\' => \''+action+'\'' });
 
 	switch (action) {
 		case false:
 			clearInterval(LCM.interval_auto_lights);
-			console.log('[node::IKE] Cleared autolights interval');
+			log.msg({ src : module_name, msg : 'Cleared autolights interval' });
 
 			// Set status variables
 			status.lights.auto.reason  = null;
@@ -52,9 +46,9 @@ function auto_lights_process() {
 	var lights_off      = sun_times.sunriseEnd;
 
 	// Debug logging
-	// console.log('[node::LCM]    current : %s', current_time);
-	// console.log('[node::LCM]  lights_on : %s', lights_on);
-	// console.log('[node::LCM] lights_off : %s', lights_off);
+	// log.msg({ src : module_name, msg : '   current : \''+current_time+'\'' });
+	// log.msg({ src : module_name, msg : ' lights_on : \''+lights_on+'\''    });
+	// log.msg({ src : module_name, msg : 'lights_off : \''+lights_off+'\''   });
 
 	if (status.vehicle.ignition_level < 1) {
 		auto_lights(false);
@@ -85,12 +79,12 @@ function auto_lights_process() {
 		status.lights.auto.lowbeam = true;
 	}
 
-  if (current_reason != status.lights.auto.reason) {
-    console.log('[node::LCM] Auto lights reason change \'%s\' => \'%s\'', current_reason, status.lights.auto.reason);
-  }
-  if (current_lowbeam != status.lights.auto.lowbeam) {
-    console.log('[node::LCM] Auto lights lowbeam change \'%s\' => \'%s\'', current_lowbeam, status.lights.auto.lowbeam);
-  }
+	if (current_reason != status.lights.auto.reason) {
+		log.msg({ src : module_name, msg : 'Auto lights reason change \''+current_reason+'\' => \''+status.lights.auto.reason+'\''});
+	}
+	if (current_lowbeam != status.lights.auto.lowbeam) {
+		log.msg({ src : module_name, msg : 'Auto lights lowbeam change \''+current_lowbeam+'\' => \''+status.lights.auto.lowbeam+'\''});
+	}
 
 	reset();
 }
@@ -160,7 +154,7 @@ function comfort_turn(data) {
 	}
 
 	if (action === 'left' || action === 'right') {
-		console.log('[node::LCM] Comfort turn signal - \'%s\'', action);
+		log.msg({ src : module_name, msg : 'Comfort turn signal - \''+action+'\'' });
 
 		switch (action) {
 			case 'left':
@@ -189,7 +183,7 @@ function comfort_turn(data) {
 
 		// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
 		setTimeout(() => {
-			console.log('[node::LCM] comfort turn signal - off');
+			log.msg({ src : module_name, msg : 'Comfort turn signal - off' });
 			// Set status variables
 			status.lights.turn.left.comfort  = false;
 			status.lights.turn.right.comfort = false;
@@ -198,7 +192,7 @@ function comfort_turn(data) {
 
 		// Timeout for cooldown period
 		setTimeout(() => {
-			console.log('[node::LCM] comfort turn signal - cooldown done');
+			log.msg({ src : module_name, msg : 'Comfort turn signal - cooldown done' });
 			status.lights.turn.comfort_cool = true;
 		}, 4000+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
 	}
@@ -657,13 +651,14 @@ module.exports = {
 
 	// Welcome lights on unlocking/locking
 	welcome_lights : (action) => {
-		if (status.lights.welcome_lights != action) {
-			console.log('[node::LCM] Welcome lights \'%s\' => \'%s\'', status.lights.welcome_lights, action);
-		} else { return; }
+		if (status.vehicle.ignition_level > 0) { action = false; }
+		if (status.lights.welcome_lights === action) { return; }
+
+		log.msg({ src : module_name, msg : 'Welcome lights \''+status.lights.welcome_lights+'\' => \''+action+'\'' });
 
 		switch (action) {
 			case true :
-				console.log('[node::LCM] Welcome lights activating');
+				log.msg({ src : module_name, msg : 'Welcome lights activating' });
 				status.lights.welcome_lights = true;
 
 				// Send configured welcome lights
@@ -671,13 +666,13 @@ module.exports = {
 
 				// Clear welcome lights status after 15 seconds
 				welcome_lights_timeout = setTimeout(() => {
-					console.log('[node::LCM] Welcome lights timeout expired');
+					log.msg({ src : module_name, msg : 'Welcome lights timeout expired' });
 					status.lights.welcome_lights = false;
 					// io_encode({});
 				}, 15000);
 				break;
 			case false:
-				console.log('[node::LCM] Welcome lights deactivating');
+				log.msg({ src : module_name, msg : 'Welcome lights deactivating' });
 				clearTimeout(welcome_lights_timeout);
 				status.lights.welcome_lights = false;
 				io_encode({});
