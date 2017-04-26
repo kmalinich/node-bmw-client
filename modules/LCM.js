@@ -538,6 +538,8 @@ function reset() {
 }
 
 module.exports = {
+	auto_lights : (action) => { auto_lights(action); },
+
 	// Should we turn the auto-lights on?
 	auto_lights_check : () => {
 		if (config.lights.auto !== true) {

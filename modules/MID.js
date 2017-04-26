@@ -15,7 +15,7 @@ function ascii2hex(str) {
 
 // Top screen - First 11 characters
 // 68 C0 23 00 20 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F CK
-// Top screen - Right half
+// Top screen - Right half (20 char)
 // 80 C0 23 00 20 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F CK
 // Menu - First 3 boxes
 // 68 C0 21 00 15 20 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
@@ -23,14 +23,68 @@ function ascii2hex(str) {
 // 68 C0 21 00 15 06 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
 
 function text(message) {
-	console.log('[node::MID] Sending text to MID screen: \'%s\'', message);
+	log.msg({ src: module_name, msg: 'Sending text to MID screen: \''+message+'\'' });
 
-	// Need to center text..
-	var message_hex = [0x23, 0x00, 0x20];
-	var message_hex = message_hex.concat(ascii2hex(pad(message, 20)));
+	var message_hex = [0x23, 0x40, 0x20];
+	var message_hex = message_hex.concat(ascii2hex(pad(20, message.substring(0, 20))));
 
 	bus_client.data_send({
 		src: 'IKE',
+		dst: 'MID',
+		msg: message_hex,
+	});
+
+	var message_hex = [0x21, 0x00, 0x15, 0x20];
+
+	var message = 'Pair';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'Unpa';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'Conn';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'Dscn';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'Back';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'Next';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+
+	bus_client.data_send({
+		src: 'RAD',
+		dst: 'MID',
+		msg: message_hex,
+	});
+
+	var message_hex = [0x21, 0x00, 0x15, 0x06];
+
+	var message = 'Paus';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'Play';
+	var message_hex = message_hex.concat(ascii2hex(pad(4, message).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'AL+';
+	var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	var message = 'AL-';
+	var message_hex = message_hex.concat(ascii2hex(pad(4, message).substring(0, 4)));
+	var message_hex = message_hex.concat(0x05);
+
+	bus_client.data_send({
+		src: 'RAD',
 		dst: 'MID',
 		msg: message_hex,
 	});
@@ -140,6 +194,19 @@ function parse_out(data) {
 			data.command = 'bro';
 			data.value   = 'button pressed: '+data.msg[1]+' '+data.msg[2]+' '+data.msg[3];
 
+			if (data.msg[1] == 0x00 && data.msg[2] == 0x15) {
+				switch (data.msg[3]) {
+					case 0x02: BT.command('connect'); break;
+					case 0x03: BT.command('disconnect'); break;
+					case 0x04: BT.command('previous'); break;
+					case 0x05: BT.command('next'); break;
+					case 0x06: BT.command('pause'); break;
+					case 0x07: BT.command('play'); break;
+					case 0x08: LCM.auto_lights(true); break;
+					case 0x09: LCM.auto_lights(false); break;
+				}
+			}
+
 			// 00 00 01,MID,RAD,Button Button_1_pressed
 			// 00 00 03,MID,RAD,Button Button_3_pressed
 			// 00 00 03,MID,RAD,Button TP_MUTE_pressed
@@ -219,17 +286,30 @@ function parse_out(data) {
 
 		case 0x32: // Broadcast: Volume control
 			data.command = 'con';
+			var volume = data.msg[1];
 
 			// Determine volume change direction
-			if (bitmask.bit_test(data.msg[1], 0x01)) {
+			if (bitmask.bit_test(volume, 0x01)) {
 				var direction = '+';
-				data.msg = data.msg-1;
+				var volume = parseFloat(volume)-1;
 			}
 			else {
 				var direction = '-';
+				var volume = parseFloat(volume);
 			}
 
-			data.value = 'volume '+direction+(data.msg[1]/10);
+			switch (volume) {
+					case 0x10 : volume = 1; break;
+					case 0x20 : volume = 2; break;
+					case 0x30 : volume = 3; break;
+					case 0x40 : volume = 4; break;
+					case 0x50 : volume = 5; break;
+					case 0x96 : volume = 9; break;
+					case 0xA0 : volume = 10; break;
+						// 112 128 96
+			}
+
+			data.value = 'volume '+direction+volume;
 
 			// data.msg[1] -
 			// -1 : 10

@@ -42,7 +42,7 @@ launch() {
 
 follow() {
 	[[ "${UNAME}" != "Linux" ]] && return
-	sudo journalctl -u ${APP} -f -n 5 | sed "s/$(hostname -s)\ ${APP}\[.*.]:\ //g"
+	sudo journalctl -u ${APP} -f -n 5 --all | sed "s/$(hostname -s)\ ${APP}\[.*.]:\ //g"
 }
 
 status() {
