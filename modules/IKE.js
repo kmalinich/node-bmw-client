@@ -300,7 +300,7 @@ function decode_ignition_status(data) {
 		BT.command('connect');
 
 		// Welcome message
-		IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*100)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+		// IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
 
 		// Refresh OBC data
 		IKE.obc_refresh();
