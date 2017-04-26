@@ -25,6 +25,7 @@
     "jsonfile": "^2.4.0",
     "kodi-ws": "^2.4.3",
     "moment": "^2.18.1",
+    "multipad": "^1.1.1",
     "node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
     "node-unit-conversion": "^0.1.1",
     "os": "^0.1.1",
