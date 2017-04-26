@@ -70,7 +70,7 @@ uninstall() {
 		fi
 	fi
 
-	if ! sudo systemctl client-reload; then
+	if ! sudo systemctl daemon-reload; then
 		log "Failed to reload systemd, cannot continue"
 		exit 3
 	fi
@@ -93,7 +93,7 @@ install() {
 		exit 2
 	fi
 
-	if ! sudo systemctl client-reload; then
+	if ! sudo systemctl daemon-reload; then
 		log "Failed to reload systemd, cannot continue"
 		exit 3
 	fi

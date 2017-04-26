@@ -21,6 +21,7 @@
     "url": "https://github.com/kmalinich/node-bmw-client/issues"
   },
   "dependencies": {
+    "chalk": "^1.1.3",
     "dbus-native": "^0.2.0",
     "jsonfile": "^2.4.0",
     "kodi-ws": "^2.4.3",
