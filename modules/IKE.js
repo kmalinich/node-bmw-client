@@ -2,17 +2,6 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 
 var pitemp = require('pi-temperature');
 
-// Pad string for IKE text screen length (20 characters)
-String.prototype.ike_pad = function() {
-	var string = this;
-
-	while (string.length < 20) {
-		string = string + ' ';
-	}
-
-	return string;
-}
-
 // ASCII to hex for cluster message
 function ascii2hex(str) {
 	var array = [];
@@ -294,6 +283,7 @@ function decode_ignition_status(data) {
 		// Enable BMBT/MID keepalive
 		BMBT.status_loop(true);
 		MID.status_loop(true);
+		RAD.send_audio_control('tuner/tape');
 
 		// Toggle media playback
 		kodi.command('pause');
@@ -1019,7 +1009,7 @@ module.exports = {
 		// 0x18 : 3 beep,    no arrow
 
 		var message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
-		var message_hex = message_hex.concat(ascii2hex(message.ike_pad()));
+		var message_hex = message_hex.concat(ascii2hex(pad(message, 20)));
 
 		bus_client.data_send({
 			src : 'CCM',
@@ -1036,7 +1026,7 @@ module.exports = {
 	// Check control messages
 	text_urgent : (message, timeout = 5000) => {
 		var message_hex = [0x1A, 0x35, 0x00];
-		var message_hex = message_hex.concat(ascii2hex(message.ike_pad()));
+		var message_hex = message_hex.concat(ascii2hex(pad(message, 20)));
 
 		bus_client.data_send({
 			src : 'CCM',
@@ -1103,7 +1093,7 @@ module.exports = {
 
 		var message_hex = [0x23, 0x50, 0x30, 0x07];
 		// Trim string to max length
-		var message_hex = message_hex.concat(ascii2hex(message.ike_pad().substring(0, max_length)));
+		var message_hex = message_hex.concat(ascii2hex(pad(message.substring(0, max_length), 20)));
 		var message_hex = message_hex.concat(0x04);
 
 		bus_client.data_send({

@@ -78,8 +78,8 @@ function parse_out(data) {
         case 0xAF:
           data.value = data.value+'off';
           status.rad.audio_control = data.value;
-					BMBT.power_on_if_ready();
-					MID.power_on_if_ready();
+					// BMBT.power_on_if_ready();
+					// MID.power_on_if_ready();
           break;
 
         case 0xA1:
@@ -164,8 +164,18 @@ function led(object) {
   });
 }
 
+function send_audio_control(source) {
+	log.msg({ src : module_name, msg : 'Sending audio control : tuner/tape' });
+  bus_client.data_send({
+    src: 'RAD',
+		dst: 'LOC',
+		msg : [0x36, 0xA1],
+	});
+}
+
 module.exports = {
-  led                : () => { led(object); },
-  parse_out          : (data) => { parse_out(data); },
+  led                : ()            => { led(object); },
+  parse_out          : (data)        => { parse_out(data); },
+	send_audio_control : (source)      => { send_audio_control(source); },
   send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
 };
