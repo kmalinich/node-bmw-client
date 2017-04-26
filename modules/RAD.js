@@ -8,16 +8,6 @@ function parse_out(data) {
 
   // Device status
   switch (data.msg[0]) {
-    case 0x21: // Update menu text
-      data.command = 'con';
-      data.value   = 'menu text';
-      break;
-
-    case 0x23: // Update display text
-      data.command = 'con';
-      data.value   = 'display text';
-      break;
-
     case 0x32: // Volume control
       data.command = 'con';
       data.value   = 'volume '+data.msg[1];
@@ -138,6 +128,7 @@ function parse_out(data) {
     default:
       data.command = 'unk';
       data.value   = Buffer.from(data.msg);
+			break;
   }
 
   log.bus(data);

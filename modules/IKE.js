@@ -456,21 +456,6 @@ module.exports = {
 				data.value   = 'temperature values';
 				break;
 
-			case 0x1B: // ACK text message
-				data.command = 'ack';
-				data.value   = parseFloat(data.msg[1])+' text messages';
-				break;
-
-			case 0x21: // Update menu text
-				data.command = 'con';
-				data.value   = 'menu text';
-				break;
-
-			case 0x23: // Update display text
-				data.command = 'con';
-				data.value   = 'display text';
-				break;
-
 			case 0x24: // OBC values broadcast
 				switch (data.msg[1]) {
 					case 0x01: // Time
@@ -778,6 +763,7 @@ module.exports = {
 			default:
 				data.command = 'unk';
 				data.value   = Buffer.from(data.msg);
+				break;
 		}
 
 		log.bus(data);
