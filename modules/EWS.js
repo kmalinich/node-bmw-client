@@ -55,10 +55,6 @@ function parse_out(data) {
 			}
 
 			data.value = 'key presence : \''+data.value+'\'';
-			log.bus(data);
-
-			// Start over again
-			data.value = null;
 
 			// Key number 255/0xFF = no key, vehicle immobilized
 			if (data.msg[2] == 0xFF) {
@@ -69,7 +65,7 @@ function parse_out(data) {
 				status.immobilizer.key_number = data.msg[2];
 			}
 
-			data.value = 'key number : \''+status.immobilizer.key_number+'\'';
+			data.value = data.value+', key number : \''+status.immobilizer.key_number+'\'';
 			break;
 
 		case 0xA0: // Broadcast: diagnostic command acknowledged
