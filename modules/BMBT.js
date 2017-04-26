@@ -66,7 +66,7 @@ function power_on_if_ready() {
 		return;
 	}
 
-	if (status.vehicle.ignition_level --- 0) {
+	if (status.vehicle.ignition_level === 0) {
 		return;
 	}
 
