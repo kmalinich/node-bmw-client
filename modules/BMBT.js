@@ -54,6 +54,7 @@ function status_loop(action) {
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
 		bus_commands.request_device_status('BMBT', 'RAD');
+		bus_commands.request_device_status('RAD', 'DSP');
 		return;
 	}
 
@@ -74,8 +75,13 @@ function power_on_if_ready() {
 	// console.log('[node:BMBT] dsp.ready         : \'%s\'', status.dsp.ready);
 	// console.log('[node:BMBT] rad.audio_control : \'%s\'', status.rad.audio_control);
 
-	if (status.rad.audio_control == 'audio off' && status.dsp.ready === true) {
-		console.log('[node:BMBT] Sending power!');
+	// if (status.rad.audio_control == 'audio off' && status.dsp.ready === true) {
+	if (status.rad.audio_control == 'audio off') {
+		IKE.text_override('BMBT sending power');
+		log.msg({
+			src : module_name,
+			msg : 'Sending power!',
+		});
 		send_button('power');
 	}
 }

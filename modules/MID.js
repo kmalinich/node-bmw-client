@@ -137,7 +137,10 @@ function power_on_if_ready() {
 	// console.log('[node:MID] rad.audio_control : \'%s\'', status.rad.audio_control);
 
 	if (status.rad.audio_control == 'audio off' && status.dsp.ready === true) {
-		console.log('[node:MID] Sending power!');
+		log.msg({
+			src : module_name,
+			msg : 'Sending power!',
+		});
 		send_button('power');
 	}
 }

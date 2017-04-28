@@ -527,14 +527,29 @@ function reset() {
 			reset_standing   = true;
 	}
 
-	io_encode({
-		dimmer_value_1    : reset_dimmer_val,
-		switch_standing   : reset_standing,
-		switch_lowbeam_1  : status.lights.auto.lowbeam,
-		switch_turn_left  : status.lights.turn.left.comfort,
-		switch_turn_right : status.lights.turn.right.comfort,
-		switch_fog_rear   : true, // To leverage the IKE LED as a status indicator
-	});
+	if (reset_standing === true) {
+		var lcm_object = {
+			output_standing_front_left       : true,
+			output_standing_front_right      : true,
+			output_standing_inner_rear_left  : true,
+			output_standing_inner_rear_right : true,
+			output_standing_rear_left        : true,
+			output_standing_rear_right       : true,
+			switch_turn_left                 : status.lights.turn.left.comfort,
+			switch_turn_right                : status.lights.turn.right.comfort,
+		};
+	}
+	else {
+		var lcm_object = {
+			dimmer_value_1    : reset_dimmer_val,
+			switch_lowbeam_1  : status.lights.auto.lowbeam,
+			switch_turn_left  : status.lights.turn.left.comfort,
+			switch_turn_right : status.lights.turn.right.comfort,
+			switch_fog_rear   : true, // To leverage the IKE LED as a status indicator
+		};
+	}
+
+	io_encode(lcm_object);
 }
 
 module.exports = {
