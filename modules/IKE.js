@@ -291,6 +291,7 @@ function decode_ignition_status(data) {
 
 		// Welcome message
 		// IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+		IKE.text_override('RESTART! RESTART! RESTART!');
 
 		// Refresh OBC data
 		IKE.obc_refresh();
@@ -339,7 +340,7 @@ function decode_sensor_status(data) {
 		status.engine.running = bitmask.bit_test(data.msg[2], bitmask.bit[0]);
 		// If the engine is newly running, power up HDMI display
 		if (status.engine.running === true) {
-			HDMI.command('powerup');
+			HDMI.command('poweron');
 		}
 	}
 
