@@ -175,23 +175,34 @@ function parse_out(data) {
 
     case 0x77: // Broadcast: Wiper status
       data.command = 'bro';
-      switch (data.msg[1]) {
-        case 0x0C:
-          data.value = 'off';
-          break;
-        case 0x0D:
-          data.value = 'low/auto';
-          break;
-        case 0x0E:
-          data.value = 'medium';
-          break;
-        case 0x0F:
-          data.value = 'high';
-          break;
-      }
-      data.value = 'wiper status: '+data.value;
 
-      status.gm.wiper_status = data.value;
+			// data.msg[1] bitmask
+			// 0x00 : sens 0+level 0
+			// 0x01 : speed 1
+			// 0x02 : speed 2
+			// 1+2  : speed 3
+			// 0x04 : sens 1
+			// 0x08 : sens 2
+			// 4+8  : sens 3
+			// 0x20 : spray
+
+			// This is wasteful because they all get evaluated
+			data.speed = 'off';
+			if (bitmask.bit_test(data.msg[1], 0x20)) data.speed = 'spray';
+			if (bitmask.bit_test(data.msg[1], 0x02)) data.speed = 'medium';
+			if (bitmask.bit_test(data.msg[1], 0x01)) data.speed = 'low/auto';
+			if (bitmask.bit_test(data.msg[1], 0x02) && bitmask.bit_test(data.msg[1], 0x01)) data.speed = 'high';
+
+			data.sensitivity = 0;
+			if (bitmask.bit_test(data.msg[1], 0x08)) data.sensitivity = 2;
+			if (bitmask.bit_test(data.msg[1], 0x04)) data.sensitivity = 1;
+			if (bitmask.bit_test(data.msg[1], 0x08) && bitmask.bit_test(data.msg[1], 0x04)) data.sensitivity = 3;
+
+      data.value = 'wipers: '+data.speed+' speed, '+data.sensitivity+' sensitivity';
+			IKE.text_override(data.value);
+
+      status.gm.wipers.sensitivity = data.sensitivity;
+      status.gm.wipers.speed       = data.speed;
       break;
 
     case 0x78: // Broadcast: Seat memory data
