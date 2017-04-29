@@ -10,7 +10,7 @@ function parse_out(data) {
   switch (data.msg[0]) {
     case 0x32: // Volume control
       data.command = 'con';
-      data.value   = 'volume '+data.msg[1];
+      data.value   = 'volume '+data.msg;
       break;
 
     case 0x34: // DSP control
@@ -88,7 +88,7 @@ function parse_out(data) {
           break;
 
         default:
-          data.value = data.value+data.msg[1];
+          data.value = data.value+data.msg;
           status.rad.audio_control = data.value;
           break;
       }
@@ -97,7 +97,7 @@ function parse_out(data) {
 		case 0x4A: // Control: Cassette
       return;
       data.command = 'con';
-      data.value   = 'cassette control '+data.msg[1];
+      data.value   = 'cassette control '+data.msg;
       break;
 
 		case 0x46: // Control: LCD

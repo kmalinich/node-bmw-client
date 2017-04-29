@@ -199,10 +199,12 @@ function parse_out(data) {
 			if (bitmask.bit_test(data.msg[1], 0x08) && bitmask.bit_test(data.msg[1], 0x04)) data.sensitivity = 3;
 
       data.value = 'wipers: '+data.speed+' speed, '+data.sensitivity+' sensitivity';
-			IKE.text_override(data.value);
 
       status.gm.wipers.sensitivity = data.sensitivity;
       status.gm.wipers.speed       = data.speed;
+
+			// Trigger auto lights processing
+			LCM.auto_lights_process();
       break;
 
     case 0x78: // Broadcast: Seat memory data
