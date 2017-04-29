@@ -12,20 +12,10 @@ function ascii2hex(str) {
 	return array;
 }
 
-// Cluster/interior backlight
-function backlight(value) {
-	console.log('[node::IKE] Setting LCD screen backlight to %s', value);
-	bus_client.data_send({
-		src: 'LCM',
-		dst: 'GLO',
-		msg: [0x5C, value.toString(16), 0x00]
-	});
-}
-
 // Pretend to be IKE saying the car is on
 // Note - this can and WILL set the alarm off - kudos to the Germans...
 function ignition(value) {
-	console.log('[node::IKE] Claiming ignition is \'%s\'', value);
+	log.msg({ src : module_name, msg : 'Sending ignition status: '+value });
 
 	var status;
 	switch (value) {
@@ -44,7 +34,7 @@ function ignition(value) {
 	}
 
 	bus_client.data_send({
-		src: 'IKE',
+		src: module_name,
 		dst: 'GLO',
 		msg: [0x11, status],
 	});
@@ -52,21 +42,21 @@ function ignition(value) {
 
 // OBC set clock
 function obc_clock() {
-	console.log('[node::IKE] Setting OBC clock to current time');
+	log.msg({ src : module_name, msg : 'Setting OBC clock to current time'});
 
 	var time = moment();
 
 	// Time
 	bus_client.data_send({
 		src: 'GT',
-		dst: 'IKE',
+		dst: module_name,
 		msg: [0x40, 0x01, time.format('H'), time.format('m')],
 	});
 
 	// Date
 	bus_client.data_send({
 		src: 'GT',
-		dst: 'IKE',
+		dst: module_name,
 		msg: [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
 	});
 }
@@ -121,11 +111,11 @@ function obc_data(action, value, target) {
 		msg = [msg, target];
 	}
 
-	// console.log('[node::IKE] Performing \'%s\' on OBC value \'%s\'', action, value);
+	log.msg({ src : module_name, msg : '\''+action+'\' OBC value \''+value+'\'' });
 
 	bus_client.data_send({
 		src: 'GT',
-		dst: 'IKE',
+		dst: module_name,
 		msg: msg,
 	});
 }
@@ -134,7 +124,7 @@ function obc_data(action, value, target) {
 function text_urgent_off() {
 	bus_client.data_send({
 		src: 'CCM',
-		dst: 'IKE',
+		dst: module_name,
 		msg: [0x1A, 0x30, 0x00],
 	});
 	IKE.hud_refresh();
@@ -156,7 +146,7 @@ function decode_ignition_status(data) {
 		switch (data.msg[1]) { // Evaluate new ignition state
 			case 1: // Accessory
 				log.msg({
-					src : 'IKE',
+					src : module_name,
 					msg : 'Powerup state',
 				});
 				IKE.state_powerup = true;
@@ -164,14 +154,14 @@ function decode_ignition_status(data) {
 			case 3: // Run
 				if (status.vehicle.ignition_level === 0) {
 					log.msg({
-						src : 'IKE',
+						src : module_name,
 						msg : 'Powerup state',
 					});
 					IKE.state_powerup = true;
 				}
 
 				log.msg({
-					src : 'IKE',
+					src : module_name,
 					msg : 'Run state',
 				});
 				IKE.state_run = true;
@@ -179,14 +169,14 @@ function decode_ignition_status(data) {
 			case 7: // Start
 				if (status.vehicle.ignition_level === 0) {
 					log.msg({
-						src : 'IKE',
+						src : module_name,
 						msg : 'Powerup state',
 					});
 					IKE.state_powerup = true;
 				}
 
 				log.msg({
-					src : 'IKE',
+					src : module_name,
 					msg : 'Start-begin state',
 				});
 				IKE.state_start_begin = true;
@@ -199,28 +189,28 @@ function decode_ignition_status(data) {
 			case 0: // Off
 				if (status.vehicle.ignition_level === 3) {
 					log.msg({
-						src : 'IKE',
+						src : module_name,
 						msg : 'Powerdown state',
 					});
 					IKE.state_powerdown = true;
 				}
 
 				log.msg({
-					src : 'IKE',
+					src : module_name,
 					msg : 'Poweroff state',
 				});
 				IKE.state_poweroff = true;
 				break;
 			case 1: // Accessory
 				log.msg({
-					src : 'IKE',
+					src : module_name,
 					msg : 'Powerdown state',
 				});
 				IKE.state_powerdown = true;
 				break;
 			case 3: // Run
 				log.msg({
-					src : 'IKE',
+					src : module_name,
 					msg : 'Start-end state',
 				});
 				IKE.state_start_end = true;
@@ -230,14 +220,14 @@ function decode_ignition_status(data) {
 	// Set ignition status value
 	if (status.vehicle.ignition_level != data.msg[1]) {
 		log.msg({
-			src : 'IKE',
+			src : module_name,
 			msg : 'Ignition level change \''+status.vehicle.ignition_level+'\' => \''+data.msg[1]+'\'',
 		});
 		status.vehicle.ignition_level = data.msg[1];
 	}
 
 	// Activate autolights if we got 'em
-	LCM.auto_lights_check();
+	LCM.auto_lights();
 
 	switch (data.msg[1]) {
 		case 0  : status.vehicle.ignition = 'off';       break;
@@ -252,7 +242,7 @@ function decode_ignition_status(data) {
 		// Disable HUD refresh
 		clearInterval(IKE.interval_data_refresh, () => {
 			log.msg({
-				src : 'IKE',
+				src : module_name,
 				msg : 'Cleared data refresh interval',
 			});
 		});
@@ -447,9 +437,53 @@ module.exports = {
 				data.value   = 'temperature values';
 				break;
 
-			case 0x24: // OBC values broadcast
+			case 0x24: // Update: OBC text
+				data.command = 'upd';
+				var layout;
+
+				// data.msg[1] - Layout
 				switch (data.msg[1]) {
-					case 0x01: // Time
+					case 0x00 : layout = 'phone';            break;
+					case 0x01 : layout = 'time';             break;
+					case 0x02 : layout = 'date';             break;
+					case 0x03 : layout = 'outside-temp';     break;
+					case 0x04 : layout = 'consumption-1';    break;
+					case 0x05 : layout = 'consumption-2';    break;
+					case 0x06 : layout = 'range';            break;
+					case 0x07 : layout = 'distance';         break;
+					case 0x08 : layout = 'arrival';          break;
+					case 0x09 : layout = 'limit';            break;
+					case 0x0A : layout = 'average-speed';    break;
+					case 0x0B : layout = 'obc-mode-0b';      break;
+					case 0x0C : layout = 'memo';             break;
+					case 0x0D : layout = 'code';             break;
+					case 0x0E : layout = 'stopwatch';        break;
+					case 0x0F : layout = 'timer-1';          break;
+					case 0x10 : layout = 'timer-2';          break;
+					case 0x11 : layout = 'aux-heating-off';  break;
+					case 0x12 : layout = 'aux-heating-on';   break;
+					case 0x13 : layout = 'aux-vent-off';     break;
+					case 0x14 : layout = 'aux-vent-on';      break;
+					case 0x15 : layout = 'end-stellmode';    break;
+					case 0x16 : layout = 'emergency-disarm'; break;
+					case 0x17 : layout = 'obc-mode-17';      break;
+					case 0x18 : layout = 'obc-mode-18';      break;
+					case 0x19 : layout = 'obc-mode-19';      break;
+					case 0x1A : layout = 'interim-time';     break;
+					case 0x1B : layout = 'aux-heat/vent';    break;
+					case 0x1C : layout = 'obc-mode-1c';      break;
+					case 0x1D : layout = 'obc-mode-1d';      break;
+					case 0x1E : layout = 'obc-mode-1e';      break;
+					case 0x1F : layout = 'test-mode';        break;
+					case 0x24 : layout = 'checkcontrol';     break;
+					case 0x40 : layout = 'display';          break;
+					case 0x50 : layout = 'cluster';          break;
+					case 0x62 : layout = 'radio';            break;
+					default   : layout = 'unknown '+data.msg[1];
+				}
+
+				switch (layout) {
+					case 'time':
 						// Parse unit
 						string_time_unit = Buffer.from([data.msg[8], data.msg[9]]);
 						string_time_unit = string_time_unit.toString().trim().toLowerCase();
@@ -468,22 +502,18 @@ module.exports = {
 
 						// Update status variables
 						status.obc.time = string_time;
-						data.command    = 'OBC time';
-						data.value      = status.obc.time;
 						break;
 
-					case 0x02: // Date
+					case 'date':
 						// Parse value
 						string_date = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9], data.msg[10], data.msg[11], data.msg[12]]);
 						string_date = string_date.toString().trim();
 
 						// Update status variables
 						status.obc.date = string_date;
-						data.command    = 'OBC date';
-						data.value      = status.obc.date;
 						break;
 
-					case 0x03: // Exterior temp
+					case 'outside-temp':
 						// Parse unit
 						string_temp_exterior_unit = Buffer.from([data.msg[9]]);
 						string_temp_exterior_unit = string_temp_exterior_unit.toString().trim().toLowerCase();
@@ -515,12 +545,9 @@ module.exports = {
 								status.temperature.exterior.obc.f = parseFloat(string_temp_exterior_value);
 								break;
 						}
-
-						data.command = 'OBC exterior temperature';
-						data.value   = status.temperature.exterior.obc.c;
 						break;
 
-					case 0x04: // Consumption 1
+					case 'consumption-1':
 						// Parse unit
 						string_consumption_1_unit = Buffer.from([data.msg[8]]);
 						string_consumption_1_unit = string_consumption_1_unit.toString().trim().toLowerCase();
@@ -547,12 +574,9 @@ module.exports = {
 						// Update status variables
 						status.obc.consumption.c1.mpg  = parseFloat(consumption_mpg.toFixed(2));
 						status.obc.consumption.c1.l100 = parseFloat(consumption_l100.toFixed(2));
-
-						data.command = 'OBC consumption 1';
-						data.value   = status.obc.consumption.c1.mpg;
 						break;
 
-					case 0x05: // Consumption 2
+					case 'consumption-2':
 						// Parse unit
 						string_consumption_2_unit = Buffer.from([data.msg[8]]);
 						string_consumption_2_unit = string_consumption_2_unit.toString().trim().toLowerCase();
@@ -574,12 +598,9 @@ module.exports = {
 						// Update status variables
 						status.obc.consumption.c2.mpg  = parseFloat(consumption_mpg.toFixed(2));
 						status.obc.consumption.c2.l100 = parseFloat(consumption_l100.toFixed(2));
-
-						data.command = 'OBC consumption 2';
-						data.value   = status.obc.consumption.c2.mpg;
 						break;
 
-					case 0x06: // Range
+					case 'range':
 						// Parse value
 						string_range = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 						string_range = string_range.toString().trim();
@@ -601,45 +622,36 @@ module.exports = {
 								status.obc.range.km = parseFloat(string_range);
 								break;
 						}
-
-						data.command = 'OBC range to empty';
-						data.value   = status.obc.range.mi;
 						break;
 
-					case 0x07: // Distance
+					case 'distance':
 						// Parse value
 						string_distance = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 						string_distance = string_distance.toString().trim().toLowerCase();
 
 						// Update status variables
 						status.obc.distance = parseFloat(string_distance);
-						data.command        = 'OBC distance remaining';
-						data.value          = status.obc.distance;
 						break;
 
-					case 0x08: // Arrival time
-						data.command = 'OBC arrival time';
+					case 'arrival':
 						// Parse value
 						string_arrival = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
 						string_arrival = string_arrival.toString().trim().toLowerCase();
 
 						// Update status variables
 						status.obc.arrival = string_arrival;
-						value              = status.obc.arrival;
 						break;
 
-					case 0x09: // Limit
+					case 'limit':
 						// Parse value
 						string_speedlimit = Buffer.from([data.msg[3], data.msg[4], data.msg[5]]);
 						string_speedlimit = parseFloat(string_speedlimit.toString().trim().toLowerCase());
 
 						// Update status variables
 						status.obc.speedlimit = parseFloat(string_speedlimit.toFixed(2));
-						data.command          = 'OBC speed limit';
-						data.value            = status.obc.speedlimit;
 						break;
 
-					case 0x0A: // average speed
+					case 'average-speed':
 						// Parse unit
 						string_speedavg_unit = Buffer.from([data.msg[8]]);
 						string_speedavg_unit = string_speedavg_unit.toString().trim().toLowerCase();
@@ -664,85 +676,60 @@ module.exports = {
 								status.obc.speedavg.mph = parseFloat(string_speedavg.toFixed(2));
 								break;
 						}
-
-						data.command = 'OBC average speed';
-						data.value   = status.obc.speedavg.mph;
 						break;
 
-					case 0x0B: //
-						data.command = 'OBC 0x0B';
-						data.value   = Buffer.from(data.msg);
-						break;
-
-					case 0x0C: //
-						data.command = 'OBC 0x0C';
-						data.value   = Buffer.from(data.msg);
-						break;
-
-					case 0x0D: //
+					case 'code':
 						// Parse value
 						string_code = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 						string_code = string_code.toString().trim().toLowerCase();
 
 						// Update status variable
 						status.obc.code = string_code;
-						data.command    = 'OBC code';
-						data.value      = status.obc.code;
 						break;
 
-					case 0x0E: // Timer
+					case 'stopwatch':
 						// Parse value
 						string_timer = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 						string_timer = parseFloat(string_timer.toString().trim().toLowerCase()).toFixed(2);
 
 						// Update status variables
 						status.obc.timer = string_timer;
-						data.command     = 'OBC timer';
-						data.value       = status.obc.timer;
 						break;
 
-					case 0x0F: // Aux heat timer 1
+					case 'timer-1':
 						// Parse value
 						string_aux_heat_timer_1 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
 						string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
 
 						// Update status variables
 						status.obc.aux_heat_timer.t1 = string_aux_heat_timer_1;
-						data.command                 = 'OBC aux heat timer 1';
-						data.value                   = status.obc.aux_heat_timer.t1;
 						break;
 
-					case 0x10: // Aux heat timer 2
+					case 'timer-2':
 						// Parse value
 						string_aux_heat_timer_2 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
 						string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
 
 						// Update status variables
 						status.obc.aux_heat_timer.t2 = string_aux_heat_timer_2;
-						data.command                 = 'OBC aux heat timer 2';
-						data.value                   = status.obc.aux_heat_timer.t2;
 						break;
 
-					case 0x1A: // Stopwatch
+					case 'interim-time':
 						// Parse value
 						string_stopwatch = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 						string_stopwatch = parseFloat(string_stopwatch.toString().trim().toLowerCase()).toFixed(2);
 
 						// Update status variables
 						status.obc.stopwatch = parseFloat(string_stopwatch);
-						data.command         = 'OBC stopwatch';
-						data.value           = status.obc.stopwatch;
 						break;
-
-					default:
-						data.command = 'bro';
-						data.value   = 'OBC unknown value : '+Buffer.from(data.msg);
 				}
+
+				data.value = layout+' text, \''+Buffer.from(data.msg).slice(4).toString().replace(/�/g, '°').slice(0, -1)+'\'';
 				break;
 
-			case 0x2A: // aux heating LED
+			case 0x2A: // Broadcast: Aux heat LED status
 				data.command = 'bro';
-				data.value   = 'aux heating LED : '+status.obc.aux_heat_led;
+				data.value   = 'aux heat LED : '+status.obc.aux_heat_led;
 				decode_aux_heat_led(data);
 				break;
 
@@ -764,9 +751,6 @@ module.exports = {
 	// This is pure garbage and COMPLETELY needs to be done way differently
 	api_command : (data) => {
 		switch (data.command) {
-			case 'ike-backlight': // Set IKE backlight
-				backlight(data.value);
-				break;
 			case 'ike-ignition': // Send fake ignition status (but don't tho - you've been warned)
 				ignition(data.value);
 				break;
@@ -789,7 +773,7 @@ module.exports = {
 				obc_data('reset', data.value);
 				break;
 			default: // Dunno.
-				console.log('[node::IKE] api_command(): Unknown command \'%s\', \'%s\'', data.command, data.value);
+				log.msg({ src : module_name, msg : 'Unknown API command: '+data.command });
 		}
 	},
 
@@ -883,7 +867,7 @@ module.exports = {
 	// Refresh OBC data
 	obc_refresh : () => {
 		log.msg({
-			src : 'IKE',
+			src : module_name,
 			msg : 'Refreshing all OBC data',
 		});
 
@@ -932,7 +916,7 @@ module.exports = {
 	request : (value) => {
 		var cmd = null;
 		var src = 'VID';
-		var dst = 'IKE';
+		var dst = module_name;
 		switch (value) {
 			case 'ignition':
 				cmd = [0x10];
@@ -957,7 +941,7 @@ module.exports = {
 				cmd = [0x1D, 0xC5];
 				break;
 			case 'status-glo':
-				src = 'IKE';
+				src = module_name;
 				for (var dst in bus_modules.modules) {
 					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
 						bus_client.data_send({
@@ -969,7 +953,7 @@ module.exports = {
 				}
 				break;
 			case 'status-loc':
-				src = 'IKE';
+				src = module_name;
 				for (var dst in bus_modules.modules) {
 					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
 						bus_client.data_send({
@@ -981,7 +965,7 @@ module.exports = {
 				}
 				break;
 			case 'vin':
-				src = 'IKE';
+				src = module_name;
 				dst = 'LCM';
 				cmd = [0x53];
 				break;
@@ -1014,7 +998,7 @@ module.exports = {
 
 		bus_client.data_send({
 			src : 'CCM',
-			dst : 'IKE',
+			dst : module_name,
 			msg : message_hex,
 		});
 
@@ -1031,7 +1015,7 @@ module.exports = {
 
 		bus_client.data_send({
 			src : 'CCM',
-			dst : 'IKE',
+			dst : module_name,
 			msg : message_hex,
 		});
 
@@ -1099,7 +1083,7 @@ module.exports = {
 
 		bus_client.data_send({
 			src: 'RAD',
-			dst: 'IKE',
+			dst: module_name,
 			msg: message_hex,
 		});
 	},

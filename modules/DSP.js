@@ -31,7 +31,7 @@ function request(value) {
 
 	bus_client.data_send({
 		src: src,
-		dst: 'DSP',
+		dst: module_name,
 		msg: cmd,
 	});
 }
@@ -68,7 +68,7 @@ function dsp_mode(mode) {
 
 	bus_client.data_send({
 		src: 'RAD',
-		dst: 'DSP',
+		dst: module_name,
 		msg: cmd,
 	});
 }
@@ -90,7 +90,7 @@ function m_audio(value) {
 
 	bus_client.data_send({
 		src: 'RAD',
-		dst: 'DSP',
+		dst: module_name,
 		msg: cmd,
 	});
 }
@@ -121,7 +121,7 @@ function parse_out(data) {
 function eq_send(msg) {
 	bus_client.data_send({
 		src : 'DSPC',
-		dst : 'DSP',
+		dst : module_name,
 		msg : msg,
 	});
 
