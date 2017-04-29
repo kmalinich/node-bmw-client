@@ -57,7 +57,7 @@ function led(object) {
   if (object.flash_green)  byte = bitmask.bit_set(byte, bitmask.bit[5]);
 
   // Send message
-	log.msg({ src : module_name, msg : 'Setting LED' });
+	log.module({ src : module_name, msg : 'Setting LED' });
   socket.data_send({
     src: module_name,
     dst: 'OBC',

@@ -3,7 +3,7 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 // Request various things from EWS
 function request(value) {
 	var cmd;
-	log.msg({
+	log.module({
 		src : module_name,
 		msg : 'Requesting \''+value+'\'',
 	});
