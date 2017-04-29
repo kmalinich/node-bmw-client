@@ -50,7 +50,7 @@ function status_loop(action) {
 // Send BMBT status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
-		bus_commands.request_device_status('BMBT', 'RAD');
+		bus_commands.request_device_status(module_name, 'RAD');
 		bus_commands.request_device_status('RAD',  'DSP');
 		return;
 	}
@@ -133,7 +133,7 @@ function parse_out(data) {
 // Say we have no tape in the player
 function send_cassette_status() {
 	bus_client.data_send({
-		src: 'BMBT',
+		src: module_name,
 		dst: 'RAD',
 		msg: [0x4B, 0x05],
 	});
@@ -166,7 +166,7 @@ function send_button(button) {
 	var packet_up   = [command, button_up];
 
 	bus_client.data_send({
-		src: 'BMBT',
+		src: module_name,
 		dst: 'RAD',
 		msg: packet_down,
 	});
@@ -175,7 +175,7 @@ function send_button(button) {
 	setTimeout(() => {
 		log.msg({ src : module_name, msg : 'Button up '+button });
 		bus_client.data_send({
-			src: 'BMBT',
+			src: module_name,
 			dst: 'RAD',
 			msg: packet_up,
 		});

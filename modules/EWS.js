@@ -4,7 +4,7 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 function request(value) {
 	var cmd;
 	log.msg({
-		src : 'EWS',
+		src : module_name,
 		msg : 'Requesting \''+value+'\'',
 	});
 
@@ -17,7 +17,7 @@ function request(value) {
 
 	bus_client.data_send({
 		src: 'CCM',
-		dst: 'EWS',
+		dst: module_name,
 		msg: cmd,
 	});
 }

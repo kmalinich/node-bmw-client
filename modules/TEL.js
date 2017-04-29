@@ -36,7 +36,37 @@ function parse_out(data) {
 	log.bus(data);
 }
 
+// Turn on/off/flash the TEL LED by encoding a bitmask from an input object
+function led(object) {
+  // Bitmask
+  // 0x00 = all off
+  // 0x01 = solid red
+  // 0x02 = flash red
+  // 0x04 = solid yellow
+  // 0x08 = flash yellow
+  // 0x10 = solid green
+  // 0x20 = flash green
+
+  // Initialize output byte
+  var byte = 0x00;
+  if (object.solid_red)    byte = bitmask.bit_set(byte, bitmask.bit[0]);
+  if (object.flash_red)    byte = bitmask.bit_set(byte, bitmask.bit[1]);
+  if (object.solid_yellow) byte = bitmask.bit_set(byte, bitmask.bit[2]);
+  if (object.flash_yellow) byte = bitmask.bit_set(byte, bitmask.bit[3]);
+  if (object.solid_green)  byte = bitmask.bit_set(byte, bitmask.bit[4]);
+  if (object.flash_green)  byte = bitmask.bit_set(byte, bitmask.bit[5]);
+
+  // Send message
+	log.msg({ src : module_name, msg : 'Setting LED' });
+  bus_client.data_send({
+    src: module_name,
+    dst: 'OBC',
+    msg: [0x2B, byte], // Turn on TEL LED
+  });
+}
+
 module.exports = {
-  parse_out          : (data) => { parse_out(data); },
+  led                : (object)      => { led(object); },
+  parse_out          : (data)        => { parse_out(data); },
   send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
 }

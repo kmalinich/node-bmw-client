@@ -134,47 +134,16 @@ function parse_out(data) {
   log.bus(data);
 }
 
-// Turn on/off/flash the RAD LED by encoding a bitmask from an input object
-function led(object) {
-  // Bitmask
-  // 0x00 = all off
-  // 0x01 = solid red
-  // 0x02 = flash red
-  // 0x04 = solid yellow
-  // 0x08 = flash yellow
-  // 0x10 = solid green
-  // 0x20 = flash green
-
-  // Initialize output byte
-  var byte = 0x00;
-
-  if (object.solid_red)    { byte = bitmask.bit_set(byte, bitmask.bit[0]); }
-  if (object.flash_red)    { byte = bitmask.bit_set(byte, bitmask.bit[1]); }
-  if (object.solid_yellow) { byte = bitmask.bit_set(byte, bitmask.bit[2]); }
-  if (object.flash_yellow) { byte = bitmask.bit_set(byte, bitmask.bit[3]); }
-  if (object.solid_green)  { byte = bitmask.bit_set(byte, bitmask.bit[4]); }
-  if (object.flash_green)  { byte = bitmask.bit_set(byte, bitmask.bit[5]); }
-
-  // Send message
-  console.log('[node::RAD] Sending \'RAD LED\' packet');
-  bus_client.data_send({
-    src: 'TEL',
-    dst: 'OBC',
-    msg: [command, byte], // Turn on radio LED
-  });
-}
-
 function send_audio_control(source) {
-	log.msg({ src : module_name, msg : 'Sending audio control : tuner/tape' });
+	log.msg({ src : module_name, msg : 'Sending audio control: tuner/tape' });
   bus_client.data_send({
-    src: 'RAD',
+    src: module_name,
 		dst: 'LOC',
 		msg : [0x36, 0xA1],
 	});
 }
 
 module.exports = {
-  led                : ()            => { led(object); },
   parse_out          : (data)        => { parse_out(data); },
 	send_audio_control : (source)      => { send_audio_control(source); },
   send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
