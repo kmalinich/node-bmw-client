@@ -202,7 +202,7 @@ function parse_out(data) {
 			if (status.gm.wipers.sensitivity != data.sensitivity) {
 				log.msg({
 					src   : module_name,
-					value : 'Wiper sensitivity'
+					value : 'Wiper sensitivity',
 					old   : status.gm.wipers.sensitivity,
 					new   : data.sensitivity,
 				});
@@ -214,7 +214,7 @@ function parse_out(data) {
 			if (status.gm.wipers.speed != data.speed) {
 				log.msg({
 					src   : module_name,
-					value : 'Wiper speed'
+					value : 'Wiper speed',
 					old   : status.gm.wipers.speed,
 					new   : data.speed,
 				});

@@ -13,10 +13,10 @@ suncalc = require('suncalc');
 bitmask      = require('bitmask');
 bus_commands = require('bus-commands');
 bus_modules  = require('bus-modules');
-bus_client   = require('bus-client');
 hex          = require('hex');
 json         = require('json');
 log          = require('log-output');
+socket       = require('socket');
 
 function load_modules(callback) {
 	// Data bus module libraries
@@ -112,7 +112,7 @@ function startup() {
 		json.reset(() => { // Reset status and module vars pertinent to launching app
 			load_modules(() => { // Load IBUS module node modules
 				kodi.autoconfig_loop(true, () => {}); // Enable kodi autoconfig
-				bus_client.startup(() => { // Start WebSocket client
+				socket.startup(() => { // Start WebSocket client
 					HDMI.startup(() => { // Open HDMI-CEC
 						BT.autoconfig(() => { // Open Bluetooth connection
 
@@ -137,7 +137,7 @@ function shutdown(signal) {
 		msg : 'Received '+signal+', shutting down',
 	});
 
-	bus_client.shutdown(() => { // Stop WebSocket client
+	socket.shutdown(() => { // Stop WebSocket client
 		HDMI.shutdown(() => { // Close HDMI-CEC
 			kodi.shutdown(() => { // Close Kodi websocket/clean up
 				log.msg({
