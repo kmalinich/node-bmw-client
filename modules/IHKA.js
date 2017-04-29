@@ -43,7 +43,7 @@ function aux(type, action) {
     case true : cmd++; break;
   }
 
-  bus_client.data_send({
+  socket.data_send({
     src: 'GT',
     dst: 'IKE',
     msg: [0x41, cmd],

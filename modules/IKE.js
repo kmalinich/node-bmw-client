@@ -33,7 +33,7 @@ function ignition(value) {
       break;
   }
 
-  bus_client.data_send({
+  socket.data_send({
     src: module_name,
     dst: 'GLO',
     msg: [0x11, status],
@@ -47,14 +47,14 @@ function obc_clock() {
   var time = moment();
 
   // Time
-  bus_client.data_send({
+  socket.data_send({
     src: 'GT',
     dst: module_name,
     msg: [0x40, 0x01, time.format('H'), time.format('m')],
   });
 
   // Date
-  bus_client.data_send({
+  socket.data_send({
     src: 'GT',
     dst: module_name,
     msg: [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
@@ -126,7 +126,7 @@ function obc_data(action, value, target) {
 
   log.msg({ src : module_name, msg : '\''+action+'\' OBC value \''+value+'\'' });
 
-  bus_client.data_send({
+  socket.data_send({
     src: 'GT',
     dst: module_name,
     msg: msg,
@@ -135,7 +135,7 @@ function obc_data(action, value, target) {
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-  bus_client.data_send({
+  socket.data_send({
     src: 'CCM',
     dst: module_name,
     msg: [0x1A, 0x30, 0x00],
@@ -964,7 +964,7 @@ module.exports = {
         src = module_name;
         for (var dst in bus_modules.modules) {
           if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
-            bus_client.data_send({
+            socket.data_send({
               src: src,
               dst: dst,
               msg: [0x01],
@@ -976,7 +976,7 @@ module.exports = {
         src = module_name;
         for (var dst in bus_modules.modules) {
           if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
-            bus_client.data_send({
+            socket.data_send({
               src: src,
               dst: dst,
               msg: [0x01],
@@ -992,7 +992,7 @@ module.exports = {
     }
 
     if (cmd !== null) {
-      bus_client.data_send({
+      socket.data_send({
         src: src,
         dst: dst,
         msg: cmd,
@@ -1016,7 +1016,7 @@ module.exports = {
     var message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
     var message_hex = message_hex.concat(ascii2hex(pad(message, 20)));
 
-    bus_client.data_send({
+    socket.data_send({
       src : 'CCM',
       dst : module_name,
       msg : message_hex,
@@ -1033,7 +1033,7 @@ module.exports = {
     var message_hex = [0x1A, 0x35, 0x00];
     var message_hex = message_hex.concat(ascii2hex(pad(message, 20)));
 
-    bus_client.data_send({
+    socket.data_send({
       src : 'CCM',
       dst : module_name,
       msg : message_hex,
@@ -1101,7 +1101,7 @@ module.exports = {
     var message_hex = message_hex.concat(ascii2hex(pad(message.substring(0, max_length), 20)));
     var message_hex = message_hex.concat(0x04);
 
-    bus_client.data_send({
+    socket.data_send({
       src: 'RAD',
       dst: module_name,
       msg: message_hex,

@@ -112,7 +112,7 @@ function auto_lights_process() {
 // Cluster/interior backlight
 function set_backlight(value) {
 	log.msg({ src : module_name, msg : 'Setting backlighting to '+value });
-	bus_client.data_send({
+	socket.data_send({
 		src: module_name,
 		dst: 'GLO',
 		msg: [0x5C, value.toString(16), 0x00]
@@ -123,7 +123,7 @@ function set_backlight(value) {
 function coding_get() {
 	// Get all 20 blocks of coding data
 	for (var byte = 0; byte < 21; byte++) {
-		bus_client.data_send({
+		socket.data_send({
 			src: 'DIA',
 			dst: module_name,
 			msg: [0x08, byte],
@@ -528,7 +528,7 @@ function io_encode(object) {
 function io_set(packet) {
 	// log.msg({ src : module_name, msg : 'Setting IO status' });
 	packet.unshift(0x0C);
-	bus_client.data_send({
+	socket.data_send({
 		src: 'DIA',
 		dst: module_name,
 		msg: packet,
@@ -597,7 +597,7 @@ function request(value) {
 			cmd = [0x53];
 	}
 
-	bus_client.data_send({
+	socket.data_send({
 		src: src,
 		dst: module_name,
 		msg: cmd,

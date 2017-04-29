@@ -74,7 +74,7 @@ function send_cd_status(status) {
 			break;
 	}
 
-	bus_client.data_send({
+	socket.data_send({
 		src: module_name,
 		dst: 'RAD',
 		msg: msg,

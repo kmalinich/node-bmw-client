@@ -28,7 +28,7 @@ function text(message) {
   var message_hex = [0x23, 0x40, 0x20];
   var message_hex = message_hex.concat(ascii2hex(pad(20, message.substring(0, 20))));
 
-  bus_client.data_send({
+  socket.data_send({
     src: 'IKE',
     dst: module_name,
     msg: message_hex,
@@ -59,7 +59,7 @@ function text(message) {
   var message = 'Next';
   var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
 
-  bus_client.data_send({
+  socket.data_send({
     src: 'RAD',
     dst: module_name,
     msg: message_hex,
@@ -83,7 +83,7 @@ function text(message) {
   var message_hex = message_hex.concat(ascii2hex(pad(4, message).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
 
-  bus_client.data_send({
+  socket.data_send({
     src: 'RAD',
     dst: module_name,
     msg: message_hex,
@@ -372,7 +372,7 @@ function send_button(button) {
   var packet_down = [command, button_down];
   var packet_up = [command, button_up];
 
-  bus_client.data_send({
+  socket.data_send({
     src: module_name,
     dst: 'RAD',
     msg: packet_down,
@@ -381,7 +381,7 @@ function send_button(button) {
   // Prepare and send the up message after 150ms
   setTimeout(() => {
     log.msg({ src: module_name, msg: 'Button up: '+button });
-    bus_client.data_send({
+    socket.data_send({
       src: module_name,
       dst: 'RAD',
       msg: packet_up,
