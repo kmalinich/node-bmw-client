@@ -3,13 +3,15 @@ var welcome_lights_timeout;
 
 // Automatic lights handling
 function auto_lights(action) {
-	if (status.vehicle.ignition_level < 1) { action = false; }
+	if (status.vehicle.ignition_level < 3) { action = false; }
+	if (action === false) { io_encode({}); }
 	if (status.lights.auto.active === action) { return; }
 
 	log.msg({ src : module_name, msg : 'Auto lights \''+status.lights.auto.active+'\' => \''+action+'\'' });
 
 	switch (action) {
 		case false:
+			io_encode({});
 			clearInterval(LCM.interval_auto_lights);
 			log.msg({ src : module_name, msg : 'Cleared autolights interval' });
 
@@ -17,7 +19,6 @@ function auto_lights(action) {
 			status.lights.auto.reason  = null;
 			status.lights.auto.active  = false;
 			status.lights.auto.lowbeam = false;
-			io_encode({});
 			break;
 		case true:
 			// Set status variable
@@ -50,7 +51,7 @@ function auto_lights_process() {
 	// log.msg({ src : module_name, msg : ' lights_on : \''+lights_on+'\''    });
 	// log.msg({ src : module_name, msg : 'lights_off : \''+lights_off+'\''   });
 
-	if (status.vehicle.ignition_level < 1) {
+	if (status.vehicle.ignition_level < 3) {
 		auto_lights(false);
 		return;
 	}
@@ -60,22 +61,26 @@ function auto_lights_process() {
 		msg : 'Processing auto lights',
 	});
 
-
+  // Check wipers
+  if (status.gm.wipers.speed != 'off') {
+		status.lights.auto.reason  = 'wipers on';
+		status.lights.auto.lowbeam = true;
+  }
 	// Check time of day
-	if (current_time < lights_off) {
-		status.lights.auto.reason  = 'before lights off';
+  else if (current_time < lights_off) {
+		status.lights.auto.reason  = 'before dawn';
 		status.lights.auto.lowbeam = true;
 	}
 	else if (current_time > lights_off && current_time < lights_on) {
-		status.lights.auto.reason  = 'after lights off, before lights on';
+		status.lights.auto.reason  = 'after dawn, before dusk';
 		status.lights.auto.lowbeam = false;
 	}
 	else if (current_time > lights_on) {
-		status.lights.auto.reason  = 'after lights on';
+		status.lights.auto.reason  = 'after dusk';
 		status.lights.auto.lowbeam = true;
 	}
 	else {
-		status.lights.auto.reason  = 'unknown time of day, engaging failsafe';
+		status.lights.auto.reason  = 'failsafe';
 		status.lights.auto.lowbeam = true;
 	}
 
@@ -84,6 +89,9 @@ function auto_lights_process() {
 	}
 	if (current_lowbeam != status.lights.auto.lowbeam) {
 		log.msg({ src : module_name, msg : 'Auto lights lowbeam change \''+current_lowbeam+'\' => \''+status.lights.auto.lowbeam+'\''});
+		if (status.lights.auto.lowbeam === true) { var status_string = 'on'; } else { var status_string = 'off'; }
+		// Show status+reason in cluster
+		IKE.text_override('Auto lights '+status_string+', reason: '+status.lights.auto.reason);
 	}
 
 	reset();
@@ -510,50 +518,38 @@ function io_set(packet) {
 
 // Make things.. how they should be?
 function reset() {
-	var reset_dimmer_val; // Determine dimmer value from config, depending if lowbeams are on
-	var reset_standing;   // Determine standing lights on/off from lowbeam (it's either one or the other)
-
 	if (config.lights.auto !== true) {
 		return;
 	}
 
+	var reset_dimmer_val; // Determine dimmer value from config, depending if lowbeams are on
+
 	switch (status.lights.auto.lowbeam) {
 		case true:
 			reset_dimmer_val = config.lights.dimmer.lights_on;
-			reset_standing   = false;
 			break;
 		case false:
 			reset_dimmer_val = config.lights.dimmer.lights_off;
-			reset_standing   = true;
 	}
 
-	if (reset_standing === true) {
-		var lcm_object = {
-			output_standing_front_left       : true,
-			output_standing_front_right      : true,
-			output_standing_inner_rear_left  : true,
-			output_standing_inner_rear_right : true,
-			output_standing_rear_left        : true,
-			output_standing_rear_right       : true,
-			switch_turn_left                 : status.lights.turn.left.comfort,
-			switch_turn_right                : status.lights.turn.right.comfort,
-		};
-	}
-	else {
-		var lcm_object = {
-			dimmer_value_1    : reset_dimmer_val,
-			switch_lowbeam_1  : status.lights.auto.lowbeam,
-			switch_turn_left  : status.lights.turn.left.comfort,
-			switch_turn_right : status.lights.turn.right.comfort,
-			switch_fog_rear   : true, // To leverage the IKE LED as a status indicator
-		};
-	}
-
-	io_encode(lcm_object);
+	io_encode({
+    dimmer_value_1                   : reset_dimmer_val,
+    output_standing_front_left       : true,
+    output_standing_front_right      : true,
+    output_standing_inner_rear_left  : true,
+    output_standing_inner_rear_right : true,
+    output_standing_rear_left        : true,
+    output_standing_rear_right       : true,
+    switch_fog_rear                  : true, // To leverage the IKE LED as a status indicator
+    switch_lowbeam_1                 : status.lights.auto.lowbeam,
+    switch_turn_left                 : status.lights.turn.left.comfort,
+    switch_turn_right                : status.lights.turn.right.comfort,
+  });
 }
 
 module.exports = {
-	auto_lights : (action) => { auto_lights(action); },
+	auto_lights         : (action) => { auto_lights(action); },
+	auto_lights_process : ()       => { auto_lights_process(); },
 
 	// Should we turn the auto-lights on?
 	auto_lights_check : () => {

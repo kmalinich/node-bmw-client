@@ -291,7 +291,6 @@ function decode_ignition_status(data) {
 
 		// Welcome message
 		// IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
-		IKE.text_override('RESTART! RESTART! RESTART!');
 
 		// Refresh OBC data
 		IKE.obc_refresh();
@@ -302,6 +301,7 @@ function decode_ignition_status(data) {
 			pitemp.measure((temperature) => {
 				status.pi.temperature = parseFloat(temperature.toFixed(0));
 			});
+			IKE.request('ignition');
 			IKE.request('temperature');
 		}, 5000);
 	}

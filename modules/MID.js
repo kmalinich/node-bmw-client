@@ -142,6 +142,7 @@ function power_on_if_ready() {
 			msg : 'Sending power!',
 		});
 		send_button('power');
+		DSP.request('memory'); // Get the DSP memory
 	}
 }
 

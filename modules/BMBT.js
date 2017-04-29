@@ -14,10 +14,7 @@ function status_loop(action) {
 		return;
 	}
 
-	log.msg({
-		src : 'BMBT',
-		msg : 'Status loop '+action,
-	});
+	log.msg({ src : module_name, msg : 'Status loop '+action });
 
 	switch (action) {
 		case false:
@@ -54,7 +51,7 @@ function status_loop(action) {
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
 		bus_commands.request_device_status('BMBT', 'RAD');
-		bus_commands.request_device_status('RAD', 'DSP');
+		bus_commands.request_device_status('RAD',  'DSP');
 		return;
 	}
 
@@ -63,26 +60,20 @@ function refresh_status() {
 
 // Send the power on button command if needed/ready
 function power_on_if_ready() {
-	if (config.emulate.bmbt !== true) {
-		return;
-	}
-
-	if (status.vehicle.ignition_level === 0) {
-		return;
-	}
+	if (status.vehicle.ignition_level === 0 || config.emulate.bmbt !== true) { return; }
 
 	// Debug logging
-	// console.log('[node:BMBT] dsp.ready         : \'%s\'', status.dsp.ready);
-	// console.log('[node:BMBT] rad.audio_control : \'%s\'', status.rad.audio_control);
+	// log.msg({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
+	// log.msg({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
-	// if (status.rad.audio_control == 'audio off' && status.dsp.ready === true) {
 	if (status.rad.audio_control == 'audio off') {
-		IKE.text_override('BMBT sending power');
+		IKE.text_override('BMBT power');
 		log.msg({
 			src : module_name,
 			msg : 'Sending power!',
 		});
 		send_button('power');
+		DSP.request('memory'); // Get the DSP memory
 	}
 }
 
@@ -90,16 +81,6 @@ function power_on_if_ready() {
 function parse_in(data) {
 	// Init variables
 	switch (data.msg[0]) {
-		case 0x01: // Request: device status
-			data.command = 'req';
-			data.value   = 'device status';
-
-			// Send the ready packet since this module doesn't actually exist
-			if (config.emulate.bmbt === true) {
-				bus_commands.send_device_status(module_name);
-			}
-			break;
-
 		case 0x4A: // Cassette control
 			data.command = 'con';
 			data.value   = 'cassette ';
@@ -177,7 +158,7 @@ function send_button(button) {
 			break;
 	}
 
-	console.log('[BMBT::RAD] Sending button down: %s', button);
+	log.msg({ src : module_name, msg : 'Button down '+button });
 
 	// Init variables
 	var command     = 0x48; // Button action
@@ -192,7 +173,7 @@ function send_button(button) {
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		console.log('[BMBT::RAD] Sending button up: %s', button);
+		log.msg({ src : module_name, msg : 'Button up '+button });
 		bus_client.data_send({
 			src: 'BMBT',
 			dst: 'RAD',
