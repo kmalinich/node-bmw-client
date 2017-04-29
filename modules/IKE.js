@@ -539,11 +539,11 @@ module.exports = {
             string_outside_temp_unit = string_outside_temp_unit.toString().trim().toLowerCase();
 
             // Parse if it is +/-
-            string_outside-temp_negative = Buffer.from([data.msg[9]]);
-            string_outside-temp_negative = string_outside-temp_negative.toString().trim().toLowerCase();
+            string_outside_temp_negative = Buffer.from([data.msg[9]]);
+            string_outside_temp_negative = string_outside_temp_negative.toString().trim().toLowerCase();
 
             // Parse value
-            if (string_outside-temp_negative === '-') {
+            if (string_outside_temp_negative === '-') {
               string_outside-temp_value = Buffer.from(data.msg[3], [data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
               string_outside-temp_value = string_outside-temp_value.toString().trim().toLowerCase();
             }
