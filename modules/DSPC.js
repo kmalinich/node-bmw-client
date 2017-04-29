@@ -13,6 +13,9 @@ function parse_in(data) {
 			}
 			break;
 
+		case 0x35: // Broadcast: car memory
+			return; // This is handled inside of DSP
+
 		default:
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);

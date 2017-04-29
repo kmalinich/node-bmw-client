@@ -1,18 +1,30 @@
 var module_name = __filename.slice(__dirname.length + 1, -3);
-var welcome_lights_timeout;
+
+// Handle incoming commands from API
+function api_command(data) {
+	if (typeof data['lcm-get'] !== 'undefined') {
+		LCM.request('io-status');
+	}
+	else {
+		// Dirty assumption
+		io_encode(data);
+	}
+}
 
 // Automatic lights handling
-function auto_lights(action) {
-	if (status.vehicle.ignition_level < 3) { action = false; }
-	if (action === false) { io_encode({}); }
-	if (status.lights.auto.active === action) { return; }
+function auto_lights() {
+	var action = true;
+	if (config.lights.auto !== true         ) return;
+	if (status.vehicle.ignition_level < 3   ) var action = false;
+	if (action === false                    ) io_encode({});
+	if (status.lights.auto.active === action) return;
 
 	log.msg({ src : module_name, msg : 'Auto lights \''+status.lights.auto.active+'\' => \''+action+'\'' });
 
 	switch (action) {
 		case false:
 			io_encode({});
-			clearInterval(LCM.interval_auto_lights);
+			clearInterval(LCM.interval_lights_auto);
 			log.msg({ src : module_name, msg : 'Cleared autolights interval' });
 
 			// Set status variables
@@ -29,7 +41,7 @@ function auto_lights(action) {
 
 			// Process/send LCM data on 7 second interval
 			// LCM diag command timeout is 15 seconds
-			LCM.interval_auto_lights = setInterval(() => {
+			LCM.interval_lights_auto = setInterval(() => {
 				// Process auto lights
 				auto_lights_process();
 			}, 7000);
@@ -52,22 +64,22 @@ function auto_lights_process() {
 	// log.msg({ src : module_name, msg : 'lights_off : \''+lights_off+'\''   });
 
 	if (status.vehicle.ignition_level < 3) {
-		auto_lights(false);
+		auto_lights();
 		return;
 	}
 
 	log.msg({
-		src : module_name.toUpperCase(),
+		src : module_name,
 		msg : 'Processing auto lights',
 	});
 
-  // Check wipers
-  if (status.gm.wipers.speed != 'off') {
+	// Check wipers
+	if (status.gm.wipers.speed != 'off') {
 		status.lights.auto.reason  = 'wipers on';
 		status.lights.auto.lowbeam = true;
-  }
+	}
 	// Check time of day
-  else if (current_time < lights_off) {
+	else if (current_time < lights_off) {
 		status.lights.auto.reason  = 'before dawn';
 		status.lights.auto.lowbeam = true;
 	}
@@ -97,13 +109,23 @@ function auto_lights_process() {
 	reset();
 }
 
+// Cluster/interior backlight
+function set_backlight(value) {
+	log.msg({ src : module_name, msg : 'Setting backlighting to '+value });
+	bus_client.data_send({
+		src: module_name,
+		dst: 'GLO',
+		msg: [0x5C, value.toString(16), 0x00]
+	});
+}
+
 // Get LCM coding data
 function coding_get() {
 	// Get all 20 blocks of coding data
 	for (var byte = 0; byte < 21; byte++) {
 		bus_client.data_send({
 			src: 'DIA',
-			dst: 'LCM',
+			dst: module_name,
 			msg: [0x08, byte],
 		});
 	}
@@ -137,7 +159,7 @@ function comfort_turn(data) {
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
 			status.lights.turn.depress_elapsed = now()-status.lights.turn.left.depress;
-			// console.log('[node::LCM] Firing \'%s\'', status.lights.turn.depress_elapsed);
+			log.msg({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'left';
 			}
@@ -154,7 +176,7 @@ function comfort_turn(data) {
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
 			status.lights.turn.depress_elapsed = now()-status.lights.turn.right.depress;
-			// console.log('[node::LCM] Firing \'%s\'', status.lights.turn.depress_elapsed);
+			log.msg({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'right';
 			}
@@ -214,7 +236,7 @@ function decode(data) {
 			var vin_string     = hex.hex2a(data.msg[1].toString(16))+hex.hex2a(data.msg[2].toString(16))+data.msg[3].toString(16)+data.msg[4].toString(16)+data.msg[5].toString(16)[0];
 			status.vehicle.vin = vin_string;
 			log.msg({
-				src : 'LCM',
+				src : module_name,
 				msg : 'VIN: \''+vin_string+'\'',
 			});
 			break;
@@ -272,7 +294,7 @@ function decode(data) {
 			status.lights.faulty.lowbeam.right       = bitmask.bit_test(data.msg[4], bitmask.bit[4]);
 			status.lights.faulty.lowbeam.left        = bitmask.bit_test(data.msg[4], bitmask.bit[5]);
 
-			// console.log('[node::LCM] Decoded light status');
+			log.msg({ src : module_name, msg : 'Decoded light status' });
 			break;
 
 		case 0xA0: // Decode IO status and output true/false values
@@ -365,7 +387,7 @@ function decode(data) {
 			status.lcm.switch.lowbeam_1 = bitmask.bit_test(data.msg[3], bitmask.bit[4]);
 			status.lcm.switch.lowbeam_2 = bitmask.bit_test(data.msg[3], bitmask.bit[3]);
 
-			// console.log('[node::LCM] Decoded IO status');
+			log.msg({ src : module_name, msg : 'Decoded IO status' });
 	}
 }
 
@@ -504,11 +526,11 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
-	// console.log('[node::LCM] Sending \'Set IO status\' message');
+	// log.msg({ src : module_name, msg : 'Setting IO status' });
 	packet.unshift(0x0C);
 	bus_client.data_send({
 		src: 'DIA',
-		dst: 'LCM',
+		dst: module_name,
 		msg: packet,
 	});
 
@@ -533,163 +555,145 @@ function reset() {
 	}
 
 	io_encode({
-    dimmer_value_1                   : reset_dimmer_val,
-    output_standing_front_left       : true,
-    output_standing_front_right      : true,
-    output_standing_inner_rear_left  : true,
-    output_standing_inner_rear_right : true,
-    output_standing_rear_left        : true,
-    output_standing_rear_right       : true,
-    switch_fog_rear                  : true, // To leverage the IKE LED as a status indicator
-    switch_lowbeam_1                 : status.lights.auto.lowbeam,
-    switch_turn_left                 : status.lights.turn.left.comfort,
-    switch_turn_right                : status.lights.turn.right.comfort,
-  });
+		dimmer_value_1                   : reset_dimmer_val,
+		output_standing_front_left       : true,
+		output_standing_front_right      : true,
+		output_standing_inner_rear_left  : true,
+		output_standing_inner_rear_right : true,
+		output_standing_rear_left        : true,
+		output_standing_rear_right       : true,
+		switch_fog_rear                  : true, // To leverage the IKE LED as a status indicator
+		switch_lowbeam_1                 : status.lights.auto.lowbeam,
+		switch_turn_left                 : status.lights.turn.left.comfort,
+		switch_turn_right                : status.lights.turn.right.comfort,
+	});
+}
+
+// Request various things from LCM
+function request(value) {
+	var src;
+	var cmd;
+
+	log.msg({ src : module_name, msg : 'Requesting '+value });
+
+	switch (value) {
+		case 'coding':
+			get_coding();
+			break;
+		case 'dimmer':
+			src = 'BMBT';
+			cmd = [0x5D];
+			break;
+		case 'io-status':
+			src = 'DIA';
+			cmd = [0x0B, 0x00]; // Get IO status
+			break;
+		case 'light-status':
+			src = 'GT';
+			cmd = [0x5A];
+			break;
+		case 'vehicledata':
+			src = 'IKE';
+			cmd = [0x53];
+	}
+
+	bus_client.data_send({
+		src: src,
+		dst: module_name,
+		msg: cmd,
+	});
+}
+
+// Parse data sent from LCM module
+function parse_out(data) {
+	switch (data.msg[0]) {
+		case 0x54: // Broadcast: vehicle data
+			data.command = 'bro';
+			data.value   = 'vehicle data';
+			decode(data); // Decode it
+			break;
+
+		case 0x5B: // Broadcast: light status
+			data.command = 'bro';
+			data.value   = 'light status';
+			decode(data); // Decode it
+			break;
+
+		case 0x5C: // Broadcast: light dimmer status
+			status.lights.dimmer_value_3 = data.msg[1];
+			data.command = 'bro';
+			data.value   = 'dimmer 3 : '+status.lights.dimmer_value_3;
+			break;
+
+		case 0xA0: // Reply to DIA: success
+			data.command = 'rep';
+			switch (data.msg.length) {
+				case 33:
+					data.value = 'IO status';
+					decode(data); // Decode it
+					break;
+				case 13:
+					data.value = 'IO status';
+					decode(data); // Decode it
+					break;
+				case 1:
+					data.value = 'ACK';
+					break;
+				default:
+					data.value = Buffer.from(data.msg);
+			}
+			break;
+
+		default:
+			data.command = 'unk';
+			data.value   = Buffer.from(data.msg);
+	}
+
+	log.bus(data);
+}
+
+// Welcome lights on unlocking/locking
+function welcome_lights(action) {
+	if (status.vehicle.ignition_level > 0 || status.lights.welcome_lights === action) return;
+
+	log.msg({ src : module_name, msg : 'Welcome lights \''+status.lights.welcome_lights+'\' => \''+action+'\'' });
+
+	switch (action) {
+		case true :
+			log.msg({ src : module_name, msg : 'Welcome lights activating' });
+			status.lights.welcome_lights = true;
+
+			// Send configured welcome lights
+			io_encode(config.lights.welcome_lights);
+
+			// Clear welcome lights status after 15 seconds
+			LCM.timeout_lights_welcome = setTimeout(() => {
+				log.msg({ src : module_name, msg : 'Welcome lights timeout expired' });
+				status.lights.welcome_lights = false;
+				// io_encode({});
+			}, 15000);
+			break;
+		case false:
+			log.msg({ src : module_name, msg : 'Welcome lights deactivating' });
+			clearTimeout(LCM.timeout_lights_welcome);
+			status.lights.welcome_lights = false;
+			io_encode({});
+			break;
+	}
 }
 
 module.exports = {
-	auto_lights         : (action) => { auto_lights(action); },
-	auto_lights_process : ()       => { auto_lights_process(); },
+	// Variables
+	counter_lights_welcome  : null,
+	interval_lights_auto    : null,
+	interval_lights_welcome : null,
+	timeout_lights_welcome  : null,
 
-	// Should we turn the auto-lights on?
-	auto_lights_check : () => {
-		if (config.lights.auto !== true) {
-			return;
-		}
-
-		// Check ignition
-		if (status.vehicle.ignition_level !== 3) {
-			// Not in run: turn off auto lights
-			auto_lights(false);
-			return;
-		}
-		auto_lights(true);
-	},
-
-	interval_auto_lights : null,
-
-	// Parse data sent from LCM module
-	parse_out : (data) => {
-		switch (data.msg[0]) {
-			case 0x54: // Broadcast: vehicle data
-				data.command = 'bro';
-				data.value   = 'vehicle data';
-				decode(data); // Decode it
-				break;
-
-			case 0x5B: // Broadcast: light status
-				data.command = 'bro';
-				data.value   = 'light status';
-				decode(data); // Decode it
-				break;
-
-			case 0x5C: // Broadcast: light dimmer status
-				status.lights.dimmer_value_3 = data.msg[1];
-				data.command = 'bro';
-				data.value   = 'dimmer 3 : '+status.lights.dimmer_value_3;
-				break;
-
-			case 0xA0: // Reply to DIA: success
-				data.command = 'rep';
-				switch (data.msg.length) {
-					case 33:
-						data.value = 'IO status';
-						decode(data); // Decode it
-						break;
-					case 13:
-						data.value = 'IO status';
-						decode(data); // Decode it
-						break;
-					case 1:
-						data.value = 'ACK';
-						break;
-					default:
-						data.value = Buffer.from(data.msg);
-				}
-				break;
-
-			default:
-				data.command = 'unk';
-				data.value   = Buffer.from(data.msg);
-		}
-
-		log.bus(data);
-	},
-
-	// Request various things from LCM
-	request : (value) => {
-		var src;
-		var cmd;
-
-		// console.log('[node::LCM] Requesting \'%s\'', value);
-
-		switch (value) {
-			case 'coding':
-				get_coding();
-				break;
-			case 'dimmer':
-				src = 'BMBT';
-				cmd = [0x5D];
-				break;
-			case 'io-status':
-				src = 'DIA';
-				cmd = [0x0B, 0x00]; // Get IO status
-				break;
-			case 'light-status':
-				src = 'GT';
-				cmd = [0x5A];
-				break;
-			case 'vehicledata':
-				src = 'IKE';
-				cmd = [0x53];
-		}
-
-		bus_client.data_send({
-			src: src,
-			dst: 'LCM',
-			msg: cmd,
-		});
-	},
-
-	// Handle incoming commands from API
-	api_command : (data) => {
-		if (typeof data['lcm-get'] !== 'undefined') {
-			LCM.request('io-status');
-		}
-		else {
-			// Dirty assumption
-			io_encode(data);
-		}
-	},
-
-	// Welcome lights on unlocking/locking
-	welcome_lights : (action) => {
-		if (status.vehicle.ignition_level > 0) { action = false; }
-		if (status.lights.welcome_lights === action) { return; }
-
-		log.msg({ src : module_name, msg : 'Welcome lights \''+status.lights.welcome_lights+'\' => \''+action+'\'' });
-
-		switch (action) {
-			case true :
-				log.msg({ src : module_name, msg : 'Welcome lights activating' });
-				status.lights.welcome_lights = true;
-
-				// Send configured welcome lights
-				io_encode(config.lights.welcome_lights);
-
-				// Clear welcome lights status after 15 seconds
-				welcome_lights_timeout = setTimeout(() => {
-					log.msg({ src : module_name, msg : 'Welcome lights timeout expired' });
-					status.lights.welcome_lights = false;
-					// io_encode({});
-				}, 15000);
-				break;
-			case false:
-				log.msg({ src : module_name, msg : 'Welcome lights deactivating' });
-				clearTimeout(welcome_lights_timeout);
-				status.lights.welcome_lights = false;
-				io_encode({});
-				break;
-		}
-	},
+	// Functions
+	api_command    : (data) => { api_command(data);     },
+	auto_lights    : (data) => { auto_lights(data);     },
+	request        : (data) => { request(data);         },
+	set_backlight  : (data) => { set_backlight(data);   },
+	parse_out      : (data) => { parse_out(data);       },
+	welcome_lights : (data) => { welcome_lights(data);  },
 };

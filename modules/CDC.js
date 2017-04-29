@@ -75,7 +75,7 @@ function send_cd_status(status) {
 	}
 
 	bus_client.data_send({
-		src: 'CDC',
+		src: module_name,
 		dst: 'RAD',
 		msg: msg,
 	});
