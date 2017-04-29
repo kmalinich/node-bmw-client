@@ -14,7 +14,7 @@ function status_loop(action) {
 		return;
 	}
 
-	log.msg({ src : module_name, msg : 'Status loop '+action });
+	log.module({ src : module_name, msg : 'Status loop '+action });
 
 	switch (action) {
 		case false:
@@ -63,12 +63,12 @@ function power_on_if_ready() {
 	if (status.vehicle.ignition_level === 0 || config.emulate.bmbt !== true) { return; }
 
 	// Debug logging
-	// log.msg({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
-	// log.msg({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
+	// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
+	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
 	if (status.rad.audio_control == 'audio off') {
 		IKE.text_override('BMBT power');
-		log.msg({
+		log.module({
 			src : module_name,
 			msg : 'Sending power!',
 		});
@@ -158,7 +158,7 @@ function send_button(button) {
 			break;
 	}
 
-	log.msg({ src : module_name, msg : 'Button down '+button });
+	log.module({ src : module_name, msg : 'Button down '+button });
 
 	// Init variables
 	var command     = 0x48; // Button action
@@ -173,7 +173,7 @@ function send_button(button) {
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.msg({ src : module_name, msg : 'Button up '+button });
+		log.module({ src : module_name, msg : 'Button up '+button });
 		socket.data_send({
 			src: module_name,
 			dst: 'RAD',

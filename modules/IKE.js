@@ -15,7 +15,7 @@ function ascii2hex(str) {
 // Pretend to be IKE saying the car is on
 // Note - this can and WILL set the alarm off - kudos to the Germans...
 function ignition(value) {
-  log.msg({ src : module_name, msg : 'Sending ignition status: '+value });
+  log.module({ src : module_name, msg : 'Sending ignition status: '+value });
 
   var status;
   switch (value) {
@@ -42,7 +42,7 @@ function ignition(value) {
 
 // OBC set clock
 function obc_clock() {
-  log.msg({ src : module_name, msg : 'Setting OBC clock to current time'});
+  log.module({ src : module_name, msg : 'Setting OBC clock to current time'});
 
   var time = moment();
 
@@ -124,7 +124,7 @@ function obc_data(action, value, target) {
     msg = [msg, target];
   }
 
-  log.msg({ src : module_name, msg : '\''+action+'\' OBC value \''+value+'\'' });
+  log.module({ src : module_name, msg : '\''+action+'\' OBC value \''+value+'\'' });
 
   socket.data_send({
     src: 'GT',
@@ -158,7 +158,7 @@ function decode_ignition_status(data) {
   if (data.msg[1] > status.vehicle.ignition_level) {
     switch (data.msg[1]) { // Evaluate new ignition state
       case 1: // Accessory
-        log.msg({
+        log.module({
           src : module_name,
           msg : 'Powerup state',
         });
@@ -166,14 +166,14 @@ function decode_ignition_status(data) {
         break;
       case 3: // Run
         if (status.vehicle.ignition_level === 0) {
-          log.msg({
+          log.module({
             src : module_name,
             msg : 'Powerup state',
           });
           IKE.state_powerup = true;
         }
 
-        log.msg({
+        log.module({
           src : module_name,
           msg : 'Run state',
         });
@@ -181,14 +181,14 @@ function decode_ignition_status(data) {
         break;
       case 7: // Start
         if (status.vehicle.ignition_level === 0) {
-          log.msg({
+          log.module({
             src : module_name,
             msg : 'Powerup state',
           });
           IKE.state_powerup = true;
         }
 
-        log.msg({
+        log.module({
           src : module_name,
           msg : 'Start-begin state',
         });
@@ -201,28 +201,28 @@ function decode_ignition_status(data) {
     switch (data.msg[1]) { // Evaluate new ignition state
       case 0: // Off
         if (status.vehicle.ignition_level === 3) {
-          log.msg({
+          log.module({
             src : module_name,
             msg : 'Powerdown state',
           });
           IKE.state_powerdown = true;
         }
 
-        log.msg({
+        log.module({
           src : module_name,
           msg : 'Poweroff state',
         });
         IKE.state_poweroff = true;
         break;
       case 1: // Accessory
-        log.msg({
+        log.module({
           src : module_name,
           msg : 'Powerdown state',
         });
         IKE.state_powerdown = true;
         break;
       case 3: // Run
-        log.msg({
+        log.module({
           src : module_name,
           msg : 'Start-end state',
         });
@@ -232,7 +232,7 @@ function decode_ignition_status(data) {
 
   // Set ignition status value
   if (status.vehicle.ignition_level != data.msg[1]) {
-    log.msg({
+    log.module({
       src : module_name,
       msg : 'Ignition level change \''+status.vehicle.ignition_level+'\' => \''+data.msg[1]+'\'',
     });
@@ -254,7 +254,7 @@ function decode_ignition_status(data) {
   if (IKE.state_poweroff === true) {
     // Disable HUD refresh
     clearInterval(IKE.interval_data_refresh, () => {
-      log.msg({
+      log.module({
         src : module_name,
         msg : 'Cleared data refresh interval',
       });
@@ -793,7 +793,7 @@ module.exports = {
         obc_data('reset', data.value);
         break;
       default: // Dunno.
-        log.msg({ src : module_name, msg : 'Unknown API command: '+data.command });
+        log.module({ src : module_name, msg : 'Unknown API command: '+data.command });
     }
   },
 
@@ -803,7 +803,7 @@ module.exports = {
 
     // Bounce if the override is active
     if(IKE.hud_override === true) {
-      log.msg({
+      log.module({
         src : module_name,
         msg : 'HUD refresh: override active',
       });
@@ -812,7 +812,7 @@ module.exports = {
 
     // Bounce if the last update was less than 3 sec ago
     if (time_now-IKE.last_hud_refresh <= 3000) {
-      log.msg({
+      log.module({
         src : module_name,
         msg : 'HUD refresh: too soon ('+(time_now-IKE.last_hud_refresh).toFixed(0)+' ms)',
       });
@@ -870,7 +870,7 @@ module.exports = {
     }
 
     if (status.vehicle.ignition_level < 1) {
-      log.msg({
+      log.module({
         src : module_name,
         msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1 ('+(time_now-IKE.last_hud_refresh)+' ms)',
       });
@@ -886,7 +886,7 @@ module.exports = {
 
   // Refresh OBC data
   obc_refresh : () => {
-    log.msg({
+    log.module({
       src : module_name,
       msg : 'Refreshing all OBC data',
     });
