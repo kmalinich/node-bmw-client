@@ -544,25 +544,25 @@ module.exports = {
 
             // Parse value
             if (string_outside_temp_negative === '-') {
-              string_outside-temp_value = Buffer.from(data.msg[3], [data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
-              string_outside-temp_value = string_outside-temp_value.toString().trim().toLowerCase();
+              string_outside_temp_value = Buffer.from(data.msg[3], [data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
+              string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
             }
             else {
-              string_outside-temp_value = Buffer.from([data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
-              string_outside-temp_value = string_outside-temp_value.toString().trim().toLowerCase();
+              string_outside_temp_value = Buffer.from([data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
+              string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
             }
 
             // Update status variables
             switch (string_outside_temp_unit) {
               case 'c':
                 status.coding.unit.temp           = 'c';
-                status.temperature.exterior.obc.c = parseFloat(string_outside-temp_value);
-                status.temperature.exterior.obc.f = parseFloat(convert(parseFloat(string_outside-temp_value)).from('celsius').to('fahrenheit'));
+                status.temperature.exterior.obc.c = parseFloat(string_outside_temp_value);
+                status.temperature.exterior.obc.f = parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'));
                 break;
               case 'f':
                 status.coding.unit.temp           = 'f';
-                status.temperature.exterior.obc.c = parseFloat(convert(parseFloat(string_outside-temp_value)).from('fahrenheit').to('celsius'));
-                status.temperature.exterior.obc.f = parseFloat(string_outside-temp_value);
+                status.temperature.exterior.obc.c = parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'));
+                status.temperature.exterior.obc.f = parseFloat(string_outside_temp_value);
                 break;
             }
             break;
