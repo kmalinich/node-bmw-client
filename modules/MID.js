@@ -23,7 +23,7 @@ function ascii2hex(str) {
 // 68 C0 21 00 15 06 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
 
 function text(message) {
-  log.msg({ src: module_name, msg: 'Sending text to MID screen: \''+message+'\'' });
+  log.module({ src: module_name, msg: 'Sending text to MID screen: \''+message+'\'' });
 
   var message_hex = [0x23, 0x40, 0x20];
   var message_hex = message_hex.concat(ascii2hex(pad(20, message.substring(0, 20))));
@@ -110,7 +110,7 @@ function status_loop(action) {
       break;
   }
 
-  log.msg({
+  log.module({
     src : module_name,
     msg : 'Ping interval '+action,
   });
@@ -131,11 +131,11 @@ function power_on_if_ready() {
   if (config.emulate.mid !== true) return;
 
   // Debug logging
-  // log.msg({ src: module_name, msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
-  // log.msg({ src: module_name, msg: 'rad.audio_control : \''+status.rad.audio_control+'\'' });
+  // log.module({ src: module_name, msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
+  // log.module({ src: module_name, msg: 'rad.audio_control : \''+status.rad.audio_control+'\'' });
 
   if (status.rad.audio_control == 'audio off') {
-    log.msg({
+    log.module({
       src : module_name,
       msg : 'Sending power!',
     });
@@ -365,7 +365,7 @@ function send_button(button) {
       break;
   }
 
-  log.msg({ src: module_name, msg: 'Button down: '+button });
+  log.module({ src: module_name, msg: 'Button down: '+button });
 
   // Init variables
   var command = 0x48; // Button action
@@ -380,7 +380,7 @@ function send_button(button) {
 
   // Prepare and send the up message after 150ms
   setTimeout(() => {
-    log.msg({ src: module_name, msg: 'Button up: '+button });
+    log.module({ src: module_name, msg: 'Button up: '+button });
     socket.data_send({
       src: module_name,
       dst: 'RAD',

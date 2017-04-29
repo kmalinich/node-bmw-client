@@ -132,7 +132,7 @@ function decode_status_open(message) {
 
 // Send message to GM
 function io_set(packet) {
-	log.msg({ src : module_name, msg : 'Setting IO status' });
+	log.module({ src : module_name, msg : 'Setting IO status' });
 	packet.unshift(0x0C);
 
 	// Set IO status
@@ -200,7 +200,7 @@ function parse_out(data) {
 			if (bitmask.bit_test(data.msg[1], 0x08) && bitmask.bit_test(data.msg[1], 0x04)) data.sensitivity = 3;
 
 			if (status.gm.wipers.sensitivity != data.sensitivity) {
-				log.msg({
+				log.module({
 					src   : module_name,
 					value : 'Wiper sensitivity',
 					old   : status.gm.wipers.sensitivity,
@@ -212,7 +212,7 @@ function parse_out(data) {
 			}
 
 			if (status.gm.wipers.speed != data.speed) {
-				log.msg({
+				log.module({
 					src   : module_name,
 					value : 'Wiper speed',
 					old   : status.gm.wipers.speed,
@@ -265,7 +265,7 @@ function api_command(data) {
 			case 'door-status' : GM.request('door-status'); break; // Get IO status
 			case 'locks'       : GM.locks();                break; // Toggle central locking
 			default: // Dunno what I sent
-				log.msg({ src : module_name, msg : 'API call '+data['command']+' unknown' });
+				log.module({ src : module_name, msg : 'API call '+data['command']+' unknown' });
 				break;
 		}
 	}
@@ -276,12 +276,12 @@ function api_command(data) {
 	}
 
 	else {
-		log.msg({ src : module_name, msg : 'Unknown data: '+data });
+		log.module({ src : module_name, msg : 'Unknown data: '+data });
 	}
 }
 
 function windows(window, action) {
-	log.msg({ src : module_name, msg : 'Window control: '+window+', '+action });
+	log.module({ src : module_name, msg : 'Window control: '+window+', '+action });
 
 	// Init message variable
 	var msg;
@@ -333,14 +333,14 @@ module.exports = {
 
 	// Cluster/interior backlight
 	interior_light : (value) => {
-		log.msg({ src : module_name, msg : 'Setting interior light to '+value });
+		log.module({ src : module_name, msg : 'Setting interior light to '+value });
 		io_set([0x10, 0x05, value.toString(16)]);
 	},
 
 	// Central locking
 	locks : () => {
 		var action = 'toggle';
-		log.msg({ src : module_name, msg : 'Toggling central locking' });
+		log.module({ src : module_name, msg : 'Toggling central locking' });
 		// Hex:
 		// 01 3A 01 : LF unlock (CL)
 		// 01 39 01 : LF lock   (CL)
@@ -402,7 +402,7 @@ module.exports = {
 			bitmask_3,
 		];
 
-		log.msg({ src : module_name, msg : 'Encoding IO status' });
+		log.module({ src : module_name, msg : 'Encoding IO status' });
 		io_set(output);
 	},
 
