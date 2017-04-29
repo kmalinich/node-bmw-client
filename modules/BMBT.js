@@ -132,7 +132,7 @@ function parse_out(data) {
 
 // Say we have no tape in the player
 function send_cassette_status() {
-	bus_client.data_send({
+	socket.data_send({
 		src: module_name,
 		dst: 'RAD',
 		msg: [0x4B, 0x05],
@@ -165,7 +165,7 @@ function send_button(button) {
 	var packet_down = [command, button_down];
 	var packet_up   = [command, button_up];
 
-	bus_client.data_send({
+	socket.data_send({
 		src: module_name,
 		dst: 'RAD',
 		msg: packet_down,
@@ -174,7 +174,7 @@ function send_button(button) {
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
 		log.msg({ src : module_name, msg : 'Button up '+button });
-		bus_client.data_send({
+		socket.data_send({
 			src: module_name,
 			dst: 'RAD',
 			msg: packet_up,
