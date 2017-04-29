@@ -136,7 +136,7 @@ function io_set(packet) {
 	packet.unshift(0x0C);
 
 	// Set IO status
-	bus_client.data_send({
+	socket.data_send({
 		src: 'DIA',
 		dst: module_name,
 		msg: packet,
@@ -376,7 +376,7 @@ module.exports = {
 				break;
 		}
 
-		bus_client.data_send({
+		socket.data_send({
 			src : src,
 			dst : module_name,
 			msg : cmd,

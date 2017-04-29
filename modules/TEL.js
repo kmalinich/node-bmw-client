@@ -58,7 +58,7 @@ function led(object) {
 
   // Send message
 	log.msg({ src : module_name, msg : 'Setting LED' });
-  bus_client.data_send({
+  socket.data_send({
     src: module_name,
     dst: 'OBC',
     msg: [0x2B, byte], // Turn on TEL LED
