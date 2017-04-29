@@ -673,27 +673,27 @@ module.exports = {
 
           case 'average-speed':
             // Parse unit
-            string_average-speed_unit = Buffer.from([data.msg[8]]);
-            string_average-speed_unit = string_average-speed_unit.toString().trim().toLowerCase();
+            string_average_speed_unit = Buffer.from([data.msg[8]]);
+            string_average_speed_unit = string_average_speed_unit.toString().trim().toLowerCase();
 
             // Parse value
-            string_average-speed = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
-            string_average-speed = parseFloat(string_average-speed.toString().trim().toLowerCase());
+            string_average_speed = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+            string_average_speed = parseFloat(string_average_speed.toString().trim().toLowerCase());
 
             // Convert values appropriately based on coding valueunits
-            switch (string_average-speed_unit) {
+            switch (string_average_speed_unit) {
               case 'k':
                 status.coding.unit.speed = 'kmh';
                 // Update status variables
-                status.obc.average-speed.kmh = parseFloat(string_average-speed.toFixed(2));
-                status.obc.average-speed.mph = parseFloat(convert(string_average-speed).from('kilometre').to('us mile').toFixed(2));
+                status.obc.average_speed.kmh = parseFloat(string_average_speed.toFixed(2));
+                status.obc.average_speed.mph = parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2));
                 break;
 
               case 'm':
                 status.coding.unit.speed = 'mph';
                 // Update status variables
-                status.obc.average-speed.kmh = parseFloat(convert(string_average-speed).from('us mile').to('kilometre').toFixed(2));
-                status.obc.average-speed.mph = parseFloat(string_average-speed.toFixed(2));
+                status.obc.average_speed.kmh = parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2));
+                status.obc.average_speed.mph = parseFloat(string_average_speed.toFixed(2));
                 break;
             }
             break;
