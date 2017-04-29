@@ -535,8 +535,8 @@ module.exports = {
 
           case 'outside-temp':
             // Parse unit
-            string_outside-temp_unit = Buffer.from([data.msg[9]]);
-            string_outside-temp_unit = string_outside-temp_unit.toString().trim().toLowerCase();
+            string_outside_temp_unit = Buffer.from([data.msg[9]]);
+            string_outside_temp_unit = string_outside_temp_unit.toString().trim().toLowerCase();
 
             // Parse if it is +/-
             string_outside-temp_negative = Buffer.from([data.msg[9]]);
@@ -553,7 +553,7 @@ module.exports = {
             }
 
             // Update status variables
-            switch (string_outside-temp_unit) {
+            switch (string_outside_temp_unit) {
               case 'c':
                 status.coding.unit.temp           = 'c';
                 status.temperature.exterior.obc.c = parseFloat(string_outside-temp_value);
