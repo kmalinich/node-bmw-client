@@ -10,7 +10,7 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 // 68 C0 21 00 15 06 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
 
 function refresh_text() {
-	if (config.media.mid !== true) return;
+	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
   log.module({ src: module_name, msg: 'Sending text to MID screen: \''+status.mid.text+'\'' });
 
