@@ -2,17 +2,9 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Set or unset the status interval
 function status_loop(action) {
-	if (config.emulate.bmbt !== true) {
-		return;
-	}
-
-	if (status.vehicle.ignition_level < 1) {
-		action = false;
-	}
-
-	if (BMBT.status_status_loop == action) {
-		return;
-	}
+	if (config.emulate.bmbt !== true) return;
+	if (status.vehicle.ignition_level < 1) action = false;
+	if (BMBT.status_status_loop == action) return;
 
 	log.module({ src : module_name, msg : 'Status loop '+action });
 
@@ -67,7 +59,7 @@ function power_on_if_ready() {
 	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
 	if (status.rad.audio_control == 'audio off') {
-		IKE.text_override('BMBT power');
+		IKE.text_override(module_name+' power');
 		log.module({
 			src : module_name,
 			msg : 'Sending power!',

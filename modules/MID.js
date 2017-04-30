@@ -1,18 +1,5 @@
 var module_name = __filename.slice(__dirname.length + 1, -3);
 
-// Interval var
-var interval_status_loop;
-
-// ASCII to hex for MID message
-function ascii2hex(str) {
-  var array = [];
-  for (var n = 0, l = str.length; n < l; n ++) {
-    var hex = str.charCodeAt(n);
-    array.push(hex);
-  }
-  return array;
-}
-
 // Top screen - First 11 characters
 // 68 C0 23 00 20 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F CK
 // Top screen - Right half (20 char)
@@ -22,11 +9,13 @@ function ascii2hex(str) {
 // Menu - Last 3 boxes
 // 68 C0 21 00 15 06 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
 
-function text(message) {
-  log.module({ src: module_name, msg: 'Sending text to MID screen: \''+message+'\'' });
+function refresh_text() {
+	if (config.media.mid !== true) return;
+
+  log.module({ src: module_name, msg: 'Sending text to MID screen: \''+status.mid.text+'\'' });
 
   var message_hex = [0x23, 0x40, 0x20];
-  var message_hex = message_hex.concat(ascii2hex(pad(20, message.substring(0, 20))));
+  var message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text.substring(0, 20))));
 
   socket.data_send({
     src: 'IKE',
@@ -34,30 +23,19 @@ function text(message) {
     msg: message_hex,
   });
 
+	// Left side menu
   var message_hex = [0x21, 0x00, 0x15, 0x20];
-
-  var message = 'Pair';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_1, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'Unpa';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_2, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'Conn';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_3, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'Dscn';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_4, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'Back';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_5, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'Next';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_6, 4).substring(0, 4)));
 
   socket.data_send({
     src: 'RAD',
@@ -65,76 +43,116 @@ function text(message) {
     msg: message_hex,
   });
 
+	// Right side menu
   var message_hex = [0x21, 0x00, 0x15, 0x06];
-
-  var message = 'Paus';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_7, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'Play';
-  var message_hex = message_hex.concat(ascii2hex(pad(4, message).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_8, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'AL+';
-  var message_hex = message_hex.concat(ascii2hex(pad(message, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_9, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
-
-  var message = 'AL-';
-  var message_hex = message_hex.concat(ascii2hex(pad(4, message).substring(0, 4)));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_10, 4).substring(0, 4)));
   var message_hex = message_hex.concat(0x05);
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_11, 4).substring(0, 4)));
+  var message_hex = message_hex.concat(0x05);
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_12, 4).substring(0, 4)));
 
   socket.data_send({
     src: 'RAD',
     dst: module_name,
     msg: message_hex,
   });
+}
+
+// Set or unset the text interval
+function text_loop(action) {
+	if (config.media.mid !== true) return;
+	if (status.vehicle.ignition_level < 1) action = false;
+	if (MID.text_text_loop == action) return;
+
+  log.module({ src : module_name, msg : 'Text loop '+action });
+
+  switch (action) {
+    case false:
+      clearInterval(MID.interval_text_loop);
+
+      // Set text variables
+      MID.text_text_loop = false;
+      break;
+    case true:
+      // Set text variable
+      MID.text_text_loop = true;
+
+      // Send a couple through to prime the pumps
+      refresh_text();
+
+      MID.interval_text_loop = setInterval(() => {
+        refresh_text();
+      }, 5000);
+      break;
+  }
 }
 
 // Set or unset the status interval
 function status_loop(action) {
-  if (config.emulate.mid !== true) {
-    return;
-  }
+	if (config.emulate.mid !== true) return;
+	if (status.vehicle.ignition_level < 1) action = false;
+	if (MID.status_status_loop == action) return;
+
+  log.module({ src : module_name, msg : 'Status loop '+action });
 
   switch (action) {
-    case 'set':
+    case false:
+      clearInterval(MID.interval_status_loop);
+
+      // Set status variables
+      MID.status_status_loop = false;
+
+      status.rad.audio_control = 'audio off';
+
+      status.dsp.reset  = true;
+      status.dsp.ready  = false;
+      status.dspc.reset = true;
+      status.dspc.ready = false;
+      status.rad.reset  = true;
+      status.rad.ready  = false;
+
+      break;
+    case true:
+      // Set status variable
+      MID.status_status_loop = true;
+
+      // Send a couple through to prime the pumps
       refresh_status();
-      interval_status_loop = setInterval(() => {
+
+      MID.interval_status_loop = setInterval(() => {
         refresh_status();
       }, 20000);
       break;
-
-    case 'unset':
-      clearInterval(interval_status_loop, () => {
-      });
-      break;
   }
-
-  log.module({
-    src : module_name,
-    msg : 'Ping interval '+action,
-  });
 }
 
 // Send MID status, and request status from RAD
 function refresh_status() {
-  if (status.vehicle.ignition_level > 0) {
-    bus_commands.request_device_status(module_name, 'RAD');
-    return;
-  }
+	if (status.vehicle.ignition_level > 0) {
+		bus_commands.request_device_status(module_name, 'RAD');
+		bus_commands.request_device_status('RAD',  'DSP');
+		return;
+	}
 
-  status_loop(false);
+	status_loop(false);
 }
 
 // Send the power on button command if needed/ready
 function power_on_if_ready() {
-  if (config.emulate.mid !== true) return;
+  if (status.vehicle.ignition_level === 0 || config.emulate.mid !== true) return;
 
   // Debug logging
   // log.module({ src: module_name, msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
   // log.module({ src: module_name, msg: 'rad.audio_control : \''+status.rad.audio_control+'\'' });
 
   if (status.rad.audio_control == 'audio off') {
+		IKE.text_override(module_name+' power');
     log.module({
       src : module_name,
       msg : 'Sending power!',
@@ -149,32 +167,9 @@ function power_on_if_ready() {
 function parse_in(data) {
   // Init variables
   switch (data.msg[0]) {
-    case 0x01: // Request: device status
-      data.command = 'req';
-      data.value   = 'device status';
-
-      // Send the ready packet since this module doesn't actually exist
-      if (config.emulate.mid === true) {
-        bus_commands.send_device_status(module_name);
-      }
-      break;
-
-    case 0x02: // Device status
-      data.command = 'bro';
-      data.value   = 'device status ';
-      switch (data.msg[1]) {
-        case 0x00:
-          data.value = data.value+'ready';
-          break;
-        case 0x01:
-          data.value = data.value+'ready after reset';
-          break;
-      }
-      break;
-
     default:
       data.command = 'unk';
-      data.value = Buffer.from(data.msg);
+      data.value   = Buffer.from(data.msg);
       break;
   }
 
@@ -188,25 +183,25 @@ function parse_out(data) {
   var value;
 
   switch (data.msg[0]) {
-    case 0x20: // Broadcast: display status
+    case 0x20: // Broadcast: Display status
       data.command = 'bro';
       data.value   = 'display status: ';
       break;
 
-    case 0x31: // Broadcast: button pressed
+    case 0x31: // Broadcast: Button pressed
       data.command = 'bro';
       data.value   = 'button pressed: '+data.msg[1]+' '+data.msg[2]+' '+data.msg[3];
 
       if (data.msg[1] == 0x00 && data.msg[2] == 0x15) {
         switch (data.msg[3]) {
-          case 0x02: BT.command('connect'); break;
-          case 0x03: BT.command('disconnect'); break;
-          case 0x04: BT.command('previous'); break;
-          case 0x05: BT.command('next'); break;
-          case 0x06: BT.command('pause'); break;
-          case 0x07: BT.command('play'); break;
-          case 0x08: LCM.auto_lights(true); break;
-          case 0x09: LCM.auto_lights(false); break;
+          case 0x02 : BT.command('connect');    break;
+          case 0x03 : BT.command('disconnect'); break;
+          case 0x04 : BT.command('previous');   break;
+          case 0x05 : BT.command('next');       break;
+          case 0x06 : BT.command('pause');      break;
+          case 0x07 : BT.command('play');       break;
+          case 0x08 : LCM.auto_lights(true);    break;
+          case 0x09 : LCM.auto_lights(false);   break;
         }
       }
 
@@ -390,11 +385,16 @@ function send_button(button) {
 }
 
 module.exports = {
+  interval_status_loop : null,
+  interval_text_loop   : null,
+  status_status_loop   : false,
+  status_text_loop     : false,
   parse_in             : (data)        => { parse_in(data); },
   parse_out            : (data)        => { parse_out(data); },
   power_on_if_ready    : ()            => { power_on_if_ready(); },
   send_button          : (button)      => { send_button(button); },
   send_device_status   : (module_name) => { bus_commands.send_device_status(module_name); },
   status_loop          : (action)      => { status_loop(action); },
-  text                 : (message)     => { text(message); },
+  text_loop            : (action)      => { text_loop(action); },
+  text                 : ()            => { text(); },
 };
