@@ -16,6 +16,7 @@ bus_modules  = require('bus-modules');
 hex          = require('hex');
 json         = require('json');
 log          = require('log-output');
+obc_values   = require('obc-values');
 socket       = require('socket');
 
 function load_modules(callback) {
