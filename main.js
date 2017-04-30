@@ -113,9 +113,9 @@ function startup() {
 		json.reset(() => { // Reset status and module vars pertinent to launching app
 			load_modules(() => { // Load IBUS module node modules
 				kodi.autoconfig_loop(true, () => {}); // Enable kodi autoconfig
-				socket.startup(() => { // Start WebSocket client
 					HDMI.startup(() => { // Open HDMI-CEC
 						BT.autoconfig(() => { // Open Bluetooth connection
+							socket.startup(() => { // Start WebSocket client
 
 							IKE.text_override('App restart');
 							log.msg({
