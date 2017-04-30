@@ -396,5 +396,5 @@ module.exports = {
   send_device_status   : (module_name) => { bus_commands.send_device_status(module_name); },
   status_loop          : (action)      => { status_loop(action); },
   text_loop            : (action)      => { text_loop(action); },
-  text                 : ()            => { text(); },
+  refresh_text                 : ()            => { refresh_text(); },
 };
