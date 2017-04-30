@@ -194,14 +194,18 @@ function parse_out(data) {
 
       if (data.msg[1] == 0x00 && data.msg[2] == 0x15) {
         switch (data.msg[3]) {
+					case 0x00 : break;
+					case 0x01 : break;
           case 0x02 : BT.command('connect');    break;
           case 0x03 : BT.command('disconnect'); break;
           case 0x04 : BT.command('previous');   break;
           case 0x05 : BT.command('next');       break;
           case 0x06 : BT.command('pause');      break;
           case 0x07 : BT.command('play');       break;
-          case 0x08 : LCM.auto_lights(true);    break;
-          case 0x09 : LCM.auto_lights(false);   break;
+          case 0x08 : BT.command('repeat');     break;
+          case 0x09 : BT.command('shuffle');    break;
+          case 0x0A : LCM.auto_lights(false);   break;
+          case 0x0B : LCM.auto_lights(true);    break;
         }
       }
 
