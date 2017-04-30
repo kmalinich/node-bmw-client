@@ -112,17 +112,18 @@ function startup() {
 	json.read(() => { // Read JSON config and status files
 		json.reset(() => { // Reset status and module vars pertinent to launching app
 			load_modules(() => { // Load IBUS module node modules
+
 				kodi.autoconfig_loop(true, () => {}); // Enable kodi autoconfig
-					HDMI.startup(() => { // Open HDMI-CEC
-						BT.autoconfig(() => { // Open Bluetooth connection
-							socket.startup(() => { // Start WebSocket client
+				BT.autoconfig(); // Open Bluetooth connection
 
-							IKE.text_override('App restart');
-							log.msg({
-								src : module_name,
-								msg : 'Started',
-							});
+				HDMI.startup(() => { // Open HDMI-CEC
 
+					socket.startup(() => { // Start WebSocket client
+
+						IKE.text_override('App restart');
+						log.msg({
+							src : module_name,
+							msg : 'Started',
 						});
 					});
 				});
@@ -145,6 +146,7 @@ function shutdown(signal) {
 					src : module_name,
 					msg : 'Shut down',
 				});
+
 				process.exit();
 			});
 		});
