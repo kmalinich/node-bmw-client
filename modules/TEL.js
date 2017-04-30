@@ -60,7 +60,7 @@ function led(object) {
 	log.module({ src : module_name, msg : 'Setting LED' });
   socket.data_send({
     src: module_name,
-    dst: 'OBC',
+    dst: 'ANZV',
     msg: [0x2B, byte], // Turn on TEL LED
   });
 }
