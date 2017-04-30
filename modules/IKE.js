@@ -295,7 +295,7 @@ function decode_ignition_status(data) {
 
     // Welcome message
 		if (config.options.message_welcome === true) {
-			IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+			IKE.text_override('node-bmw | Host:'+os.hostname().split('.')[0]+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
 		}
 
     // Refresh OBC data
