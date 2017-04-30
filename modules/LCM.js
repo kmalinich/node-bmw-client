@@ -19,7 +19,12 @@ function auto_lights() {
 	if (action === false                    ) io_encode({});
 	if (status.lights.auto.active === action) return;
 
-	log.module({ src : module_name, msg : 'Auto lights \''+status.lights.auto.active+'\' => \''+action+'\'' });
+	log.change({
+		src   : module_name,
+		value : 'Auto lights',
+		old   : status.lights.auto.active,
+		new   : action,
+	});
 
 	switch (action) {
 		case false:
@@ -97,10 +102,22 @@ function auto_lights_process() {
 	}
 
 	if (current_reason != status.lights.auto.reason) {
-		log.module({ src : module_name, msg : 'Auto lights reason change \''+current_reason+'\' => \''+status.lights.auto.reason+'\''});
+		log.change({
+			src   : module_name,
+			value : 'Auto lights reason',
+			old   : current_reason,
+			new   : status.lights.auto.reason,
+		});
 	}
+
 	if (current_lowbeam != status.lights.auto.lowbeam) {
-		log.module({ src : module_name, msg : 'Auto lights lowbeam change \''+current_lowbeam+'\' => \''+status.lights.auto.lowbeam+'\''});
+		log.change({
+			src   : module_name,
+			value : 'Auto lights lowbeam',
+			old   : current_lowbeam,
+			new   : status.lights.auto.lowbeam,
+		});
+
 		if (status.lights.auto.lowbeam === true) { var status_string = 'on'; } else { var status_string = 'off'; }
 		// Show status+reason in cluster
 		IKE.text_override('Auto lights '+status_string+', reason: '+status.lights.auto.reason);
@@ -653,7 +670,12 @@ function parse_out(data) {
 function welcome_lights(action) {
 	if (status.vehicle.ignition_level > 0 || status.lights.welcome_lights === action) return;
 
-	log.module({ src : module_name, msg : 'Welcome lights \''+status.lights.welcome_lights+'\' => \''+action+'\'' });
+	log.change({
+		src   : module_name,
+		value : 'Welcome lights',
+		old   : status.lights.welcome_lights,
+		new   : action,
+	});
 
 	switch (action) {
 		case true :
