@@ -200,7 +200,7 @@ function parse_out(data) {
 			if (bitmask.bit_test(data.msg[1], 0x08) && bitmask.bit_test(data.msg[1], 0x04)) data.sensitivity = 3;
 
 			if (status.gm.wipers.sensitivity != data.sensitivity) {
-				log.module({
+				log.change({
 					src   : module_name,
 					value : 'Wiper sensitivity',
 					old   : status.gm.wipers.sensitivity,
@@ -212,7 +212,7 @@ function parse_out(data) {
 			}
 
 			if (status.gm.wipers.speed != data.speed) {
-				log.module({
+				log.change({
 					src   : module_name,
 					value : 'Wiper speed',
 					old   : status.gm.wipers.speed,
