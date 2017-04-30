@@ -937,6 +937,7 @@ module.exports = {
 
   // Check control warnings
   text_warning : (message, timeout = 10000) => {
+		kodi.notify(module_name, message);
     // 3rd byte:
     // 0x00 : no gong,   no arrow
     // 0x01 : no gong,   solid arrow
@@ -965,6 +966,7 @@ module.exports = {
 
   // Check control messages
   text_urgent : (message, timeout = 5000) => {
+		kodi.notify(module_name, message);
     var message_hex = [0x1A, 0x35, 0x00];
     var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
@@ -982,6 +984,7 @@ module.exports = {
 
   // IKE cluster text send message, override other messages
   text_override : (message, timeout = 2500, direction = 'left', turn = false) => {
+		kodi.notify(module_name, message);
     var max_length   = 20;
     var scroll_delay = 300;
 		var scroll_delay_timeout = scroll_delay*5;
