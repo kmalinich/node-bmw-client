@@ -540,18 +540,15 @@ function io_set(packet) {
 
 // Make things.. how they should be?
 function reset() {
-	if (config.lights.auto !== true) {
-		return;
-	}
+	if (config.lights.auto !== true) return;
 
-	var reset_dimmer_val; // Determine dimmer value from config, depending if lowbeams are on
-
+	// Determine dimmer value from config, depending if lowbeams are on
 	switch (status.lights.auto.lowbeam) {
 		case true:
-			reset_dimmer_val = config.lights.dimmer.lights_on;
+			var reset_dimmer_val = config.lights.dimmer.lights_on;
 			break;
 		case false:
-			reset_dimmer_val = config.lights.dimmer.lights_off;
+			var reset_dimmer_val = config.lights.dimmer.lights_off;
 	}
 
 	io_encode({
