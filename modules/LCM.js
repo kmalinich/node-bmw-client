@@ -12,9 +12,10 @@ function api_command(data) {
 }
 
 // Automatic lights handling
-function auto_lights() {
+function auto_lights(override = false) {
 	var action = true;
-	if (config.lights.auto !== true         ) return;
+	if (config.lights.auto !== true && override === false) return;
+	if (override === true) var action = false;
 	if (status.vehicle.ignition_level < 3   ) var action = false;
 	if (action === false                    ) io_encode({});
 	if (status.lights.auto.active === action) return;
