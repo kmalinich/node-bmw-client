@@ -3,16 +3,6 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 // Only load if configured as Raspberry Pi
 if (config.system.pi === true) var pitemp = require('pi-temperature');
 
-// ASCII to hex for cluster message
-function ascii2hex(str) {
-  var array = [];
-  for (var n = 0, l = str.length; n < l; n ++) {
-    var hex = str.charCodeAt(n);
-    array.push(hex);
-  }
-  return array;
-}
-
 // Pretend to be IKE saying the car is on
 // Note - this can and WILL set the alarm off - kudos to the Germans...
 function ignition(value) {
@@ -231,6 +221,7 @@ function decode_ignition_status(data) {
     // Disable BMBT/MID keepalive
     BMBT.status_loop(false);
     MID.status_loop(false);
+    MID.text_loop(false);
 
     // Toggle media playback
     kodi.command('pause');
@@ -254,6 +245,7 @@ function decode_ignition_status(data) {
     // Enable BMBT/MID keepalive
     BMBT.status_loop(true);
     MID.status_loop(true);
+    MID.text_loop(true);
     RAD.send_audio_control('tuner/tape');
 
     // Toggle media playback
@@ -957,7 +949,7 @@ module.exports = {
     // 0x18 : 3 beep,    no arrow
 
     var message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
-    var message_hex = message_hex.concat(ascii2hex(pad(message, 20)));
+    var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
     socket.data_send({
       src : 'CCM',
@@ -974,7 +966,7 @@ module.exports = {
   // Check control messages
   text_urgent : (message, timeout = 5000) => {
     var message_hex = [0x1A, 0x35, 0x00];
-    var message_hex = message_hex.concat(ascii2hex(pad(message, 20)));
+    var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
     socket.data_send({
       src : 'CCM',
@@ -1048,7 +1040,7 @@ module.exports = {
 
     var message_hex = [0x23, 0x50, 0x30, 0x07];
     // Trim string to max length
-    var message_hex = message_hex.concat(ascii2hex(pad(message.substring(0, max_length), 20)));
+    var message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
     var message_hex = message_hex.concat(0x04);
 
     socket.data_send({
