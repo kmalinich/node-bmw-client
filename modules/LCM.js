@@ -233,7 +233,7 @@ function decode(data) {
 	switch (data.msg[0]) {
 		case 0x54: // Vehicle data
 			// This message also has days since service and total kms, but, baby steps...
-			var vin_string     = hex.hex2a(data.msg[1].toString(16))+hex.hex2a(data.msg[2].toString(16))+data.msg[3].toString(16)+data.msg[4].toString(16)+data.msg[5].toString(16)[0];
+			var vin_string     = hex.h2a(data.msg[1].toString(16))+hex.h2a(data.msg[2].toString(16))+data.msg[3].toString(16)+data.msg[4].toString(16)+data.msg[5].toString(16)[0];
 			status.vehicle.vin = vin_string;
 			log.module({
 				src : module_name,

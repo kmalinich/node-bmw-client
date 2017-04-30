@@ -1,6 +1,7 @@
 var module_name = __filename.slice(__dirname.length + 1, -3);
 
-var pitemp = require('pi-temperature');
+// Only load if configured as Raspberry Pi
+if (config.system.pi === true) var pitemp = require('pi-temperature');
 
 // ASCII to hex for cluster message
 function ascii2hex(str) {
@@ -124,7 +125,7 @@ function obc_data(action, value, target) {
     msg = [msg, target];
   }
 
-  log.module({ src : module_name, msg : '\''+action+'\' OBC value \''+value+'\'' });
+  // log.module({ src : module_name, msg : action+' OBC value \''+value+'\'' });
 
   socket.data_send({
     src: 'GT',
@@ -293,7 +294,9 @@ function decode_ignition_status(data) {
     BT.command('connect');
 
     // Welcome message
-    // IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+		if (config.options.message_welcome === true) {
+			IKE.text_override('node-bmw | Host:'+os.hostname()+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+		}
 
     // Refresh OBC data
     IKE.obc_refresh();
@@ -301,9 +304,12 @@ function decode_ignition_status(data) {
     // Refresh OBC HUD once every 5 seconds, by requesting current temperatures
     IKE.interval_data_refresh = setInterval(() => {
       // Get+save RPi temp
-      pitemp.measure((temperature) => {
-        status.pi.temperature = parseFloat(temperature.toFixed(0));
-      });
+			if (config.system.pi === true) {
+				pitemp.measure((temperature) => {
+					status.system.temperature = parseFloat(temperature.toFixed(0));
+				});
+			}
+
       IKE.request('ignition');
       IKE.request('temperature');
     }, 5000);
@@ -351,7 +357,9 @@ function decode_sensor_status(data) {
     status.vehicle.reverse = bitmask.bit_test(data.msg[2], bitmask.bit[4]);
     // If the vehicle is newly in reverse, send message
     if (status.vehicle.reverse === true) {
+		if (config.options.message_reverse === true) {
       IKE.text_override('you\'re in reverse..');
+		}
     }
   }
 }
@@ -466,41 +474,9 @@ module.exports = {
 
       case 0x24: // Update: OBC text
         data.command = 'upd';
-        var layout;
 
         // data.msg[1] - Layout
-        switch (data.msg[1]) {
-          case 0x00 : layout = 'phone';            break;
-          case 0x01 : layout = 'time';             break;
-          case 0x02 : layout = 'date';             break;
-          case 0x03 : layout = 'outside-temp';     break;
-          case 0x04 : layout = 'consumption-1';    break;
-          case 0x05 : layout = 'consumption-2';    break;
-          case 0x06 : layout = 'range';            break;
-          case 0x07 : layout = 'distance';         break;
-          case 0x08 : layout = 'arrival';          break;
-          case 0x09 : layout = 'limit';            break;
-          case 0x0A : layout = 'average-speed';    break;
-          case 0x0C : layout = 'memo';             break;
-          case 0x0D : layout = 'code';             break;
-          case 0x0E : layout = 'stopwatch';        break;
-          case 0x0F : layout = 'timer-1';          break;
-          case 0x10 : layout = 'timer-2';          break;
-          case 0x11 : layout = 'aux-heating-off';  break;
-          case 0x12 : layout = 'aux-heating-on';   break;
-          case 0x13 : layout = 'aux-vent-off';     break;
-          case 0x14 : layout = 'aux-vent-on';      break;
-          case 0x15 : layout = 'end-stellmode';    break;
-          case 0x16 : layout = 'emergency-disarm'; break;
-          case 0x1A : layout = 'interim';          break;
-          case 0x1B : layout = 'auxheatvent';      break;
-          case 0x1F : layout = 'test-mode';        break;
-          case 0x24 : layout = 'checkcontrol';     break;
-          case 0x40 : layout = 'display';          break;
-          case 0x50 : layout = 'cluster';          break;
-          case 0x62 : layout = 'radio';            break;
-          default   : layout = 'unknown '+data.msg[1];
-        }
+				var layout = obc_values.h2n(data.msg[1]);
 
         switch (layout) {
           case 'time':
@@ -744,16 +720,16 @@ module.exports = {
             break;
         }
 
-        data.value = layout+' text, \''+Buffer.from(data.msg).slice(4).toString().replace(/�/g, '°').slice(0, -1)+'\'';
+        data.value = 'OBC '+layout.replace(/\-/, ' ')+': \''+hex.h2s(data.msg)+'\'';
         break;
 
       case 0x2A: // Broadcast: Aux heat LED status
         data.command = 'bro';
-        data.value   = 'aux heat LED : '+status.obc.aux_heat_led;
+        data.value   = 'aux heat LED: '+status.obc.aux_heat_led;
         decode_aux_heat_led(data);
         break;
 
-      case 0x57: // BC button in cluster
+			case 0x57: // Broadcast: BC button press (MFL BC stalk button)
         data.command = 'bro';
         data.value   = 'BC button';
         break;
@@ -859,7 +835,7 @@ module.exports = {
 
     // 1m sysload to percentage
     var load_1m = (parseFloat((os.loadavg()[0]/os.cpus().length).toFixed(2))*100).toFixed(0);
-    var load_1m = status.pi.temperature+'¨|'+load_1m+'%';
+    var load_1m = status.system.temperature+'¨|'+load_1m+'%';
 
     // Format the output
     var load_1m = pad(load_1m, 8);
@@ -899,7 +875,7 @@ module.exports = {
 
     // Immo+GM data
     EWS.request('immobiliserstatus');
-    // GM.request('io-status');
+    GM.request('io-status');
     GM.request('door-status');
 
     // IKE data
