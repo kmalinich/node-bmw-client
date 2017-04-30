@@ -176,7 +176,7 @@ function comfort_turn(data) {
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
 			status.lights.turn.depress_elapsed = now()-status.lights.turn.left.depress;
-			log.module({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
+			// log.module({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'left';
 			}
@@ -193,7 +193,7 @@ function comfort_turn(data) {
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
 			status.lights.turn.depress_elapsed = now()-status.lights.turn.right.depress;
-			log.module({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
+			// log.module({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'right';
 			}
@@ -211,13 +211,13 @@ function comfort_turn(data) {
 				cluster_msg_1 = '< < < < < < <';
 				cluster_msg_3 = '< < < < < < <';
 				break;
+
 			case 'right':
 				// Set status variables
 				status.lights.turn.left.comfort  = false;
 				status.lights.turn.right.comfort = true;
 				cluster_msg_1 = '> > > > > > >';
 				cluster_msg_3 = '> > > > > > >';
-				break;
 		}
 
 		// Concat message string
@@ -226,7 +226,7 @@ function comfort_turn(data) {
 		status.lights.turn.comfort_cool = false;
 		reset();
 
-		IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed);
+		IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed, action, true);
 
 		// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
 		setTimeout(() => {
@@ -241,7 +241,7 @@ function comfort_turn(data) {
 		setTimeout(() => {
 			log.module({ src : module_name, msg : 'Comfort turn signal - cooldown done' });
 			status.lights.turn.comfort_cool = true;
-		}, 4000+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
+		}, 3000+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
 	}
 }
 

@@ -84,41 +84,8 @@ function obc_data(action, value, target) {
       break;
   }
 
-  // Determine value_id from value argument
-  switch (value) {
-    case 'arrival'          : value_id = 0x08; break;
-    case 'aux-heating-off'  : value_id = 0x11; break;
-    case 'aux-heating-on'   : value_id = 0x12; break;
-    case 'aux-vent-off'     : value_id = 0x13; break;
-    case 'aux-vent-on'      : value_id = 0x14; break;
-    case 'auxheatvent'      : value_id = 0x1B; break;
-    case 'average-speed'    : value_id = 0x0A; break;
-    case 'checkcontrol'     : value_id = 0x24; break;
-    case 'cluster'          : value_id = 0x50; break;
-    case 'code'             : value_id = 0x0D; break;
-    case 'consumption-1'    : value_id = 0x04; break;
-    case 'consumption-2'    : value_id = 0x05; break;
-    case 'date'             : value_id = 0x02; break;
-    case 'display'          : value_id = 0x40; break;
-    case 'distance'         : value_id = 0x07; break;
-    case 'emergency-disarm' : value_id = 0x16; break;
-    case 'end-stellmode'    : value_id = 0x15; break;
-    case 'interim'          : value_id = 0x1A; break;
-    case 'limit'            : value_id = 0x09; break;
-    case 'memo'             : value_id = 0x0C; break;
-    case 'outside-temp'     : value_id = 0x03; break;
-    case 'phone'            : value_id = 0x00; break;
-    case 'radio'            : value_id = 0x62; break;
-    case 'range'            : value_id = 0x06; break;
-    case 'stopwatch'        : value_id = 0x0E; break;
-    case 'test-mode'        : value_id = 0x1F; break;
-    case 'time'             : value_id = 0x01; break;
-    case 'timer-1'          : value_id = 0x0F; break;
-    case 'timer-2'          : value_id = 0x10; break;
-  }
-
-  // Assemble message string
-  var msg = [cmd, value_id, action_id];
+  // Assemble message string, with OBC value from value argument
+  var msg = [cmd, obc_values.n2h(value), action_id];
 
   // If we're setting, insert the data
   if (typeof target !== 'undefined' && target) {
@@ -788,10 +755,10 @@ module.exports = {
 
     // Bounce if the last update was less than 3 sec ago
     if (time_now-IKE.last_hud_refresh <= 3000) {
-      log.module({
-        src : module_name,
-        msg : 'HUD refresh: too soon ('+(time_now-IKE.last_hud_refresh).toFixed(0)+' ms)',
-      });
+      // log.module({
+      //   src : module_name,
+      //   msg : 'HUD refresh: too soon ('+(time_now-IKE.last_hud_refresh).toFixed(0)+' ms)',
+      // });
       return;
     }
 
@@ -846,10 +813,10 @@ module.exports = {
     }
 
     if (status.vehicle.ignition_level < 1) {
-      log.module({
-        src : module_name,
-        msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1 ('+(time_now-IKE.last_hud_refresh)+' ms)',
-      });
+      // log.module({
+      //   src : module_name,
+      //   msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1',
+      // });
       return;
     }
     else {
@@ -1022,9 +989,11 @@ module.exports = {
   },
 
   // IKE cluster text send message, override other messages
-  text_override : (message, timeout = 2500) => {
+  text_override : (message, timeout = 2500, direction = 'left', turn = false) => {
     var max_length   = 20;
     var scroll_delay = 300;
+		var scroll_delay_timeout = scroll_delay*5;
+		if (turn === false) var scroll_delay_timeout = 0;
 
     // Delare that we're currently first up
     IKE.hud_override      = true;
@@ -1048,14 +1017,19 @@ module.exports = {
       // Add a time buffer before scrolling starts
       setTimeout(() => {
         for (var scroll = 0; scroll <= message.length-max_length ; scroll++) {
-          setTimeout((current_scroll, message_full) => {
+          setTimeout((current_scroll, message_full, direction) => {
             // Only send the message if we're currently the first up
             if (IKE.hud_override_text == message_full) {
-              IKE.text(message.substring(current_scroll, current_scroll+max_length));
+							if (direction == 'left') {
+	              IKE.text(message.substring(current_scroll, current_scroll+max_length));
+							}
+							else {
+	              IKE.text(message.substring(current_scroll+max_length, current_scroll));
+							}
             }
-          }, scroll_delay*scroll, scroll, message);
+          }, scroll_delay*scroll, scroll, message, direction);
         }
-      }, (scroll_delay*5));
+      }, scroll_delay_timeout);
     }
 
     // Clear the override flag
