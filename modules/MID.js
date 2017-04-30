@@ -204,8 +204,8 @@ function parse_out(data) {
           case 0x07 : BT.command('play');       break;
           case 0x08 : BT.command('repeat');     break;
           case 0x09 : BT.command('shuffle');    break;
-          case 0x0A : LCM.auto_lights(false);   break;
-          case 0x0B : LCM.auto_lights(true);    break;
+          case 0x0A : config.lights.auto = false; LCM.auto_lights(true); break;
+          case 0x0B : config.lights.auto = true; LCM.auto_lights(true); break;
         }
       }
 
