@@ -80,7 +80,7 @@ function auto_lights_process() {
 	});
 
 	// Check wipers
-	if (status.gm.wipers.speed !== null || status.gm.wipers.speed != 'off') {
+	if (status.gm.wipers.speed !== null && status.gm.wipers.speed != 'off') {
 		status.lights.auto.reason  = 'wipers on';
 		status.lights.auto.lowbeam = true;
 	}

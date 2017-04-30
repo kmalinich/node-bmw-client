@@ -355,7 +355,6 @@ module.exports = {
 
 		// Send the cluster and Kodi a notification
 		var notify_message = 'Toggling door locks';
-		kodi.notify(module_name, notify_message);
 		IKE.text_override(notify_message)
 	},
 
