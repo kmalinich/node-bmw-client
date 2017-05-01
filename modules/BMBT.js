@@ -76,7 +76,7 @@ function parse_in(data) {
 		case 0x4A: // Cassette control
 			data.command = 'con';
 			data.value   = 'cassette ';
-			data.value   = data.value+data.msg[1];
+			data.value   = data.value+data.msg;
 
 			send_cassette_status();
 			break;
