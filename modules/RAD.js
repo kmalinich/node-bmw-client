@@ -97,7 +97,7 @@ function parse_out(data) {
 		case 0x4A: // Control: Cassette
       return;
       data.command = 'con';
-      data.value   = 'cassette control '+data.msg;
+      data.value   = 'cassette '+data.msg;
       break;
 
 		case 0x46: // Control: LCD
