@@ -1,6 +1,6 @@
 var module_name = __filename.slice(__dirname.length + 1, -3);
 
-// Set or unset the status interval
+// Set or unset the status timeout
 function status_loop(action) {
 	if (config.emulate.bmbt !== true) return;
 	if (status.vehicle.ignition_level < 1) action = false;
@@ -10,31 +10,29 @@ function status_loop(action) {
 
 	switch (action) {
 		case false:
-			clearInterval(BMBT.interval_status_loop);
+      status.rad.audio_control = 'audio off';
 
-			// Set status variables
-			BMBT.status_status_loop = false;
+      status.dsp.reset  = true;
+      status.dsp.ready  = false;
+      status.dspc.reset = true;
+      status.dspc.ready = false;
+      status.rad.reset  = true;
+      status.rad.ready  = false;
 
-			status.rad.audio_control = 'audio off';
+      // Set status variable
+      BMBT.status_status_loop = false;
 
-			status.dsp.reset  = true;
-			status.dsp.ready  = false;
-			status.dspc.reset = true;
-			status.dspc.ready = false;
-			status.rad.reset  = true;
-			status.rad.ready  = false;
+      if (BMBT.timeout_status_loop !== null) {
+        clearTimeout(BMBT.timeout_status_loop);
+        BMBT.timeout_status_loop = null;
+      }
+      break;
+    case true:
+      // Send a couple through to prime the pumps
+      refresh_status();
 
-			break;
-		case true:
-			// Set status variable
-			BMBT.status_status_loop = true;
-
-			// Send a couple through to prime the pumps
-			refresh_status();
-
-			BMBT.interval_status_loop = setInterval(() => {
-				refresh_status();
-			}, 20000);
+      // Set status variable
+      BMBT.status_status_loop  = true;
 			break;
 	}
 }
@@ -44,7 +42,12 @@ function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
 		bus_commands.request_device_status(module_name, 'RAD');
 		bus_commands.request_device_status('RAD',  'DSP');
-		return;
+
+    if (BMBT.timeout_status_loop === null) {
+      BMBT.timeout_status_loop = setTimeout(refresh_status, 20000);
+    }
+
+    return;
 	}
 
 	status_loop(false);
@@ -59,11 +62,13 @@ function power_on_if_ready() {
 	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
 	if (status.rad.audio_control == 'audio off') {
-		IKE.text_override(module_name+' power');
+		IKE.text_override(module_name+' power, from '+module_name);
+
 		log.module({
 			src : module_name,
 			msg : 'Sending power!',
 		});
+
 		send_button('power');
 		DSP.request('memory'); // Get the DSP memory
 	}
@@ -177,7 +182,7 @@ function send_button(button) {
 
 module.exports = {
 	status_status_loop   : false,
-	interval_status_loop : null,
+	timeout_status_loop  : null,
 	parse_in             : (data)        => { parse_in(data); },
 	parse_out            : (data)        => { parse_out(data); },
 	power_on_if_ready    : ()            => { power_on_if_ready(); },

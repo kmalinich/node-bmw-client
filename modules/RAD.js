@@ -78,8 +78,11 @@ function parse_out(data) {
         case 0xAF:
           data.value = data.value+'off';
           status.rad.audio_control = data.value;
-					BMBT.power_on_if_ready();
-					MID.power_on_if_ready();
+					IKE.text_override(module_name+' power, from '+module_name);
+					setTimeout(() => {
+						BMBT.power_on_if_ready();
+						MID.power_on_if_ready();
+					}, 2000);
           break;
 
         case 0xA1:
