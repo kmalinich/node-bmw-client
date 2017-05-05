@@ -211,12 +211,14 @@ function decode_ignition_status(data) {
   // Ignition changed to off
   if (IKE.state_poweroff === true) {
     // Disable HUD refresh
-    clearInterval(IKE.interval_data_refresh, () => {
-      log.module({
-        src : module_name,
-        msg : 'Cleared data refresh interval',
-      });
-    });
+		if (IKE.timeout_data_refresh !== null) {
+			clearTimeout(IKE.timeout_data_refresh);
+			IKE.timeout_data_refresh = null;
+			log.module({
+				src : module_name,
+				msg : 'Cleared data refresh timeout',
+			});
+		}
 
     // Disable BMBT/MID keepalive
     BMBT.status_loop(false);
@@ -261,17 +263,7 @@ function decode_ignition_status(data) {
     IKE.obc_refresh();
 
     // Refresh OBC HUD once every 5 seconds, by requesting current temperatures
-    IKE.interval_data_refresh = setInterval(() => {
-      // Get+save RPi temp
-			if (config.system.pi === true) {
-				pitemp.measure((temperature) => {
-					status.system.temperature = parseFloat(temperature.toFixed(0));
-				});
-			}
-
-      IKE.request('ignition');
-      IKE.request('temperature');
-    }, 5000);
+		data_refresh();
   }
 
   // Ignition changed to accessory, from run
@@ -287,6 +279,34 @@ function decode_ignition_status(data) {
     IKE.state_run = false;
     json.write(); // Write JSON config and status files
   }
+}
+
+function data_refresh() {
+	// Get+save RPi temp
+	if (config.system.pi === true) {
+		pitemp.measure((temperature) => {
+			status.system.temperature = parseFloat(temperature.toFixed(0));
+		});
+	}
+
+	IKE.request('ignition');
+	IKE.request('temperature');
+
+	if (status.vehicle.ignition_level > 0) {
+		if (IKE.timeout_data_refresh === null) {
+			IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
+		}
+	}
+	else {
+		if (IKE.timeout_data_refresh !== null) {
+			clearTimeout(IKE.timeout_data_refresh);
+			IKE.timeout_data_refresh = null;
+			log.module({
+				src : module_name,
+				msg : 'Cleared data refresh timeout',
+			});
+		}
+	}
 }
 
 function decode_sensor_status(data) {
@@ -374,7 +394,7 @@ function decode_aux_heat_led(data) {
 // Exported functions
 module.exports = {
   // HUD refresh vars
-  interval_data_refresh : null,
+  timeout_data_refresh : null,
   last_hud_refresh      : now(),
   hud_override          : false,
   hud_override_text     : null,

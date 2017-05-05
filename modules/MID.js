@@ -152,7 +152,7 @@ function power_on_if_ready() {
   // log.module({ src: module_name, msg: 'rad.audio_control : \''+status.rad.audio_control+'\'' });
 
   if (status.rad.audio_control == 'audio off') {
-		IKE.text_override(module_name+' power');
+		IKE.text_override(module_name+' power, from '+module_name);
     log.module({
       src : module_name,
       msg : 'Sending power!',
