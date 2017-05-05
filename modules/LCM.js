@@ -30,8 +30,11 @@ function auto_lights(override = false) {
 	switch (action) {
 		case false:
 			io_encode({});
-			clearInterval(LCM.interval_lights_auto);
-			log.module({ src : module_name, msg : 'Cleared autolights interval' });
+			if (LCM.timeout_lights_auto !== null) {
+				clearTimeout(LCM.timeout_lights_auto);
+				LCM.timeout_lights_auto = null;
+				log.module({ src : module_name, msg : 'Cleared autolights timeout' });
+			}
 
 			// Set status variables
 			status.lights.auto.reason  = null;
@@ -45,12 +48,9 @@ function auto_lights(override = false) {
 			// Send a couple through to prime the pumps
 			auto_lights_process();
 
-			// Process/send LCM data on 7 second interval
+			// Process/send LCM data on 7 second timeout
 			// LCM diag command timeout is 15 seconds
-			LCM.interval_lights_auto = setInterval(() => {
-				// Process auto lights
-				auto_lights_process();
-			}, 7000);
+			auto_lights_process();
 	}
 }
 
@@ -125,6 +125,11 @@ function auto_lights_process() {
 	}
 
 	reset();
+
+	if (LCM.timeout_lights_auto === null) {
+		LCM.timeout_lights_auto = setTimeout(auto_lights_process, 7000);
+		log.module({ src : module_name, msg : 'Set autolights timeout' });
+	}
 }
 
 // Cluster/interior backlight
@@ -705,8 +710,8 @@ function welcome_lights(action) {
 module.exports = {
 	// Variables
 	counter_lights_welcome  : null,
-	interval_lights_auto    : null,
-	interval_lights_welcome : null,
+	timeout_lights_auto     : null,
+	timeout_lights_welcome  : null,
 	timeout_lights_welcome  : null,
 
 	// Functions
