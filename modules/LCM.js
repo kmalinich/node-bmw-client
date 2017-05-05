@@ -45,9 +45,6 @@ function auto_lights(override = false) {
 			// Set status variable
 			status.lights.auto.active = true;
 
-			// Send a couple through to prime the pumps
-			auto_lights_process();
-
 			// Process/send LCM data on 7 second timeout
 			// LCM diag command timeout is 15 seconds
 			auto_lights_process();
@@ -126,10 +123,7 @@ function auto_lights_process() {
 
 	reset();
 
-	if (LCM.timeout_lights_auto === null) {
-		LCM.timeout_lights_auto = setTimeout(auto_lights_process, 7000);
-		log.module({ src : module_name, msg : 'Set autolights timeout' });
-	}
+	LCM.timeout_lights_auto = setTimeout(auto_lights_process, 7000);
 }
 
 // Cluster/interior backlight
