@@ -113,7 +113,7 @@ function startup() {
 		json.reset(() => { // Reset status and module vars pertinent to launching app
 			load_modules(() => { // Load IBUS module node modules
 
-				kodi.autoconfig_loop(true, () => {}); // Enable kodi autoconfig
+				kodi.autoconfig(); // Enable kodi autoconfig
 				BT.autoconfig(); // Open Bluetooth connection
 
 				HDMI.startup(() => { // Open HDMI-CEC
