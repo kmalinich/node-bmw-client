@@ -293,9 +293,7 @@ function data_refresh() {
 	IKE.request('temperature');
 
 	if (status.vehicle.ignition_level > 0) {
-		if (IKE.timeout_data_refresh === null) {
-			IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
-		}
+		IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
 	}
 	else {
 		if (IKE.timeout_data_refresh !== null) {
@@ -395,9 +393,9 @@ function decode_aux_heat_led(data) {
 module.exports = {
   // HUD refresh vars
   timeout_data_refresh : null,
-  last_hud_refresh      : now(),
-  hud_override          : false,
-  hud_override_text     : null,
+  last_hud_refresh     : now(),
+  hud_override         : false,
+  hud_override_text    : null,
 
   // Ignition state change vars
   state_powerdown   : null,
