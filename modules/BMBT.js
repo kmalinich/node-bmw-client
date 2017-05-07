@@ -43,9 +43,7 @@ function refresh_status() {
 		bus_commands.request_device_status(module_name, 'RAD');
 		bus_commands.request_device_status('RAD',  'DSP');
 
-    if (BMBT.timeout_status_loop === null) {
-      BMBT.timeout_status_loop = setTimeout(refresh_status, 20000);
-    }
+		BMBT.timeout_status_loop = setTimeout(refresh_status, 20000);
 
     return;
 	}
@@ -62,7 +60,8 @@ function power_on_if_ready() {
 	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
 	if (status.rad.audio_control == 'audio off') {
-		IKE.text_override(module_name+' power, from '+module_name);
+		kodi.notify(module_name, 'power ('+module_name+')');
+		IKE.text_override(module_name+' ('+module_name+')');
 
 		log.module({
 			src : module_name,

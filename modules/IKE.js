@@ -1002,7 +1002,7 @@ module.exports = {
 
   // IKE cluster text send message, override other messages
   text_override : (message, timeout = 2500, direction = 'left', turn = false) => {
-		kodi.notify(module_name, message);
+		// kodi.notify(module_name, message);
     var max_length   = 20;
     var scroll_delay = 300;
 		var scroll_delay_timeout = scroll_delay*5;
