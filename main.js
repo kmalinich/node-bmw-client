@@ -115,16 +115,13 @@ function startup() {
 
 				kodi.autoconfig(); // Enable kodi autoconfig
 				BT.autoconfig(); // Open Bluetooth connection
-
 				HDMI.startup(() => { // Open HDMI-CEC
+					socket.startup(); // Start WebSocket client
 
-					socket.startup(() => { // Start WebSocket client
-
-						IKE.text_override('App restart');
-						log.msg({
-							src : module_name,
-							msg : 'Started',
-						});
+					IKE.text_override('App restart');
+					log.msg({
+						src : module_name,
+						msg : 'Started',
 					});
 				});
 			});
