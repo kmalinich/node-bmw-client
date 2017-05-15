@@ -240,7 +240,7 @@ function parse_out(data) {
 
 		case 0xA0: // Reply: Diagnostic command acknowledged
 			data.command = 'rep';
-			data.value   = Buffer.from(data.msg);
+			data.value   = 'TODO diagnostic command ack';
 			break;
 
 		default:
