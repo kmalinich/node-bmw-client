@@ -118,7 +118,7 @@ function startup() {
 				HDMI.startup(() => { // Open HDMI-CEC
 					socket.startup(); // Start WebSocket client
 
-					IKE.text_override('App restart');
+					IKE.text_warning('  node-bmw restart');
 					log.msg({
 						src : module_name,
 						msg : 'Started',
