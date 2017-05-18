@@ -259,9 +259,6 @@ function decode_ignition_status(data) {
 			IKE.text_override('node-bmw | Host:'+os.hostname().split('.')[0]+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
 		}
 
-    // Refresh OBC data
-    IKE.obc_refresh();
-
     // Refresh OBC HUD once every 5 seconds, by requesting current temperatures
 		data_refresh();
   }
