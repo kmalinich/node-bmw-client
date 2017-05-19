@@ -217,7 +217,7 @@ function comfort_turn(data) {
 		}
 
 		// Concat message string
-		cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '++cluster_msg_outer;
+		cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '+cluster_msg_outer;
 
 		status.lights.turn.comfort_cool = false;
 		reset();
