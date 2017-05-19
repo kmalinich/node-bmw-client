@@ -118,7 +118,7 @@ function auto_lights_process() {
 
 		if (status.lights.auto.lowbeam === true) { var status_string = 'on'; } else { var status_string = 'off'; }
 		// Show status+reason in cluster
-		IKE.text_override('Auto lights '+status_string+', reason: '+status.lights.auto.reason);
+		IKE.text_override('AL '+status_string+': '+status.lights.auto.reason);
 	}
 
 	reset();
@@ -151,9 +151,7 @@ function coding_get() {
 // Comfort turn signal handling
 function comfort_turn(data) {
 	// Init variables
-	var cluster_msg_1;
-	var cluster_msg_2 = ' turn ';
-	var cluster_msg_3;
+	var cluster_msg_outer;
 	var action;
 
 	// If comfort turn is not currently engaged
@@ -208,20 +206,18 @@ function comfort_turn(data) {
 				// Set status variables
 				status.lights.turn.left.comfort  = true;
 				status.lights.turn.right.comfort = false;
-				cluster_msg_1 = '< < < < < < <';
-				cluster_msg_3 = '< < < < < < <';
+				cluster_msg_outer = '< < < < < < < < <';
 				break;
 
 			case 'right':
 				// Set status variables
 				status.lights.turn.left.comfort  = false;
 				status.lights.turn.right.comfort = true;
-				cluster_msg_1 = '> > > > > > >';
-				cluster_msg_3 = '> > > > > > >';
+				cluster_msg_outer = '> > > > > > > > >';
 		}
 
 		// Concat message string
-		cluster_msg = cluster_msg_1+cluster_msg_2+cluster_msg_3;
+		cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '++cluster_msg_outer;
 
 		status.lights.turn.comfort_cool = false;
 		reset();
@@ -235,7 +231,7 @@ function comfort_turn(data) {
 			status.lights.turn.left.comfort  = false;
 			status.lights.turn.right.comfort = false;
 			reset();
-		}, 2000+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
+		}, 1500+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
 
 		// Timeout for cooldown period
 		setTimeout(() => {
