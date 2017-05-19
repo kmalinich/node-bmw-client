@@ -211,14 +211,14 @@ function decode_ignition_status(data) {
   // Ignition changed to off
   if (IKE.state_poweroff === true) {
     // Disable HUD refresh
-		if (IKE.timeout_data_refresh !== null) {
-			clearTimeout(IKE.timeout_data_refresh);
-			IKE.timeout_data_refresh = null;
-			log.module({
-				src : module_name,
-				msg : 'Cleared data refresh timeout',
-			});
-		}
+    if (IKE.timeout_data_refresh !== null) {
+      clearTimeout(IKE.timeout_data_refresh);
+      IKE.timeout_data_refresh = null;
+      log.module({
+        src : module_name,
+        msg : 'Cleared data refresh timeout',
+      });
+    }
 
     // Disable BMBT/MID keepalive
     BMBT.status_loop(false);
@@ -255,12 +255,12 @@ function decode_ignition_status(data) {
     BT.command('connect');
 
     // Welcome message
-		if (config.options.message_welcome === true) {
-			IKE.text_override('node-bmw | Host:'+os.hostname().split('.')[0]+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
-		}
+    if (config.options.message_welcome === true) {
+      IKE.text_override('node-bmw | Host:'+os.hostname().split('.')[0]+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+    }
 
     // Refresh OBC HUD once every 5 seconds, by requesting current temperatures
-		data_refresh();
+    data_refresh();
   }
 
   // Ignition changed to accessory, from run
@@ -279,29 +279,29 @@ function decode_ignition_status(data) {
 }
 
 function data_refresh() {
-	// Get+save RPi temp
-	if (config.system.pi === true) {
-		pitemp.measure((temperature) => {
-			status.system.temperature = parseFloat(temperature.toFixed(0));
-		});
-	}
+  // Get+save RPi temp
+  if (config.system.pi === true) {
+    pitemp.measure((temperature) => {
+      status.system.temperature = parseFloat(temperature.toFixed(0));
+    });
+  }
 
-	IKE.request('ignition');
-	IKE.request('temperature');
+  IKE.request('ignition');
+  IKE.request('temperature');
 
-	if (status.vehicle.ignition_level > 0) {
-		IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
-	}
-	else {
-		if (IKE.timeout_data_refresh !== null) {
-			clearTimeout(IKE.timeout_data_refresh);
-			IKE.timeout_data_refresh = null;
-			log.module({
-				src : module_name,
-				msg : 'Cleared data refresh timeout',
-			});
-		}
-	}
+  if (status.vehicle.ignition_level > 0) {
+    IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
+  }
+  else {
+    if (IKE.timeout_data_refresh !== null) {
+      clearTimeout(IKE.timeout_data_refresh);
+      IKE.timeout_data_refresh = null;
+      log.module({
+        src : module_name,
+        msg : 'Cleared data refresh timeout',
+      });
+    }
+  }
 }
 
 function decode_sensor_status(data) {
@@ -331,9 +331,9 @@ function decode_sensor_status(data) {
     status.vehicle.reverse = bitmask.bit_test(data.msg[2], bitmask.bit[4]);
     // If the vehicle is newly in reverse, send message
     if (status.vehicle.reverse === true) {
-		if (config.options.message_reverse === true) {
-      IKE.text_override('you\'re in reverse..');
-		}
+      if (config.options.message_reverse === true) {
+        IKE.text_override('you\'re in reverse..');
+      }
     }
   }
 }
@@ -450,7 +450,7 @@ module.exports = {
         data.command = 'upd';
 
         // data.msg[1] - Layout
-				var layout = obc_values.h2n(data.msg[1]);
+        var layout = obc_values.h2n(data.msg[1]);
 
         switch (layout) {
           case 'time':
@@ -703,7 +703,7 @@ module.exports = {
         decode_aux_heat_led(data);
         break;
 
-			case 0x57: // Broadcast: BC button press (MFL BC stalk button)
+      case 0x57: // Broadcast: BC button press (MFL BC stalk button)
         data.command = 'bro';
         data.value   = 'BC button';
         break;
@@ -952,7 +952,7 @@ module.exports = {
 
   // Check control warnings
   text_warning : (message, timeout = 10000) => {
-		kodi.notify(module_name, message);
+    kodi.notify(module_name, message);
     // 3rd byte:
     // 0x00 : no gong,   no arrow
     // 0x01 : no gong,   solid arrow
@@ -981,7 +981,7 @@ module.exports = {
 
   // Check control messages
   text_urgent : (message, timeout = 5000) => {
-		kodi.notify(module_name, message);
+    kodi.notify(module_name, message);
     var message_hex = [0x1A, 0x35, 0x00];
     var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
@@ -999,11 +999,17 @@ module.exports = {
 
   // IKE cluster text send message, override other messages
   text_override : (message, timeout = 2500, direction = 'left', turn = false) => {
-		// kodi.notify(module_name, message);
+    // kodi.notify(module_name, message);
     var max_length   = 20;
     var scroll_delay = 300;
-		var scroll_delay_timeout = scroll_delay*5;
-		if (turn === false) var scroll_delay_timeout = 0;
+    var scroll_delay_timeout = scroll_delay*5;
+
+    // Override scroll_delay_timeout if we're showing a turn signal message
+    if (turn === true) {
+      var scroll_delay         = 150;
+      var scroll_delay_timeout = 250;
+      var timeout              = 0;
+    }
 
     // Delare that we're currently first up
     IKE.hud_override      = true;
@@ -1021,21 +1027,26 @@ module.exports = {
 
       // Send initial string if we're currently the first up
       if (IKE.hud_override_text == message) {
-        IKE.text(message);
+        if (direction == 'left') {
+          IKE.text(message);
+        }
+        else {
+          IKE.text(message.substring(message.length-max_length, message.length));
+        }
       }
 
-      // Add a time buffer before scrolling starts
+      // Add a time buffer before scrolling starts (if this isn't a turn signal message)
       setTimeout(() => {
         for (var scroll = 0; scroll <= message.length-max_length ; scroll++) {
           setTimeout((current_scroll, message_full, direction) => {
             // Only send the message if we're currently the first up
             if (IKE.hud_override_text == message_full) {
-							if (direction == 'left') {
-	              IKE.text(message.substring(current_scroll, current_scroll+max_length));
-							}
-							else {
-	              IKE.text(message.substring(current_scroll+max_length, current_scroll));
-							}
+              if (direction == 'left') {
+                IKE.text(message.substring(current_scroll, current_scroll+max_length));
+              }
+              else {
+                IKE.text(message.substring(message.length-max_length-current_scroll, message.length-current_scroll));
+              }
             }
           }, scroll_delay*scroll, scroll, message, direction);
         }
