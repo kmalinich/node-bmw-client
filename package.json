@@ -5,7 +5,7 @@
   "main": "launch.sh",
   "devDependencies": {},
   "author": "kdm <kennygprs@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://github.com/kmalinich/node-bmw-client#readme",
   "repository": {
     "type": "git",
