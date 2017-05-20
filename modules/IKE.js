@@ -879,7 +879,7 @@ module.exports = {
     obc_data('get', 'timer');
 
     // Blow it out
-    IKE.request('status-glo');
+    // IKE.request('status-glo');
   },
 
   // Request various things from IKE
