@@ -4,40 +4,22 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 function parse_in(data) {
 	// Init variables
 	switch (data.msg[0]) {
-		case 0x01: // Request: device status
-			data.command = 'req';
-			data.value   = 'device status';
-
-			// Send the ready packet since this module doesn't actually exist
-			if (config.emulate.cdc === true) {
-				bus_commands.send_device_status(module_name);
-			}
-			break;
-
-		case 0x02: // Device status
+		case 0x38: // Control: CD
+			// Command
 			switch (data.msg[1]) {
-				case 0x00:
-					data.value = 'ready';
-					break;
-				case 0x01:
-					data.value = 'ready after reset';
-					break;
+				case 0x00: data.value = 'status';       break;
+				case 0x01: data.value = 'stop';         break;
+				case 0x02: data.value = 'pause';        break;
+				case 0x03: data.value = 'play';         break;
+				case 0x04: data.value = 'fast-forward'; break;
+				case 0x05: data.value = 'fast-reverse'; break;
+				case 0x06: data.value = 'scan-off';     break;
+				case 0x07: data.value = 'end';          break;
+				case 0x08: data.value = 'random-off';   break;
 			}
-			break;
 
-		case 0x38: // Request: CD control status
-			if (config.emulate.cdc === true) {
-				data.command = 'req'
-				data.value   = 'CD control status';
-
-				// Do CDC->LOC CD status stop
-				send_cd_status('stop');
-			}
-			break;
-
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
+			// Do CDC->LOC CD status play
+			send_cd_status(data.value);
 			break;
 	}
 }
@@ -48,7 +30,19 @@ function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x39: // Broadcast: CD status
 			data.command = 'bro';
-			data.value   = 'CD status';
+
+			// Command
+			switch (data.msg[1]) {
+				case 0x00: data.value = 'stop';         break;
+				case 0x01: data.value = 'pause';        break;
+				case 0x02: data.value = 'play';         break;
+				case 0x03: data.value = 'fast-forward'; break;
+				case 0x04: data.value = 'fast-reverse'; break;
+				case 0x07: data.value = 'end';          break;
+				case 0x08: data.value = 'loading';      break;
+			}
+
+			data.value = 'CD: '+data.value;
 			break;
 
 		default:
@@ -62,29 +56,27 @@ function parse_out(data) {
 
 // CDC->RAD CD status
 function send_cd_status(status) {
-	var data;
-	var msg;
-
 	switch (status) {
-		case 'stop':
-			msg = [0x39, 0x00, 0x02, 0x00, 0x01, 0x00, 0x01, 0x01];
-			break;
-		case 'play':
-			msg = [0x39, 0x00, 0x02, 0x00, 0x01, 0x00, 0x01, 0x01];
-			break;
+		case 'status'       : var bit = 0x00; break;
+		case 'stop'         : var bit = 0x00; break;
+		case 'pause'        : var bit = 0x01; break;
+		case 'play'         : var bit = 0x02; break;
+		case 'fast-forward' : var bit = 0x03; break;
+		case 'fast-reverse' : var bit = 0x04; break;
+		case 'scan-off'     : var bit = 0x02; break;
+		case 'end'          : var bit = 0x00; break;
+		case 'random-off'   : var bit = 0x02; break;
 	}
 
 	socket.data_send({
 		src: module_name,
 		dst: 'RAD',
-		msg: msg,
+		msg: [0x39, bit, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01],
 	});
 }
 
-
 module.exports = {
-	parse_in           : (data) => { parse_in(data); },
-	parse_out          : (data) => { parse_out(data); },
-	send_cd_status     : () => { send_cd_status(status) },
-	send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
+	parse_in       : (data)        => { parse_in(data);        },
+	parse_out      : (data)        => { parse_out(data);       },
+	send_cd_status : (status)      => { send_cd_status(status) },
 };

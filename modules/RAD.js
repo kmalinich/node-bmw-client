@@ -100,6 +100,26 @@ function parse_out(data) {
       }
       break;
 
+		case 0x38: // Control: CD
+			data.command = 'con'
+			data.value   = data.msg;
+
+			// Command
+			switch (data.msg[1]) {
+				case 0x00: data.value = 'status';       break;
+				case 0x01: data.value = 'stop';         break;
+				case 0x02: data.value = 'pause';        break;
+				case 0x03: data.value = 'play';         break;
+				case 0x04: data.value = 'fast-forward'; break;
+				case 0x05: data.value = 'fast-reverse'; break;
+				case 0x06: data.value = 'scan-off';     break;
+				case 0x07: data.value = 'end';          break;
+				case 0x08: data.value = 'random-off';   break;
+			}
+
+			data.value = 'CD: '+data.value;
+			break;
+
 		case 0x4A: // Control: Cassette
       return;
       data.command = 'con';
@@ -108,7 +128,7 @@ function parse_out(data) {
 
 		case 0x46: // Control: LCD
       data.command = 'con';
-      data.value   = 'LCD status ';
+      data.value   = 'LCD: ';
 
       switch (data.msg[1]) {
         case 0x0E:
@@ -126,15 +146,7 @@ function parse_out(data) {
       data.value   = 'screen text TODO';
       break;
 
-		case 0xA5: // Control: Screen text
-      data.command = 'con';
-      data.value   = 'screen text TODO';
-      break;
-
-    default:
-      data.command = 'unk';
-      data.value   = Buffer.from(data.msg);
-			break;
+    default: data.command = 'unk';
   }
 
   log.bus(data);
@@ -150,7 +162,7 @@ function send_audio_control(source) {
 }
 
 module.exports = {
-  parse_out          : (data)        => { parse_out(data); },
-	send_audio_control : (source)      => { send_audio_control(source); },
+  parse_out          : (data)        => { parse_out(data);                              },
+  send_audio_control : (source)      => { send_audio_control(source);                   },
   send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
 };
