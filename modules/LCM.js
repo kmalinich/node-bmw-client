@@ -122,7 +122,6 @@ function auto_lights_process() {
 	}
 
 	reset();
-
 	LCM.timeout_lights_auto = setTimeout(auto_lights_process, 7000);
 }
 
@@ -199,7 +198,7 @@ function comfort_turn(data) {
 	}
 
 	if (action === 'left' || action === 'right') {
-		log.module({ src : module_name, msg : 'Comfort turn signal - \''+action+'\'' });
+		log.module({ src : module_name, msg : 'Comfort turn: '+action });
 
 		switch (action) {
 			case 'left':
@@ -220,13 +219,12 @@ function comfort_turn(data) {
 		cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '+cluster_msg_outer;
 
 		status.lights.turn.comfort_cool = false;
-		reset();
-
 		IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed, action, true);
+		reset();
 
 		// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
 		setTimeout(() => {
-			log.module({ src : module_name, msg : 'Comfort turn signal - off' });
+			log.module({ src : module_name, msg : 'Comfort turn: off' });
 			// Set status variables
 			status.lights.turn.left.comfort  = false;
 			status.lights.turn.right.comfort = false;
@@ -235,7 +233,7 @@ function comfort_turn(data) {
 
 		// Timeout for cooldown period
 		setTimeout(() => {
-			log.module({ src : module_name, msg : 'Comfort turn signal - cooldown done' });
+			log.module({ src : module_name, msg : 'Comfort turn: cooldown done' });
 			status.lights.turn.comfort_cool = true;
 		}, 3000+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
 	}
@@ -307,7 +305,7 @@ function decode(data) {
 			status.lights.faulty.lowbeam.right       = bitmask.bit_test(data.msg[4], bitmask.bit[4]);
 			status.lights.faulty.lowbeam.left        = bitmask.bit_test(data.msg[4], bitmask.bit[5]);
 
-			log.module({ src : module_name, msg : 'Decoded light status' });
+			// log.module({ src : module_name, msg : 'Decoded light status' });
 			break;
 
 		case 0xA0: // Decode IO status and output true/false values
@@ -400,7 +398,7 @@ function decode(data) {
 			status.lcm.switch.lowbeam_1 = bitmask.bit_test(data.msg[3], bitmask.bit[4]);
 			status.lcm.switch.lowbeam_2 = bitmask.bit_test(data.msg[3], bitmask.bit[3]);
 
-			log.module({ src : module_name, msg : 'Decoded IO status' });
+			// log.module({ src : module_name, msg : 'Decoded IO status' });
 	}
 }
 
@@ -553,8 +551,6 @@ function io_set(packet) {
 
 // Make things.. how they should be?
 function reset() {
-	if (config.lights.auto !== true) return;
-
 	// Determine dimmer value from config, depending if lowbeams are on
 	switch (status.lights.auto.lowbeam) {
 		case true:
@@ -564,7 +560,8 @@ function reset() {
 			var reset_dimmer_val = config.lights.dimmer.lights_off;
 	}
 
-	io_encode({
+	// Object of autolights related values
+	var io_object_auto_lights = {
 		dimmer_value_1                   : reset_dimmer_val,
 		output_standing_front_left       : true,
 		output_standing_front_right      : true,
@@ -574,9 +571,18 @@ function reset() {
 		output_standing_rear_right       : true,
 		switch_fog_rear                  : true, // To leverage the IKE LED as a status indicator
 		switch_lowbeam_1                 : status.lights.auto.lowbeam,
-		switch_turn_left                 : status.lights.turn.left.comfort,
-		switch_turn_right                : status.lights.turn.right.comfort,
-	});
+	};
+
+	// Object of only comfort turn values
+	var io_object = {
+		switch_turn_left  : status.lights.turn.left.comfort,
+		switch_turn_right : status.lights.turn.right.comfort,
+	};
+
+	// If autolights are enabled, use ES6 object merge to use auto lights
+	if (config.lights.auto === true) Object.assign(io_object, io_object_auto_lights);
+
+	io_encode(io_object);
 }
 
 // Request various things from LCM
@@ -584,7 +590,17 @@ function request(value) {
 	var src;
 	var cmd;
 
-	log.module({ src : module_name, msg : 'Requesting '+value });
+	log.bus({
+		bus : 'dbus',
+		src : {
+			name : 'NODE',
+		},
+		dst : {
+			name : module_name,
+		},
+		command : 'req',
+		value : value,
+	});
 
 	switch (value) {
 		case 'coding':
@@ -639,11 +655,13 @@ function parse_out(data) {
 			data.command = 'rep';
 			switch (data.msg.length) {
 				case 33:
-					data.value = 'IO status';
+					data.command = 'bro';
+					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
 				case 13:
-					data.value = 'IO status';
+					data.command = 'bro';
+					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
 				case 1:

@@ -414,7 +414,7 @@ module.exports = {
       case 0x11: // Broadcast: Ignition status
         decode_ignition_status(data);
         data.command = 'bro';
-        data.value   = 'ignition status : '+status.vehicle.ignition;
+        data.value   = 'ignition: '+status.vehicle.ignition;
         break;
 
       case 0x13: // IKE sensor status
@@ -879,7 +879,7 @@ module.exports = {
     obc_data('get', 'timer');
 
     // Blow it out
-    // IKE.request('status-glo');
+    IKE.request('status-glo');
   },
 
   // Request various things from IKE
@@ -913,7 +913,7 @@ module.exports = {
       case 'status-glo':
         src = module_name;
         for (var dst in bus_modules.modules) {
-          if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
+          if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC' && dst != src) {
             socket.data_send({
               src: src,
               dst: dst,
@@ -925,7 +925,7 @@ module.exports = {
       case 'status-loc':
         src = module_name;
         for (var dst in bus_modules.modules) {
-          if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC') {
+          if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC' && dst != src) {
             socket.data_send({
               src: src,
               dst: dst,
