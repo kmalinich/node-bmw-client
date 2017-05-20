@@ -12,10 +12,21 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 function refresh_text() {
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
-  log.module({ src: module_name, msg: 'Sending text to MID screen: \''+status.mid.text+'\'' });
+  log.module({ src: module_name, msg: 'Updating MID text' });
 
+	// Upper left - 11 char radio display
   var message_hex = [0x23, 0x40, 0x20];
-  var message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text.substring(0, 20))));
+  var message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
+
+  socket.data_send({
+    src: 'RAD',
+    dst: module_name,
+    msg: message_hex,
+  });
+
+	// Upper right - 20 char OBC display
+  var message_hex = [0x23, 0x40, 0x20];
+  var message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
 
   socket.data_send({
     src: 'IKE',

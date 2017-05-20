@@ -47,24 +47,23 @@ function decode_status_keyfob(data) {
 
 	// 0x00 : no buttons
 	if (data.msg[1] === 0x00 || data.msg[1] === 0x02) {
-		data.value = 'key fob button: none';
-		log.bus(data);
-		return;
-	}
-
-	if (bitmask.bit_test(data.msg[1], 0x10)) {
-		data.value = 'lock';
-		LCM.welcome_lights(false);
-	}
-	else if (bitmask.bit_test(data.msg[1], 0x20)) {
-		data.value = 'unlock';
-		LCM.welcome_lights(true);
-	}
-	else if (bitmask.bit_test(data.msg[1], 0x40)) {
-		data.value = 'trunk';
+		data.value = 'none';
 	}
 	else {
-		data.value = 'unknown: '+data.msg[1];
+		if (bitmask.bit_test(data.msg[1], 0x10)) {
+			data.value = 'lock';
+			LCM.welcome_lights(false);
+		}
+		else if (bitmask.bit_test(data.msg[1], 0x20)) {
+			data.value = 'unlock';
+			LCM.welcome_lights(true);
+		}
+		else if (bitmask.bit_test(data.msg[1], 0x40)) {
+			data.value = 'trunk';
+		}
+		else {
+			data.value = 'unknown: '+data.msg[1];
+		}
 	}
 
 	data.value = 'key fob button: '+data.value;

@@ -10,21 +10,23 @@ function parse_out(data) {
 
 		case 0x51: // Broadcast: check control sensors
 			data.command = 'bro';
-			data.value   = 'check control sensors';
+
 			switch (data.msg[1]) {
 				case 0x00:
-					data.value = data.value+' none';
+					data.value = 'none';
 					break;
 				case 0x04:
-					data.value = data.value+' key in ignition';
+					data.value = 'key in ignition';
 					break;
 				case 0x12:
-					data.value = data.value+' seatbelt not fastened';
+					data.value = 'seatbelt not fastened';
 					break;
 				default:
-					data.value = Buffer.from(data.msg[1]);
+					data.value = data.msg[1];
 					break;
 			}
+
+			data.value = 'check control sensors: '+data.value;
 			break;
 
 		default:
@@ -37,6 +39,6 @@ function parse_out(data) {
 }
 
 module.exports = {
-	parse_out          : (data) => { parse_out(data); },
+	parse_out          : (data)        => { parse_out(data);                              },
 	send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
 };

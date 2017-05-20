@@ -3,6 +3,18 @@
 18 FF 02 01    CDC->LOC Device status ready
 68 18 38 00 00 RAD->CDC CD_control Status_Request
 
+0x38:
+CD control data.msg[1]:
+	00 = Status
+	01 = Stop
+	02 = Pause
+	03 = Play
+	04 = Fast forward
+  05 = Next track
+  06 = Scan off
+	08 = Random off
+
+0x39:
 M# = Mode:
 	00 = Stop
 	01 = Pause
