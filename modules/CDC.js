@@ -25,7 +25,7 @@ function parse_in(data) {
 			}
 			break;
 
-		case 0x38:
+		case 0x38: // Request: CD control status
 			if (config.emulate.cdc === true) {
 				data.command = 'req'
 				data.value   = 'CD control status';
