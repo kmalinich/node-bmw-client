@@ -23,9 +23,9 @@
 						<li><a href="/lcm">LCM</a></li>
 					</ul>
 				</li>
-				<li><a href="/status-mobile">Status mini</a></li>
 				<li><a href="/status">Status</a></li>
-				<li><a href="/ws-ibus">IBUS websocket</a></li>
+				<li><a href="/ws-bus">Data bus</a></li>
+				<li><a href="/ws-log">Log</a></li>
 			</ul>
 		</div>
 	</div>

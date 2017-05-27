@@ -1,3 +1,4 @@
+<script src="/socket.io/socket.io.js"></script>
 <script src="/js/jquery.js"></script>
 <script src="/js/moment.js"></script>
 <script src="/js/moment-tz.js"></script>

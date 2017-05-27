@@ -7,10 +7,10 @@
 	<body onload="javascript:ws_ibus();">
 		<?php include './include/navbar.php'; ?>
 		<div class="container-fluid">
-			<p id="ws-ibus-header" class="text-warning">Socket connecting</p>
+			<p id="ws-bus-header" class="text-warning">Socket connecting</p>
 			<hr>
 			<div class="table-live">
-				<table class="table table-condensed table-hover table-bordered table-striped text-center" id="ws-ibus-table">
+				<table class="table table-condensed table-hover table-bordered table-striped text-center" id="ws-bus-table">
 					<thead>
 						<tr>
 							<th class="text-center">time</th>
@@ -27,7 +27,7 @@
 			<hr>
 			<div class="row">
 				<div class="col-lg-3 col-sm-6 col-xs-12">
-					<select class="form-control input-lg" id="ws-ibus-src">
+					<select class="form-control input-lg" id="ws-bus-src">
 						<option value="ABG">ABG</option>
 						<option value="AHL">AHL</option>
 						<option value="ANZV">ANZV</option>
@@ -96,7 +96,7 @@
 					</select>
 				</div>
 				<div class="col-lg-3 col-sm-6 col-xs-12">
-					<select class="form-control input-lg" id="ws-ibus-dst">
+					<select class="form-control input-lg" id="ws-bus-dst">
 						<option value="ABG">ABG</option>
 						<option value="AHL">AHL</option>
 						<option value="ANZV">ANZV</option>
@@ -165,16 +165,14 @@
 					</select>
 				</div>
 				<div class="col-lg-3 col-sm-6 col-xs-12">
-					<input type="text" class="form-control input-lg" placeholder="Message, comma separated" id="ws-ibus-msg">
+					<input type="text" class="form-control input-lg" placeholder="Message, comma separated" id="ws-bus-msg">
 				</div>
 				<div class="col-lg-3 col-sm-6 col-xs-12">
-					<button class="btn btn-lg btn-primary btn-block" id="ws-ibus-send">Send</button>
+					<button class="btn btn-lg btn-primary btn-block" id="ws-bus-send">Send</button>
 				</div>
 			</div>
 			<hr>
 		</div>
 	</body>
-	<script src="/socket.io/socket.io.js"></script>
-	<script src="/js/moment.js"></script>
 	<?php include './include/js.php'; ?>
 </html>

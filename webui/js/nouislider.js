@@ -1,1 +1,1 @@
-nouislider.min.js
+../../node_modules/nouislider/distribute/nouislider.min.js

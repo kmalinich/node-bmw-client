@@ -1,1 +1,1 @@
-datatables-1.10.12.min.js
+../../node_modules/datatables/media/js/jquery.dataTables.min.js

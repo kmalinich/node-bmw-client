@@ -1,1 +1,1 @@
-bootstrap-3.3.7.min.js
+../../node_modules/bootstrap/dist/js/bootstrap.min.js
