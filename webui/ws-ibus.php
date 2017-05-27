@@ -14,8 +14,9 @@
 					<thead>
 						<tr>
 							<th class="text-center">time</th>
-							<th class="text-center">srce</th>
-							<th class="text-center">dest</th>
+							<th class="text-center">bus</th>
+							<th class="text-center">src</th>
+							<th class="text-center">dst</th>
 							<th class="text-center">msg</th>
 						</tr>
 					</thead>

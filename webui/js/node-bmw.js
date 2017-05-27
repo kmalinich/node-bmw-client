@@ -1,3 +1,11 @@
+// Convert integer to hex string
+function i2s(data, prefix = true) {
+	var hexstr = data.toString(16).toUpperCase();
+  var hexstr = hexstr.length === 1 && '0'+hexstr || hexstr;
+  var string = prefix === true && '0x'+hexstr || hexstr;
+  return string;
+}
+
 // Clean all the text strings
 function clean_class_all() {
 	// This is really dumb and there is a better way
@@ -62,7 +70,7 @@ function hdmi_command(command) {
 		data     : {
 			command : command,
 		},
-		success : function(return_data) {
+		success : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -75,7 +83,7 @@ function form_gm() {
 		type     : 'POST',
 		dataType : 'json',
 		data     : $('#form-gm').serialize(),
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -87,20 +95,18 @@ function form_ike_get() {
 		type     : 'POST',
 		dataType : 'json',
 		data     : $('#form-ike-get').serialize(),
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
 }
 
 function form_ike_reset() {
-	var input_data = $('#form-ike-reset').serializeArray().map(
-		function(v) {
-			return v.value;
-		}
-	);
+  var input_data = $('#form-ike-reset').serializeArray().map((v) => {
+    return v.value;
+  });
 
-	var post_data = {
+  var post_data = {
 		command : 'obc-reset',
 		value   : input_data[0],
 	};
@@ -111,7 +117,7 @@ function form_ike_reset() {
 		type     : 'POST',
 		dataType : 'json',
 		data     : post_data,
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -126,7 +132,7 @@ function ike_text() {
 			command : 'ike-text',
 			value   : $('#ike-text').val(),
 		},
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -138,7 +144,7 @@ function form_lcm() {
 		type     : 'POST',
 		dataType : 'json',
 		data     : $('#form-lcm').serialize(),
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -156,7 +162,7 @@ function gm_cl(action) {
 'command'        : 'locks',
 'command-action' : action,
 		},
-		success : function(return_data) {
+		success : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -169,7 +175,7 @@ function gm_interior_light(value) {
 		type     : 'POST',
 		dataType : 'json',
 		data     : 'interior-light='+value,
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -187,7 +193,7 @@ function gm_windows(window, action) {
 'window'        : window,
 'window-action' : action,
 		},
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -202,7 +208,7 @@ function ike_backlight(value) {
 		type     : 'POST',
 		dataType : 'json',
 		data     : 'ike-backlight='+value,
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -213,7 +219,7 @@ function ike_set_clock() {
 		url      : '/api/ike',
 		type     : 'POST',
 		dataType : 'json',
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -228,7 +234,7 @@ function lcm_dimmer(value) {
 		type     : 'POST',
 		dataType : 'json',
 		data     : 'lcm-dimmer='+value,
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -245,7 +251,7 @@ function gm_get() {
 		data     : {
 'command' : 'door-status',
 		},
-		success : function(return_data) {
+		success : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -257,7 +263,7 @@ function gm_get() {
 		data     : {
 'command' : 'io-status',
 		},
-		success : function(return_data) {
+		success : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -272,7 +278,7 @@ function lcm_get() {
 		type     : 'POST',
 		dataType : 'json',
 		data     : 'lcm-get=true',
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -297,7 +303,7 @@ function prepare_gm_interior_light() {
 		}
 	});
 
-	slider.noUiSlider.on('update', function(data) {
+	slider.noUiSlider.on('update', (data) => {
 		var value = parseInt(data[0]);
 		gm_interior_light(value);
 	});
@@ -310,12 +316,12 @@ function prepare_ike() {
 
 // Initialize IKE backlight slider
 function prepare_ike_backlight() {
-	$('#slider-ike-backlight').on('slideStart', function(data) {
+	$('#slider-ike-backlight').on('slideStart', (data) => {
 		console.log('ike_backlight_slideStart: %s', data.value);
 		ike_backlight(data.value);
 	});
 
-	$('#slider-ike-backlight').on('slideStop', function(data) {
+	$('#slider-ike-backlight').on('slideStop', (data) => {
 		console.log('ike_backlight_slidestop: %s', data.value);
 		ike_backlight(data.value);
 	});
@@ -340,7 +346,7 @@ function prepare_lcm_dimmer() {
 		}
 	});
 
-	slider.noUiSlider.on('change', function(data) {
+	slider.noUiSlider.on('change', (data) => {
 		var value = parseInt(data[0]);
 		console.log('LCM dimmer slider: %s', value);
 	});
@@ -352,7 +358,7 @@ function status() {
 		url      : '/api/status',
 		type     : 'GET',
 		dataType : 'json',
-		success  : function(return_data) {
+		success  : (return_data) => {
 			// Clean up page
 			clean_class_all();
 
@@ -517,7 +523,7 @@ function obc_refresh(callback) {
 		type     : 'POST',
 		dataType : 'json',
 		data     : 'obc-get=all',
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 			if (typeof callback === 'function') {
 				callback();
@@ -533,7 +539,7 @@ function lcm_pulse() {
 		type     : 'POST',
 		dataType : 'json',
 		data     : 'clamp_15=on&clamp_30a=on&clamp_30b=on',
-		success  : function(return_data) {
+		success  : (return_data) => {
 			console.log(return_data);
 		}
 	});
@@ -553,57 +559,49 @@ function ws_ibus() {
 	// Open WebSocket
 	var socket = io();
 
-	socket.on('connect', function() {
+	socket.on('connect', () => {
 		$('#ws-ibus-header').removeClass('text-warning').removeClass('text-success').removeClass('text-danger').addClass('text-success').text('Socket connected');
 	});
 
-	socket.on('error', function (error) {
+	socket.on('error', (error) => {
 		console.error(error);
 		$('#ws-ibus-header').removeClass('text-warning').removeClass('text-success').addClass('text-danger').removeClass('text-success').text('Socket error');
 	});
 
-	socket.on('disconnect', function () {
+	socket.on('disconnect', () => {
 		$('#ws-ibus-header').removeClass('text-warning').removeClass('text-danger').addClass('text-warning').removeClass('text-success').text('Socket disconnected');
 	});
 
-	socket.on('ibus-message', function(message) {
-		// Parse the incoming JSON.stringifyied data back into a real JSON blob
-		var data = JSON.parse(message.data);
-
-		// Parse out said blob
-		var src = data.src.name;
-		var len = data.len;
-		var dst = data.dst.name;
-		var msg = data.msg.data;
-
-		var msg_fmt = '';
+	socket.on('data-receive', (data) => {
+		var msg_fmt   = '';
+		var timestamp = moment().format('h:mm:ss a');
 
 		// Format the message
-		for (var i = 0; i < msg.length; i++) {
+		data.msg.forEach((bit) => {
 			// Convert it to hexadecimal
-			msg_fmt += msg[i].toString(16).toUpperCase();
-
-			// If we're not formatting the last entry in the array, add a space, too
-			if (i != msg.length) {
-				msg_fmt += ' ';
-			}
-		}
+			msg_fmt += i2s(bit, false)+' ';
+		});
 
 		// Add a new row to the table
-		var ws_ibus_table = document.getElementById('ws-ibus-table');
-		var timestamp     = moment().format('h:mm:ss a');
-
-		var tr = '<tr><td>'+timestamp+'</td><td>'+src+'</td><td>'+dst+'</td><td>'+msg_fmt+'</td></tr>';
+		var tr = '';
+		tr += '<tr>';
+		tr += '<td>'+timestamp+'</td>';
+		tr += '<td>'+data.bus+'</td>';
+		tr += '<td>'+data.src.name+'</td>';
+		tr += '<td>'+data.dst.name+'</td>';
+		tr += '<td>'+msg_fmt+'</td>';
+		tr += '</tr>';
 
 		$('#ws-ibus-table tbody').prepend(tr);
 	});
 
 	// Assemble and send data from form below table
-	$('#ws-ibus-send').click(function() {
+	$('#ws-ibus-send').click(() => {
 		var data_send = {};
+
 		// Parse incoming data
-		data_send.src = parseInt($('#ws-ibus-src').val(), 16).toString(16);
-		data_send.dst = parseInt($('#ws-ibus-dst').val(), 16).toString(16);
+		data_send.src = $('#ws-ibus-src').val();
+		data_send.dst = $('#ws-ibus-dst').val();
 
 		// Create the message array by removing whitespaces and splitting by comma
 		data_send.msg = $('#ws-ibus-msg').val().replace(' ', '').replace('0x', '').split(',');
@@ -616,13 +614,10 @@ function ws_ibus() {
 		}
 		data_send.msg = msg_array;
 
-		data_send = JSON.stringify(data_send);
-
-		console.log(data_send);
-		socket.send(data_send);
+		socket.emit('data-send', data_send);
 	});
 }
 
-$(function() {
+$(() => {
 	$.material.init();
 });
