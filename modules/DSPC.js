@@ -21,8 +21,6 @@ function parse_in(data) {
 			data.value   = Buffer.from(data.msg);
 			break;
 	}
-
-	log.bus(data);
 }
 
 // Parse data sent from DSPC module
@@ -38,7 +36,6 @@ function parse_out(data) {
 }
 
 module.exports = {
-	parse_in           : (data)        => { parse_in(data); },
-	parse_out          : (data)        => { parse_out(data); },
-	send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
+	parse_in  : (data) => { parse_in(data);  },
+	parse_out : (data) => { parse_out(data); },
 };

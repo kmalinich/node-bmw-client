@@ -258,10 +258,10 @@ function decode(data) {
 				before : status.lights.turn,
 				after : {
 					left  : {
-						active : bitmask.bit_test(data.msg[1], bitmask.bit[5]),
+						active : bitmask.test(data.msg[1], bitmask.bit[5]),
 					},
 					right : {
-						active : bitmask.bit_test(data.msg[1], bitmask.bit[6]),
+						active : bitmask.test(data.msg[1], bitmask.bit[6]),
 					},
 				},
 			});
@@ -269,41 +269,41 @@ function decode(data) {
 			// On
 			status.lights.all_off = !Boolean(data.msg[1]);
 
-			status.lights.standing.front    = bitmask.bit_test(data.msg[1], bitmask.bit[0]);
-			status.lights.lowbeam           = bitmask.bit_test(data.msg[1], bitmask.bit[1]);
-			status.lights.highbeam          = bitmask.bit_test(data.msg[1], bitmask.bit[2]);
-			status.lights.fog.front         = bitmask.bit_test(data.msg[1], bitmask.bit[3]);
-			status.lights.fog.rear          = bitmask.bit_test(data.msg[1], bitmask.bit[4]);
-			status.lights.turn.left.active  = bitmask.bit_test(data.msg[1], bitmask.bit[5]);
-			status.lights.turn.right.active = bitmask.bit_test(data.msg[1], bitmask.bit[6]);
-			status.lights.turn.fast         = bitmask.bit_test(data.msg[1], bitmask.bit[7]);
+			status.lights.standing.front    = bitmask.test(data.msg[1], bitmask.bit[0]);
+			status.lights.lowbeam           = bitmask.test(data.msg[1], bitmask.bit[1]);
+			status.lights.highbeam          = bitmask.test(data.msg[1], bitmask.bit[2]);
+			status.lights.fog.front         = bitmask.test(data.msg[1], bitmask.bit[3]);
+			status.lights.fog.rear          = bitmask.test(data.msg[1], bitmask.bit[4]);
+			status.lights.turn.left.active  = bitmask.test(data.msg[1], bitmask.bit[5]);
+			status.lights.turn.right.active = bitmask.test(data.msg[1], bitmask.bit[6]);
+			status.lights.turn.fast         = bitmask.test(data.msg[1], bitmask.bit[7]);
 
-			status.lights.brake            = bitmask.bit_test(data.msg[3], bitmask.bit[1]);
-			status.lights.turn.sync        = bitmask.bit_test(data.msg[3], bitmask.bit[2]);
-			status.lights.standing.rear    = bitmask.bit_test(data.msg[3], bitmask.bit[3]);
-			status.lights.trailer.standing = bitmask.bit_test(data.msg[3], bitmask.bit[4]);
-			status.lights.reverse          = bitmask.bit_test(data.msg[3], bitmask.bit[5]);
-			status.lights.trailer.reverse  = bitmask.bit_test(data.msg[3], bitmask.bit[6]);
-			status.lights.hazard           = bitmask.bit_test(data.msg[3], bitmask.bit[7]);
+			status.lights.brake            = bitmask.test(data.msg[3], bitmask.bit[1]);
+			status.lights.turn.sync        = bitmask.test(data.msg[3], bitmask.bit[2]);
+			status.lights.standing.rear    = bitmask.test(data.msg[3], bitmask.bit[3]);
+			status.lights.trailer.standing = bitmask.test(data.msg[3], bitmask.bit[4]);
+			status.lights.reverse          = bitmask.test(data.msg[3], bitmask.bit[5]);
+			status.lights.trailer.reverse  = bitmask.test(data.msg[3], bitmask.bit[6]);
+			status.lights.hazard           = bitmask.test(data.msg[3], bitmask.bit[7]);
 
 			// Faulty
 			status.lights.faulty.all_ok = !Boolean(data.msg[2]);
 
-			status.lights.faulty.standing.front = bitmask.bit_test(data.msg[2], bitmask.bit[0]);
-			status.lights.faulty.lowbeam        = bitmask.bit_test(data.msg[2], bitmask.bit[1]);
-			status.lights.faulty.highbeam       = bitmask.bit_test(data.msg[2], bitmask.bit[2]);
-			status.lights.faulty.fog.front      = bitmask.bit_test(data.msg[2], bitmask.bit[3]);
-			status.lights.faulty.fog.rear       = bitmask.bit_test(data.msg[2], bitmask.bit[4]);
-			status.lights.faulty.turn.left      = bitmask.bit_test(data.msg[2], bitmask.bit[5]);
-			status.lights.faulty.turn.right     = bitmask.bit_test(data.msg[2], bitmask.bit[6]);
-			status.lights.faulty.license_plate  = bitmask.bit_test(data.msg[2], bitmask.bit[7]);
+			status.lights.faulty.standing.front = bitmask.test(data.msg[2], bitmask.bit[0]);
+			status.lights.faulty.lowbeam        = bitmask.test(data.msg[2], bitmask.bit[1]);
+			status.lights.faulty.highbeam       = bitmask.test(data.msg[2], bitmask.bit[2]);
+			status.lights.faulty.fog.front      = bitmask.test(data.msg[2], bitmask.bit[3]);
+			status.lights.faulty.fog.rear       = bitmask.test(data.msg[2], bitmask.bit[4]);
+			status.lights.faulty.turn.left      = bitmask.test(data.msg[2], bitmask.bit[5]);
+			status.lights.faulty.turn.right     = bitmask.test(data.msg[2], bitmask.bit[6]);
+			status.lights.faulty.license_plate  = bitmask.test(data.msg[2], bitmask.bit[7]);
 
-			status.lights.faulty.brake.right         = bitmask.bit_test(data.msg[4], bitmask.bit[0]);
-			status.lights.faulty.brake.left          = bitmask.bit_test(data.msg[4], bitmask.bit[1]);
-			status.lights.faulty.standing.rear.right = bitmask.bit_test(data.msg[4], bitmask.bit[2]);
-			status.lights.faulty.standing.rear.left  = bitmask.bit_test(data.msg[4], bitmask.bit[3]);
-			status.lights.faulty.lowbeam.right       = bitmask.bit_test(data.msg[4], bitmask.bit[4]);
-			status.lights.faulty.lowbeam.left        = bitmask.bit_test(data.msg[4], bitmask.bit[5]);
+			status.lights.faulty.brake.right         = bitmask.test(data.msg[4], bitmask.bit[0]);
+			status.lights.faulty.brake.left          = bitmask.test(data.msg[4], bitmask.bit[1]);
+			status.lights.faulty.standing.rear.right = bitmask.test(data.msg[4], bitmask.bit[2]);
+			status.lights.faulty.standing.rear.left  = bitmask.test(data.msg[4], bitmask.bit[3]);
+			status.lights.faulty.lowbeam.right       = bitmask.test(data.msg[4], bitmask.bit[4]);
+			status.lights.faulty.lowbeam.left        = bitmask.test(data.msg[4], bitmask.bit[5]);
 
 			// log.module({ src : module_name, msg : 'Decoded light status' });
 			break;
@@ -324,79 +324,79 @@ function decode(data) {
 			status.lcm.voltage.turn_signal_switch = parseFloat(data.msg[30]/51);
 
 			// Bitmasks
-			status.lcm.clamp.c_30a = bitmask.bit_test(data.msg[0], bitmask.bit[0]);
-			status.lcm.clamp.c_15  = bitmask.bit_test(data.msg[3], bitmask.bit[5]);
-			status.lcm.clamp.c_r   = bitmask.bit_test(data.msg[0], bitmask.bit[6]);
-			status.lcm.clamp.c_30b = bitmask.bit_test(data.msg[0], bitmask.bit[7]);
+			status.lcm.clamp.c_30a = bitmask.test(data.msg[0], bitmask.bit[0]);
+			status.lcm.clamp.c_15  = bitmask.test(data.msg[3], bitmask.bit[5]);
+			status.lcm.clamp.c_r   = bitmask.test(data.msg[0], bitmask.bit[6]);
+			status.lcm.clamp.c_30b = bitmask.test(data.msg[0], bitmask.bit[7]);
 
-			status.lcm.input.fire_extinguisher         = bitmask.bit_test(data.msg[0], bitmask.bit[1]);
-			status.lcm.input.preheating_fuel_injection = bitmask.bit_test(data.msg[0], bitmask.bit[2]);
-			status.lcm.input.carb                      = bitmask.bit_test(data.msg[0], bitmask.bit[4]);
+			status.lcm.input.fire_extinguisher         = bitmask.test(data.msg[0], bitmask.bit[1]);
+			status.lcm.input.preheating_fuel_injection = bitmask.test(data.msg[0], bitmask.bit[2]);
+			status.lcm.input.carb                      = bitmask.test(data.msg[0], bitmask.bit[4]);
 
-			status.lcm.input.key_in_ignition   = bitmask.bit_test(data.msg[1], bitmask.bit[0]);
-			status.lcm.input.seat_belts_lock   = bitmask.bit_test(data.msg[1], bitmask.bit[1]);
-			status.lcm.input.kfn               = bitmask.bit_test(data.msg[1], bitmask.bit[5]);
-			status.lcm.input.armoured_door     = bitmask.bit_test(data.msg[1], bitmask.bit[6]);
-			status.lcm.input.brake_fluid_level = bitmask.bit_test(data.msg[1], bitmask.bit[7]);
+			status.lcm.input.key_in_ignition   = bitmask.test(data.msg[1], bitmask.bit[0]);
+			status.lcm.input.seat_belts_lock   = bitmask.test(data.msg[1], bitmask.bit[1]);
+			status.lcm.input.kfn               = bitmask.test(data.msg[1], bitmask.bit[5]);
+			status.lcm.input.armoured_door     = bitmask.test(data.msg[1], bitmask.bit[6]);
+			status.lcm.input.brake_fluid_level = bitmask.test(data.msg[1], bitmask.bit[7]);
 
-			status.lcm.input.air_suspension     = bitmask.bit_test(data.msg[3], bitmask.bit[0]);
-			status.lcm.input.hold_up_alarm      = bitmask.bit_test(data.msg[3], bitmask.bit[1]);
-			status.lcm.input.washer_fluid_level = bitmask.bit_test(data.msg[3], bitmask.bit[2]);
-			status.lcm.input.engine_failsafe    = bitmask.bit_test(data.msg[3], bitmask.bit[6]);
-			status.lcm.input.tire_defect        = bitmask.bit_test(data.msg[3], bitmask.bit[7]);
+			status.lcm.input.air_suspension     = bitmask.test(data.msg[3], bitmask.bit[0]);
+			status.lcm.input.hold_up_alarm      = bitmask.test(data.msg[3], bitmask.bit[1]);
+			status.lcm.input.washer_fluid_level = bitmask.test(data.msg[3], bitmask.bit[2]);
+			status.lcm.input.engine_failsafe    = bitmask.test(data.msg[3], bitmask.bit[6]);
+			status.lcm.input.tire_defect        = bitmask.test(data.msg[3], bitmask.bit[7]);
 
-			status.lcm.input.vertical_aim = bitmask.bit_test(data.msg[6], bitmask.bit[1]);
+			status.lcm.input.vertical_aim = bitmask.test(data.msg[6], bitmask.bit[1]);
 
-			status.lcm.mode.failsafe = bitmask.bit_test(data.msg[8], bitmask.bit[0]);
-			status.lcm.mode.sleep    = bitmask.bit_test(data.msg[8], bitmask.bit[6]);
+			status.lcm.mode.failsafe = bitmask.test(data.msg[8], bitmask.bit[0]);
+			status.lcm.mode.sleep    = bitmask.test(data.msg[8], bitmask.bit[6]);
 
-			status.lcm.output.license.rear_left    = bitmask.bit_test(data.msg[4], bitmask.bit[2]);
-			status.lcm.output.brake.rear_left      = bitmask.bit_test(data.msg[4], bitmask.bit[3]);
-			status.lcm.output.brake.rear_right     = bitmask.bit_test(data.msg[4], bitmask.bit[4]);
-			status.lcm.output.highbeam.front_right = bitmask.bit_test(data.msg[4], bitmask.bit[5]);
-			status.lcm.output.highbeam.front_left  = bitmask.bit_test(data.msg[4], bitmask.bit[6]);
+			status.lcm.output.license.rear_left    = bitmask.test(data.msg[4], bitmask.bit[2]);
+			status.lcm.output.brake.rear_left      = bitmask.test(data.msg[4], bitmask.bit[3]);
+			status.lcm.output.brake.rear_right     = bitmask.test(data.msg[4], bitmask.bit[4]);
+			status.lcm.output.highbeam.front_right = bitmask.test(data.msg[4], bitmask.bit[5]);
+			status.lcm.output.highbeam.front_left  = bitmask.test(data.msg[4], bitmask.bit[6]);
 
-			status.lcm.output.standing.front_left      = bitmask.bit_test(data.msg[5], bitmask.bit[0]);
-			status.lcm.output.standing.inner_rear_left = bitmask.bit_test(data.msg[5], bitmask.bit[1]);
-			status.lcm.output.fog.front_left           = bitmask.bit_test(data.msg[5], bitmask.bit[2]);
-			status.lcm.output.reverse.rear_left        = bitmask.bit_test(data.msg[5], bitmask.bit[3]);
-			status.lcm.output.lowbeam.front_left       = bitmask.bit_test(data.msg[5], bitmask.bit[4]);
-			status.lcm.output.lowbeam.front_right      = bitmask.bit_test(data.msg[5], bitmask.bit[5]);
-			status.lcm.output.fog.front_right          = bitmask.bit_test(data.msg[5], bitmask.bit[6]);
-			status.lcm.output.led.rear_fog             = bitmask.bit_test(data.msg[5], bitmask.bit[7]);
+			status.lcm.output.standing.front_left      = bitmask.test(data.msg[5], bitmask.bit[0]);
+			status.lcm.output.standing.inner_rear_left = bitmask.test(data.msg[5], bitmask.bit[1]);
+			status.lcm.output.fog.front_left           = bitmask.test(data.msg[5], bitmask.bit[2]);
+			status.lcm.output.reverse.rear_left        = bitmask.test(data.msg[5], bitmask.bit[3]);
+			status.lcm.output.lowbeam.front_left       = bitmask.test(data.msg[5], bitmask.bit[4]);
+			status.lcm.output.lowbeam.front_right      = bitmask.test(data.msg[5], bitmask.bit[5]);
+			status.lcm.output.fog.front_right          = bitmask.test(data.msg[5], bitmask.bit[6]);
+			status.lcm.output.led.rear_fog             = bitmask.test(data.msg[5], bitmask.bit[7]);
 
-			status.lcm.output.license.rear_right   = bitmask.bit_test(data.msg[6], bitmask.bit[2]);
-			status.lcm.output.standing.rear_left   = bitmask.bit_test(data.msg[6], bitmask.bit[3]);
-			status.lcm.output.brake.rear_middle    = bitmask.bit_test(data.msg[6], bitmask.bit[4]);
-			status.lcm.output.standing.front_right = bitmask.bit_test(data.msg[6], bitmask.bit[5]);
-			status.lcm.output.turn.front_right     = bitmask.bit_test(data.msg[6], bitmask.bit[6]);
-			status.lcm.output.turn.rear_left       = bitmask.bit_test(data.msg[6], bitmask.bit[7]);
+			status.lcm.output.license.rear_right   = bitmask.test(data.msg[6], bitmask.bit[2]);
+			status.lcm.output.standing.rear_left   = bitmask.test(data.msg[6], bitmask.bit[3]);
+			status.lcm.output.brake.rear_middle    = bitmask.test(data.msg[6], bitmask.bit[4]);
+			status.lcm.output.standing.front_right = bitmask.test(data.msg[6], bitmask.bit[5]);
+			status.lcm.output.turn.front_right     = bitmask.test(data.msg[6], bitmask.bit[6]);
+			status.lcm.output.turn.rear_left       = bitmask.test(data.msg[6], bitmask.bit[7]);
 
-			status.lcm.output.turn.rear_right           = bitmask.bit_test(data.msg[7], bitmask.bit[1]);
-			status.lcm.output.fog.rear_left             = bitmask.bit_test(data.msg[7], bitmask.bit[2]);
-			status.lcm.output.standing.inner_rear_right = bitmask.bit_test(data.msg[7], bitmask.bit[3]);
-			status.lcm.output.standing.rear_right       = bitmask.bit_test(data.msg[7], bitmask.bit[4]);
-			status.lcm.output.turn.side_left            = bitmask.bit_test(data.msg[7], bitmask.bit[5]);
-			status.lcm.output.turn.front_left           = bitmask.bit_test(data.msg[7], bitmask.bit[6]);
-			status.lcm.output.reverse.rear_right        = bitmask.bit_test(data.msg[7], bitmask.bit[7]);
+			status.lcm.output.turn.rear_right           = bitmask.test(data.msg[7], bitmask.bit[1]);
+			status.lcm.output.fog.rear_left             = bitmask.test(data.msg[7], bitmask.bit[2]);
+			status.lcm.output.standing.inner_rear_right = bitmask.test(data.msg[7], bitmask.bit[3]);
+			status.lcm.output.standing.rear_right       = bitmask.test(data.msg[7], bitmask.bit[4]);
+			status.lcm.output.turn.side_left            = bitmask.test(data.msg[7], bitmask.bit[5]);
+			status.lcm.output.turn.front_left           = bitmask.test(data.msg[7], bitmask.bit[6]);
+			status.lcm.output.reverse.rear_right        = bitmask.test(data.msg[7], bitmask.bit[7]);
 
-			status.lcm.output.led.switch_hazard    = bitmask.bit_test(data.msg[8], bitmask.bit[2]);
-			status.lcm.output.led.switch_light     = bitmask.bit_test(data.msg[8], bitmask.bit[3]);
-			status.lcm.output.reverse.rear_trailer = bitmask.bit_test(data.msg[8], bitmask.bit[5]);
+			status.lcm.output.led.switch_hazard    = bitmask.test(data.msg[8], bitmask.bit[2]);
+			status.lcm.output.led.switch_light     = bitmask.test(data.msg[8], bitmask.bit[3]);
+			status.lcm.output.reverse.rear_trailer = bitmask.test(data.msg[8], bitmask.bit[5]);
 
-			status.lcm.switch.hazard         = bitmask.bit_test(data.msg[1], bitmask.bit[4]);
-			status.lcm.switch.highbeam_flash = bitmask.bit_test(data.msg[1], bitmask.bit[2]);
+			status.lcm.switch.hazard         = bitmask.test(data.msg[1], bitmask.bit[4]);
+			status.lcm.switch.highbeam_flash = bitmask.test(data.msg[1], bitmask.bit[2]);
 
-			status.lcm.switch.brake      = bitmask.bit_test(data.msg[2], bitmask.bit[0]);
-			status.lcm.switch.highbeam   = bitmask.bit_test(data.msg[2], bitmask.bit[1]);
-			status.lcm.switch.fog_front  = bitmask.bit_test(data.msg[2], bitmask.bit[2]);
-			status.lcm.switch.fog_rear   = bitmask.bit_test(data.msg[2], bitmask.bit[4]);
-			status.lcm.switch.standing   = bitmask.bit_test(data.msg[2], bitmask.bit[5]);
-			status.lcm.switch.turn_right = bitmask.bit_test(data.msg[2], bitmask.bit[6]);
-			status.lcm.switch.turn_left  = bitmask.bit_test(data.msg[2], bitmask.bit[7]);
+			status.lcm.switch.brake      = bitmask.test(data.msg[2], bitmask.bit[0]);
+			status.lcm.switch.highbeam   = bitmask.test(data.msg[2], bitmask.bit[1]);
+			status.lcm.switch.fog_front  = bitmask.test(data.msg[2], bitmask.bit[2]);
+			status.lcm.switch.fog_rear   = bitmask.test(data.msg[2], bitmask.bit[4]);
+			status.lcm.switch.standing   = bitmask.test(data.msg[2], bitmask.bit[5]);
+			status.lcm.switch.turn_right = bitmask.test(data.msg[2], bitmask.bit[6]);
+			status.lcm.switch.turn_left  = bitmask.test(data.msg[2], bitmask.bit[7]);
 
-			status.lcm.switch.lowbeam_1 = bitmask.bit_test(data.msg[3], bitmask.bit[4]);
-			status.lcm.switch.lowbeam_2 = bitmask.bit_test(data.msg[3], bitmask.bit[3]);
+			status.lcm.switch.lowbeam_1 = bitmask.test(data.msg[3], bitmask.bit[4]);
+			status.lcm.switch.lowbeam_2 = bitmask.test(data.msg[3], bitmask.bit[3]);
 
 			// log.module({ src : module_name, msg : 'Decoded IO status' });
 	}
@@ -442,86 +442,86 @@ function io_encode(object) {
 	if (object.dimmer_value_1) { bitmask_9 = parseInt(object.dimmer_value_1); }
 
 	// Set the various bitmask values according to the input object
-	if (object.clamp_30a)                       { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[0]); }
-	if (object.input_fire_extinguisher)         { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[1]); }
-	if (object.input_preheating_fuel_injection) { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[2]); }
-	// if (object.)                             { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[3]); }
-	if (object.input_carb)                      { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[4]); }
-	// if (object.)                             { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[5]); }
-	if (object.clamp_r)                         { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[6]); }
-	if (object.clamp_30b)                       { bitmask_0 = bitmask.bit_set(bitmask_0, bitmask.bit[7]); }
+	if (object.clamp_30a)                       { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]); }
+	if (object.input_fire_extinguisher)         { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[1]); }
+	if (object.input_preheating_fuel_injection) { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[2]); }
+	// if (object.)                             { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[3]); }
+	if (object.input_carb)                      { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[4]); }
+	// if (object.)                             { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[5]); }
+	if (object.clamp_r)                         { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[6]); }
+	if (object.clamp_30b)                       { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[7]); }
 
-	if (object.input_key_in_ignition)   { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[0]); }
-	if (object.input_seat_belts_lock)   { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[1]); }
-	if (object.switch_highbeam_flash)   { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[2]); }
-	// if (object.)                     { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[3]); }
-	if (object.switch_hazard)           { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[4]); }
-	if (object.input_kfn)               { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[5]); }
-	if (object.input_armoured_door)     { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[6]); }
-	if (object.input_brake_fluid_level) { bitmask_1 = bitmask.bit_set(bitmask_1, bitmask.bit[7]); }
+	if (object.input_key_in_ignition)   { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[0]); }
+	if (object.input_seat_belts_lock)   { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[1]); }
+	if (object.switch_highbeam_flash)   { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[2]); }
+	// if (object.)                     { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[3]); }
+	if (object.switch_hazard)           { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[4]); }
+	if (object.input_kfn)               { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[5]); }
+	if (object.input_armoured_door)     { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[6]); }
+	if (object.input_brake_fluid_level) { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[7]); }
 
-	if (object.switch_brake)      { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[0]); }
-	if (object.switch_highbeam)   { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[1]); }
-	if (object.switch_fog_front)  { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[2]); }
-	// if (object.)               { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[3]); }
-	if (object.switch_fog_rear)   { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[4]); }
-	if (object.switch_standing)   { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[5]); }
-	if (object.switch_turn_right) { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[6]); }
-	if (object.switch_turn_left)  { bitmask_2 = bitmask.bit_set(bitmask_2, bitmask.bit[7]); }
+	if (object.switch_brake)      { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[0]); }
+	if (object.switch_highbeam)   { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[1]); }
+	if (object.switch_fog_front)  { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[2]); }
+	// if (object.)               { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[3]); }
+	if (object.switch_fog_rear)   { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[4]); }
+	if (object.switch_standing)   { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[5]); }
+	if (object.switch_turn_right) { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[6]); }
+	if (object.switch_turn_left)  { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[7]); }
 
-	if (object.input_air_suspension)     { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[0]); }
-	if (object.input_hold_up_alarm)      { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[1]); }
-	if (object.input_washer_fluid_level) { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[2]); }
-	if (object.switch_lowbeam_2)         { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[3]); }
-	if (object.switch_lowbeam_1)         { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[4]); }
-	if (object.clamp_15)                 { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[5]); }
-	if (object.input_engine_failsafe)    { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[6]); }
-	if (object.input_tire_defect)        { bitmask_3 = bitmask.bit_set(bitmask_3, bitmask.bit[7]); }
+	if (object.input_air_suspension)     { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[0]); }
+	if (object.input_hold_up_alarm)      { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[1]); }
+	if (object.input_washer_fluid_level) { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[2]); }
+	if (object.switch_lowbeam_2)         { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[3]); }
+	if (object.switch_lowbeam_1)         { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[4]); }
+	if (object.clamp_15)                 { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[5]); }
+	if (object.input_engine_failsafe)    { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[6]); }
+	if (object.input_tire_defect)        { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[7]); }
 
-	// if (object.)                         { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[0]); }
-	// if (object.)                         { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[1]); }
-	if (object.output_license_rear_left)    { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[2]); }
-	if (object.output_brake_rear_left)      { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[3]); }
-	if (object.output_brake_rear_right)     { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[4]); }
-	if (object.output_highbeam_front_right) { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[5]); }
-	if (object.output_highbeam_front_left)  { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[6]); }
-	// if (object.)                         { bitmask_4 = bitmask.bit_set(bitmask_4, bitmask.bit[7]); }
+	// if (object.)                         { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[0]); }
+	// if (object.)                         { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[1]); }
+	if (object.output_license_rear_left)    { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[2]); }
+	if (object.output_brake_rear_left)      { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[3]); }
+	if (object.output_brake_rear_right)     { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[4]); }
+	if (object.output_highbeam_front_right) { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[5]); }
+	if (object.output_highbeam_front_left)  { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[6]); }
+	// if (object.)                         { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[7]); }
 
-	if (object.output_standing_front_left)       { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[0]); }
-	if (object.output_standing_inner_rear_left)  { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[1]); }
-	if (object.output_fog_front_left)            { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[2]); }
-	if (object.output_reverse_rear_left)         { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[3]); }
-	if (object.output_lowbeam_front_left)        { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[4]); }
-	if (object.output_lowbeam_front_right)       { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[5]); }
-	if (object.output_fog_front_right)           { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[6]); }
-	if (object.output_fog_rear_trailer)          { bitmask_5 = bitmask.bit_set(bitmask_5, bitmask.bit[7]); }
+	if (object.output_standing_front_left)       { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[0]); }
+	if (object.output_standing_inner_rear_left)  { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[1]); }
+	if (object.output_fog_front_left)            { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[2]); }
+	if (object.output_reverse_rear_left)         { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[3]); }
+	if (object.output_lowbeam_front_left)        { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[4]); }
+	if (object.output_lowbeam_front_right)       { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[5]); }
+	if (object.output_fog_front_right)           { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[6]); }
+	if (object.output_fog_rear_trailer)          { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[7]); }
 
-	// if (object.)                         { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[0]); }
-	if (object.input_vertical_aim)          { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[1]); }
-	if (object.output_license_rear_right)   { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[2]); }
-	if (object.output_standing_rear_left)   { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[3]); }
-	if (object.output_brake_rear_middle)    { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[4]); }
-	if (object.output_standing_front_right) { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[5]); }
-	if (object.output_turn_front_right)     { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[6]); }
-	if (object.output_turn_rear_left)       { bitmask_6 = bitmask.bit_set(bitmask_6, bitmask.bit[7]); }
+	// if (object.)                         { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[0]); }
+	if (object.input_vertical_aim)          { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[1]); }
+	if (object.output_license_rear_right)   { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[2]); }
+	if (object.output_standing_rear_left)   { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[3]); }
+	if (object.output_brake_rear_middle)    { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[4]); }
+	if (object.output_standing_front_right) { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[5]); }
+	if (object.output_turn_front_right)     { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[6]); }
+	if (object.output_turn_rear_left)       { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[7]); }
 
-	// if (object.)                              { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[0]); }
-	if (object.output_turn_rear_right)           { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[1]); }
-	if (object.output_fog_rear_left)             { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[2]); }
-	if (object.output_standing_inner_rear_right) { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[3]); }
-	if (object.output_standing_rear_right)       { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[4]); }
-	if (object.output_turn_trailer_left)         { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[5]); }
-	if (object.output_turn_front_left)           { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[6]); }
-	if (object.output_reverse_rear_right)        { bitmask_7 = bitmask.bit_set(bitmask_7, bitmask.bit[7]); }
+	// if (object.)                              { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[0]); }
+	if (object.output_turn_rear_right)           { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[1]); }
+	if (object.output_fog_rear_left)             { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[2]); }
+	if (object.output_standing_inner_rear_right) { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[3]); }
+	if (object.output_standing_rear_right)       { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[4]); }
+	if (object.output_turn_trailer_left)         { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[5]); }
+	if (object.output_turn_front_left)           { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[6]); }
+	if (object.output_reverse_rear_right)        { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[7]); }
 
-	if (object.mode_failsafe)               { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[0]); }
-	// if (object.)                         { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[1]); }
-	if (object.output_led_switch_hazard)    { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[2]); }
-	if (object.output_led_switch_light)     { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[3]); }
-	// if (object.)                         { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[4]); }
-	if (object.output_reverse_rear_trailer) { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[5]); }
-	if (object.mode_sleep)                  { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[6]); }
-	// if (object.)                         { bitmask_8 = bitmask.bit_set(bitmask_8, bitmask.bit[7]); }
+	if (object.mode_failsafe)               { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[0]); }
+	// if (object.)                         { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[1]); }
+	if (object.output_led_switch_hazard)    { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[2]); }
+	if (object.output_led_switch_light)     { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[3]); }
+	// if (object.)                         { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[4]); }
+	if (object.output_reverse_rear_trailer) { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[5]); }
+	if (object.mode_sleep)                  { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[6]); }
+	// if (object.)                         { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[7]); }
 
 	// Suspect
 	// object.clamp_58g

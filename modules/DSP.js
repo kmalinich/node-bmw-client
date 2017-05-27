@@ -133,12 +133,12 @@ function eq_decode(data) {
 	var dsp_mode = data[1]-1;
 
 	var reverb   = data[2] & 0x0F;
-	if (bitmask.bit_test(data[2], 0x10)) {
+	if (bitmask.test(data[2], 0x10)) {
 		reverb *= -1;
 	}
 
 	var room_size = data[3] & 0x0F;
-	if (bitmask.bit_test(data[3], 0x10)) {
+	if (bitmask.test(data[3], 0x10)) {
 		room_size *= -1;
 	}
 
@@ -148,7 +148,7 @@ function eq_decode(data) {
 	for (n = 0; n<7; n++) {
 		band[n] = data[4+n] & 0x0F;
 
-		if(bitmask.bit_test(data[n+4], 0x10)) {
+		if(bitmask.test(data[n+4], 0x10)) {
 			band[n]*=-1;
 		}
 	}
