@@ -6,11 +6,11 @@ function parse_out(data) {
 		case 0x83: // Broadcast: AC compressor status
 			data.command = 'bro';
 			data.value   = 'AC compressor status '+data.msg;
-      status.ihka.ac = bitmask.bit_test(data.msg[1], 0x80);
+      status.ihka.ac = bitmask.test(data.msg[1], 0x80);
 			break;
 
 		case 0x86: // Broadcast: Rear defroster status
-      status.ihka.defroster = bitmask.bit_test(data.msg[1], 0x01);
+      status.ihka.defroster = bitmask.test(data.msg[1], 0x01);
 			data.command = 'bro';
 			data.value   = 'defroster status '+status.ihka.defroster;
 			break;
