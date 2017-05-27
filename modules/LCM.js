@@ -310,7 +310,7 @@ function decode(data) {
 
 		case 0xA0: // Decode IO status and output true/false values
 			// Remove command byte
-			data.msg.shift();
+			data.msg = data.msg.slice(1);
 
 			// Set raw IO status bitmask data
 			status.lcm.io = data.msg;
