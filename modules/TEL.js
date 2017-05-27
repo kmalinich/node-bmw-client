@@ -49,12 +49,12 @@ function led(object) {
 
   // Initialize output byte
   var byte = 0x00;
-  if (object.solid_red)    byte = bitmask.bit_set(byte, bitmask.bit[0]);
-  if (object.flash_red)    byte = bitmask.bit_set(byte, bitmask.bit[1]);
-  if (object.solid_yellow) byte = bitmask.bit_set(byte, bitmask.bit[2]);
-  if (object.flash_yellow) byte = bitmask.bit_set(byte, bitmask.bit[3]);
-  if (object.solid_green)  byte = bitmask.bit_set(byte, bitmask.bit[4]);
-  if (object.flash_green)  byte = bitmask.bit_set(byte, bitmask.bit[5]);
+  if (object.solid_red)    byte = bitmask.set(byte, bitmask.bit[0]);
+  if (object.flash_red)    byte = bitmask.set(byte, bitmask.bit[1]);
+  if (object.solid_yellow) byte = bitmask.set(byte, bitmask.bit[2]);
+  if (object.flash_yellow) byte = bitmask.set(byte, bitmask.bit[3]);
+  if (object.solid_green)  byte = bitmask.set(byte, bitmask.bit[4]);
+  if (object.flash_green)  byte = bitmask.set(byte, bitmask.bit[5]);
 
   // Send message
 	log.module({ src : module_name, msg : 'Setting LED' });

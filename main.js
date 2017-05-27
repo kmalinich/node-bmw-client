@@ -19,7 +19,7 @@ log          = require('log-output');
 obc_values   = require('obc-values');
 socket       = require('socket');
 
-function load_modules(callback) {
+function load_modules(load_modules_callback) {
 	// Data bus module libraries
 	ABG  = require('ABG');
 	AHL  = require('AHL');
@@ -99,7 +99,8 @@ function load_modules(callback) {
 		msg : 'Loaded modules',
 	});
 
-	if (typeof callback === 'function') { callback(); }
+	if (typeof load_modules_callback === 'function') load_modules_callback();
+	load_modules_callback = undefined;
 }
 
 // Global startup
@@ -137,14 +138,16 @@ function shutdown(signal) {
 	});
 
 	socket.shutdown(() => { // Stop WebSocket client
-		HDMI.shutdown(() => { // Close HDMI-CEC
-			kodi.shutdown(() => { // Close Kodi websocket/clean up
-				log.msg({
-					src : module_name,
-					msg : 'Shut down',
-				});
+		json.reset(() => { // Reset status and module vars pertinent to launching app
+			HDMI.shutdown(() => { // Close HDMI-CEC
+				kodi.shutdown(() => { // Close Kodi websocket/clean up
+					log.msg({
+						src : module_name,
+						msg : 'Shut down',
+					});
 
-				process.exit();
+					process.exit();
+				});
 			});
 		});
 	});

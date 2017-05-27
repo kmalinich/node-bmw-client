@@ -90,8 +90,6 @@ function parse_in(data) {
 			data.value   = Buffer.from(data.msg);
 			break;
 	}
-
-	log.bus(data);
 }
 
 // Parse data sent from BMBT module
@@ -145,12 +143,12 @@ function send_button(button) {
 	switch (button) {
 		case 'power':
 			// Get down value of button
-			button_down = bitmask.bit_set(button_down, bitmask.bit[1]);
-			button_down = bitmask.bit_set(button_down, bitmask.bit[2]);
+			button_down = bitmask.set(button_down, bitmask.bit[1]);
+			button_down = bitmask.set(button_down, bitmask.bit[2]);
 
 			// Generate hold and up values
-			button_hold = bitmask.bit_set(button_down, bitmask.bit[6]);
-			button_up   = bitmask.bit_set(button_down, bitmask.bit[7]);
+			button_hold = bitmask.set(button_down, bitmask.bit[6]);
+			button_up   = bitmask.set(button_down, bitmask.bit[7]);
 			break;
 	}
 

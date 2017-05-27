@@ -302,7 +302,7 @@ function parse_out(data) {
       var volume = data.msg[1];
 
       // Determine volume change direction
-      if (bitmask.bit_test(volume, 0x01)) {
+      if (bitmask.test(volume, 0x01)) {
         var direction = '+';
         var volume = parseFloat(volume)-1;
       }
@@ -366,12 +366,12 @@ function send_button(button) {
   switch (button) {
     case 'power':
       // Get down value of button
-      button_down = bitmask.bit_set(button_down, bitmask.bit[1]);
-      button_down = bitmask.bit_set(button_down, bitmask.bit[2]);
+      button_down = bitmask.set(button_down, bitmask.bit[1]);
+      button_down = bitmask.set(button_down, bitmask.bit[2]);
 
       // Generate hold and up values
-      button_hold = bitmask.bit_set(button_down, bitmask.bit[6]);
-      button_up   = bitmask.bit_set(button_down, bitmask.bit[7]);
+      button_hold = bitmask.set(button_down, bitmask.bit[6]);
+      button_up   = bitmask.set(button_down, bitmask.bit[7]);
       break;
   }
 
