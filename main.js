@@ -138,15 +138,18 @@ function shutdown(signal) {
 	});
 
 	socket.shutdown(() => { // Stop WebSocket client
-		json.reset(() => { // Reset status and module vars pertinent to launching app
-			HDMI.shutdown(() => { // Close HDMI-CEC
-				kodi.shutdown(() => { // Close Kodi websocket/clean up
-					log.msg({
-						src : module_name,
-						msg : 'Shut down',
-					});
+		json.write(() => { // Write JSON config and status files
+			json.reset(() => { // Reset status and module vars pertinent to launching app
+				HDMI.shutdown(() => { // Close HDMI-CEC
+					kodi.shutdown(() => { // Close Kodi websocket/clean up
 
-					process.exit();
+						log.msg({
+							src : module_name,
+							msg : 'Shut down',
+						});
+
+						process.exit();
+					});
 				});
 			});
 		});
