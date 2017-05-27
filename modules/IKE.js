@@ -902,6 +902,7 @@ module.exports = {
 		var cmd = null;
 		var src = 'VID';
 		var dst = module_name;
+
 		switch (value) {
 			case 'ignition':
 				cmd = [0x10];
@@ -927,11 +928,11 @@ module.exports = {
 				break;
 			case 'status-glo':
 				src = module_name;
-				for (var dst in bus_modules.modules) {
-					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC' && dst != src) {
+				for (var loop_dst in bus_modules.modules) {
+					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
 						socket.data_send({
 							src: src,
-							dst: dst,
+							dst: loop_dst,
 							msg: [0x01],
 						});
 					}
@@ -939,11 +940,11 @@ module.exports = {
 				break;
 			case 'status-loc':
 				src = module_name;
-				for (var dst in bus_modules.modules) {
-					if (dst != 'DIA' && dst != 'GLO' && dst != 'LOC' && dst != src) {
+				for (var loop_dst in bus_modules.modules) {
+					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
 						socket.data_send({
 							src: src,
-							dst: dst,
+							dst: loop_dst,
 							msg: [0x01],
 						});
 					}
