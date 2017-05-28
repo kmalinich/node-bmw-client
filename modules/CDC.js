@@ -55,9 +55,16 @@ function parse_out(data) {
 }
 
 // CDC->RAD CD status
-function send_cd_status(status) {
-	switch (status) {
-		case 'status'       : var bit = 0x00; break;
+function send_cd_status(value) {
+	switch (value) {
+		case 'status':
+			if (status.vehicle.ignition_level > 0) {
+				var bit = 0x02;
+			}
+			else {
+				var bit = 0x00;
+			}
+			break;
 		case 'stop'         : var bit = 0x00; break;
 		case 'pause'        : var bit = 0x01; break;
 		case 'play'         : var bit = 0x02; break;
