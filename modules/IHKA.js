@@ -4,9 +4,9 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x83: // Broadcast: AC compressor status
+      status.ihka.ac = bitmask.test(data.msg[1], 0x80);
 			data.command = 'bro';
 			data.value   = 'AC compressor status '+data.msg;
-      status.ihka.ac = bitmask.test(data.msg[1], 0x80);
 			break;
 
 		case 0x86: // Broadcast: Rear defroster status

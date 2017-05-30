@@ -1,3 +1,18 @@
+5B 05 80 83 80 08 D5
+Sends the AC request on.
+The 3rd byte being the AC status bit.
+
+5B 05 80 83 00 00 5D
+Sends the AC request off.
+The status byte in each case being resent by the IKE over the canbus as byte B0 in ID 0x615. 
+
+To be exact the most significant Bit is the status request.
+other bits:
+Load torque, for switching the compressor on
+requested auxiliary fan speed.
+But the byte is passed exactly. so for example if C5 is sent to the IKE as the AC status then C5 is sent in 0x615 B0.
+
+
 // Checksum and length removed
 
 5B 80 83 D8 A0 IHKA->IKE:Air conditioning compressor status, On
