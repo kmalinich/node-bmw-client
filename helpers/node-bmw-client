@@ -29,7 +29,7 @@ ARRAY_DIR_SYMLINK=(
 lib
 )
 
-[[ "${APP}" == "node-bmw-daemon" ]] && ARRAY_DIR_SYMLINK=(${ARRAY_DIR_SYMLINK[@]} modules)
+[[ "${APP}" == "node-bmw-client" ]] && ARRAY_DIR_SYMLINK=(${ARRAY_DIR_SYMLINK[@]} modules)
 
 #### Variables ==final ####
 
