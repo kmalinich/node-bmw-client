@@ -955,7 +955,7 @@ module.exports = {
 				break;
 
 			case 'status-short':
-				bus_modules.modules_check.forEach((module) => {
+				bus_modules.modules_check.forEach((loop_dst) => {
 					src = module_name;
 					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
 						socket.data_send({
