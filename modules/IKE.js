@@ -893,7 +893,10 @@ module.exports = {
 
 		// Blow it out
 		if (config.options.modules_refresh_on_start === true) {
-			IKE.request('status-glo');
+			ike.request('status-glo');
+		}
+		else {
+			ike.request('status-short');
 		}
 	},
 
@@ -950,6 +953,20 @@ module.exports = {
 					}
 				}
 				break;
+
+			case 'status-short':
+				bus_modules.modules_check.forEach((module) => {
+					src = module_name;
+					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
+						socket.data_send({
+							src: src,
+							dst: loop_dst,
+							msg: [0x01],
+						});
+					}
+				});
+				break;
+
 			case 'vin':
 				src = module_name;
 				dst = 'LCM';
