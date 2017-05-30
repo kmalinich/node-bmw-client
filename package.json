@@ -35,7 +35,7 @@
     "multipad": "^1.1.1",
     "node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
     "node-unit-conversion": "^0.1.1",
-    "nouislider": "^9.2.0",
+    "nouislider": "^10.0.0",
     "os": "^0.1.1",
     "pad": "^1.1.0",
     "performance-now": "^2.1.0",
