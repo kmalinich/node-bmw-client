@@ -893,10 +893,10 @@ module.exports = {
 
 		// Blow it out
 		if (config.options.modules_refresh_on_start === true) {
-			ike.request('status-glo');
+			IKE.request('status-glo');
 		}
 		else {
-			ike.request('status-short');
+			IKE.request('status-short');
 		}
 	},
 
