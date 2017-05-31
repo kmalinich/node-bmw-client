@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+#### Config ==start ####
+
+# Fail on bad exit code
+set -e
+
+#### Config ==final ####
+
 
 #### Variables ==start ####
 
@@ -8,6 +15,9 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
 APP="$(basename ${0})"
 APP_DIR="$(dirname $(readlink -f ${0}) | sed 's/\/helpers//g')"
 APP_FILE="${APP_DIR}/main.js"
+APP_USER="pi"
+
+APP_NM_DIR="${APP_DIR}/node_modules"
 
 SYSTEMD_DIR="/etc/systemd/system"
 SYSTEMD_APP="${APP}.service"
@@ -15,13 +25,23 @@ SYSTEMD_APP_FILE="${SYSTEMD_DIR}/${SYSTEMD_APP}"
 
 UNAME="$(uname)"
 
+ARRAY_DIR_SYMLINK=(
+lib
+)
+
+[[ "${APP}" == "node-bmw-client" ]] && ARRAY_DIR_SYMLINK=(${ARRAY_DIR_SYMLINK[@]} modules)
+
 #### Variables ==final ####
 
 
 #### Functions ==start ####
 
 log() {
-	[[ "${UNAME}" != "Linux" ]] && return
+	if [[ "${UNAME}" != "Linux" ]]; then
+		echo "[${APP}] ${1}"
+		return
+	fi
+
 	sudo logger -s -t "${APP}" "${1}" 2>&1
 }
 
@@ -199,6 +219,28 @@ update() {
 	npm install
 
 	restart
+}
+
+rebuild() {
+	cd ${APP_DIR}
+
+	log "Removing directory '${APP_NM_DIR}'"
+	rm -rf ${APP_NM_DIR}
+
+	log "Performing npm install"
+	npm install
+
+	if [[ "${UNAME}" == "Linux" ]]; then
+		log "Fixing permissions on directory '${APP_NM_DIR}'"
+		sudo chown -R ${APP_USER}:${APP_USER} ${APP_NM_DIR}
+	fi
+
+	cd ${APP_NM_DIR}
+
+	for DIR_SYMLINK in ${ARRAY_DIR_SYMLINK[@]}; do
+		log "Re-symlinking .js file(s) under directory '${DIR_SYMLINK}'"
+		ln -fs ../${DIR_SYMLINK}/*.js .
+	done
 }
 
 #### Functions ==final ####
