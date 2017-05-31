@@ -591,7 +591,7 @@ function request(value) {
 	var cmd;
 
 	log.bus({
-		bus : 'dbus',
+		bus : 'node',
 		src : {
 			name : 'NODE',
 		},
