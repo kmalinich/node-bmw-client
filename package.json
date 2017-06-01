@@ -40,8 +40,8 @@
     "pad": "^1.1.0",
     "performance-now": "^2.1.0",
     "pi-temperature": "^1.0.0",
-    "socket.io": "^2.0.1",
-    "socket.io-client": "^2.0.1",
+    "socket.io": "^2.0.2",
+    "socket.io-client": "^2.0.2",
     "suncalc": "^1.8.0"
   }
 }
