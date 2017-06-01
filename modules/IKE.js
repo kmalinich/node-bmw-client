@@ -228,7 +228,7 @@ function decode_ignition_status(data) {
 		MID.text_loop(false);
 
 		// Toggle media playback
-		kodi.command('pause');
+		if (status.kodi.player.status == 'playing') kodi.command('pause');
 		BT.command('disconnect');
 
 		if (config.json.reset_on_poweroff) {
