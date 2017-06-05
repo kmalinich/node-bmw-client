@@ -15,6 +15,7 @@ export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
 APP="$(basename ${0})"
 APP_DIR="$(dirname $(readlink -f ${0}) | sed 's/\/helpers//g')"
 APP_FILE="${APP_DIR}/main.js"
+APP_PKG_LOCK="package-lock.json"
 APP_USER="pi"
 
 APP_NM_DIR="${APP_DIR}/node_modules"
@@ -227,6 +228,9 @@ update() {
 
 rebuild() {
 	cd ${APP_DIR}
+
+	log "Removing file '${APP_PKG_LOCK}'"
+	rm -f ${APP_PKG_LOCK}
 
 	log "Removing directory '${APP_NM_DIR}'"
 	rm -rf ${APP_NM_DIR}
