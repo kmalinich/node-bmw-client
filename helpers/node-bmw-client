@@ -52,12 +52,16 @@ sleep_msg() {
 
 debug() {
 	stop > /dev/null 2>&1
+	export NODE_ENV="development"
 	/usr/bin/env node --trace-warnings --preserve-symlinks ${APP_FILE}
+	unset NODE_ENV
 }
 
 launch() {
 	stop > /dev/null 2>&1
+	export NODE_ENV="production"
 	/usr/bin/env node --throw-deprecation --trace-warnings --preserve-symlinks ${APP_FILE}
+	unset NODE_ENV
 }
 
 follow() {
