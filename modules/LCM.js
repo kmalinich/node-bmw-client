@@ -323,6 +323,19 @@ function decode(data) {
 			status.lcm.voltage.flash_to_pass      = parseFloat(data.msg[29]/51);
 			status.lcm.voltage.turn_signal_switch = parseFloat(data.msg[30]/51);
 
+			// Output voltage as log message
+			log.bus({
+				bus : 'node',
+				src : {
+					name : module_name,
+				},
+				dst : {
+					name : 'NODE',
+				},
+				command : 'upd',
+				value : 'voltage: '+status.lcm.voltage.terminal_30+'v',
+			});
+
 			// Bitmasks
 			status.lcm.clamp.c_30a = bitmask.test(data.msg[0], bitmask.bit[0]);
 			status.lcm.clamp.c_15  = bitmask.test(data.msg[3], bitmask.bit[5]);
@@ -538,6 +551,7 @@ function io_encode(object) {
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
 	// log.module({ src : module_name, msg : 'Setting IO status' });
+
 	packet.unshift(0x0C);
 	socket.data_send({
 		src: 'DIA',
