@@ -231,19 +231,16 @@ function decode_ignition_status(data) {
 		if (status.kodi.player.status == 'playing') kodi.command('pause');
 		BT.command('disconnect');
 
-		if (config.json.reset_on_poweroff) {
-			// Set modules as not ready
-			json.modules_reset();
-		}
+		// Set modules as not ready
+		if (config.json.reset_on_poweroff) json.modules_reset();
 
 		// Turn off HDMI display after configured delay
 		setTimeout(() => {
 			HDMI.command('poweroff');
 		}, config.media.hdmi.poweroff_delay);
 
-		if (config.json.write_on_poweroff) {
-			json.write(); // Write JSON config and status files
-		}
+		// Write JSON config and status files
+		if (config.json.write_on_poweroff) json.write();
 	}
 
 	// Ignition changed to accessory, from off
@@ -344,9 +341,7 @@ function decode_sensor_status(data) {
 		status.vehicle.reverse = bitmask.test(data.msg[2], bitmask.bit[4]);
 		// If the vehicle is newly in reverse, send message
 		if (status.vehicle.reverse === true) {
-			if (config.options.message_reverse === true) {
-				IKE.text_override('you\'re in reverse..');
-			}
+			if (config.options.message_reverse === true) IKE.text_override('you\'re in reverse..');
 		}
 	}
 }
@@ -985,7 +980,6 @@ module.exports = {
 
 	// Check control warnings
 	text_warning : (message, timeout = 10000) => {
-		kodi.notify(module_name, message);
 		// 3rd byte:
 		// 0x00 : no gong,   no arrow
 		// 0x01 : no gong,   solid arrow
@@ -1015,6 +1009,7 @@ module.exports = {
 	// Check control messages
 	text_urgent : (message, timeout = 5000) => {
 		kodi.notify(module_name, message);
+
 		var message_hex = [0x1A, 0x35, 0x00];
 		var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
