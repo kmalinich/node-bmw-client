@@ -257,7 +257,7 @@ function decode_ignition_status(data) {
 		// Toggle media playback
 		setTimeout(() => {
 			if (status.kodi.player.status != 'playing') kodi.command('toggle');
-		}, 3000);
+		}, 4000);
 
 		// Welcome message
 		if (config.options.message_welcome === true) {
@@ -296,7 +296,7 @@ function data_refresh() {
 
 			log.module({
 				src : module_name,
-				msg : 'Cleared data refresh timeout',
+				msg : 'Unset data refresh timeout',
 			});
 
 			return;
@@ -316,6 +316,13 @@ function data_refresh() {
 	LCM.request('dimmer');
 	LCM.request('io-status');
 	LCM.request('light-status');
+
+	if (IKE.timeout_data_refresh === null) {
+		log.module({
+			src : module_name,
+			msg : 'Set data refresh timeout',
+		});
+	}
 
 	// setTimeout for next update
 	IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
