@@ -47,16 +47,16 @@ function auto_lights(override = false) {
 			status.lights.auto.lowbeam = false;
 			break;
 		case true:
+			if (LCM.timeout_lights_auto === null) {
+				log.module({ src : module_name, msg : 'Set autolights timeout' });
+			}
+
 			// Set status variable
 			LCM.status_lights_auto = true;
 
 			// Process/send LCM data on 7 second timeout
 			// LCM diag command timeout is 15 seconds
 			auto_lights_process();
-	}
-
-	if (LCM.timeout_lights_auto === null) {
-		log.module({ src : module_name, msg : 'Set autolights timeout' });
 	}
 
   // Set status variable
