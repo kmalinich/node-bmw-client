@@ -380,7 +380,7 @@ module.exports = {
     switch (value) {
       case 'io-status':
         src = 'DIA';
-        cmd = [0x08, 0x00]; // Get IO status
+				cmd = [0x0B, 0x00]; // Get IO status
         break;
       case 'door-status':
         src = 'BMBT';

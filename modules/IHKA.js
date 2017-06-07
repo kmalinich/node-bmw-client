@@ -50,8 +50,28 @@ function aux(type, action) {
   });
 }
 
+// Request various things from IHKA
+function request(value) {
+	// Init variables
+	var src;
+	var cmd;
+
+	switch (value) {
+		case 'io-status':
+			src = 'DIA';
+			cmd = [0x0B, 0x04, 0x51]; // Get IO status
+			break;
+	}
+
+	socket.data_send({
+		src : src,
+		dst : module_name,
+		msg : cmd,
+	});
+}
+
 module.exports = {
-	aux                : (type, action) => { aux(type, action); },
-	parse_out          : (data)         => { parse_out(data); },
-	send_device_status : (module_name)  => { bus_commands.send_device_status(module_name); },
+	aux       : (type, action) => { aux(type, action); },
+	parse_out : (data)         => { parse_out(data);   },
+	request   : (value)        => { request(value);    },
 };
