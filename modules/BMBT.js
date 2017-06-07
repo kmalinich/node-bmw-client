@@ -56,14 +56,14 @@ function refresh_status() {
 
 // Send the power on button command if needed/ready
 function power_on_if_ready() {
-	if (status.vehicle.ignition_level === 0 || config.emulate.bmbt !== true) return;
+	if (config.emulate.bmbt !== true) return;
 
 	// Debug logging
 	// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
 	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
 	setTimeout(() => {
-		if (status.rad.audio_control == 'audio off') {
+		if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
 			kodi.notify(module_name, 'power on');
 			IKE.text_override(module_name+' power');
 
