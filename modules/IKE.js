@@ -257,7 +257,7 @@ function decode_ignition_status(data) {
 		// Toggle media playback
 		setTimeout(() => {
 			if (status.kodi.player.status != 'playing') kodi.command('toggle');
-		}, 4000);
+		}, 6000);
 
 		// Welcome message
 		if (config.options.message_welcome === true) {
