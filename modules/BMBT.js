@@ -61,18 +61,20 @@ function power_on_if_ready() {
 	// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
 	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
-	if (status.rad.audio_control == 'audio off') {
-		kodi.notify(module_name, 'power ('+module_name+')');
-		IKE.text_override(module_name+' ('+module_name+')');
+	setTimeout(() => {
+		if (status.rad.audio_control == 'audio off') {
+			kodi.notify(module_name, 'power on');
+			IKE.text_override(module_name+' power');
 
-		log.module({
-			src : module_name,
-			msg : 'Sending power!',
-		});
+			log.module({
+				src : module_name,
+				msg : 'Sending power!',
+			});
 
-		send_button('power');
-		DSP.request('memory'); // Get the DSP memory
-	}
+			send_button('power');
+			DSP.request('memory'); // Get the DSP memory
+		}
+	}, 500);
 }
 
 // Parse data sent to BMBT module
