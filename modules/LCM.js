@@ -14,16 +14,21 @@ function api_command(data) {
 // Automatic lights handling
 function auto_lights(override = false) {
 	var action = true;
+
 	if (config.lights.auto !== true && override === false) return;
+
 	if (override === true) var action = false;
-	if (status.vehicle.ignition_level < 3   ) var action = false;
-	if (action === false                    ) io_encode({});
-	if (status.lights.auto.active === action) return;
+
+	if (status.vehicle.ignition_level < 3) var action = false;
+
+	if (action === false) io_encode({});
+
+	if (LCM.status_lights_auto === action) return;
 
 	log.change({
 		src   : module_name,
 		value : 'Auto lights',
-		old   : status.lights.auto.active,
+		old   : LCM.status_lights_auto,
 		new   : action,
 	});
 
@@ -37,18 +42,21 @@ function auto_lights(override = false) {
 			}
 
 			// Set status variables
+			LCM.status_lights_auto     = false;
 			status.lights.auto.reason  = null;
-			status.lights.auto.active  = false;
 			status.lights.auto.lowbeam = false;
 			break;
 		case true:
 			// Set status variable
-			status.lights.auto.active = true;
+			LCM.status_lights_auto = true;
 
 			// Process/send LCM data on 7 second timeout
 			// LCM diag command timeout is 15 seconds
 			auto_lights_process();
 	}
+
+  // Set status variable
+  status.lights.auto.active = LCM.status_lights_auto;
 }
 
 // Logic based on location and time of day, determine if the low beams should be on
@@ -122,7 +130,7 @@ function auto_lights_process() {
 	}
 
 	reset();
-	LCM.timeout_lights_auto = setTimeout(auto_lights_process, 7000);
+	LCM.timeout_lights_auto = setTimeout(auto_lights_process, 6000);
 }
 
 // Cluster/interior backlight
@@ -205,14 +213,14 @@ function comfort_turn(data) {
 				// Set status variables
 				status.lights.turn.left.comfort  = true;
 				status.lights.turn.right.comfort = false;
-				cluster_msg_outer = '< < < < < < < < <';
+				cluster_msg_outer = '< < < < <';
 				break;
 
 			case 'right':
 				// Set status variables
 				status.lights.turn.left.comfort  = false;
 				status.lights.turn.right.comfort = true;
-				cluster_msg_outer = '> > > > > > > > >';
+				cluster_msg_outer = '> > > > >';
 		}
 
 		// Concat message string
@@ -319,7 +327,7 @@ function decode(data) {
 
 			status.lcm.dimmer.value_2 = data.msg[15];
 
-			status.lcm.voltage.terminal_30        = parseFloat(data.msg[9]*.0708);
+			status.lcm.voltage.terminal_30        = parseFloat((data.msg[9]*.0708).toFixed(2));
 			status.lcm.voltage.flash_to_pass      = parseFloat(data.msg[29]/51);
 			status.lcm.voltage.turn_signal_switch = parseFloat(data.msg[30]/51);
 
@@ -560,7 +568,9 @@ function io_set(packet) {
 	});
 
 	// Request the IO status after
-	LCM.request('io-status');
+	// setImmediate(() => {
+	// 	LCM.request('io-status');
+	// });
 }
 
 // Make things.. how they should be?
@@ -731,10 +741,12 @@ function welcome_lights(action) {
 
 module.exports = {
 	// Variables
-	counter_lights_welcome  : null,
-	timeout_lights_auto     : null,
-	timeout_lights_welcome  : null,
-	timeout_lights_welcome  : null,
+	counter_lights_welcome : null,
+
+	timeout_lights_auto    : null,
+	timeout_lights_welcome : null,
+
+  status_lights_auto : false,
 
 	// Functions
 	api_command    : (data) => { api_command(data);     },
