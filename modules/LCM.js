@@ -217,14 +217,14 @@ function comfort_turn(data) {
 				// Set status variables
 				status.lights.turn.left.comfort  = true;
 				status.lights.turn.right.comfort = false;
-				cluster_msg_outer = '< < < < <';
+				cluster_msg_outer = '< < < < < < <';
 				break;
 
 			case 'right':
 				// Set status variables
 				status.lights.turn.left.comfort  = false;
 				status.lights.turn.right.comfort = true;
-				cluster_msg_outer = '> > > > >';
+				cluster_msg_outer = '> > > > > > >';
 		}
 
 		// Concat message string
