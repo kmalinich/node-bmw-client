@@ -78,7 +78,7 @@ function parse_out(data) {
 			if (config.media.bluetooth === false && config.media.kodi.enable === true) {
 				if      (button == 'left'     && action == 'depress')      { kodi.command('previous'); }
 				else if (button == 'right'    && action == 'depress')      { kodi.command('next');     }
-				else if (button == 'send/end' && action == 'depress')      { kodi.command('pause');    }
+				else if (button == 'send/end' && action == 'depress')      { kodi.command('toggle');   }
 				//else if (button == 'send/end' && action == 'long depress') { kodi.command('play');     }
 			}
 			break;

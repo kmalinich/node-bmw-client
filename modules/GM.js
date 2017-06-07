@@ -405,7 +405,7 @@ module.exports = {
     var bitmask_3  = 0x00;
 
     // Set the various bitmask values according to the input object
-    if(object.clamp_30a) { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]) ; }
+    if (object.clamp_30a) { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]); }
 
     // Assemble the output object
     var output = [

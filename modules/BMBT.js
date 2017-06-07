@@ -3,8 +3,10 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 // Set or unset the status timeout
 function status_loop(action) {
 	if (config.emulate.bmbt !== true) return;
+
 	if (status.vehicle.ignition_level < 1) action = false;
-	if (BMBT.status_status_loop == action) return;
+
+	if (BMBT.status_status_loop === action) return;
 
 	log.module({ src : module_name, msg : 'Status loop '+action });
 
@@ -32,7 +34,7 @@ function status_loop(action) {
       refresh_status();
 
       // Set status variable
-      BMBT.status_status_loop  = true;
+      BMBT.status_status_loop = true;
 			break;
 	}
 }
@@ -53,7 +55,7 @@ function refresh_status() {
 
 // Send the power on button command if needed/ready
 function power_on_if_ready() {
-	if (status.vehicle.ignition_level === 0 || config.emulate.bmbt !== true) { return; }
+	if (status.vehicle.ignition_level === 0 || config.emulate.bmbt !== true) return;
 
 	// Debug logging
 	// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
@@ -83,6 +85,7 @@ function parse_in(data) {
 			data.value   = data.value+data.msg;
 
 			send_cassette_status();
+			power_on_if_ready();
 			break;
 
 		default:
@@ -178,13 +181,13 @@ function send_button(button) {
 
 
 module.exports = {
-	status_status_loop   : false,
-	timeout_status_loop  : null,
-	parse_in             : (data)        => { parse_in(data); },
-	parse_out            : (data)        => { parse_out(data); },
-	power_on_if_ready    : ()            => { power_on_if_ready(); },
-	send_button          : (button)      => { send_button(button); },
-	send_cassette_status : ()            => { send_cassette_status(); },
-	send_device_status   : (module_name) => { bus_commands.send_device_status(module_name); },
-	status_loop          : (action)      => { status_loop(action); },
+	status_status_loop  : false,
+	timeout_status_loop : null,
+
+	parse_in             : (data)   => { parse_in(data);         },
+	parse_out            : (data)   => { parse_out(data);        },
+	power_on_if_ready    : ()       => { power_on_if_ready();    },
+	send_button          : (button) => { send_button(button);    },
+	send_cassette_status : ()       => { send_cassette_status(); },
+	status_loop          : (action) => { status_loop(action);    },
 }

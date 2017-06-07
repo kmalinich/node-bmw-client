@@ -111,19 +111,18 @@ function startup() {
 	});
 
 	json.read(() => { // Read JSON config and status files
-		json.reset(() => { // Reset status and module vars pertinent to launching app
-			load_modules(() => { // Load IBUS module node modules
+		load_modules(() => { // Load IBUS module node modules
 
-				kodi.autoconfig(); // Enable kodi autoconfig
-				BT.autoconfig(); // Open Bluetooth connection
-				HDMI.startup(() => { // Open HDMI-CEC
-					socket.startup(); // Start WebSocket client
+			kodi.start(); // Start Kodi WebSocket client
+			BT.start(); // Start Linux D-Bus Bluetooth handler
 
-					IKE.text_warning('  node-bmw restart', 3000);
-					log.msg({
-						src : module_name,
-						msg : 'Started',
-					});
+			HDMI.startup(() => { // Open HDMI-CEC
+				socket.startup(); // Start WebSocket client
+
+				IKE.text_warning('  node-bmw restart', 3000);
+				log.msg({
+					src : module_name,
+					msg : 'Started',
 				});
 			});
 		});
@@ -139,17 +138,15 @@ function shutdown(signal) {
 
 	socket.shutdown(() => { // Stop WebSocket client
 		json.write(() => { // Write JSON config and status files
-			json.reset(() => { // Reset status and module vars pertinent to launching app
-				HDMI.shutdown(() => { // Close HDMI-CEC
-					kodi.shutdown(() => { // Close Kodi websocket/clean up
+			HDMI.shutdown(() => { // Close HDMI-CEC
+				kodi.stop(() => { // Stop Kodi WebSocket client
 
-						log.msg({
-							src : module_name,
-							msg : 'Shut down',
-						});
-
-						process.exit();
+					log.msg({
+						src : module_name,
+						msg : 'Shut down',
 					});
+
+					process.exit();
 				});
 			});
 		});

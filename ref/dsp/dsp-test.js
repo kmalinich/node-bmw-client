@@ -1,7 +1,7 @@
 // Test number for bitmask
 function bit_test(num, bit) {
-  if ((num & bit) != 0) { return true; }
-  else { return false; }
+	if ((num & bit) != 0) { return true; }
+	else { return false; }
 }
 
 var data_1;
@@ -24,56 +24,56 @@ var dsp_modes = {
 }
 
 function decode_dsp(data) {
-  dsp_mode  = data[1] - 1;
-  reverb    = data[2] & 0x0F;
+	dsp_mode  = data[1] - 1;
+	reverb    = data[2] & 0x0F;
 
-  if (bit_test(data[2], 0x10)) {
-    reverb *= -1;
-  }
+	if (bit_test(data[2], 0x10)) {
+		reverb *= -1;
+	}
 
-  room_size = data[3] & 0x0F;
-  if (bit_test(data[3], 0x10)) {
-    room_size *= -1;
-  }
+	room_size = data[3] & 0x0F;
+	if (bit_test(data[3], 0x10)) {
+		room_size *= -1;
+	}
 
-  var band = [];
-  var n;
+	var band = [];
+	var n;
 
-  for (n = 0; n<7; n++) {
-    band[n] = data[4+n] & 0x0F;
+	for (n = 0; n<7; n++) {
+		band[n] = data[4+n] & 0x0F;
 
-    if(bit_test(data[4+n], 0x10)) {
-      band[n]*=-1;
-    }
-  }
+		if (bit_test(data[4+n], 0x10)) {
+			band[n]*=-1;
+		}
+	}
 
-  console.log('DSP mode  : %s', dsp_modes[dsp_mode]);
-  console.log('Reverb    : %s/10', reverb);
-  console.log('Room size : %s/10', room_size);
-  console.log('----------------');
-  console.log('80Hz      : %s/10', band[0]);
-  console.log('200Hz     : %s/10', band[1]);
-  console.log('500Hz     : %s/10', band[2]);
-  console.log('1KHz      : %s/10', band[3]);
-  console.log('2KHz      : %s/10', band[4]);
-  console.log('5KHz      : %s/10', band[5]);
-  console.log('12KHz     : %s/10', band[6]);
-  console.log('----------------');
+	console.log('DSP mode  : %s', dsp_modes[dsp_mode]);
+	console.log('Reverb    : %s/10', reverb);
+	console.log('Room size : %s/10', room_size);
+	console.log('----------------');
+	console.log('80Hz      : %s/10', band[0]);
+	console.log('200Hz     : %s/10', band[1]);
+	console.log('500Hz     : %s/10', band[2]);
+	console.log('1KHz      : %s/10', band[3]);
+	console.log('2KHz      : %s/10', band[4]);
+	console.log('5KHz      : %s/10', band[5]);
+	console.log('12KHz     : %s/10', band[6]);
+	console.log('----------------');
 }
 
 function encode_dsp(data) {
-  var memory        = 1;
-  var reverb_out    = [0x34, 0x94 + data.memory, data.reverb & 0x0F];
-  var room_size_out = [0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20];
+	var memory        = 1;
+	var reverb_out    = [0x34, 0x94 + data.memory, data.reverb & 0x0F];
+	var room_size_out = [0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20];
 
-  console.log(Buffer.from(reverb_out));
-  console.log(Buffer.from(room_size_out));
+	console.log(Buffer.from(reverb_out));
+	console.log(Buffer.from(room_size_out));
 
-  for (var band_num = 0; band_num < 7; band_num++) {
-    // ... Don't look at me...
-    var band_out = [0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F)))];
-    console.log(Buffer.from(band_out));
-  }
+	for (var band_num = 0; band_num < 7; band_num++) {
+		// ... Don't look at me...
+		var band_out = [0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F)))];
+		console.log(Buffer.from(band_out));
+	}
 
 }
 
@@ -94,18 +94,18 @@ decode_dsp(data_6);
 decode_dsp(data_7);
 
 var dsp_data = {
-  memory    : 2,
-  reverb    : 10,
-  room_size : 10,
-  band      : {
-    0 : 10,
-    1 : 5,
-    2 : -3,
-    3 : -4,
-    4 : -3,
-    5 : 5,
-    6 : 9,
-  },
+	memory    : 2,
+	reverb    : 10,
+	room_size : 10,
+	band      : {
+		0 : 10,
+		1 : 5,
+		2 : -3,
+		3 : -4,
+		4 : -3,
+		5 : 5,
+		6 : 9,
+	},
 }
 
 // encode_dsp(dsp_data);

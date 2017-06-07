@@ -148,7 +148,7 @@ function eq_decode(data) {
 	for (n = 0; n<7; n++) {
 		band[n] = data[4+n] & 0x0F;
 
-		if(bitmask.test(data[n+4], 0x10)) {
+		if (bitmask.test(data[n+4], 0x10)) {
 			band[n]*=-1;
 		}
 	}
