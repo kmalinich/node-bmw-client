@@ -79,13 +79,12 @@ function parse_out(data) {
           data.value = data.value+'off';
           status.rad.audio_control = data.value;
 
-					IKE.text_override('BMBT power ('+module_name+')');
-					kodi.notify('BMBT', 'power ('+module_name+')');
-
-					setTimeout(() => {
-						BMBT.power_on_if_ready();
-						MID.power_on_if_ready();
-					}, 4000);
+					// IKE.text_override('BMBT power ('+module_name+')');
+					// kodi.notify('BMBT', 'power ('+module_name+')');
+					// setTimeout(() => {
+					// 	BMBT.power_on_if_ready();
+					// 	MID.power_on_if_ready();
+					// }, 4000);
           break;
 
         case 0xA1:
@@ -121,7 +120,6 @@ function parse_out(data) {
 			break;
 
 		case 0x4A: // Control: Cassette
-      return;
       data.command = 'con';
       data.value   = 'cassette '+data.msg;
       break;
@@ -162,7 +160,6 @@ function send_audio_control(source) {
 }
 
 module.exports = {
-  parse_out          : (data)        => { parse_out(data);                              },
-  send_audio_control : (source)      => { send_audio_control(source);                   },
-  send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
+  parse_out          : (data)   => { parse_out(data);            },
+  send_audio_control : (source) => { send_audio_control(source); },
 };

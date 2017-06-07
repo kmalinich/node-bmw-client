@@ -197,9 +197,6 @@ function decode_ignition_status(data) {
 		});
 
 		status.vehicle.ignition_level = data.msg[1];
-
-		// Activate autolights if we got 'em
-		LCM.auto_lights();
 	}
 
 	switch (data.msg[1]) {
@@ -210,18 +207,15 @@ function decode_ignition_status(data) {
 		default : status.vehicle.ignition = 'unknown';   break;
 	}
 
+	if (status.vehicle.ignition_level === 3) {
+		// Activate autolights if we got 'em
+		LCM.auto_lights();
+	}
+
 	// Ignition changed to off
 	if (IKE.state_poweroff === true) {
 		// Disable HUD refresh
-		if (IKE.timeout_data_refresh !== null) {
-			clearTimeout(IKE.timeout_data_refresh);
-			IKE.timeout_data_refresh = null;
-
-			log.module({
-				src : module_name,
-				msg : 'Cleared data refresh timeout',
-			});
-		}
+		data_refresh();
 
 		// Disable BMBT/MID keepalive
 		BMBT.status_loop(false);
@@ -229,7 +223,7 @@ function decode_ignition_status(data) {
 		MID.text_loop(false);
 
 		// Toggle media playback
-		if (status.kodi.player.status == 'playing') kodi.command('pause');
+		if (status.kodi.player.status == 'playing') kodi.command('toggle');
 		BT.command('disconnect');
 
 		// Set modules as not ready
@@ -246,25 +240,29 @@ function decode_ignition_status(data) {
 
 	// Ignition changed to accessory, from off
 	if (IKE.state_powerup === true) {
+		// Enable HUD refresh
+		data_refresh();
+
 		IKE.state_powerup = false;
 
 		// Enable BMBT/MID keepalive
 		BMBT.status_loop(true);
 		MID.status_loop(true);
 		MID.text_loop(true);
-		RAD.send_audio_control('tuner/tape');
+		bus_commands.request_device_status(module_name, 'RAD');
+
+		// Connect Bluetooth
+		BT.command('connect');
 
 		// Toggle media playback
-		kodi.command('pause');
-		BT.command('connect');
+		setTimeout(() => {
+			if (status.kodi.player.status != 'playing') kodi.command('toggle');
+		}, 2500);
 
 		// Welcome message
 		if (config.options.message_welcome === true) {
 			IKE.text_override('node-bmw | Host:'+os.hostname().split('.')[0]+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
 		}
-
-		// Refresh OBC HUD once every 5 seconds, by requesting current temperatures
-		data_refresh();
 	}
 
 	// Ignition changed to accessory, from run
@@ -289,7 +287,22 @@ function decode_ignition_status(data) {
 	}
 }
 
+// Refresh various values every 5 seconds
 function data_refresh() {
+	if (status.vehicle.ignition_level === 0) {
+		if (IKE.timeout_data_refresh !== null) {
+			clearTimeout(IKE.timeout_data_refresh);
+			IKE.timeout_data_refresh = null;
+
+			log.module({
+				src : module_name,
+				msg : 'Cleared data refresh timeout',
+			});
+
+			return;
+		}
+	}
+
 	// Get+save RPi temp
 	if (config.system.pi === true) {
 		pitemp.measure((temperature) => {
@@ -297,22 +310,15 @@ function data_refresh() {
 		});
 	}
 
+	GM.request('door-status');
 	IKE.request('ignition');
 	IKE.request('temperature');
+	LCM.request('dimmer');
+	LCM.request('io-status');
+	LCM.request('light-status');
 
-	if (status.vehicle.ignition_level > 0) {
-		IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
-	}
-	else {
-		if (IKE.timeout_data_refresh !== null) {
-			clearTimeout(IKE.timeout_data_refresh);
-			IKE.timeout_data_refresh = null;
-			log.module({
-				src : module_name,
-				msg : 'Cleared data refresh timeout',
-			});
-		}
-	}
+	// setTimeout for next update
+	IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
 }
 
 function decode_sensor_status(data) {
@@ -761,11 +767,11 @@ module.exports = {
 		var time_now = now();
 
 		// Bounce if the override is active
-		if(IKE.hud_override === true) {
-			log.module({
-				src : module_name,
-				msg : 'HUD refresh: override active',
-			});
+		if (IKE.hud_override === true) {
+			// log.module({
+			// 	src : module_name,
+			// 	msg : 'HUD refresh: override active',
+			// });
 			return;
 		}
 
@@ -1033,12 +1039,13 @@ module.exports = {
 	text_override : (message, timeout = 2500, direction = 'left', turn = false) => {
 		// kodi.notify(module_name, message);
 		var max_length   = 20;
-		var scroll_delay = 300;
+
+		var scroll_delay         = 300;
 		var scroll_delay_timeout = scroll_delay*5;
 
 		// Override scroll_delay_timeout if we're showing a turn signal message
 		if (turn === true) {
-			var scroll_delay         = 150;
+			var scroll_delay         = 200;
 			var scroll_delay_timeout = 250;
 			var timeout              = 0;
 		}
@@ -1069,7 +1076,7 @@ module.exports = {
 
 			// Add a time buffer before scrolling starts (if this isn't a turn signal message)
 			setTimeout(() => {
-				for (var scroll = 0; scroll <= message.length-max_length ; scroll++) {
+				for (var scroll = 0; scroll <= message.length-max_length; scroll++) {
 					setTimeout((current_scroll, message_full, direction) => {
 						// Only send the message if we're currently the first up
 						if (IKE.hud_override_text == message_full) {
