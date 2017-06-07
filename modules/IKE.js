@@ -195,11 +195,12 @@ function decode_ignition_status(data) {
 			src : module_name,
 			msg : 'Ignition level change \''+status.vehicle.ignition_level+'\' => \''+data.msg[1]+'\'',
 		});
-		status.vehicle.ignition_level = data.msg[1];
-	}
 
-	// Activate autolights if we got 'em
-	LCM.auto_lights();
+		status.vehicle.ignition_level = data.msg[1];
+
+		// Activate autolights if we got 'em
+		LCM.auto_lights();
+	}
 
 	switch (data.msg[1]) {
 		case 0  : status.vehicle.ignition = 'off';       break;
