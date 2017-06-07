@@ -38,7 +38,7 @@ function auto_lights(override = false) {
 			if (LCM.timeout_lights_auto !== null) {
 				clearTimeout(LCM.timeout_lights_auto);
 				LCM.timeout_lights_auto = null;
-				log.module({ src : module_name, msg : 'Cleared autolights timeout' });
+				log.module({ src : module_name, msg : 'Unset autolights timeout' });
 			}
 
 			// Set status variables
@@ -53,6 +53,10 @@ function auto_lights(override = false) {
 			// Process/send LCM data on 7 second timeout
 			// LCM diag command timeout is 15 seconds
 			auto_lights_process();
+	}
+
+	if (LCM.timeout_lights_auto === null) {
+		log.module({ src : module_name, msg : 'Set autolights timeout' });
 	}
 
   // Set status variable

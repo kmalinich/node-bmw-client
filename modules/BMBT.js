@@ -8,8 +8,6 @@ function status_loop(action) {
 
 	if (BMBT.status_status_loop === action) return;
 
-	log.module({ src : module_name, msg : 'Status loop '+action });
-
 	switch (action) {
 		case false:
       status.rad.audio_control = 'audio off';
@@ -25,6 +23,7 @@ function status_loop(action) {
       BMBT.status_status_loop = false;
 
       if (BMBT.timeout_status_loop !== null) {
+				log.module({ src : module_name, msg : 'Unset status refresh timeout' });
         clearTimeout(BMBT.timeout_status_loop);
         BMBT.timeout_status_loop = null;
       }
@@ -35,6 +34,8 @@ function status_loop(action) {
 
       // Set status variable
       BMBT.status_status_loop = true;
+
+			log.module({ src : module_name, msg : 'Set status refresh timeout' });
 			break;
 	}
 }
