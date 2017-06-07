@@ -75,7 +75,7 @@ function power_on_if_ready() {
 			send_button('power');
 			DSP.request('memory'); // Get the DSP memory
 		}
-	}, 500);
+	}, 2000);
 }
 
 // Parse data sent to BMBT module
