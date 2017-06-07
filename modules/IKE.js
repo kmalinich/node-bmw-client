@@ -860,6 +860,9 @@ module.exports = {
 		GM.request('io-status');
 		GM.request('door-status');
 
+		// IHKA IO status
+		IHKA.request('io-status');
+
 		// IKE data
 		IKE.request('coding');
 		IKE.request('ignition');
