@@ -237,7 +237,7 @@ function parse_out(data) {
         status.gm.wipers.speed = data.speed;
 
         // Trigger auto lights processing
-        LCM.auto_lights();
+        LCM.auto_lights_process();
       }
       break;
 
