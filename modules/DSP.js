@@ -2,115 +2,115 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Array of all DSP modes
 var dsp_modes = {
-	0 : 'concert hall',
-	1 : 'jazz club',
-	2 : 'cathedral',
-	3 : 'memory 1',
-	4 : 'memory 2',
-	5 : 'memory 3',
-	6 : 'DSP off',
+  0 : 'concert hall',
+  1 : 'jazz club',
+  2 : 'cathedral',
+  3 : 'memory 1',
+  4 : 'memory 2',
+  5 : 'memory 3',
+  6 : 'DSP off',
 }
 
 // Request various things from DSP
 function request(value) {
-	var src;
-	var cmd;
+  var src;
+  var cmd;
 
-	log.module({ src : module_name, msg : 'Requesting \''+value+'\'' });
+  log.module({ src : module_name, msg : 'Requesting \''+value+'\'' });
 
-	switch (value) {
-		case 'io-status':
-			src = 'DIA';
-			cmd = [0x0B, 0x00]; // Get IO status
-			break;
-		case 'memory':
-			src = 'RAD';
-			cmd = [0x34, 0x08]; // Get DSP memory
-			break;
-	}
+  switch (value) {
+    case 'io-status':
+      src = 'DIA';
+      cmd = [0x0B, 0x00]; // Get IO status
+      break;
+    case 'memory':
+      src = 'RAD';
+      cmd = [0x34, 0x08]; // Get DSP memory
+      break;
+  }
 
-	socket.data_send({
-		src: src,
-		dst: module_name,
-		msg: cmd,
-	});
+  socket.data_send({
+    src: src,
+    dst: module_name,
+    msg: cmd,
+  });
 }
 
 // Select DSP mode
 function dsp_mode(mode) {
-	log.module({ src : module_name, msg : 'DSP mode set to \''+mode+'\'' });
+  log.module({ src : module_name, msg : 'DSP mode set to \''+mode+'\'' });
 
-	var cmd;
+  var cmd;
 
-	switch (value) {
-		case 'concert-hall':
-			cmd = [0x34, 0x09];
-			break;
-		case 'jazz-club':
-			cmd = [0x34, 0x0A];
-			break;
-		case 'cathedral':
-			cmd = [0x34, 0x0B];
-			break;
-		case 'memory-1':
-			cmd = [0x34, 0x0C];
-			break;
-		case 'memory-2':
-			cmd = [0x34, 0x0D];
-			break;
-		case 'memory-3':
-			cmd = [0x34, 0x0E];
-			break;
-		case 'off':
-			cmd = [0x34, 0x0F];
-			break;
-	}
+  switch (value) {
+    case 'concert-hall':
+      cmd = [0x34, 0x09];
+      break;
+    case 'jazz-club':
+      cmd = [0x34, 0x0A];
+      break;
+    case 'cathedral':
+      cmd = [0x34, 0x0B];
+      break;
+    case 'memory-1':
+      cmd = [0x34, 0x0C];
+      break;
+    case 'memory-2':
+      cmd = [0x34, 0x0D];
+      break;
+    case 'memory-3':
+      cmd = [0x34, 0x0E];
+      break;
+    case 'off':
+      cmd = [0x34, 0x0F];
+      break;
+  }
 
-	socket.data_send({
-		src: 'RAD',
-		dst: module_name,
-		msg: cmd,
-	});
+  socket.data_send({
+    src: 'RAD',
+    dst: module_name,
+    msg: cmd,
+  });
 }
 
 // Set M-Audio on/off
 function m_audio(value) {
-	log.module({ src : module_name, msg : 'Setting M-Audio to \''+value+'\'' });
+  log.module({ src : module_name, msg : 'Setting M-Audio to \''+value+'\'' });
 
-	var cmd;
+  var cmd;
 
-	switch (value) {
-		case 'on':
-			cmd = [0x34, 0x91, 0x00];
-			break;
-		case 'off':
-			cmd = [0x34, 0x90, 0x00];
-			break;
-	}
+  switch (value) {
+    case 'on':
+      cmd = [0x34, 0x91, 0x00];
+      break;
+    case 'off':
+      cmd = [0x34, 0x90, 0x00];
+      break;
+  }
 
-	socket.data_send({
-		src: 'RAD',
-		dst: module_name,
-		msg: cmd,
-	});
+  socket.data_send({
+    src: 'RAD',
+    dst: module_name,
+    msg: cmd,
+  });
 }
 
 // Parse data sent from DSP module
 function parse_out(data) {
-	switch (data.msg[0]) {
-		case 0x35: // Broadcast: DSP memory
-			data.command = 'bro';
-			data.value   = 'DSP memory';
-			eq_decode(data.msg);
-			break;
+  switch (data.msg[0]) {
+    case 0x35: // Broadcast: DSP memory
+      data.command = 'bro';
+      data.value   = 'DSP memory';
+      eq_decode(data.msg);
+      break;
 
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-			break;
-	}
+    default:
+      data.command = 'unk';
+      data.value   = Buffer.from(data.msg);
+      break;
+  }
 
-	log.bus(data);
+  log.bus(data);
 }
 
 // Speaker test
@@ -119,77 +119,76 @@ function parse_out(data) {
 
 // Send EQ data to DSP
 function eq_send(msg) {
-	socket.data_send({
-		src : 'DSPC',
-		dst : module_name,
-		msg : msg,
-	});
+  socket.data_send({
+    src : 'DSPC',
+    dst : module_name,
+    msg : msg,
+  });
 
-	log.module({ src : module_name, msg : 'DSP EQ sent' });
+  log.module({ src : module_name, msg : 'DSP EQ sent' });
 }
 
 // Parse message from DSP amp
 function eq_decode(data) {
-	var dsp_mode = data[1]-1;
+  var dsp_mode = data[1]-1;
 
-	var reverb   = data[2] & 0x0F;
-	if (bitmask.test(data[2], 0x10)) {
-		reverb *= -1;
-	}
+  var reverb   = data[2] & 0x0F;
+  if (bitmask.test(data[2], 0x10)) {
+    reverb *= -1;
+  }
 
-	var room_size = data[3] & 0x0F;
-	if (bitmask.test(data[3], 0x10)) {
-		room_size *= -1;
-	}
+  var room_size = data[3] & 0x0F;
+  if (bitmask.test(data[3], 0x10)) {
+    room_size *= -1;
+  }
 
-	var band = [];
-	var n;
+  var band = [];
+  var n;
 
-	for (n = 0; n<7; n++) {
-		band[n] = data[4+n] & 0x0F;
+  for (n = 0; n<7; n++) {
+    band[n] = data[4+n] & 0x0F;
 
-		if (bitmask.test(data[n+4], 0x10)) {
-			band[n]*=-1;
-		}
-	}
+    if (bitmask.test(data[n+4], 0x10)) {
+      band[n]*=-1;
+    }
+  }
 
-	// Insert parsed data into status
-	status.dsp.mode      = dsp_modes[dsp_mode];
-	status.dsp.reverb    = reverb;
-	status.dsp.room_size = room_size;
-	status.dsp.eq.band0  = band[0];
-	status.dsp.eq.band1  = band[1];
-	status.dsp.eq.band2  = band[2];
-	status.dsp.eq.band3  = band[3];
-	status.dsp.eq.band4  = band[4];
-	status.dsp.eq.band5  = band[5];
-	status.dsp.eq.band6  = band[6];
+  // Insert parsed data into status
+  status.dsp.mode      = dsp_modes[dsp_mode];
+  status.dsp.reverb    = reverb;
+  status.dsp.room_size = room_size;
+  status.dsp.eq.band0  = band[0];
+  status.dsp.eq.band1  = band[1];
+  status.dsp.eq.band2  = band[2];
+  status.dsp.eq.band3  = band[3];
+  status.dsp.eq.band4  = band[4];
+  status.dsp.eq.band5  = band[5];
+  status.dsp.eq.band6  = band[6];
 
-	log.module({ src : module_name, msg : 'DSP EQ decoded' });
+  log.module({ src : module_name, msg : 'DSP EQ decoded' });
 }
 
 function eq_encode(data) {
-	var reverb_out    = [0x34, 0x94 + data.memory, data.reverb & 0x0F];
-	eq_send(reverb_out);
+  var reverb_out    = [0x34, 0x94 + data.memory, data.reverb & 0x0F];
+  eq_send(reverb_out);
 
-	var room_size_out = [0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20];
-	eq_send(room_size_out);
+  var room_size_out = [0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20];
+  eq_send(room_size_out);
 
-	for (var band_num = 0; band_num < 7; band_num++) {
-		// ... Don't look at me...
-		var band_out = [0x34, 0x14+data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F)))];
-		eq_send(band_out);
-	}
+  for (var band_num = 0; band_num < 7; band_num++) {
+    // ... Don't look at me...
+    var band_out = [0x34, 0x14+data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F)))];
+    eq_send(band_out);
+  }
 
-	log.module({ src : module_name, msg : 'DSP EQ encoded' });
+  log.module({ src : module_name, msg : 'DSP EQ encoded' });
 }
 
 module.exports = {
-	eq_decode          : (data)        => { eq_decode(data); },
-	eq_encode          : (data)        => { eq_encode(data); },
-	eq_send            : (msg)         => { eq_send(msg); },
-	m_audio            : (value)       => { m_audio(value); },
-	parse_out          : (data)        => { parse_out(data); },
-	request            : (value)       => { request(value); },
-	send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
+  eq_decode : (data)  => { eq_decode(data); },
+  eq_encode : (data)  => { eq_encode(data); },
+  eq_send   : (msg)   => { eq_send(msg);    },
+  m_audio   : (value) => { m_audio(value);  },
+  parse_out : (data)  => { parse_out(data); },
+  request   : (value) => { request(value);  },
 };
