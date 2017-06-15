@@ -13,6 +13,10 @@ set -e
 export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin"
 
 APP="$(basename ${0})"
+
+[[ "${APP}" == "bmwc" ]] && APP="node-bmw-client"
+[[ "${APP}" == "bmwd" ]] && APP="node-bmw-daemon"
+
 APP_DIR="$(dirname $(readlink -f ${0}) | sed 's/\/helpers//g')"
 APP_FILE="${APP_DIR}/main.js"
 APP_PKG_LOCK="package-lock.json"
@@ -54,8 +58,10 @@ sleep_msg() {
 debug() {
 	stop > /dev/null 2>&1
 	export NODE_ENV="development"
+	export NODE_BMW_DEBUG_PROTO="true"
 	/usr/bin/env node --trace-warnings --preserve-symlinks ${APP_FILE}
 	unset NODE_ENV
+	unset NODE_BMW_DEBUG_PROTO
 }
 
 launch() {
