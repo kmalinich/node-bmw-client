@@ -2,38 +2,38 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Parse data sent from TEL module
 function parse_out(data) {
-	switch (data.msg[0]) {
-		case 0x2B: // Broadcast: Indicator status
-			data.command = 'bro';
-			data.value   = 'indicator status TODO';
-			break;
+  switch (data.msg[0]) {
+    case 0x2B: // Broadcast: Indicator status
+      data.command = 'bro';
+      data.value   = 'indicator status TODO';
+      break;
 
-			// Bit0 = red
-			// Bit1 = red + flashing
-			// Bit2 = orange
-			// Bit3 = orange + flashing
-			// Bit4 = green
-			// Bit5 = green + flashing
+      // Bit0 = red
+      // Bit1 = red + flashing
+      // Bit2 = orange
+      // Bit3 = orange + flashing
+      // Bit4 = green
+      // Bit5 = green + flashing
 
-		case 0x2C: // Broadcast: Telephone status
-			data.command = 'bro';
-			data.value   = 'telephone status TODO';
-			break;
+    case 0x2C: // Broadcast: Telephone status
+      data.command = 'bro';
+      data.value   = 'telephone status TODO';
+      break;
 
-			// Bit0 : Handsfree
-			// Bit1 : Active call (false = phone menu displayed)
-			// Bit2 : Incoming call
-			// Bit3 : Phone screen disabled
-			// Bit4 : Phone on
-			// Bit5 : Phone active
-			// Bit6 : Phone adapter installed
+      // Bit0 : Handsfree
+      // Bit1 : Active call (false = phone menu displayed)
+      // Bit2 : Incoming call
+      // Bit3 : Phone screen disabled
+      // Bit4 : Phone on
+      // Bit5 : Phone active
+      // Bit6 : Phone adapter installed
 
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-	}
+    default:
+      data.command = 'unk';
+      data.value   = Buffer.from(data.msg);
+  }
 
-	log.bus(data);
+  log.bus(data);
 }
 
 // Turn on/off/flash the TEL LED by encoding a bitmask from an input object
@@ -57,7 +57,7 @@ function led(object) {
   if (object.flash_green)  byte = bitmask.set(byte, bitmask.bit[5]);
 
   // Send message
-	log.module({ src : module_name, msg : 'Setting LED' });
+  log.module({ src : module_name, msg : 'Setting LED' });
   socket.data_send({
     src: module_name,
     dst: 'ANZV',
@@ -66,7 +66,6 @@ function led(object) {
 }
 
 module.exports = {
-  led                : (object)      => { led(object); },
-  parse_out          : (data)        => { parse_out(data); },
-  send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
+  led       : (object) => { led(object);     },
+  parse_out : (data)   => { parse_out(data); },
 }

@@ -10,30 +10,30 @@ function status_loop(action) {
 
 	switch (action) {
 		case false:
-      status.rad.audio_control = 'audio off';
+			status.rad.audio_control = 'audio off';
 
-      status.dsp.reset  = true;
-      status.dsp.ready  = false;
-      status.dspc.reset = true;
-      status.dspc.ready = false;
-      status.rad.reset  = true;
-      status.rad.ready  = false;
+			status.dsp.reset  = true;
+			status.dsp.ready  = false;
+			status.dspc.reset = true;
+			status.dspc.ready = false;
+			status.rad.reset  = true;
+			status.rad.ready  = false;
 
-      // Set status variable
-      BMBT.status_status_loop = false;
+			// Set status variable
+			BMBT.status_status_loop = false;
 
-      if (BMBT.timeout_status_loop !== null) {
+			if (BMBT.timeout_status_loop !== null) {
 				log.module({ src : module_name, msg : 'Unset status refresh timeout' });
-        clearTimeout(BMBT.timeout_status_loop);
-        BMBT.timeout_status_loop = null;
-      }
-      break;
-    case true:
-      // Send a couple through to prime the pumps
-      refresh_status();
+				clearTimeout(BMBT.timeout_status_loop);
+				BMBT.timeout_status_loop = null;
+			}
+			break;
+		case true:
+			// Send a couple through to prime the pumps
+			refresh_status();
 
-      // Set status variable
-      BMBT.status_status_loop = true;
+			// Set status variable
+			BMBT.status_status_loop = true;
 
 			log.module({ src : module_name, msg : 'Set status refresh timeout' });
 			break;
@@ -48,7 +48,7 @@ function refresh_status() {
 
 		BMBT.timeout_status_loop = setTimeout(refresh_status, 20000);
 
-    return;
+		return;
 	}
 
 	status_loop(false);
