@@ -4,13 +4,13 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x83: // Broadcast: AC compressor status
-      status.ihka.ac = bitmask.test(data.msg[1], 0x80);
+			status.ihka.ac = bitmask.test(data.msg[1], 0x80);
 			data.command = 'bro';
 			data.value   = 'AC compressor status '+data.msg;
 			break;
 
 		case 0x86: // Broadcast: Rear defroster status
-      status.ihka.defroster = bitmask.test(data.msg[1], 0x01);
+			status.ihka.defroster = bitmask.test(data.msg[1], 0x01);
 			data.command = 'bro';
 			data.value   = 'defroster status '+status.ihka.defroster;
 			break;
@@ -30,24 +30,24 @@ function parse_out(data) {
 
 // Enable/disable aux heat/vent
 function aux(type, action) {
-  var cmd;
+	var cmd;
 
-  // Set command base value based on type argument
-  switch (type) {
-    case 'heat' : cmd = [0x11]; break;
-    case 'vent' : cmd = [0x13]; break;
-  }
+	// Set command base value based on type argument
+	switch (type) {
+		case 'heat' : cmd = [0x11]; break;
+		case 'vent' : cmd = [0x13]; break;
+	}
 
-  // Add 1 if we're turning it on
-  switch (action) {
-    case true : cmd++; break;
-  }
+	// Add 1 if we're turning it on
+	switch (action) {
+		case true : cmd++; break;
+	}
 
-  socket.data_send({
-    src: 'GT',
-    dst: 'IKE',
-    msg: [0x41, cmd],
-  });
+	socket.data_send({
+		src: 'GT',
+		dst: 'IKE',
+		msg: [0x41, cmd],
+	});
 }
 
 // Request various things from IHKA

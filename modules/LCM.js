@@ -59,8 +59,8 @@ function auto_lights(override = false) {
 			auto_lights_process();
 	}
 
-  // Set status variable
-  status.lights.auto.active = LCM.status_lights_auto;
+	// Set status variable
+	status.lights.auto.active = LCM.status_lights_auto;
 }
 
 // Logic based on location and time of day, determine if the low beams should be on
@@ -750,7 +750,7 @@ module.exports = {
 	timeout_lights_auto    : null,
 	timeout_lights_welcome : null,
 
-  status_lights_auto : false,
+	status_lights_auto : false,
 
 	// Functions
 	api_command    : (data) => { api_command(data);     },
