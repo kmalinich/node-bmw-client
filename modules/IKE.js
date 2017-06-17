@@ -309,6 +309,7 @@ function data_refresh() {
 	}
 
 	GM.request('door-status');
+	DME.request('motor-values');
 	IKE.request('ignition');
 	IKE.request('temperature');
 	LCM.request('dimmer');
@@ -857,6 +858,8 @@ module.exports = {
 
 	// Refresh OBC data
 	obc_refresh : () => {
+		DME.request('motor-values');
+		return;
 		log.module({
 			src : module_name,
 			msg : 'Refreshing all OBC data',
@@ -867,6 +870,9 @@ module.exports = {
 		LCM.request('light-status');
 		LCM.request('dimmer');
 		LCM.request('io-status');
+
+		// DME engine data
+		DME.request('motor-values');
 
 		// Immo+GM data
 		EWS.request('immobiliserstatus');
