@@ -121,7 +121,19 @@ function parse_out(data) {
 
 		case 0x4A: // Control: Cassette
 			data.command = 'con';
-			data.value   = 'cassette '+data.msg;
+			data.value   = 'cassette: ';
+
+			switch (data.msg[1]) {
+				case 0x00:
+					data.value = data.value+'power off';
+					break;
+				case 0xFF:
+					data.value = data.value+'power on';
+					break;
+				default:
+					data.value = data.value+'unknown 0x'+data.msg[1].toString(16);
+					break;
+			}
 			break;
 
 		case 0x46: // Control: LCD

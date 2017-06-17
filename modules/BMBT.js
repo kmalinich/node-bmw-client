@@ -83,17 +83,8 @@ function parse_in(data) {
 	// Init variables
 	switch (data.msg[0]) {
 		case 0x4A: // Cassette control
-			data.command = 'con';
-			data.value   = 'cassette ';
-			data.value   = data.value+data.msg;
-
 			send_cassette_status();
 			power_on_if_ready();
-			break;
-
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
 			break;
 	}
 }
@@ -107,13 +98,13 @@ function parse_out(data) {
 			break;
 
 		case 0x4B: // Cassette status
-			data.command = 'bro';
-			data.value   = 'cassette status no tape';
+			data.command = 'sta';
+			data.value   = 'cassette: no tape';
 			break;
 
 		case 0x47: // Broadcast: BM status
-			data.command = 'bro';
-			data.value   = 'BM status';
+			data.command = 'sta';
+			data.value   = 'BM';
 			break;
 
 		case 0x48: // Broadcast: BM button

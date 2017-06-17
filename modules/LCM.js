@@ -753,10 +753,11 @@ module.exports = {
 	status_lights_auto : false,
 
 	// Functions
-	api_command    : (data) => { api_command(data);     },
-	auto_lights    : (data) => { auto_lights(data);     },
-	request        : (data) => { request(data);         },
-	set_backlight  : (data) => { set_backlight(data);   },
-	parse_out      : (data) => { parse_out(data);       },
-	welcome_lights : (data) => { welcome_lights(data);  },
+	api_command         : (data) => { api_command(data);         },
+	auto_lights         : (data) => { auto_lights(data);         },
+	auto_lights_process : (data) => { auto_lights_process(data); },
+	parse_out           : (data) => { parse_out(data);           },
+	request             : (data) => { request(data);             },
+	set_backlight       : (data) => { set_backlight(data);       },
+	welcome_lights      : (data) => { welcome_lights(data);      },
 };
