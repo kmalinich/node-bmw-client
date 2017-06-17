@@ -98,7 +98,6 @@
 04 00,DIA,BMBT,Read fault memory Data="00"
 04 00,DIA,DSP,Read fault memory Data="00"
 04 00,DIA,GM,Read fault memory Data="00"
-04 00,DIA,GM,Read fault memory Data="00"
 04 00,DIA,GT,Read fault memory Data="00"
 04 00,DIA,LCM,Read fault memory Data="00"
 04 00,DIA,MFL,Read fault memory Data="00"
@@ -125,13 +124,11 @@
 06 03 00 00 00 02,DIA,VID,Read memory Data="03 00 00 00 02"
 06 0C 00,DIA,LCM,Read memory Data="0C 00"
 07 00 00 00 07 41 01 00,DIA,GM,Write memory Data="00 00 00 07 41 01 00"
-07 00 00 00 07 41 01 00,DIA,GM,Write memory Data="00 00 00 07 41 01 00"
 07 00 00 00,IKE,PDC,Gong status Data="00 00 00"
 08 00 00 20,DIA,GT,Read coding data Data="00 00 20"
 08 00 04 07,DIA,GT,Read coding data Data="00 04 07"
 08 00,DIA,GM,Read coding data Data="00"
 08 00,DIA,LCM,Read coding data Block 00
-08 00,DIA,LCM,Read coding data Data="00"
 08 00,DIA,LCM,Read coding data Data="00"
 08 00,DIA,TEL,Read coding data Data="00"
 08 01,DIA,LCM,Read coding data Block 01
@@ -1943,9 +1940,7 @@
 49 83,BMBT,GT,BM_Knob Right 3 steps
 4A 00,RAD,BMBT,Cassette control Power_Off
 4A 48,RAD,BMBT,Cassette control State_unknown Data="48"
-4A 48,RAD,BMBT,Cassette control State_unknown Data="48"
 4A 5A,RAD,BMBT,Cassette control State_unknown Data="5A"
-4A 90,RAD,BMBT,Cassette control State_unknown Data="90"
 4A 90,RAD,BMBT,Cassette control State_unknown Data="90"
 4A 90,VID,BMBT,Cassette control State_unknown Data="90"
 4A FF,RAD,BMBT,Cassette control Power_On
@@ -2223,7 +2218,6 @@
 5D,BMBT,LCM,Light dimmer status request
 5D,IKE,LCM,Light dimmer status request
 5D,MFL,LCM,Light dimmer status request
-61 01,EHC,GLO,Suspension control Data="01"
 61 01,EHC,GLO,Suspension control Data="01"
 62 00 00,RDC,GLO,RDC status Data="00 00"
 69 00,DIA,EWS,Read ZCS/FA Data="00"

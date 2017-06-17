@@ -15,9 +15,14 @@ function parse_out(data) {
 			data.value   = 'defroster status '+status.ihka.defroster;
 			break;
 
-		case 0xA0: // Broadcast: Diagnostic command reply
+		case 0xA0: // Reply: Diagnostic command
 			data.command = 'rep';
-			data.value   = 'diagnostic command acknowledged: '+data.msg;
+			data.value   = data.msg;
+			break;
+
+		case 0xB0: // Reply: Something else
+			data.command = 'rep';
+			data.value   = data.msg;
 			break;
 
 		default:
@@ -60,6 +65,8 @@ function request(value) {
 		case 'io-status':
 			src = 'DIA';
 			cmd = [0x0B, 0x04, 0x51]; // Get IO status
+			// cmd = [0x0B, 0x00]; // Get IO status
+			// cmd = [0x0B]; // Get IO status
 			break;
 	}
 

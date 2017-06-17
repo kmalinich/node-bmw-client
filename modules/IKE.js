@@ -197,6 +197,9 @@ function decode_ignition_status(data) {
 		});
 
 		status.vehicle.ignition_level = data.msg[1];
+
+		// Activate autolights if we got 'em
+		LCM.auto_lights_process();
 	}
 
 	switch (data.msg[1]) {
@@ -205,11 +208,6 @@ function decode_ignition_status(data) {
 		case 3  : status.vehicle.ignition = 'run';       break;
 		case 7  : status.vehicle.ignition = 'start';     break;
 		default : status.vehicle.ignition = 'unknown';   break;
-	}
-
-	if (status.vehicle.ignition_level === 3) {
-		// Activate autolights if we got 'em
-		LCM.auto_lights();
 	}
 
 	// Ignition changed to off
@@ -316,6 +314,7 @@ function data_refresh() {
 	LCM.request('dimmer');
 	LCM.request('io-status');
 	LCM.request('light-status');
+	RLS.request('rain-sensor-status');
 
 	if (IKE.timeout_data_refresh === null) {
 		log.module({
@@ -875,7 +874,7 @@ module.exports = {
 		GM.request('door-status');
 
 		// IHKA IO status
-		IHKA.request('io-status');
+		// IHKA.request('io-status');
 
 		// IKE data
 		IKE.request('coding');
