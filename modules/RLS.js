@@ -1,4 +1,4 @@
-var module_name = __filename.slice(__dirname.length + 1, -3);
+const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Parse data sent from RLS module
 function parse_out(data) {
@@ -16,6 +16,27 @@ function parse_out(data) {
   log.bus(data);
 }
 
+// Request various things from RLS
+function request(value) {
+	// Init variables
+	let src;
+	let cmd;
+
+	switch (value) {
+		case 'rain-sensor-status':
+			src = 'IHKA';
+			cmd = [0x71]; // Get IO status
+			break;
+	}
+
+	socket.data_send({
+		src : src,
+		dst : 'GM',
+		msg : cmd,
+	});
+}
+
 module.exports = {
+  request   : (data) => { request(data);   },
   parse_out : (data) => { parse_out(data); },
 };
