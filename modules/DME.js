@@ -11,6 +11,27 @@ function parse_out(data) {
 	log.bus(data);
 }
 
+// Request various things from DME
+function request(value) {
+	// Init variables
+	let src;
+	let cmd;
+
+	switch (value) {
+		case 'motor-values':
+			src = 'DIA';
+			cmd = [0xB8, 0x12, 0xF1, 0x03, 0x22, 0x40, 0x00];
+			break;
+	}
+
+	socket.data_send({
+		src : src,
+		dst : module_name,
+		msg : cmd,
+	});
+}
+
 module.exports = {
-	parse_out : (data) => { parse_out(data); },
+  request   : (data) => { request(data);   },
+  parse_out : (data) => { parse_out(data); },
 };
