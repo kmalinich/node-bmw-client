@@ -13,6 +13,11 @@ function parse_out(data) {
 			data.value   = 'io-status';
 			break;
 
+		case 0xB8:
+			data.command = 'req';
+			data.value   = 'motor-values';
+			break;
+
 		default:
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
