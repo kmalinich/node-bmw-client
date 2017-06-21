@@ -308,14 +308,17 @@ function data_refresh() {
 		});
 	}
 
+	// Request fresh data
 	GM.request('door-status');
-	DME.request('motor-values');
 	IKE.request('ignition');
 	IKE.request('temperature');
 	LCM.request('dimmer');
 	LCM.request('io-status');
 	LCM.request('light-status');
-	RLS.request('rain-sensor-status');
+	obc_data('get', 'consumption-1');
+
+	// DME.request('motor-values');
+	// RLS.request('rain-sensor-status');
 
 	if (IKE.timeout_data_refresh === null) {
 		log.module({
@@ -771,95 +774,74 @@ module.exports = {
 
 	// Refresh custom HUD
 	hud_refresh : (interval = false) => {
-		var time_now = now();
+		// Bounce if the ignition is off
+		if (status.vehicle.ignition_level < 1) return;
+		// Bounce if override is active
+		if (IKE.hud_override === true) return;
+		// Bounce if the last update was less than 1 sec ago
+		if (now()-IKE.last_hud_refresh <= 1000) return;
 
-		// Bounce if the override is active
-		if (IKE.hud_override === true) {
-			// log.module({
-			// 	src : module_name,
-			// 	msg : 'HUD refresh: override active',
-			// });
-			return;
-		}
+		let spacing1;
+		let spacing_temp;
+		let string_cons;
+		let string_temp;
+		let string_time = moment().format('HH:mm');
 
-		// Bounce if the last update was less than 3 sec ago
-		if (time_now-IKE.last_hud_refresh <= 3000) {
-			// log.module({
-			//   src : module_name,
-			//   msg : 'HUD refresh: too soon ('+(time_now-IKE.last_hud_refresh).toFixed(0)+' ms)',
-			// });
-			return;
+		// Only add data to strings if it is populated
+		string_cons = '     ';
+		if (status.obc.consumption.c1.mpg != null) {
+			string_cons = parseFloat(status.obc.consumption.c1.mpg).toFixed(1)+'m';
 		}
+		string_cons = pad(string_cons, 8);
 
-		var spacing1;
-		var spacing2;
-		var string_cons;
-		var string_temp;
-		var string_time = moment().format('HH:mm');
+		// 0-pad string_cons
+		if (string_cons.length === 4) string_cons = '0'+string_cons;
 
-		// Populate values if missing
-		if (status.obc.consumption_1_mpg === null) {
-			obc_data('get', 'consumption-1');
-			string_cons = '     ';
-		}
-		else {
-			string_cons = parseFloat(status.obc.consumption_1_mpg).toFixed(1)+'m';
-		}
-
-		if (status.temperature.coolant.c === null) {
-			IKE.request('temperature');
-			string_temp = '  ';
-		}
-		else {
+		string_temp = '  ';
+		if (status.temperature.coolant.c != null) {
 			string_temp = Math.round(status.temperature.coolant.c)+'¨';
 		}
 
 		// Format the output (ghetto-ly)
 		switch (string_temp.length) {
 			case 4:
-				spacing2 = '   ';
+				string_temp = pad(string_temp, 3);
 				break;
 			case 3:
-				string_temp = ' '+string_temp;
-				spacing2 = '   ';
+				string_temp = ' '+string_temp+'   ';
 				break;
 			case 2:
-				string_temp = ' '+string_temp;
-				spacing2 = '    ';
-				break;
+				string_temp = ' '+string_temp+'    ';
 		}
+
+		// HUD strings object
+		let hud_strings = {
+			left   : string_cons,
+			center : string_temp,
+			right  : string_time,
+		};
 
 		// 1m sysload to percentage
-		var load_1m = (parseFloat((os.loadavg()[0]/os.cpus().length).toFixed(2))*100).toFixed(0);
-		var load_1m = status.system.temperature+'¨|'+load_1m+'%';
+		let load_1m = (parseFloat((os.loadavg()[0]/os.cpus().length).toFixed(2))*100).toFixed(0);
+		load_1m = status.system.temperature+'¨|'+load_1m+'%';
 
-		// Format the output
-		var load_1m = pad(load_1m, 8);
+		// Space-pad load_1m
+		load_1m = pad(load_1m, 8);
 
-		// Add space to left-most string (consumption 1)
-		if (string_cons.length === 4) {
-			string_cons = '0'+string_cons;
-		}
+		// Change left string to be load/CPU temp if over threshold
+		if (status.system.temperature > 65) hud_strings.left = load_1m;
 
-		if (status.vehicle.ignition_level < 1) {
-			// log.module({
-			//   src : module_name,
-			//   msg : 'HUD refresh: ignition level '+status.vehicle.ignition_level+' is less than 1',
-			// });
-			return;
-		}
-		else {
-			var hud_string = load_1m+string_temp+spacing2+string_time;
-			IKE.text(hud_string, () => {
-				IKE.last_hud_refresh = now();
-			});
-		}
+		// Assemble text string
+		let hud_string = hud_strings.left+hud_strings.center+hud_strings.right;
+
+		// Send text to IKE and update IKE.last_hud_refresh value
+		IKE.text(hud_string, () => {
+			IKE.last_hud_refresh = now();
+		});
 	},
 
 	// Refresh OBC data
 	obc_refresh : () => {
-		DME.request('motor-values');
-		return;
 		log.module({
 			src : module_name,
 			msg : 'Refreshing all OBC data',
@@ -871,9 +853,6 @@ module.exports = {
 		LCM.request('dimmer');
 		LCM.request('io-status');
 
-		// DME engine data
-		DME.request('motor-values');
-
 		// Immo+GM data
 		EWS.request('immobiliserstatus');
 		GM.request('io-status');
@@ -881,6 +860,9 @@ module.exports = {
 
 		// IHKA IO status
 		// IHKA.request('io-status');
+
+		// DME engine data
+		// DME.request('motor-values');
 
 		// IKE data
 		IKE.request('coding');
