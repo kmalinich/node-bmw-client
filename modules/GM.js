@@ -46,8 +46,8 @@ function decode_message_keyfob(data) {
 	data.command = 'bro';
 	data.value   = 'key fob status - ';
 
-	var mask   = bitmask.check(data.msg[1]).mask;
-	var keyfob = {
+	let mask   = bitmask.check(data.msg[1]).mask;
+	let keyfob = {
 		low_batt     : mask.bit0,
 		low_batt_str : 'battery low: '+mask.bit0,
 		keys : {
