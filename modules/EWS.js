@@ -3,6 +3,7 @@ var module_name = __filename.slice(__dirname.length + 1, -3);
 // Request various things from EWS
 function request(value) {
   var cmd;
+
   log.module({
     src : module_name,
     msg : 'Requesting \''+value+'\'',
@@ -27,6 +28,7 @@ function parse_out(data) {
   switch (data.msg[0]) {
     case 0x74: // Broadcast: immobiliser status
       data.command = 'bro';
+      data.value   = 'key presence - ';
 
       // Bitmask for data.msg[1]
       // 0x00 = no key detected
@@ -36,36 +38,32 @@ function parse_out(data) {
       // Key detected/vehicle immobilised
       switch (data.msg[1]) {
         case 0x00:
-          data.value = 'no key';
+          data.value += 'no key';
           status.immobilizer.key_present = false;
           break;
         case 0x01:
-          data.value = 'immobilisation deactivated';
+          data.value += 'immobilisation deactivated';
           // status.immobilizer.key_present = null;
           status.immobilizer.immobilized = false;
           break;
         case 0x04:
-          data.value = 'valid key';
+          data.value += 'valid key';
           status.immobilizer.key_present = true;
           status.immobilizer.immobilized = false;
           break;
         default:
-          data.value = Buffer.from([data.msg[1]]);
-          break;
+          data.value += Buffer.from([data.msg[1]]);
       }
 
-      data.value = 'key presence : \''+data.value+'\'';
-
-      // Key number 255/0xFF = no key, vehicle immobilized
+      // Key number 255/0xFF = no key
       if (data.msg[2] == 0xFF) {
         status.immobilizer.key_number = null;
-        // status.immobilizer.immobilized = true;
       }
       else {
         status.immobilizer.key_number = data.msg[2];
       }
 
-      data.value = data.value+', key number : \''+status.immobilizer.key_number+'\'';
+      data.value += ', key '+status.immobilizer.key_number;
       break;
 
     case 0xA0: // Broadcast: diagnostic command acknowledged
@@ -76,7 +74,6 @@ function parse_out(data) {
     default:
       data.command = 'unk';
       data.value   = Buffer.from(data.msg);
-      break;
   }
 
   log.bus(data);

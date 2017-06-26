@@ -42,7 +42,7 @@ var array_of_possible_values = {
 };
 
 // [0x72] Decode a key fob bitmask message, and act upon the results
-function decode_status_keyfob(data) {
+function decode_message_keyfob(data) {
 	data.command = 'bro';
 	data.value   = 'key fob status - ';
 
@@ -83,11 +83,13 @@ function decode_status_keyfob(data) {
 	}
 
 	// Assemble log string
-	data.value = data.value+keyfob.key_str+', '+keyfob.button_str+', '+keyfob.low_batt_str;
+	data.value += keyfob.key_str+', '+keyfob.button_str+', '+keyfob.low_batt_str;
 
 	// Actuate welcome lights on lock/unlock
-	if (keyfob.button == 'lock'  ) LCM.welcome_lights(false);
-	if (keyfob.button == 'unlock') LCM.welcome_lights(true);
+	switch (keyfob.button) {
+		case 'lock'   : LCM.welcome_lights(false); break;
+		case 'unlock' : LCM.welcome_lights(true);
+	}
 
 	log.bus(data);
 }
@@ -169,20 +171,22 @@ function io_decode(data) {
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x72: // Broadcast: Key fob status
-			decode_status_keyfob(data);
+			decode_message_keyfob(data);
 			return;
 
 		case 0x76: // Broadcast: 'Crash alarm' ..
 			data.command = 'bro';
+			data.value   = 'crash alarm - ';
+
 			switch (data.msg[1]) {
 				case 0x00:
-					data.value = 'crash alarm: no crash';
+					data.value += 'no crash';
 					break;
 				case 0x02: // A guess
-					data.value = 'crash alarm: armed';
+					data.value += 'armed';
 					break;
 				default:
-					data.value = Buffer.from(data.msg[1]);
+					data.value += Buffer.from(data.msg[1]);
 					break;
 			}
 			break;

@@ -1,5 +1,99 @@
 var module_name = __filename.slice(__dirname.length + 1, -3);
 
+// Decode button action message from MFL
+function decode_button_media(data) {
+	data.command = 'con';
+	data.value   = 'media button - ';
+
+	// Bitmask:
+	// 0x00 : Nothing
+	// 0x01 : button : right
+	// 0x02 : ??
+	// 0x04 : ??
+	// 0x08 : button : left
+	// 0x10 : action : hold
+	// 0x20 : action : release
+	// 0x40 : ??
+	// 0x80 : button : voice command (sneezing man)
+
+	let mask   = bitmask.check(data.msg[1]).mask;
+	let unmask = {
+		actions : {
+			press   : !mask.bit4 && !mask.bit5 && !mask.bit8,
+			hold    :  mask.bit4 && !mask.bit5 && !mask.bit8,
+			release : !mask.bit4 &&  mask.bit5 && !mask.bit8,
+		},
+		buttons : {
+			right :  mask.bit0 && !mask.bit3 && !mask.bit7 && !mask.bit8,
+			left  : !mask.bit0 &&  mask.bit3 && !mask.bit7 && !mask.bit8,
+			voice : !mask.bit0 && !mask.bit3 &&  mask.bit7 && !mask.bit8,
+			none  : !mask.bit0 && !mask.bit3 && !mask.bit7 &&  mask.bit8,
+		},
+	};
+
+	// Loop action object to populate log string
+	for (let action in unmask.actions) {
+		if (unmask.actions[action] === true) {
+			unmask.action = action;
+			break;
+		}
+	}
+
+	// Loop button object to populate log string
+	for (let button in unmask.buttons) {
+		if (unmask.buttons[button] === true) {
+			unmask.button = button;
+			break;
+		}
+	}
+
+	// Assemble log string
+	data.value += unmask.action+' '+unmask.button;
+	log.bus(data);
+
+	// Create bitmask for switch statement to use below
+	data.media_mask  = 0x00;
+	data.media_mask |= config.media.bluetooth   && bitmask.bit[0] || 0x00;
+	data.media_mask |= config.media.kodi.enable && bitmask.bit[1] || 0x00;
+
+	switch (data.media_mask) {
+		case 0x00: return; // No media services enabled
+		case 0x03: return; // Both media services enabled
+
+		case bitmask.bit[0]: // Bluetooth version
+			switch (unmask.action+unmask.button) {
+				case 'pressleft'  : BT.command('previous'); break;
+				case 'pressright' : BT.command('next');     break;
+				case 'pressvoice' : BT.command('pause');    break; // Think about it...
+
+				case 'holdleft'  : break;
+				case 'holdright' : break;
+				case 'holdvoice' : BT.command('play'); break; // Think about it...
+
+				case 'releaseleft'  : break;
+				case 'releaseright' : break;
+				case 'releasevoice' : break;
+			}
+			break;
+
+		case bitmask.bit[1]: // Kodi version
+			switch (unmask.action+unmask.button) {
+				case 'pressleft'  : kodi.command('previous'); break;
+				case 'pressright' : kodi.command('next');     break;
+				case 'pressvoice' : kodi.command('toggle');   break;
+
+				case 'holdleft'  : break;
+				case 'holdright' : break;
+				case 'holdvoice' : break;
+
+				case 'releaseleft'  : break;
+				case 'releaseright' : break;
+				case 'releasevoice' : break;
+			}
+			break;
+	}
+}
+
 // Parse data sent from MFL module
 function parse_out(data) {
 	// 50 B0 01,MFL --> SES: Device status request
@@ -8,80 +102,37 @@ function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x32: // Control: Volume
 			data.command = 'con';
-			data.value   = 'volume';
+			data.value   = 'volume - 1 step ';
 
 			switch (data.msg[1]) {
 				case 0x10:
-					data.value = data.value+' decrease 1 step';
+					data.value += 'decrease';
 					if (config.media.bluetooth === false && config.media.kodi.enable === true) {
 						kodi.volume('down');
 					}
 					break;
 				case 0x11:
-					data.value = data.value+' increase 1 step';
+					data.value += 'increase';
 					if (config.media.bluetooth === false && config.media.kodi.enable === true) {
 						kodi.volume('up');
 					}
-					break;
 			}
 			break;
 
-		case 0x3A: // Recirculation buton
+		case 0x3A: // Button: Recirculation
 			data.command = 'con';
-			data.value   = 'recirculation button';
+			data.value   = 'recirculation button - ';
 
 			switch (data.msg[1]) {
-				case 0x00:
-					data.value = data.value+' released';
-					break;
-				case 0x08:
-					data.value = data.value+' depressed';
-					break;
+				case 0x00 : data.value += 'release'; break;
+				case 0x08 : data.value += 'press';   break;
 			}
 
 			break;
 
-		case 0x3B: // Media control buttons
-			data.command = 'con';
-			data.value   = 'media button';
-
-			// Bitmask:
-			// 0x00 = no buttons pressed
-			// 0x01 = right
-			// 0x08 = left
-			// 0x10 = long depress
-			// 0x20 = release
-			// 0x80 = send/end
-
-			// Detect button
-			if      (bitmask.test(data.msg[1], bitmask.bit[0])) { button = 'right';    data.value = data.value+' '+button; }
-			else if (bitmask.test(data.msg[1], bitmask.bit[3])) { button = 'left';     data.value = data.value+' '+button; }
-			else if (bitmask.test(data.msg[1], bitmask.bit[7])) { button = 'send/end'; data.value = data.value+' '+button; }
-			else                                                    { button = 'unknown';  data.value = data.value+' '+button; }
-
-			// Detect action
-			if      (bitmask.test(data.msg[1], bitmask.bit[4])) { action = 'long depress'; data.value = data.value+' '+action; }
-			else if (bitmask.test(data.msg[1], bitmask.bit[5])) { action = 'release';      data.value = data.value+' '+action; }
-			else                                                    { action = 'depress';      data.value = data.value+' '+action; }
-
-			// Perform media control based on pressed key
-
-			// BT control version
-			if (config.media.bluetooth === true && config.media.kodi.enable === false) {
-				if      (button == 'left'     && action == 'depress')      { BT.command('previous'); }
-				else if (button == 'right'    && action == 'depress')      { BT.command('next');     }
-				else if (button == 'send/end' && action == 'depress')      { BT.command('pause');    } // Think about it...
-				else if (button == 'send/end' && action == 'long depress') { BT.command('play');     }
-			}
-
-			// Kodi version
-			if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-				if      (button == 'left'     && action == 'depress')      { kodi.command('previous'); }
-				else if (button == 'right'    && action == 'depress')      { kodi.command('next');     }
-				else if (button == 'send/end' && action == 'depress')      { kodi.command('toggle');   }
-				//else if (button == 'send/end' && action == 'long depress') { kodi.command('play');     }
-			}
-			break;
+		case 0x3B: // Button: Media
+			decode_button_media(data);
+			return;
 
 		default:
 			data.command = 'unk';
@@ -92,6 +143,5 @@ function parse_out(data) {
 }
 
 module.exports = {
-	parse_out          : (data) => { parse_out(data); },
-	send_device_status : (module_name) => { bus_commands.send_device_status(module_name); },
+	parse_out : (data) => { parse_out(data); },
 };
