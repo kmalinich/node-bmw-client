@@ -7,15 +7,15 @@ function parse_in(data) {
 		case 0x38: // Control: CD
 			// Command
 			switch (data.msg[1]) {
-				case 0x00: data.value = 'status';       break;
-				case 0x01: data.value = 'stop';         break;
-				case 0x02: data.value = 'pause';        break;
-				case 0x03: data.value = 'play';         break;
-				case 0x04: data.value = 'fast-forward'; break;
-				case 0x05: data.value = 'fast-reverse'; break;
-				case 0x06: data.value = 'scan-off';     break;
-				case 0x07: data.value = 'end';          break;
-				case 0x08: data.value = 'random-off';   break;
+				case 0x00 : data.value = 'status';       break;
+				case 0x01 : data.value = 'stop';         break;
+				case 0x02 : data.value = 'pause';        break;
+				case 0x03 : data.value = 'play';         break;
+				case 0x04 : data.value = 'fast-forward'; break;
+				case 0x05 : data.value = 'fast-reverse'; break;
+				case 0x06 : data.value = 'scan-off';     break;
+				case 0x07 : data.value = 'end';          break;
+				case 0x08 : data.value = 'random-off';   break;
 			}
 
 			// Do CDC->LOC CD status play
@@ -29,26 +29,24 @@ function parse_out(data) {
 	// Init variables
 	switch (data.msg[0]) {
 		case 0x39: // Broadcast: CD status
-			data.command = 'bro';
+			data.command = 'sta';
+			data.value   = 'CD - ';
 
 			// Command
 			switch (data.msg[1]) {
-				case 0x00: data.value = 'stop';         break;
-				case 0x01: data.value = 'pause';        break;
-				case 0x02: data.value = 'play';         break;
-				case 0x03: data.value = 'fast-forward'; break;
-				case 0x04: data.value = 'fast-reverse'; break;
-				case 0x07: data.value = 'end';          break;
-				case 0x08: data.value = 'loading';      break;
+				case 0x00 : data.value += 'stop';         break;
+				case 0x01 : data.value += 'pause';        break;
+				case 0x02 : data.value += 'play';         break;
+				case 0x03 : data.value += 'fast-forward'; break;
+				case 0x04 : data.value += 'fast-reverse'; break;
+				case 0x07 : data.value += 'end';          break;
+				case 0x08 : data.value += 'loading';      break;
 			}
-
-			data.value = 'CD: '+data.value;
 			break;
 
 		default:
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
-			break;
 	}
 
 	log.bus(data);
@@ -56,23 +54,25 @@ function parse_out(data) {
 
 // CDC->RAD CD status
 function send_cd_status(value) {
+  var bit;
+
 	switch (value) {
 		case 'status':
-			if (status.vehicle.ignition_level > 0) {
-				var bit = 0x02;
-			}
-			else {
-				var bit = 0x00;
-			}
+      // Send play or stop status based on vehicle ignition
+			bit = (status.vehicle.ignition_level > 0) && 0x02 || 0x00;
 			break;
-		case 'stop'         : var bit = 0x00; break;
-		case 'pause'        : var bit = 0x01; break;
-		case 'play'         : var bit = 0x02; break;
-		case 'fast-forward' : var bit = 0x03; break;
-		case 'fast-reverse' : var bit = 0x04; break;
-		case 'scan-off'     : var bit = 0x02; break;
-		case 'end'          : var bit = 0x00; break;
-		case 'random-off'   : var bit = 0x02; break;
+
+		case 'stop'  : bit = 0x00; break;
+		case 'pause' : bit = 0x01; break;
+		case 'play'  : bit = 0x02; break;
+
+		case 'fast-forward' : bit = 0x03; break;
+		case 'fast-reverse' : bit = 0x04; break;
+
+		case 'end' : bit = 0x00; break;
+
+		case 'scan-off'   : bit = 0x02; break;
+		case 'random-off' : bit = 0x02; break;
 	}
 
 	socket.data_send({
@@ -83,7 +83,7 @@ function send_cd_status(value) {
 }
 
 module.exports = {
-	parse_in       : (data)        => { parse_in(data);        },
-	parse_out      : (data)        => { parse_out(data);       },
-	send_cd_status : (status)      => { send_cd_status(status) },
+	parse_in       : (data)   => { parse_in(data);        },
+	parse_out      : (data)   => { parse_out(data);       },
+	send_cd_status : (status) => { send_cd_status(status) },
 };
