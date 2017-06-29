@@ -115,7 +115,15 @@ function decode_con_rotation(data) {
 	}
 
 	// console.log('[%s] %s', log.chalk.boldpurple('ROTATE'), direction_fmt);
-	kodi.input(status.con.rotation.direction);
+	if (status.con.rotation.alternate === false) {
+		kodi.input(status.con.rotation.direction);
+	}
+	else {
+		switch (status.con.rotation.direction) {
+			case 'up'   : kodi.input('left');  break;
+			case 'down' : kodi.input('right'); break;
+		}
+	}
 }
 
 
@@ -315,7 +323,20 @@ function button_check(button) {
 	// );
 
 	if (button.action == 'press') {
-		kodi.input(button.button);
+
+		if (button.button != 'nav') {
+			kodi.input(button.button);
+		}
+		else {
+			// to use the nav button as a toggle for left<->right or up<->down rotation
+			log.change({
+				src   : module_name,
+				value : 'Alternate rotation',
+				old   : status.con.rotation.alternate,
+				new   : !status.con.rotation.alternate,
+			});
+			status.con.rotation.alternate = !status.con.rotation.alternate;
+		}
 	}
 }
 
@@ -421,41 +442,35 @@ function parse_out(data) {
 		case 0x202:
 			data.command = 'bro';
 			data.value   = 'Dimmer status';
-
 			decode_backlight_con(data);
 			break; // Backlight message
 
 		case 0x264:
 			data.command = 'con';
 			data.value   = 'rotation';
-
 			decode_con_rotation(data);
 			break;
 
 		case 0x267:
 			data.command = 'con';
 			data.value   = 'button press';
-
 			decode_con_button(data);
 			break;
 
 		case 0x273:
 			data.command = 'con';
 			data.value   = 'CIC init iDrive knob';
-
 			decode_status_cic(data);
 			break; // Used for iDrive knob rotational initialization
 
 		case 0x277:
 			data.command = 'rep';
 			data.value   = 'CON ACK to CIC init';
-
 			break; // CON ACK to rotational initialization message
 
 		case 0x4F8:
 			data.command = 'bro';
 			data.value   = 'Ignition status';
-
 			decode_ignition_new(data);
 			break;
 
@@ -464,7 +479,6 @@ function parse_out(data) {
 			return;
 			data.command = 'sta';
 			data.value   = 'CON status';
-
 			break;
 
 		case 0x5E7:
@@ -472,7 +486,6 @@ function parse_out(data) {
 			return;
 			data.command = 'sta';
 			data.value   = 'CON counter';
-
 			break;
 
 		default:
