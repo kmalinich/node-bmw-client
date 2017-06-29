@@ -1,62 +1,4 @@
-var module_name = __filename.slice(__dirname.length + 1, -3);
-
-// Parse data sent from module
-function parse_out(data) {
-	switch (data.msg[0]) {
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-	}
-
-	log.bus(data);
-}
-
-module.exports = {
-	parse_out : (data) => { parse_out(data); },
-};
-
-
-var palette = (0, trucolor.chalkish)((0, trucolor.palette)({}, {
-	blk: 'rgb:48,48,48',
-	blu: 'rgb:51,152,219',
-	cyn: 'rgb:0,200,200',
-	grn: 'rgb:47,223,100',
-	gry: 'rgb:144,144,144',
-	orn: 'rgb:255,153,50',
-	pnk: 'rgb:178,0,140',
-	prp: 'rgb:114,83,178',
-	red: 'rgb:231,76,60',
-	wht: 'rgb:224,224,224',
-	ylw: 'rgb:255,204,50',
-
-	boldblk: 'bold rgb:48,48,48',
-	boldblu: 'bold rgb:51,152,219',
-	boldcyn: 'bold rgb:0,200,200',
-	boldgrn: 'bold rgb:47,223,100',
-	boldgry: 'bold rgb:144,144,144',
-	boldorn: 'bold rgb:255,153,50',
-	boldpnk: 'bold rgb:178,0,140',
-	boldprp: 'bold rgb:114,83,178',
-	boldred: 'bold rgb:231,76,60',
-	boldwht: 'bold rgb:224,224,224',
-	boldylw: 'bold rgb:255,204,50',
-
-	italicblk: 'italic rgb:48,48,48',
-	italicblu: 'italic rgb:51,152,219',
-	italiccyn: 'italic rgb:0,200,200',
-	italicgrn: 'italic rgb:47,223,100',
-	italicgry: 'italic rgb:144,144,144',
-	italicorn: 'italic rgb:255,153,50',
-	italicpnk: 'italic rgb:178,0,140',
-	italicprp: 'italic rgb:114,83,178',
-	italicred: 'italic rgb:231,76,60',
-	italicwht: 'italic rgb:224,224,224',
-	italicylw: 'italic rgb:255,204,50'
-}));
-
-
-var channel = can.createRawChannel('can0', true);
-
+const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Allegedly required messages:
 // Message asking the data from the unit
@@ -100,9 +42,9 @@ function json_out(data) {
 
 function button_out(data) {
 	let strings = {
-		b3 : data.data[3].toString(16).toUpperCase(),
-		b4 : data.data[4].toString(16).toUpperCase(),
-		b5 : data.data[5].toString(16).toUpperCase(),
+		b3 : data.msg[3].toString(16).toUpperCase(),
+		b4 : data.msg[4].toString(16).toUpperCase(),
+		b5 : data.msg[5].toString(16).toUpperCase(),
 		string : null,
 	};
 
@@ -118,21 +60,21 @@ function button_out(data) {
 // iDrive knob rotation
 // ARBID 0x264: <Buffer e1 fd b5 fb 7f 1e>
 function decode_con_rotation(data) {
-	// data.data[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn.
-	// data.data[3] : Counts up and down between 0x00-0xFE : depending on the direction of rotation
+	// data.msg[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn.
+	// data.msg[3] : Counts up and down between 0x00-0xFE : depending on the direction of rotation
 
 	// so do the math .. i've had several beers
 
-	if (data.data[3] < status.con.rotation.relative) {
+	if (data.msg[3] < status.con.rotation.relative) {
 		status.con.rotation.direction = 'up';
 	}
 
 	// In the ghettoooooo
-	if (data.data[3] > status.con.rotation.relative) {
+	if (data.msg[3] > status.con.rotation.relative) {
 		status.con.rotation.direction = 'down';
 	}
 
-	var subtract = data.data[3]-status.con.rotation.relative;
+	var subtract = data.msg[3]-status.con.rotation.relative;
 
 	// Spin it hard enough and you can get it to jump up to 24 notches!
 
@@ -163,24 +105,23 @@ function decode_con_rotation(data) {
 	}
 
 	// Replace the data to the status object
-	status.con.rotation.absolute = data.data[2];
-	status.con.rotation.relative = data.data[3];
+	status.con.rotation.absolute = data.msg[2];
+	status.con.rotation.relative = data.msg[3];
 
 	switch (status.con.rotation.direction) {
-		case 'up'   : var direction_fmt = palette.boldgrn('up');  break;
-		case 'down' : var direction_fmt = palette.boldred('down'); break;
-		default     : var direction_fmt = palette.boldylw(status.con.rotation.relative.toString());
+		case 'up'   : var direction_fmt = log.chalk.boldgreen('up');  break;
+		case 'down' : var direction_fmt = log.chalk.boldred('down'); break;
+		default     : var direction_fmt = log.chalk.boldyellow(status.con.rotation.relative.toString());
 	}
 
-	console.log('[%s] %s', palette.boldprp('ROTATE'), direction_fmt);
-
-	socket.con_rotate(status.con);
+	// console.log('[%s] %s', log.chalk.boldpurple('ROTATE'), direction_fmt);
+	kodi.input(status.con.rotation.direction);
 }
 
 
 // CON button press, length 6
 function decode_con_button(data) {
-	// Action bitmask data.data[3]:
+	// Action bitmask data.msg[3]:
 	// bit0 : Press
 	// bit1 : Hold
 	// bit2 : ??
@@ -192,7 +133,7 @@ function decode_con_button(data) {
 	// bit8 : Release
 
 
-	// Mode bitmask data.data[4]:
+	// Mode bitmask data.msg[4]:
 	// 0xC0 : Button
 	// 0xDD : Joystick
 	// 0xDE : Push
@@ -231,7 +172,7 @@ function decode_con_button(data) {
 	// bit8 : false
 
 
-	// Button bitmask data.data[5]:
+	// Button bitmask data.msg[5]:
 	// bit0 : Menu
 	// bit1 : Back
 	// bit2 : Option
@@ -253,9 +194,9 @@ function decode_con_button(data) {
 
 	// Decode bitmasks
 	let m = {
-		a : bitmask.check(data.data[3]).mask, // mask actions
-		m : bitmask.check(data.data[4]).mask, // mask buttons
-		b : bitmask.check(data.data[5]).mask, // mask modes
+		a : bitmask.check(data.msg[3]).mask, // mask actions
+		m : bitmask.check(data.msg[4]).mask, // mask buttons
+		b : bitmask.check(data.msg[5]).mask, // mask modes
 	};
 
 	let unmask = {
@@ -345,15 +286,15 @@ function button_check(button) {
 
 	// Pretty colors...
 	switch (button.action) {
-		case 'hold'    : output.action = palette.italicorn('  HOLD '); break;
-		case 'press'   : output.action = palette.boldgrn  (' PRESS '); break;
-		case 'release' : output.action = palette.italicgry('release'); break;
+		case 'hold'    : output.action = log.chalk.italicorange('  HOLD '); break;
+		case 'press'   : output.action = log.chalk.boldgreen  (' PRESS '); break;
+		case 'release' : output.action = log.chalk.italicgray('release'); break;
 	}
 
 	switch (button.mode) {
-		case 'button'   : output.mode = palette.ylw('BUTN'); break;
-		case 'joystick' : output.mode = palette.cyn('KNOB'); break;
-		case 'push'     : output.mode = palette.cyn('KNOB'); break;
+		case 'button'   : output.mode = log.chalk.yellow('BUTN'); break;
+		case 'joystick' : output.mode = log.chalk.cyan('KNOB'); break;
+		case 'push'     : output.mode = log.chalk.cyan('KNOB'); break;
 	}
 
 	// if (button.action == 'press' && button.button == 'up') {
@@ -366,29 +307,31 @@ function button_check(button) {
 	//   send_backlight_con(status.con.backlight);
 	// }
 
-	console.log('[%s] [%s] [%s] %s',
-		palette.blu('BUTTON'),
-		output.mode,
-		output.action,
-		button.button
-	);
+	// console.log('[%s] [%s] [%s] %s',
+	// 	log.chalk.blue('BUTTON'),
+	// 	output.mode,
+	// 	output.action,
+	// 	button.button
+	// );
 
-	socket.con_button(button);
+	if (button.action == 'press') {
+		kodi.input(button.button);
+	}
 }
 
 
 function decode_backlight_con(data) {
-	// data.data[0]: Backlight intensity
+	// data.msg[0]: Backlight intensity
 	// 0xFF      : 50%
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
 
-	console.log('RECV : CON backlight \'%s\'', data.data[0]);
+	console.log('RECV : CON backlight \'%s\'', data.msg[0]);
 }
 
 function decode_status_con(data) {
-	if (data.data[4] == 0x06) { // CON needs init
-		console.log('[%s] CON init', palette.boldprp('TRIGGR'));
+	if (data.msg[4] == 0x06) { // CON needs init
+		console.log('[%s] CON init', log.chalk.boldpurple('TRIGGR'));
 		send_status_cic();
 	}
 }
@@ -403,7 +346,7 @@ function decode_status_cic(data) {
 
 
 function send_backlight_con(value) {
-	// data.data[0]: Backlight intensity
+	// data.msg[0]: Backlight intensity
 	// 0xFF      : 50%
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
@@ -423,9 +366,9 @@ function send_backlight_con(value) {
 	// ... and the M62 motor mount has an oil passage ...
 	if (value === 0) backlight_value = 0xFE;
 
-	console.log('[ %s ] %s %s', palette.pnk('SEND'), 'CON backlight :', palette.boldylw(backlight_value.toString()));
+	console.log('[ %s ] %s %s', log.chalk.pink('SEND'), 'CON backlight :', log.chalk.boldyellow(backlight_value.toString()));
 
-	channel.send({
+	socket.data_send_canbus({
 		id   : 0x202,
 		data : Buffer.from([backlight_value, 0x00]),
 	});
@@ -443,10 +386,10 @@ function send_heartbeat() {
 
 // E90 CIC status
 function send_status_cic() {
-	console.log('[ %s ] %s', palette.pnk('SEND'), 'CIC status');
+	console.log('[ %s ] %s', log.chalk.pink('SEND'), 'CIC status');
 
 	let msg = [0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04];
-	channel.send({
+	socket.data_send_canbus({
 		id   : 0x273,
 		data : Buffer.from(msg),
 	});
@@ -456,83 +399,101 @@ function send_status_cic() {
 
 // E90 Ignition status
 function send_status_ignition_new() {
-	// console.log('[ %s ] %s', palette.pnk('SEND'), 'ignition status');
+	// console.log('[ %s ] %s', log.chalk.ipnk('SEND'), 'ignition status');
 
-	channel.send({
+	socket.data_send_canbus({
 		id   : 0x4F8,
 		data : Buffer.from([0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF]),
 	});
 
-	timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
+	CON.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
 }
 
-
-timeouts = {
-	status_cic          : null,
-	status_ignition_new : null,
-};
-
-status = {
-	cic : {
-		request_sent : false, // Must be reset after key-off event
-	},
-	con : {
-		rotation : {
-			absolute  : null,
-			relative  : 0xFF,
-			direction : null,
-		},
-		vals : {
-			val1 : 127,
-			val2 : 127,
-			val3 : 127,
-			val4 : 127,
-		},
-		backlight : 10,
-	}
-};
-
-last = {
-	heartbeat : null,
-	button : {
-		action : null,
-		button : null,
-		mode   : null,
-	},
-	string : null,
-}
 
 function fireup(fireup_callback) {
-	// Respond to incoming CAN messages
-	channel.addListener('onMessage', (data) => {
-		switch (data.id) {
-			case 0x202: decode_backlight_con(data); break; // Backlight message
-
-			case 0x264: decode_con_rotation(data); break;
-			case 0x267: decode_con_button(data);   break;
-
-			case 0x273: decode_status_cic(data); break; // Used for iDrive knob rotational initialization
-			case 0x277: break; // CON ACK to rotational initialization message
-
-			case 0x4F8: decode_ignition_new(data); break;
-
-			case 0x4E7: decode_status_con(data); break;
-			case 0x5E7: decode_status_con(data); break;
-				// case 0x4E7: console.log('[%s]', palette.boldorn('CONSTA'), data.data); break;
-				// case 0x5E7: console.log('[%s]', palette.boldred('CONINC'), data.data); break;
-
-				// default: console.log('[%s]', palette.red(data.id.toString(16)), data.data);
-		}
-	});
-
-	channel.start();
 	send_status_ignition_new();
 	send_backlight_con(status.con.backlight);
-
-	if (typeof fireup_callback === 'function') { fireup_callback(); }
-	fireup_callback = undefined;
 }
 
+// Parse data sent from module
+function parse_out(data) {
+	switch (data.src.id) {
+		case 0x202:
+			data.command = 'bro';
+			data.value   = 'Dimmer status';
+
+			decode_backlight_con(data);
+			break; // Backlight message
+
+		case 0x264:
+			data.command = 'con';
+			data.value   = 'rotation';
+
+			decode_con_rotation(data);
+			break;
+
+		case 0x267:
+			data.command = 'con';
+			data.value   = 'button press';
+
+			decode_con_button(data);
+			break;
+
+		case 0x273:
+			data.command = 'con';
+			data.value   = 'CIC init iDrive knob';
+
+			decode_status_cic(data);
+			break; // Used for iDrive knob rotational initialization
+
+		case 0x277:
+			data.command = 'rep';
+			data.value   = 'CON ACK to CIC init';
+
+			break; // CON ACK to rotational initialization message
+
+		case 0x4F8:
+			data.command = 'bro';
+			data.value   = 'Ignition status';
+
+			decode_ignition_new(data);
+			break;
+
+		case 0x4E7:
+			decode_status_con(data);
+			return;
+			data.command = 'sta';
+			data.value   = 'CON status';
+
+			break;
+
+		case 0x5E7:
+			decode_status_con(data);
+			return;
+			data.command = 'sta';
+			data.value   = 'CON counter';
+
+			break;
+
+		default:
+			data.command = 'unk';
+			data.value   = Buffer.from(data.msg);
+	}
+
+	// log.bus(data);
+}
+
+
 module.exports = {
-	fireup : (fireup_callback) => { fireup(fireup_callback); },
+	timeouts : {
+		status_cic          : null,
+		status_ignition_new : null,
+	},
+
+	// Functions
+	parse_out : (data) => { parse_out(data); },
+
+	send_backlight_con       : (value) => { send_backlight_con(value);   },
+	send_status_ignition_new : ()      => { send_status_ignition_new(); },
 };
+
