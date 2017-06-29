@@ -31,6 +31,7 @@ function load_modules(load_modules_callback) {
 	CDC  = require('CDC');
 	CDCD = require('CDCD');
 	CID  = require('CID');
+	CON  = require('CON');
 	CSU  = require('CSU');
 	CVM  = require('CVM');
 	DIA  = require('DIA');
@@ -118,6 +119,8 @@ function startup() {
 
 			HDMI.startup(() => { // Open HDMI-CEC
 				socket.startup(); // Start WebSocket client
+
+				CON.send_status_ignition_new();
 
 				IKE.text_warning('  node-bmw restart', 3000);
 				log.msg({
