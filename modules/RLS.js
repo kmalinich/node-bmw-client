@@ -29,7 +29,7 @@ function request(value) {
 			break;
 	}
 
-	socket.data_send({
+	bus_data.send({
 		src : src,
 		dst : 'GM',
 		msg : cmd,

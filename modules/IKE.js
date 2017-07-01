@@ -24,7 +24,7 @@ function ignition(value) {
 			break;
 	}
 
-	socket.data_send({
+	bus_data.send({
 		src: module_name,
 		dst: 'GLO',
 		msg: [0x11, status],
@@ -38,14 +38,14 @@ function obc_clock() {
 	var time = moment();
 
 	// Time
-	socket.data_send({
+	bus_data.send({
 		src: 'GT',
 		dst: module_name,
 		msg: [0x40, 0x01, time.format('H'), time.format('m')],
 	});
 
 	// Date
-	socket.data_send({
+	bus_data.send({
 		src: 'GT',
 		dst: module_name,
 		msg: [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
@@ -84,7 +84,7 @@ function obc_data(action, value, target) {
 
 	// log.module({ src : module_name, msg : action+' OBC value \''+value+'\'' });
 
-	socket.data_send({
+	bus_data.send({
 		src: 'GT',
 		dst: module_name,
 		msg: msg,
@@ -93,7 +93,7 @@ function obc_data(action, value, target) {
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-	socket.data_send({
+	bus_data.send({
 		src: 'CCM',
 		dst: module_name,
 		msg: [0x1A, 0x30, 0x00],
@@ -299,13 +299,6 @@ function data_refresh() {
 
 			return;
 		}
-	}
-
-	// Get+save RPi temp
-	if (config.system.pi === true) {
-		pitemp.measure((temperature) => {
-			status.system.temperature = parseFloat(temperature.toFixed(0));
-		});
 	}
 
 	// Request fresh data
@@ -823,13 +816,13 @@ module.exports = {
 
 		// 1m sysload to percentage
 		let load_1m = (parseFloat((os.loadavg()[0]/os.cpus().length).toFixed(2))*100).toFixed(0);
-		load_1m = status.system.temperature+'¨|'+load_1m+'%';
+		load_1m = host_data.data.temperature+'¨|'+load_1m+'%';
 
 		// Space-pad load_1m
 		load_1m = pad(load_1m, 8);
 
 		// Change left string to be load/CPU temp if over threshold
-		if (status.system.temperature > 65) hud_strings.left = load_1m;
+		if (host_data.data.temperature > 65) hud_strings.left = load_1m;
 
 		// Assemble text string
 		let hud_string = hud_strings.left+hud_strings.center+hud_strings.right;
@@ -932,7 +925,7 @@ module.exports = {
 				src = module_name;
 				for (var loop_dst in bus_modules.modules) {
 					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-						socket.data_send({
+						bus_data.send({
 							src: src,
 							dst: loop_dst,
 							msg: [0x01],
@@ -944,7 +937,7 @@ module.exports = {
 				src = module_name;
 				for (var loop_dst in bus_modules.modules) {
 					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-						socket.data_send({
+						bus_data.send({
 							src: src,
 							dst: loop_dst,
 							msg: [0x01],
@@ -957,7 +950,7 @@ module.exports = {
 				bus_modules.modules_check.forEach((loop_dst) => {
 					src = module_name;
 					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-						socket.data_send({
+						bus_data.send({
 							src: src,
 							dst: loop_dst,
 							msg: [0x01],
@@ -974,7 +967,7 @@ module.exports = {
 		}
 
 		if (cmd !== null) {
-			socket.data_send({
+			bus_data.send({
 				src: src,
 				dst: dst,
 				msg: cmd,
@@ -998,7 +991,7 @@ module.exports = {
 		var message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
 		var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
-		socket.data_send({
+		bus_data.send({
 			src : 'CCM',
 			dst : module_name,
 			msg : message_hex,
@@ -1017,7 +1010,7 @@ module.exports = {
 		var message_hex = [0x1A, 0x35, 0x00];
 		var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
-		socket.data_send({
+		bus_data.send({
 			src : 'CCM',
 			dst : module_name,
 			msg : message_hex,
@@ -1105,7 +1098,7 @@ module.exports = {
 		var message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
 		var message_hex = message_hex.concat(0x04);
 
-		socket.data_send({
+		bus_data.send({
 			src: 'RAD',
 			dst: module_name,
 			msg: message_hex,

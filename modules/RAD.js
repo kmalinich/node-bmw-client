@@ -141,7 +141,7 @@ function parse_out(data) {
 
 function send_audio_control(source) {
   log.module({ src : module_name, msg : 'Sending audio control: tuner/tape' });
-  socket.data_send({
+  bus_data.send({
     src: module_name,
     dst: 'LOC',
     msg : [0x36, 0xA1],

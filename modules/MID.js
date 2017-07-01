@@ -18,7 +18,7 @@ function refresh_text() {
   var message_hex = [0x23, 0x40, 0x20];
   var message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
 
-  socket.data_send({
+  bus_data.send({
     src: 'RAD',
     dst: module_name,
     msg: message_hex,
@@ -28,7 +28,7 @@ function refresh_text() {
   var message_hex = [0x23, 0x40, 0x20];
   var message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
 
-  socket.data_send({
+  bus_data.send({
     src: 'IKE',
     dst: module_name,
     msg: message_hex,
@@ -48,7 +48,7 @@ function refresh_text() {
   var message_hex = message_hex.concat(0x05);
   var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_6, 4).substring(0, 4)));
 
-  socket.data_send({
+  bus_data.send({
     src: 'RAD',
     dst: module_name,
     msg: message_hex,
@@ -68,7 +68,7 @@ function refresh_text() {
   var message_hex = message_hex.concat(0x05);
   var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_12, 4).substring(0, 4)));
 
-  socket.data_send({
+  bus_data.send({
     src: 'RAD',
     dst: module_name,
     msg: message_hex,
@@ -382,7 +382,7 @@ function send_button(button) {
   var packet_down = [command, button_down];
   var packet_up = [command, button_up];
 
-  socket.data_send({
+  bus_data.send({
     src: module_name,
     dst: 'RAD',
     msg: packet_down,
@@ -391,7 +391,7 @@ function send_button(button) {
   // Prepare and send the up message after 150ms
   setTimeout(() => {
     log.module({ src: module_name, msg: 'Button up: '+button });
-    socket.data_send({
+    bus_data.send({
       src: module_name,
       dst: 'RAD',
       msg: packet_up,
