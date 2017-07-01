@@ -134,7 +134,7 @@ function startup() {
 				IKE.text_warning('  node-bmw restart', 3000);
 
 				socket.lcd_text_tx({
-					upper : 'bmwcd',
+					upper : 'bmwcd '+status.system.host.short,
 					lower : 'node-bmw restart',
 				})
 
