@@ -24,7 +24,7 @@ function request(value) {
 			break;
 	}
 
-	socket.data_send({
+	bus_data.send({
 		src : src,
 		dst : module_name,
 		msg : cmd,

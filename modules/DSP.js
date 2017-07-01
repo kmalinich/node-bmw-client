@@ -29,7 +29,7 @@ function request(value) {
       break;
   }
 
-  socket.data_send({
+  bus_data.send({
     src: src,
     dst: module_name,
     msg: cmd,
@@ -66,7 +66,7 @@ function dsp_mode(mode) {
       break;
   }
 
-  socket.data_send({
+  bus_data.send({
     src: 'RAD',
     dst: module_name,
     msg: cmd,
@@ -88,7 +88,7 @@ function m_audio(value) {
       break;
   }
 
-  socket.data_send({
+  bus_data.send({
     src: 'RAD',
     dst: module_name,
     msg: cmd,
@@ -119,7 +119,7 @@ function parse_out(data) {
 
 // Send EQ data to DSP
 function eq_send(msg) {
-  socket.data_send({
+  bus_data.send({
     src : 'DSPC',
     dst : module_name,
     msg : msg,

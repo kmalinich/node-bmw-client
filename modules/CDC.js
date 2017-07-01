@@ -75,7 +75,7 @@ function send_cd_status(value) {
 		case 'random-off' : bit = 0x02; break;
 	}
 
-	socket.data_send({
+	bus_data.send({
 		src: module_name,
 		dst: 'RAD',
 		msg: [0x39, bit, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01],

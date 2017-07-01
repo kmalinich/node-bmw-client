@@ -389,7 +389,7 @@ function send_backlight_con(value) {
 
 	console.log('[ %s ] %s %s', log.chalk.pink('SEND'), 'CON backlight :', log.chalk.boldyellow(backlight_value.toString()));
 
-	socket.data_send_canbus({
+	bus_data.send({
 		id   : 0x202,
 		data : Buffer.from([backlight_value, 0x00]),
 	});
@@ -410,7 +410,7 @@ function send_status_cic() {
 	console.log('[ %s ] %s', log.chalk.pink('SEND'), 'CIC status');
 
 	let msg = [0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04];
-	socket.data_send_canbus({
+	bus_data.send({
 		id   : 0x273,
 		data : Buffer.from(msg),
 	});
@@ -422,7 +422,7 @@ function send_status_cic() {
 function send_status_ignition_new() {
 	// console.log('[ %s ] %s', log.chalk.ipnk('SEND'), 'ignition status');
 
-	socket.data_send_canbus({
+	bus_data.send({
 		id   : 0x4F8,
 		data : Buffer.from([0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF]),
 	});

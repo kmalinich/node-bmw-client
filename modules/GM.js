@@ -154,7 +154,7 @@ function io_set(packet) {
 	packet.unshift(0x0C);
 
 	// Set IO status
-	socket.data_send({
+	bus_data.send({
 		src: 'DIA',
 		dst: module_name,
 		msg: packet,
@@ -392,7 +392,7 @@ module.exports = {
 				break;
 		}
 
-		socket.data_send({
+		bus_data.send({
 			src : src,
 			dst : module_name,
 			msg : cmd,
