@@ -13,6 +13,7 @@
 	},
 	"keywords": [
 		"bmw",
+		"canbus,
 		"dbus",
 		"ibus",
 		"kbus"
@@ -24,7 +25,6 @@
 		"bootstrap": "^3.3.7",
 		"bootstrap-material-design": "^0.5.10",
 		"datatables": "^1.10.13",
-		"dbus-native": "^0.2.1",
 		"font-awesome": "^4.7.0",
 		"glyphicons": "^0.2.0",
 		"jquery": "^3.2.1",
@@ -32,18 +32,21 @@
 		"kodi-ws": "^2.4.3",
 		"moment": "^2.18.1",
 		"multipad": "^1.1.1",
-		"node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
 		"node-unit-conversion": "^0.1.1",
 		"nouislider": "^10.0.0",
 		"os": "^0.1.1",
 		"pad": "^1.1.0",
 		"performance-now": "^2.1.0",
-		"pi-temperature": "^2.0.0",
-		"pigpio": "^0.6.0",
 		"socket.io": "^2.0.3",
 		"socket.io-client": "^2.0.3",
 		"suncalc": "^1.8.0",
 		"trucolor": "^0.6.6",
 		"weather-js": "^2.0.0"
+	},
+	"optionalDependencies": {
+		"dbus-native": "^0.2.1",
+		"node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
+		"pi-temperature": "^2.0.0",
+		"pigpio": "^0.6.0"
 	}
 }
