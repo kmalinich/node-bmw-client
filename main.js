@@ -21,9 +21,6 @@ socket       = require('socket');
 
 
 function load_modules(load_modules_callback) {
-	// Host data object (CPU, memory, etc.)
-	host_data = require('host-data');
-
 	// Data bus module libraries
 	ABG  = require('ABG');
 	AHL  = require('AHL');
@@ -103,6 +100,12 @@ function load_modules(load_modules_callback) {
 
 	bus_data = require('bus-data'); // Data handler/router
 
+	// Host data object (CPU, memory, etc.)
+	host_data = require('host-data');
+
+	// GPIO library
+	gpio = require('gpio');
+
 	if (typeof load_modules_callback === 'function') load_modules_callback();
 	load_modules_callback = undefined;
 }
@@ -116,30 +119,31 @@ function startup() {
 
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS module node modules
-
 			// Initialize host data object
 			host_data.init();
 
 			kodi.start(); // Start Kodi WebSocket client
 			BT.start(); // Start Linux D-Bus Bluetooth handler
 
-			HDMI.startup(() => { // Open HDMI-CEC
-				socket.startup(); // Start WebSocket client
+			gpio.init(() => { // Initialize GPIO relays
+				HDMI.startup(() => { // Open HDMI-CEC
+					socket.startup(); // Start WebSocket client
 
-				log.msg({
-					src : module_name,
-					msg : 'Started',
+					log.msg({
+						src : module_name,
+						msg : 'Started',
+					});
+
+					IKE.text_warning('  node-bmw restart', 3000);
+
+					socket.lcd_text_tx({
+						upper : 'bmwcd '+status.system.host.short,
+						lower : 'node-bmw restart',
+					})
+
+					// Needs moved into ignition handler
+					// CON.send_status_ignition_new();
 				});
-
-				IKE.text_warning('  node-bmw restart', 3000);
-
-				socket.lcd_text_tx({
-					upper : 'bmwcd '+status.system.host.short,
-					lower : 'node-bmw restart',
-				})
-
-				// Needs moved into ignition handler
-				// CON.send_status_ignition_new();
 			});
 		});
 	});
@@ -156,10 +160,11 @@ function shutdown(signal) {
 		json.write(() => { // Write JSON config and status files
 			HDMI.shutdown(() => { // Close HDMI-CEC
 				kodi.stop(() => { // Stop Kodi WebSocket client
-
-					log.msg({
-						src : module_name,
-						msg : 'Shut down',
+					gpio.term(() => { // Terminate GPIO relays
+						log.msg({
+							src : module_name,
+							msg : 'Shut down',
+						});
 					});
 
 					process.exit();
