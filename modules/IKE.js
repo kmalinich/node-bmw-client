@@ -227,6 +227,10 @@ function decode_ignition_status(data) {
 		gpio.set(1, 1);
 		gpio.set(2, 1);
 
+		// Overhead LCD commands
+		socket.lcd_command_tx('clear');
+		socket.lcd_command_tx('off');
+
 		// Toggle media playback
 		if (status.kodi.player.status == 'playing') kodi.command('toggle');
 		BT.command('disconnect');
@@ -258,6 +262,13 @@ function decode_ignition_status(data) {
 
 		// iDrive knob
 		CON.send_status_ignition_new();
+
+		// Overhead LCD commands
+		socket.lcd_command_tx('on');
+		socket.lcd_text_tx({
+			upper : 'State:',
+			lower : 'powerup',
+		});
 
 		// GPIO relays
 		gpio.set(1, 0);
