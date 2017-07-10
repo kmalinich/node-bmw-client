@@ -125,7 +125,7 @@ function startup() {
 			kodi.start(); // Start Kodi WebSocket client
 			BT.start(); // Start Linux D-Bus Bluetooth handler
 
-			gpio.init(() => { // Initialize GPIO relays
+			//gpio.init(() => { // Initialize GPIO relays
 				HDMI.startup(() => { // Open HDMI-CEC
 					socket.startup(); // Start WebSocket client
 
@@ -143,7 +143,7 @@ function startup() {
 				});
 			});
 		});
-	});
+//	});
 }
 
 // Global shutdown
@@ -157,7 +157,7 @@ function shutdown(signal) {
 		json.write(() => { // Write JSON config and status files
 			HDMI.shutdown(() => { // Close HDMI-CEC
 				kodi.stop(() => { // Stop Kodi WebSocket client
-					gpio.term(() => { // Terminate GPIO relays
+					//gpio.term(() => { // Terminate GPIO relays
 						log.msg({
 							src : module_name,
 							msg : 'Shut down',
@@ -167,7 +167,7 @@ function shutdown(signal) {
 					process.exit();
 				});
 			});
-		});
+	//	});
 	});
 }
 
