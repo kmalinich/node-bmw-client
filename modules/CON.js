@@ -114,7 +114,8 @@ function decode_con_rotation(data) {
 		default     : var direction_fmt = log.chalk.boldyellow(status.con.rotation.relative.toString());
 	}
 
-	// console.log('[%s] %s', log.chalk.boldpurple('ROTATE'), direction_fmt);
+	console.log('[%s] %s', log.chalk.boldpurple('ROTATE'), direction_fmt);
+
 	if (status.con.rotation.alternate === false) {
 		kodi.input(status.con.rotation.direction);
 	}
@@ -315,12 +316,12 @@ function button_check(button) {
 	//   send_backlight_con(status.con.backlight);
 	// }
 
-	// console.log('[%s] [%s] [%s] %s',
-	// 	log.chalk.blue('BUTTON'),
-	// 	output.mode,
-	// 	output.action,
-	// 	button.button
-	// );
+	console.log('[%s] [%s] [%s] %s',
+		log.chalk.blue('BUTTON'),
+		output.mode,
+		output.action,
+		button.button
+	);
 
 	if (button.action == 'press') {
 
@@ -351,6 +352,7 @@ function decode_backlight_con(data) {
 }
 
 function decode_status_con(data) {
+	console.log('[%s] status', log.chalk.boldyellow('CON'));
 	if (data.msg[4] == 0x06) { // CON needs init
 		console.log('[%s] CON init', log.chalk.boldpurple('TRIGGR'));
 		send_status_cic();
@@ -420,16 +422,36 @@ function send_status_cic() {
 
 // E90 Ignition status
 function send_status_ignition_new() {
-	// console.log('[ %s ] %s', log.chalk.ipnk('SEND'), 'ignition status');
+	console.log('[ %s ] %s', log.chalk.pink('SEND'), 'ignition status');
 
 	bus_data.send({
 		id   : 0x4F8,
 		data : Buffer.from([0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF]),
 	});
 
+	if (status.vehicle.ignition_level === 0) {
+		if (CON.timeouts.status_ignition_new !== null) {
+			clearTimeout(CON.timeouts.status_ignition_new);
+			CON.timeouts.status_ignition_new = null;
+
+			log.module({
+				src : module_name,
+				msg : 'Unset ignition status timeout',
+			});
+
+			return;
+		}
+	}
+
+	if (CON.timeouts.status_ignition_new === null) {
+		log.module({
+			src : module_name,
+			msg : 'Set ignition status timeout',
+		});
+	}
+
 	CON.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
 }
-
 
 function fireup(fireup_callback) {
 	send_status_ignition_new();
