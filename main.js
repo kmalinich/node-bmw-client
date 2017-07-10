@@ -140,9 +140,6 @@ function startup() {
 						upper : 'bmwcd '+status.system.host.short,
 						lower : 'node-bmw restart',
 					})
-
-					// Needs moved into ignition handler
-					// CON.send_status_ignition_new();
 				});
 			});
 		});
