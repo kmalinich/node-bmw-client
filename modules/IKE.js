@@ -1,4 +1,4 @@
-var module_name = __filename.slice(__dirname.length + 1, -3);
+const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Only load if configured as Raspberry Pi
 if (config.system.pi === true) var pitemp = require('pi-temperature');
