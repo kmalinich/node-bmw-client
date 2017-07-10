@@ -1,4 +1,4 @@
-var module_name = __filename.slice(__dirname.length + 1, -3);
+const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Decode button action message from MFL
 function decode_button_media(data) {
