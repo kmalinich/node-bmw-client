@@ -220,6 +220,13 @@ function decode_ignition_status(data) {
 		MID.status_loop(false);
 		MID.text_loop(false);
 
+		// iDrive knob
+		CON.send_status_ignition_new();
+
+		// GPIO relays
+		gpio.set(1, 1);
+		gpio.set(2, 1);
+
 		// Toggle media playback
 		if (status.kodi.player.status == 'playing') kodi.command('toggle');
 		BT.command('disconnect');
@@ -248,6 +255,13 @@ function decode_ignition_status(data) {
 		MID.status_loop(true);
 		MID.text_loop(true);
 		bus_commands.request_device_status(module_name, 'RAD');
+
+		// iDrive knob
+		CON.send_status_ignition_new();
+
+		// GPIO relays
+		gpio.set(1, 0);
+		gpio.set(2, 0);
 
 		// Connect Bluetooth
 		BT.command('connect');
