@@ -1,4 +1,4 @@
-var module_name = __filename.slice(__dirname.length + 1, -3);
+const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // All the possible values to send to the GM
 var array_of_possible_values = {
