@@ -15,7 +15,7 @@ function parse_out(data) {
 		};
 	}
 
-	if (data.msg == null || typeof data.msg == 'undefined') {
+	if (data.msg[0] == null || typeof data.msg[0] == 'undefined') {
 		data.msg = [0xFF];
 	}
 
