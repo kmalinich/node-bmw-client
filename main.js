@@ -119,33 +119,32 @@ function startup() {
 
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS module node modules
-			// Initialize host data object
-			host_data.init();
+			host_data.init(() => { // Initialize host data object
+				kodi.start(); // Start Kodi WebSocket client
+				BT.start(); // Start Linux D-Bus Bluetooth handler
 
-			kodi.start(); // Start Kodi WebSocket client
-			BT.start(); // Start Linux D-Bus Bluetooth handler
+				gpio.init(() => { // Initialize GPIO relays
 
-			gpio.init(() => { // Initialize GPIO relays
+					// Shutdown events/signals
+					process.on('SIGTERM', () => { shutdown('SIGTERM'); });
+					process.on('SIGINT',  () => { shutdown('SIGINT');  });
+					process.on('SIGPIPE', () => { shutdown('SIGPIPE'); });
 
-				// Shutdown events/signals
-				process.on('SIGTERM', () => { shutdown('SIGTERM'); });
-				process.on('SIGINT',  () => { shutdown('SIGINT');  });
-				process.on('SIGPIPE', () => { shutdown('SIGPIPE'); });
+					HDMI.startup(() => { // Open HDMI-CEC
+						socket.startup(); // Start WebSocket client
 
-				HDMI.startup(() => { // Open HDMI-CEC
-					socket.startup(); // Start WebSocket client
+						log.msg({
+							src : module_name,
+							msg : 'Started',
+						});
 
-					log.msg({
-						src : module_name,
-						msg : 'Started',
+						IKE.text_warning('  node-bmw restart', 3000);
+
+						socket.lcd_text_tx({
+							upper : 'bmwcd '+status.system.host.short,
+							lower : 'node-bmw restart',
+						})
 					});
-
-					IKE.text_warning('  node-bmw restart', 3000);
-
-					socket.lcd_text_tx({
-						upper : 'bmwcd '+status.system.host.short,
-						lower : 'node-bmw restart',
-					})
 				});
 			});
 		});
@@ -160,17 +159,19 @@ function shutdown(signal) {
 	});
 
 	gpio.term(() => { // Terminate GPIO relays
-		socket.shutdown(() => { // Stop WebSocket client
-			json.write(() => { // Write JSON config and status files
-				HDMI.shutdown(() => { // Close HDMI-CEC
-					kodi.stop(() => { // Stop Kodi WebSocket client
-						log.msg({
-							src : module_name,
-							msg : 'Shut down',
+		host_data.term(() => { // Terminate host data timeout
+			socket.shutdown(() => { // Stop WebSocket client
+				json.write(() => { // Write JSON config and status files
+					HDMI.shutdown(() => { // Close HDMI-CEC
+						kodi.stop(() => { // Stop Kodi WebSocket client
+							log.msg({
+								src : module_name,
+								msg : 'Shut down',
+							});
 						});
-					});
 
-					process.exit();
+						process.exit();
+					});
 				});
 			});
 		});
