@@ -1,0 +1,30 @@
+startDiagnosticSession                 0x10
+readDiagnosticTroubleCodes             0x13
+clearDiagnosticInformation             0x14
+readDiagnosticTroubleCodesByStatus     0x18
+readStatusOfDiagnosticTroubleCodes     0x17
+readECUIdentification                  0x1A
+
+stopDiagnosticSession                  0x20
+readDataByLocalIdentifier              0x21
+readDataByCommonIdentifier             0x22
+readMemoryByAddress                    0x23
+sequrityAccess                         0x27
+
+startRoutineByLocalIdentifier          0x31
+stopRoutineByLocalIdentifier           0x32
+requestRoutineResultsByLocalIdentifier 0x33
+requestDownload                        0x34
+requestUpload                          0x35
+requestTransferData                    0x36
+requestTransferExit                    0x37
+startRoutineByAddress                  0x38
+stopRoutineByAddress                   0x39
+requestRoutineResultsByAddress         0x3A
+
+writeDataByCommonIdentifier            0x2E
+writeDataByLocalIdentifier             0x3B
+writeMemoryByAddess                    0x3D
+
+startCommunication                     0x81
+stopCommunication                      0x82
