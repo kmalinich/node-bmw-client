@@ -1,8 +1,5 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
-// Only load if configured as Raspberry Pi
-if (config.system.pi === true) var pitemp = require('pi-temperature');
-
 // Pretend to be IKE saying the car is on
 // Note - this can and WILL set the alarm off - kudos to the Germans...
 function ignition(value) {
@@ -841,13 +838,13 @@ module.exports = {
 
 		// 1m sysload to percentage
 		let load_1m = (parseFloat((os.loadavg()[0]/os.cpus().length).toFixed(2))*100).toFixed(0);
-		load_1m = host_data.data.temperature+'¨|'+load_1m+'%';
+		load_1m = status.system.temperature+'¨|'+load_1m+'%';
 
 		// Space-pad load_1m
 		load_1m = pad(load_1m, 8);
 
 		// Change left string to be load/CPU temp if over threshold
-		if (host_data.data.temperature > 65) hud_strings.left = load_1m;
+		if (status.system.temperature > 65) hud_strings.left = load_1m;
 
 		// Assemble text string
 		let hud_string = hud_strings.left+hud_strings.center+hud_strings.right;
