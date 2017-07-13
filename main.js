@@ -11,6 +11,7 @@ suncalc = require('suncalc');
 
 // node-bmw libraries
 bitmask      = require('bitmask');
+bus_arbids   = require('bus-arbids');
 bus_commands = require('bus-commands');
 bus_modules  = require('bus-modules');
 hex          = require('hex');
@@ -21,7 +22,7 @@ socket       = require('socket');
 
 
 function load_modules(load_modules_callback) {
-	// Data bus module libraries
+	// DBUS/KBUS/IBUS modules
 	ABG  = require('ABG');
 	AHL  = require('AHL');
 	ANZV = require('ANZV');
@@ -32,12 +33,10 @@ function load_modules(load_modules_callback) {
 	CDC  = require('CDC');
 	CDCD = require('CDCD');
 	CID  = require('CID');
-	CON  = require('CON');
 	CSU  = require('CSU');
 	CVM  = require('CVM');
 	DIA  = require('DIA');
 	DME  = require('DME');
-	DME2 = require('DME2');
 	DSP  = require('DSP');
 	DSPC = require('DSPC');
 	EGS  = require('EGS');
@@ -87,6 +86,11 @@ function load_modules(load_modules_callback) {
 	TCU  = require('TCU');
 	TEL  = require('TEL');
 	VID  = require('VID');
+
+	// CANBUS modules
+	ASC1 = require('ASC1');
+	CON  = require('CON');
+	DME1 = require('DME1');
 
 	// Custom libraries
 	BT   = require('BT');
