@@ -1,7 +1,11 @@
 Turn PDC On
-
 3F 04 60 0C 80 D7
 
 Turn PDC Off
-
 3F 04 60 0C 40 17
+
+PDC Request
+3F 03 60 1B 47
+
+PDC Distance
+60 0E 3F A0 00 FF FF FF FF FF FF FF FF C6 02 35
