@@ -1,5 +1,11 @@
 # node-bmw
 
+=== ADVISORY ===
+I dev way faster than I document.
+This README is about 6-8 months out of date and needs to be completely rewritten
+I'll get to it...
+
+
 A node.js powered interface for IBUS BMW vehicles, for use with whatever runs the dependencies.
 It builds (but isn't _really_ tested) on Linux x86_64, Linux ARMv7 (raspi), and macOS 10.12.
 
