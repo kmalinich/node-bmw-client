@@ -129,7 +129,6 @@ function startup() {
 			host_data.init(() => { // Initialize host data object
 				kodi.start(); // Start Kodi WebSocket client
 				BT.start(); // Start Linux D-Bus Bluetooth handler
-
 				gpio.init(() => { // Initialize GPIO relays
 
 					// Shutdown events/signals
@@ -147,16 +146,12 @@ function startup() {
 
 						IKE.text_warning('  node-bmw restart', 3000);
 
-						socket.lcd_text_tx({
-							upper : 'bmwcd '+status.system.host.short,
-							lower : 'node-bmw restart',
-						});
-
-						bus_data.send({
-							bus  : 'can0',
-							id   : 0x202,
-							data : Buffer.from([backlight_value, 0x00]),
-						});
+						setTimeout(() => {
+							socket.lcd_text_tx({
+								upper : 'bmwcd '+status.system.host.short,
+								lower : 'node-bmw restart',
+							});
+						}, 250);
 
 					});
 				});

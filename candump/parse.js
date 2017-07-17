@@ -73,9 +73,6 @@ input.forEach((message) => {
 
 	data.src.name = bus_arbids.h2n(src_id);
 
-	// console.log(JSON.stringify(data.src, null, 2));
-	// console.log(data);
-
 	switch (data.src.name) {
 		// case 'ASC1' : ASC1.parse_out(data); break;
 		case 'DME1' : DME1.parse_out(data); break;

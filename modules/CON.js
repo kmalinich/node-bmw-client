@@ -352,7 +352,7 @@ function decode_backlight_con(data) {
 }
 
 function decode_status_con(data) {
-	console.log('[%s] status', log.chalk.boldyellow('CON'));
+	// console.log('[%s] status', log.chalk.boldyellow('CON'));
 	if (data.msg[4] == 0x06) { // CON needs init
 		console.log('[%s] CON init', log.chalk.boldpurple('TRIGGR'));
 		send_status_cic();
@@ -424,7 +424,7 @@ function send_status_cic() {
 
 // E90 Ignition status
 function send_status_ignition_new() {
-	console.log('[ %s ] %s', log.chalk.pink('SEND'), 'ignition status');
+	// console.log('[ %s ] %s', log.chalk.pink('SEND'), 'ignition status');
 
 	bus_data.send({
 		bus  : 'can1',
