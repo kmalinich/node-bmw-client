@@ -105,13 +105,17 @@ function load_modules(load_modules_callback) {
 		msg : 'Loaded modules',
 	});
 
-	bus_data = require('bus-data'); // Data handler/router
+	// Data handler/router
+	bus_data = require('bus-data');
 
 	// Host data object (CPU, memory, etc.)
 	host_data = require('host-data');
 
 	// GPIO library
 	gpio = require('gpio');
+
+	// Push notification library
+	notify = require('notify');
 
 	if (typeof load_modules_callback === 'function') load_modules_callback();
 	load_modules_callback = undefined;
@@ -143,6 +147,8 @@ function startup() {
 							src : module_name,
 							msg : 'Started',
 						});
+
+						notify.notify('Started');
 
 						IKE.text_warning('  node-bmw restart', 3000);
 
