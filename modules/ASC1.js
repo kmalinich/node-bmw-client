@@ -1,5 +1,12 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+function logmod(string) {
+	log.msg({
+		src : module_name,
+		msg : string,
+	});
+};
+
 // Parse data sent from module
 function parse_out(data) {
 	data.command = 'bro';
