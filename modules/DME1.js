@@ -1,6 +1,13 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 
+function logmod(string) {
+	log.msg({
+		src : module_name,
+		msg : string,
+	});
+};
+
 function parse_316(data) {
 	// console.log('');
 	// console.log('');
@@ -8,7 +15,7 @@ function parse_316(data) {
 
 	let parse = {
 		arbid : '0x316',
-		msg : data.msg,
+		msg : data.msg_f,
 		rpm : parseInt('0x'+data.msg[3].toString(16)+data.msg[2].toString(16))/6.4,
 		ac_clutch : bitmask.test(data.msg[0], 0x40),
 		key : {
@@ -25,12 +32,19 @@ function parse_316(data) {
 
 	// console.log('');
 	// console.log(JSON.stringify(parse, null, 2));
-	console.log(object_format(parse));
+	// console.log(object_format(parse));
 	// console.log(parse.throttle.current);
 	// console.log('Coolant temp: '+parse.temp.coolant_internal);
 
 	// console.log('');
 	// console.log('');
+}
+
+function lcd_update() {
+	socket.lcd_text_tx({
+		upper : 'THR|CLT|CHC|XXXXX',
+		lower : Math.round(status.dme1.throttle)+'%|'+Math.round(status.dme1.coolant)+'C|'+status.dme1.clutch,
+	});
 }
 
 function parse_329(data) {
@@ -45,8 +59,26 @@ function parse_329(data) {
 		throttle : (data.msg[5]/2.54).toFixed(2),
 	};
 
+	if (status.dme1.clutch !== parse.clutch) {
+		status.dme1.clutch = parse.clutch;
+		lcd_update();
+		logmod('Clutch: '+status.dme1.clutch);
+	}
+
+	if (status.dme1.coolant !== parse.coolant) {
+		status.dme1.coolant = parse.coolant;
+		logmod('Coolant: '+status.dme1.coolant);
+		lcd_update();
+	}
+
+	if (status.dme1.throttle !== parse.throttle) {
+		status.dme1.throttle = parse.throttle;
+		logmod('Throttle: '+status.dme1.throttle);
+		lcd_update();
+	}
+
 	// console.log('');
-	console.log(JSON.stringify(parse, null, 2));
+	// console.log(JSON.stringify(parse, null, 2));
 	// console.log(parse.coolant+','+parse.throttle);
 	// console.log('Coolant temp: '+parse.temp.coolant_internal);
 
