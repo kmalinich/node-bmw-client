@@ -23,7 +23,7 @@
 	},
 	"dependencies": {
 		"chump": "^1.2.0",
-		"jsonfile": "^3.0.0",
+		"jsonfile": "^3.0.1",
 		"kodi-ws": "^2.4.3",
 		"moment": "^2.18.1",
 		"multipad": "^1.1.1",
@@ -37,9 +37,9 @@
 		"weather-js": "^2.0.0"
 	},
 	"optionalDependencies": {
-		"dbus-native": "^0.2.1",
+		"dbus-native": "^0.2.2",
 		"node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
-		"onoff": "^1.1.3",
+		"onoff": "^1.1.4",
 		"pi-temperature": "^2.0.0",
 		"smc": "^2.0.0"
 	}
