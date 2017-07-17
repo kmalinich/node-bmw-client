@@ -5,7 +5,8 @@ app_name = 'bmwcd';
 app_type = 'client';
 
 // const input = require('input').input;
-const input = require('input-short').input;
+// const input = require('input-short').input;
+const input = require('input-329').input;
 // console.log(input);
 
 
@@ -26,6 +27,7 @@ hex          = require('hex');
 log          = require('log-output');
 obc_values   = require('obc-values');
 socket       = require('socket');
+object_format       = require('object-format');
 
 ASC1 = require('ASC1');
 DME1 = require('DME1');
@@ -42,13 +44,14 @@ function hex_f(val) {
 	return prefix+suffix;
 }
 
+
 input.forEach((message) => {
 	// console.log(message);
 
 	let src_id = message.shift();
 
 	let data = {
-		bus : 'canbus1',
+		bus : 'can0',
 		src : {
 			id : src_id,
 			id_f : hex_f(src_id),
