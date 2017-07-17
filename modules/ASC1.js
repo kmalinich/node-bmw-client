@@ -36,7 +36,7 @@ function parse_out(data) {
 			data.value = data.src.id.toString(16);
 	}
 
-	log.bus(data);
+	// log.bus(data);
 }
 
 module.exports = {
