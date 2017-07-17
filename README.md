@@ -1,7 +1,7 @@
 # node-bmw-client
-<img src="https://darksky.net/dev/img/attribution/poweredby-oneline.png" href="https://darksky.net/poweredby" alt="Powered by Dark Sky" width="200">
+Do magic with an E38/E39/E46/E53-ish BMW, Raspberry Pi 3, and Node.js 8.x.  
 
-Do magic with an E38/E39/E46/E53-ish BMW, Raspberry Pi 3, and 
+<img src="https://darksky.net/dev/img/attribution/poweredby-oneline.png" href="https://darksky.net/poweredby" alt="Powered by Dark Sky" width="200">
 
 ## Advisory
 I dev way faster than I document.  
