@@ -1,1 +1,0 @@
-../../node_modules/datatables/media/js/jquery.dataTables.min.js
