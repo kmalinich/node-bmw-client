@@ -1,15 +1,14 @@
-# node-bmw
+# node-bmw-client
+Do magic with an E38/E39/E46/E53-ish BMW, Raspberry Pi 3, and Node.js 8.x.  
 
-=== ADVISORY ===
-I dev way faster than I document.
-This README is about 6-8 months out of date and needs to be completely rewritten
-I'll get to it...
+<img src="https://darksky.net/dev/img/attribution/poweredby-oneline.png" href="https://darksky.net/poweredby" alt="Powered by Dark Sky" width="200">
 
+## Advisory
+I dev way faster than I document.  
+This README is about 6-8 months out of date and needs to be completely rewritten.  
+I'll get to it...  
 
-A node.js powered interface for IBUS BMW vehicles, for use with whatever runs the dependencies.
-It builds (but isn't _really_ tested) on Linux x86_64, Linux ARMv7 (raspi), and macOS 10.12.
-
-# Disclaimers
+## Disclaimers
 * First and foremost, this project can and might hurt you.
   * If you rely on the auto lights, and they cut out at night, you might die.
   * If you are trapped in the vehicle, and the app locks up the GM and the door locks don't work, you might die.
