@@ -7,11 +7,27 @@ function parse_316(data) {
 	// console.log(object_format(data));
 
 	let parse = {
-		module : module_name,
+		arbid : '0x316',
+		msg : data.msg,
+		rpm : parseInt('0x'+data.msg[3].toString(16)+data.msg[2].toString(16))/6.4,
+		ac_clutch : bitmask.test(data.msg[0], 0x40),
+		key : {
+			acc   : bitmask.test(data.msg[0], 0x01),
+			run   : bitmask.test(data.msg[0], 0x04),
+			start : bitmask.test(data.msg[0], 0x10),
+		},
+		throttle : {
+			current : (data.msg[1]/2.54).toFixed(2),
+			target  : (data.msg[4]/2.54).toFixed(2),
+		},
 	};
 
+
 	// console.log('');
+	// console.log(JSON.stringify(parse, null, 2));
 	console.log(object_format(parse));
+	// console.log(parse.throttle.current);
+	// console.log('Coolant temp: '+parse.temp.coolant_internal);
 
 	// console.log('');
 	// console.log('');
@@ -23,13 +39,15 @@ function parse_329(data) {
 	// console.log(object_format(data));
 
 	let parse = {
+		msg : '0x329',
+		clutch : bitmask.test(data.msg[3], 0x01),
 		coolant : ((data.msg[1]*.75)-48.373).toFixed(2),
 		throttle : (data.msg[5]/2.54).toFixed(2),
 	};
 
 	// console.log('');
-	// console.log(JSON.stringify(parse, null, 2));
-	console.log(parse.coolant+','+parse.throttle);
+	console.log(JSON.stringify(parse, null, 2));
+	// console.log(parse.coolant+','+parse.throttle);
 	// console.log('Coolant temp: '+parse.temp.coolant_internal);
 
 	// console.log('');
@@ -44,7 +62,7 @@ function parse_out(data) {
 	switch (data.src.id) {
 		case 0x316:
 			data.value = 'RPM';
-			// parse_316(data);
+			parse_316(data);
 			break;
 
 		case 0x329:

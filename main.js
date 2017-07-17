@@ -150,7 +150,14 @@ function startup() {
 						socket.lcd_text_tx({
 							upper : 'bmwcd '+status.system.host.short,
 							lower : 'node-bmw restart',
-						})
+						});
+
+						bus_data.send({
+							bus  : 'can0',
+							id   : 0x202,
+							data : Buffer.from([backlight_value, 0x00]),
+						});
+
 					});
 				});
 			});
