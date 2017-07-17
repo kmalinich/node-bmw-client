@@ -4,9 +4,9 @@ app_path = __dirname;
 app_name = 'bmwcd';
 app_type = 'client';
 
-// const input = require('input').input;
+const input = require('input').input;
 // const input = require('input-short').input;
-const input = require('input-329').input;
+// const input = require('input-329').input;
 // console.log(input);
 
 
@@ -77,7 +77,7 @@ input.forEach((message) => {
 	// console.log(data);
 
 	switch (data.src.name) {
-		case 'ASC1' : ASC1.parse_out(data); break;
+		// case 'ASC1' : ASC1.parse_out(data); break;
 		case 'DME1' : DME1.parse_out(data); break;
 	}
 
