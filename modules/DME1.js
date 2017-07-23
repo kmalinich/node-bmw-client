@@ -53,28 +53,28 @@ function parse_329(data) {
 	// console.log(object_format(data));
 
 	let parse = {
-		msg : '0x329',
-		clutch : bitmask.test(data.msg[3], 0x01),
-		coolant : ((data.msg[1]*.75)-48.373).toFixed(2),
+		msg      : '0x329',
+		clutch   : bitmask.test(data.msg[3], 0x01),
+		coolant  : ((data.msg[1]*.75)-48.373).toFixed(2),
 		throttle : (data.msg[5]/2.54).toFixed(2),
 	};
 
 	if (status.dme1.clutch !== parse.clutch) {
 		status.dme1.clutch = parse.clutch;
-		lcd_update();
-		logmod('Clutch: '+status.dme1.clutch);
+    socket.status_tx();
+		// logmod('Clutch: '+status.dme1.clutch);
 	}
 
 	if (status.dme1.coolant !== parse.coolant) {
 		status.dme1.coolant = parse.coolant;
-		logmod('Coolant: '+status.dme1.coolant);
-		lcd_update();
+    socket.status_tx();
+		// logmod('Coolant: '+status.dme1.coolant);
 	}
 
 	if (status.dme1.throttle !== parse.throttle) {
 		status.dme1.throttle = parse.throttle;
-		logmod('Throttle: '+status.dme1.throttle);
-		lcd_update();
+    socket.status_tx();
+		// logmod('Throttle: '+status.dme1.throttle);
 	}
 
 	// console.log('');
