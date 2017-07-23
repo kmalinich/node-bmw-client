@@ -341,6 +341,9 @@ function decode_speed_values(data) {
 
   // Convert values and round to 2 decimals
   status.vehicle.speed.mph = parseFloat(convert(parseFloat((data.msg[1]*2))).from('kilometre').to('us mile').toFixed(2));
+
+	socket.status_tx('vehicle');
+	socket.status_tx('engine');
 }
 
 function decode_temperature_values(data) {
@@ -350,6 +353,8 @@ function decode_temperature_values(data) {
 
   status.temperature.exterior.f = Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit'));
   status.temperature.coolant.f  = Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit'));
+
+	socket.status_tx('temperature');
 
   // Trigger a HUD refresh
   IKE.hud_refresh();

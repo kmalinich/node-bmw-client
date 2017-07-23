@@ -43,7 +43,7 @@ function parse_316(data) {
 function lcd_update() {
 	socket.lcd_text_tx({
 		upper : 'THR|CLT|CHC|XXXXX',
-		lower : Math.round(status.dme1.throttle)+'%|'+Math.round(status.dme1.coolant)+'C|'+status.dme1.clutch,
+		lower : Math.round(status.engine.throttle)+'%|'+Math.round(status.dme.coolant)+'C|'+status.vehicle.clutch,
 	});
 }
 
@@ -55,26 +55,31 @@ function parse_329(data) {
 	let parse = {
 		msg      : '0x329',
 		clutch   : bitmask.test(data.msg[3], 0x01),
-		coolant  : ((data.msg[1]*.75)-48.373).toFixed(2),
 		throttle : (data.msg[5]/2.54).toFixed(2),
+		coolant  : {
+			c : ((data.msg[1]*.75)-48.373).toFixed(2),
+		},
 	};
 
-	if (status.dme1.clutch !== parse.clutch) {
-		status.dme1.clutch = parse.clutch;
-    socket.status_tx(module_name);
-		// logmod('Clutch: '+status.dme1.clutch);
+	parse.coolant.f = convert(parse.coolant.c).from('celsius').to('fahrenheit');
+
+	if (status.vehicle.clutch !== parse.clutch) {
+		status.vehicle.clutch = parse.clutch;
+    socket.status_tx('vehicle');
+		// logmod('Clutch: '+status.vehicle.clutch);
 	}
 
-	if (status.dme1.coolant !== parse.coolant) {
-		status.dme1.coolant = parse.coolant;
-    socket.status_tx(module_name);
-		// logmod('Coolant: '+status.dme1.coolant);
+	if (status.temperature.coolant.c !== parse.coolant.c) {
+		status.temperature.coolant.c = parse.coolant.c;
+		status.temperature.coolant.f = parse.coolant.f;
+    socket.status_tx('temperature');
+		// logmod('Coolant: '+status.temperature.coolant.c);
 	}
 
-	if (status.dme1.throttle !== parse.throttle) {
-		status.dme1.throttle = parse.throttle;
-    socket.status_tx(module_name);
-		// logmod('Throttle: '+status.dme1.throttle);
+	if (status.engine.throttle !== parse.throttle) {
+		status.engine.throttle = parse.throttle;
+    socket.status_tx('engine');
+		// logmod('Throttle: '+status.engine.throttle);
 	}
 
 	// console.log('');
