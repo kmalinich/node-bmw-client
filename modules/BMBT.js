@@ -62,7 +62,7 @@ function power_on_if_ready() {
 	// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
 	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
-	setTimeout(() => {
+	// setTimeout(() => {
 		if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
 			kodi.notify(module_name, 'power on');
 			IKE.text_override(module_name+' power');
@@ -72,10 +72,10 @@ function power_on_if_ready() {
 				msg : 'Sending power!',
 			});
 
-			send_button('power');
+			// send_button('power');
 			DSP.request('memory'); // Get the DSP memory
 		}
-	}, 2000);
+	// }, 2000);
 }
 
 // Parse data sent to BMBT module
@@ -129,11 +129,11 @@ function parse_out(data) {
 }
 
 // Say we have no tape in the player
-function send_cassette_status() {
+function send_cassette_status(value) {
 	bus_data.send({
 		src: module_name,
 		dst: 'RAD',
-		msg: [0x4B, 0x05],
+		msg: [0x4B, value],
 	});
 }
 
@@ -189,6 +189,6 @@ module.exports = {
 	parse_out            : (data)   => { parse_out(data);        },
 	power_on_if_ready    : ()       => { power_on_if_ready();    },
 	send_button          : (button) => { send_button(button);    },
-	send_cassette_status : ()       => { send_cassette_status(); },
+	send_cassette_status : (value)  => { send_cassette_status(value); },
 	status_loop          : (action) => { status_loop(action);    },
 }
