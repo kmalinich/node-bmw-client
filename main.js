@@ -179,13 +179,14 @@ function shutdown(signal) {
 				json.write(() => { // Write JSON config and status files
 					HDMI.shutdown(() => { // Close HDMI-CEC
 						kodi.stop(() => { // Stop Kodi WebSocket client
+
 							log.msg({
 								src : module_name,
 								msg : 'Shut down',
 							});
-						});
 
-						process.exit();
+							process.exit();
+						});
 					});
 				});
 			});
