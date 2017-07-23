@@ -3,7 +3,7 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 app_path = __dirname;
 app_name = 'bmwcd';
 app_type = 'client';
-app_intf = null;
+app_intf = app_type;
 
 // npm libraries
 convert = require('node-unit-conversion');

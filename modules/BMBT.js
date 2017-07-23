@@ -99,7 +99,14 @@ function parse_out(data) {
 
 		case 0x4B: // Cassette status
 			data.command = 'sta';
-			data.value   = 'cassette: no tape';
+			data.value   = 'cassette: ';
+			switch (data.msg[1]) {
+				case 0x05:
+					data.value += 'no tape';
+					break;
+				default:
+					data.value += 'unknown 0x'+data.msg[1].toString(16);
+			}
 			break;
 
 		case 0x47: // Broadcast: BM status
@@ -170,7 +177,7 @@ function send_button(button) {
 			dst: 'RAD',
 			msg: packet_up,
 		});
-	}, 150);
+	}, 100);
 }
 
 
