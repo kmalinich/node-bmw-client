@@ -101,8 +101,14 @@ function parse_out(data) {
 			data.command = 'sta';
 			data.value   = 'cassette: ';
 			switch (data.msg[1]) {
+				case 0x00:
+					data.value += 'off';
+					break;
 				case 0x05:
 					data.value += 'no tape';
+					break;
+				case 0xFF:
+					data.value += 'on';
 					break;
 				default:
 					data.value += 'unknown 0x'+data.msg[1].toString(16);
@@ -129,7 +135,7 @@ function parse_out(data) {
 }
 
 // Say we have no tape in the player
-function send_cassette_status(value) {
+function send_cassette_status(value = 0x05) {
 	bus_data.send({
 		src: module_name,
 		dst: 'RAD',
