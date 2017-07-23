@@ -148,7 +148,7 @@ function startup() {
 							msg : 'Started',
 						});
 
-						notify.notify('Started');
+						// notify.notify('Started');
 
 						IKE.text_warning('  node-bmw restart', 3000);
 
