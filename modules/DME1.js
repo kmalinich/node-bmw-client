@@ -61,19 +61,19 @@ function parse_329(data) {
 
 	if (status.dme1.clutch !== parse.clutch) {
 		status.dme1.clutch = parse.clutch;
-    socket.status_tx();
+    socket.status_tx(module_name);
 		// logmod('Clutch: '+status.dme1.clutch);
 	}
 
 	if (status.dme1.coolant !== parse.coolant) {
 		status.dme1.coolant = parse.coolant;
-    socket.status_tx();
+    socket.status_tx(module_name);
 		// logmod('Coolant: '+status.dme1.coolant);
 	}
 
 	if (status.dme1.throttle !== parse.throttle) {
 		status.dme1.throttle = parse.throttle;
-    socket.status_tx();
+    socket.status_tx(module_name);
 		// logmod('Throttle: '+status.dme1.throttle);
 	}
 
