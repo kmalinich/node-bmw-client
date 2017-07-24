@@ -1,5 +1,6 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+const convert = require('node-unit-conversion');
 
 function logmod(string) {
 	log.msg({

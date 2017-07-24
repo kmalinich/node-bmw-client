@@ -348,13 +348,13 @@ function decode_backlight_con(data) {
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
 
-	console.log('RECV : CON backlight \'%s\'', data.msg[0]);
+	console.log('RECV : '+module_name+' backlight \'%s\'', data.msg[0]);
 }
 
 function decode_status_con(data) {
-	// console.log('[%s] status', log.chalk.boldyellow('CON'));
+	// console.log('[%s] status', log.chalk.boldyellow('CON1'));
 	if (data.msg[4] == 0x06) { // CON needs init
-		console.log('[%s] CON init', log.chalk.boldpurple('TRIGGR'));
+		console.log('[%s] '+module_name+' init', log.chalk.boldpurple('TRIGGR'));
 		send_status_cic();
 	}
 }
@@ -389,7 +389,7 @@ function send_backlight_con(value) {
 	// ... and the M62 motor mount has an oil passage ...
 	if (value === 0) backlight_value = 0xFE;
 
-	console.log('[ %s ] %s %s', log.chalk.pink('SEND'), 'CON backlight :', log.chalk.boldyellow(backlight_value.toString()));
+	console.log('[ %s ] %s %s', log.chalk.pink('SEND'), module_name+' backlight :', log.chalk.boldyellow(backlight_value.toString()));
 
 	bus_data.send({
 		bus  : 'can1',
@@ -433,9 +433,9 @@ function send_status_ignition_new() {
 	});
 
 	if (status.vehicle.ignition_level === 0) {
-		if (CON.timeouts.status_ignition_new !== null) {
-			clearTimeout(CON.timeouts.status_ignition_new);
-			CON.timeouts.status_ignition_new = null;
+		if (CON1.timeouts.status_ignition_new !== null) {
+			clearTimeout(CON1.timeouts.status_ignition_new);
+			CON1.timeouts.status_ignition_new = null;
 
 			log.module({
 				src : module_name,
@@ -446,14 +446,14 @@ function send_status_ignition_new() {
 		}
 	}
 
-	if (CON.timeouts.status_ignition_new === null) {
+	if (CON1.timeouts.status_ignition_new === null) {
 		log.module({
 			src : module_name,
 			msg : 'Set ignition status timeout',
 		});
 	}
 
-	CON.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
+	CON1.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
 }
 
 function fireup(fireup_callback) {
@@ -490,7 +490,7 @@ function parse_out(data) {
 
 		case 0x277:
 			data.command = 'rep';
-			data.value   = 'CON ACK to CIC init';
+			data.value   = module_name+' ACK to CIC init';
 			break; // CON ACK to rotational initialization message
 
 		case 0x4F8:
@@ -503,14 +503,14 @@ function parse_out(data) {
 			decode_status_con(data);
 			return;
 			data.command = 'sta';
-			data.value   = 'CON status';
+			data.value   = module_name+' status';
 			break;
 
 		case 0x5E7:
 			decode_status_con(data);
 			return;
 			data.command = 'sta';
-			data.value   = 'CON counter';
+			data.value   = module_name+' counter';
 			break;
 
 		default:

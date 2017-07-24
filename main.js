@@ -5,24 +5,19 @@ app_name = 'bmwcd';
 app_type = 'client';
 app_intf = app_type;
 
-// npm libraries
-convert = require('node-unit-conversion');
-moment  = require('moment');
-now     = require('performance-now');
-os      = require('os');
-pad     = require('pad');
-suncalc = require('suncalc');
-
 // node-bmw libraries
 bitmask      = require('bitmask');
-bus_arbids   = require('bus-arbids');
-bus_commands = require('bus-commands');
-bus_modules  = require('bus-modules');
 hex          = require('hex');
 json         = require('json');
 log          = require('log-output');
 obc_values   = require('obc-values');
 socket       = require('socket');
+
+bus = {
+	arbids   : require('bus-arbids'),
+	commands : require('bus-commands'),
+	modules  : require('bus-modules'),
+};
 
 
 function load_modules(load_modules_callback) {
@@ -93,7 +88,7 @@ function load_modules(load_modules_callback) {
 
 	// CANBUS modules
 	ASC1 = require('ASC1');
-	CON  = require('CON');
+	CON1 = require('CON1');
 	DME1 = require('DME1');
 
 	// Custom libraries
@@ -116,7 +111,7 @@ function load_modules(load_modules_callback) {
 	gpio = require('gpio');
 
 	// Push notification library
-	notify = require('notify');
+	if (config.notification.method !== null) notify = require('notify');
 
 	if (typeof load_modules_callback === 'function') load_modules_callback();
 	load_modules_callback = undefined;
@@ -142,7 +137,7 @@ function startup() {
 					process.on('SIGPIPE', () => { shutdown('SIGPIPE'); });
 
 					HDMI.startup(() => { // Open HDMI-CEC
-						socket.startup(); // Start WebSocket client
+						socket.init(); // Start WebSocket client
 
 						log.msg({
 							src : module_name,
@@ -176,7 +171,7 @@ function shutdown(signal) {
 
 	gpio.term(() => { // Terminate GPIO relays
 		host_data.term(() => { // Terminate host data timeout
-			socket.shutdown(() => { // Stop WebSocket client
+			socket.term(() => { // Stop WebSocket client
 				json.write(() => { // Write JSON config and status files
 					HDMI.shutdown(() => { // Close HDMI-CEC
 						kodi.stop(() => { // Stop Kodi WebSocket client
