@@ -1,9 +1,12 @@
 *.bak
-*.json
 *.log
 *.swo
 *.swp
 .DS_Store
 ._*
+candump/
+config.json
 node_modules/
+package-lock.json
+status.json
 test/

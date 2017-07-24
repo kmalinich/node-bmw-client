@@ -43,8 +43,8 @@ function status_loop(action) {
 // Send BMBT status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
-		bus_commands.request_device_status(module_name, 'RAD');
-		bus_commands.request_device_status('RAD',  'DSP');
+		bus.commands.request_device_status(module_name, 'RAD');
+		bus.commands.request_device_status('RAD',  'DSP');
 
 		BMBT.timeout_status_loop = setTimeout(refresh_status, 20000);
 

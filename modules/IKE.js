@@ -1,5 +1,11 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+const convert = require('node-unit-conversion');
+const moment  = require('moment');
+const now     = require('performance-now');
+const os      = require('os');
+const pad     = require('pad');
+
 // Handle incoming commands from API
 // This is pure garbage and COMPLETELY needs to be done way differently
 function api_command(data) {
@@ -204,7 +210,7 @@ function decode_ignition_status(data) {
     MID.text_loop(false);
 
     // iDrive knob
-    CON.send_status_ignition_new();
+    CON1.send_status_ignition_new();
 
     // GPIO relays
     gpio.set(1, 1);
@@ -241,10 +247,10 @@ function decode_ignition_status(data) {
     BMBT.status_loop(true);
     MID.status_loop(true);
     MID.text_loop(true);
-    bus_commands.request_device_status(module_name, 'RAD');
+    bus.commands.request_device_status(module_name, 'RAD');
 
     // iDrive knob
-    CON.send_status_ignition_new();
+    CON1.send_status_ignition_new();
 
     // Overhead LCD commands
     socket.lcd_command_tx('on');
@@ -929,7 +935,7 @@ function request(value) {
       break;
     case 'status-glo':
       src = module_name;
-      for (var loop_dst in bus_modules.modules) {
+      for (var loop_dst in bus.modules.modules) {
         if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
           bus_data.send({
             src: src,
@@ -941,7 +947,7 @@ function request(value) {
       break;
     case 'status-loc':
       src = module_name;
-      for (var loop_dst in bus_modules.modules) {
+      for (var loop_dst in bus.modules.modules) {
         if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
           bus_data.send({
             src: src,
@@ -953,7 +959,7 @@ function request(value) {
       break;
 
     case 'status-short':
-      bus_modules.modules_check.forEach((loop_dst) => {
+      bus.modules.modules_check.forEach((loop_dst) => {
         src = module_name;
         if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
           bus_data.send({
