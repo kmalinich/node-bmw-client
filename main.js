@@ -172,9 +172,9 @@ function shutdown(signal) {
 	gpio.term(() => { // Terminate GPIO relays
 		host_data.term(() => { // Terminate host data timeout
 			socket.term(() => { // Stop WebSocket client
-				json.write(() => { // Write JSON config and status files
-					HDMI.shutdown(() => { // Close HDMI-CEC
-						kodi.stop(() => { // Stop Kodi WebSocket client
+				HDMI.shutdown(() => { // Close HDMI-CEC
+					kodi.stop(() => { // Stop Kodi WebSocket client
+						json.write(() => { // Write JSON config and status files
 
 							log.msg({
 								src : module_name,
