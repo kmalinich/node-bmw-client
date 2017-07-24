@@ -66,20 +66,20 @@ function parse_329(data) {
 
 	if (status.vehicle.clutch !== parse.clutch) {
 		status.vehicle.clutch = parse.clutch;
-    socket.status_tx('vehicle');
+		socket.status_tx('vehicle');
 		// logmod('Clutch: '+status.vehicle.clutch);
 	}
 
 	if (status.temperature.coolant.c !== parse.coolant.c) {
 		status.temperature.coolant.c = parse.coolant.c;
 		status.temperature.coolant.f = parse.coolant.f;
-    socket.status_tx('temperature');
+		socket.status_tx('temperature');
 		// logmod('Coolant: '+status.temperature.coolant.c);
 	}
 
 	if (status.engine.throttle !== parse.throttle) {
 		status.engine.throttle = parse.throttle;
-    socket.status_tx('engine');
+		socket.status_tx('engine');
 		// logmod('Throttle: '+status.engine.throttle);
 	}
 
