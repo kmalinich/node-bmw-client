@@ -1,5 +1,8 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+const suncalc = require('suncalc');
+const now     = require('performance-now');
+
 // Handle incoming commands from API
 function api_command(data) {
 	if (typeof data['lcm-get'] !== 'undefined') {

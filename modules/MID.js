@@ -1,5 +1,8 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+const pad = require('pad');
+
+
 // Top screen - First 11 characters
 // 68 C0 23 00 20 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F 2F CK
 // Top screen - Right half (20 char)
@@ -146,8 +149,8 @@ function status_loop(action) {
 // Send MID status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
-		bus_commands.request_device_status(module_name, 'RAD');
-		bus_commands.request_device_status('RAD',  'DSP');
+		bus.commands.request_device_status(module_name, 'RAD');
+		bus.commands.request_device_status('RAD',  'DSP');
 		return;
 	}
 
