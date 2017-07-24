@@ -21,7 +21,7 @@ function parse_out(data) {
 			break;
 
 		case 0xB0: // Reply: Something else
-			data.command = 'rep';
+				data.command = 'rep';
 			data.value   = data.msg;
 			break;
 
