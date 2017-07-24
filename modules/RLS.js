@@ -18,22 +18,22 @@ function parse_out(data) {
 
 // Request various things from RLS
 function request(value) {
-	// Init variables
-	let src;
-	let cmd;
+  // Init variables
+  let src;
+  let cmd;
 
-	switch (value) {
-		case 'rain-sensor-status':
-			src = 'IHKA';
-			cmd = [0x71]; // Get IO status
-			break;
-	}
+  switch (value) {
+    case 'rain-sensor-status':
+      src = 'IHKA';
+      cmd = [0x71]; // Get IO status
+      break;
+  }
 
-	bus_data.send({
-		src : src,
-		dst : 'GM',
-		msg : cmd,
-	});
+  bus_data.send({
+    src : src,
+    dst : 'GM',
+    msg : cmd,
+  });
 }
 
 module.exports = {

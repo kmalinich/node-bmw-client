@@ -97,7 +97,7 @@ function parse_out(data) {
       break;
 
     case 0x4A: // Control: Cassette
-			BMBT.send_cassette_status(data.msg[1]);
+      BMBT.send_cassette_status(data.msg[1]);
 
       data.command = 'con';
       data.value   = 'cassette: ';
@@ -142,8 +142,8 @@ function parse_out(data) {
 }
 
 function send_audio_control(source) {
-	let msg_tunertape = [0x36, 0xA1];
-	let msg_cd        = [0x36, 0xA0];
+  let msg_tunertape = [0x36, 0xA1];
+  let msg_cd        = [0x36, 0xA0];
 
   log.module({ src : module_name, msg : 'Sending audio control: tuner/tape' });
   bus_data.send({

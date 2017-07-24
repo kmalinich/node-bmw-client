@@ -63,20 +63,20 @@ function power_on_if_ready() {
 	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
 	// setTimeout(() => {
-		if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
-			kodi.notify(module_name, 'power on');
-			IKE.text_override(module_name+' power');
+	if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
+		kodi.notify(module_name, 'power on');
+		IKE.text_override(module_name+' power');
 
-			log.module({
-				src : module_name,
-				msg : 'Sending power!',
-			});
+		log.module({
+			src : module_name,
+			msg : 'Sending power!',
+		});
 
-			// send_button('power');
-			DSP.request('memory'); // Get the DSP memory
-		}
-	// }, 2000);
-}
+		// send_button('power');
+		DSP.request('memory'); // Get the DSP memory
+	}
+		// }, 2000);
+	}
 
 // Parse data sent to BMBT module
 function parse_in(data) {
