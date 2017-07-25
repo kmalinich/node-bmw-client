@@ -1,8 +1,5 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
-// Node.js clustering
-// cluster = require('cluster');
-
 app_path = __dirname;
 app_name = 'bmwcd';
 app_type = 'client';
@@ -128,85 +125,43 @@ function messageHandler(msg) {
 
 // Global startup
 function startup() {
-	// if (cluster.isMaster) {
-	// 	log.msg({
-	// 		src : module_name,
-	// 		msg : 'Started master PID '+process.pid,
-	// 	});
-
-	// 	// Fork workers
-	// 	for (let i = 0; i < os.cpus().length; i++) {
-	// 		cluster.fork();
-	// 	}
-
-	// 	for (const id in cluster.workers) {
-	// 		cluster.workers[id].on('message', messageHandler);
-	// 	}
-
-	// 	cluster.on('exit', (worker, code, signal) => {
-	// 		log.msg({
-	// 			src : module_name,
-	// 			msg : 'Terminated worker PID '+worker.process.pid,
-	// 		});
-	// 	});
-
-	// 	// setTimeout(() => {
-	// 	// 	for (let i = 0; i < numCPUs; i++) {
-	// 	// 		cluster.workers[i].send('hello from master');
-	// 	// 	}
-	// 	// }, 2000);
-	// }
-
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS module node modules
 			host_data.init(() => { // Initialize host data object
-				// if (cluster.isMaster) {
-					kodi.start(); // Start Kodi WebSocket client
-					BT.start(); // Start Linux D-Bus Bluetooth handler
-				// }
+				kodi.start(); // Start Kodi WebSocket client
+				BT.start(); // Start Linux D-Bus Bluetooth handler
 
 				gpio.init(() => { // Initialize GPIO relays
 
 					// Shutdown events/signals
-					// if (cluster.isMaster) {
-						process.on('SIGTERM', () => { shutdown('SIGTERM'); });
-						process.on('SIGINT',  () => { shutdown('SIGINT');  });
-						process.on('SIGPIPE', () => { shutdown('SIGPIPE'); });
-					// }
+					process.on('SIGTERM', () => { shutdown('SIGTERM'); });
+					process.on('SIGINT',  () => { shutdown('SIGINT');  });
+					process.on('SIGPIPE', () => { shutdown('SIGPIPE'); });
 
 					HDMI.startup(() => { // Open HDMI-CEC
 						socket.init(); // Start WebSocket client
 
-						// if (cluster.isMaster) {
-							log.msg({
-								src : module_name,
-								msg : 'Init complete',
+						log.msg({
+							src : module_name,
+							msg : 'Init complete',
+						});
+
+						// notify.notify('Started');
+
+						IKE.text_warning('  node-bmw restart', 3000);
+
+						setTimeout(() => {
+							socket.lcd_text_tx({
+								upper : 'bmwcd '+status.system.host.short,
+								lower : 'node-bmw restart',
 							});
-
-							// notify.notify('Started');
-
-							IKE.text_warning('  node-bmw restart', 3000);
-
-							setTimeout(() => {
-								socket.lcd_text_tx({
-									upper : 'bmwcd '+status.system.host.short,
-									lower : 'node-bmw restart',
-								});
-							}, 250);
-						// }
+						}, 250);
 
 					});
 				});
 			});
 		});
 	});
-
-	if (cluster.isWorker) {
-		log.msg({
-			src : module_name,
-			msg : 'Started worker PID '+process.pid,
-		});
-	}
 }
 
 // Global shutdown
