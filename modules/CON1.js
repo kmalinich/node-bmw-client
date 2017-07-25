@@ -31,14 +31,6 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 // 2BA -> 00 00 00 00 20
 
 
-function out(src, data) {
-	console.log('[%s]', src.toUpperCase(), data);
-}
-
-function json_out(data) {
-	let json = JSON.stringify(data, null, 2);
-	console.log(json);
-}
 
 function button_out(data) {
 	let strings = {
@@ -108,14 +100,10 @@ function decode_con_rotation(data) {
 	status.con1.rotation.absolute = data.msg[2];
 	status.con1.rotation.relative = data.msg[3];
 
-	let direction_fmt;
-	switch (status.con1.rotation.direction) {
-		case 'up'   : direction_fmt = log.chalk.boldgreen('up');  break;
-		case 'down' : direction_fmt = log.chalk.boldred('down'); break;
-		default     : direction_fmt = log.chalk.boldyellow(status.con1.rotation.relative.toString());
-	}
-
-	console.log('[%s] %s', log.chalk.boldpurple('ROTATE'), direction_fmt);
+	log.msg({
+		src : module_name,
+		msg : 'Rotation: '+status.con1.rotation.direction,
+	});
 
 	if (status.con1.rotation.volume === true) {
 		switch (status.con1.rotation.direction) {
@@ -297,66 +285,22 @@ function button_check(button) {
 	// Store buttonpress data in 'last' object
 	status.con1.last.button = button;
 
-	let output = {
-		action : null,
-		mode   : null,
-	};
-
-	// Pretty colors...
-	switch (button.action) {
-		case 'hold'    : output.action = log.chalk.italicorange('  HOLD '); break;
-		case 'press'   : output.action = log.chalk.boldgreen  (' PRESS '); break;
-		case 'release' : output.action = log.chalk.italicgray('release'); break;
-	}
-
-	switch (button.mode) {
-		case 'button'   : output.mode = log.chalk.yellow('BUTN'); break;
-		case 'joystick' : output.mode = log.chalk.cyan('KNOB'); break;
-		case 'push'     : output.mode = log.chalk.cyan('KNOB'); break;
-	}
-
-	// if (button.action == 'press' && button.button == 'up') {
-	//   status.con1.backlight++;
-	//   send_backlight_con(status.con1.backlight);
-	// }
-
-	// if (button.action == 'press' && button.button == 'down') {
-	//   status.con1.backlight--;
-	//   send_backlight_con(status.con1.backlight);
-	// }
-
-	console.log('[%s] [%s] [%s] %s',
-		log.chalk.blue('BUTTON'),
-		output.mode,
-		output.action,
-		button.button
-	);
+	log.msg({
+		src : module_name,
+		msg : 'Button: '+button.action+' '+button.button,
+	});
 
 	if (button.action == 'press') {
 
 		switch (button.button) {
 			case 'nav':
 				// To use the nav button as a toggle for left<->right or up<->down rotation
-				log.change({
-					src   : module_name,
-					value : 'Alternate rotation',
-					old   : status.con1.rotation.alternate,
-					new   : !status.con1.rotation.alternate,
-				});
-
-				status.con1.rotation.alternate = !status.con1.rotation.alternate;
+				update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
 				break;
 
 			case 'cd':
 				// To use the CD button as a toggle for rotation = Kodi volume control
-				log.change({
-					src   : module_name,
-					value : 'Volume rotation',
-					old   : status.con1.rotation.volume,
-					new   : !status.con1.rotation.volume,
-				});
-
-				status.con1.rotation.volume = !status.con1.rotation.volume;
+				update.status('con1.rotation.volume', !status.con1.rotation.volume);
 				break;
 
 			default:
@@ -367,7 +311,7 @@ function button_check(button) {
 }
 
 
-function decode_backlight_con(data) {
+function decode_backlight(data) {
 	// data.msg[0]: Backlight intensity
 	// 0xFF      : 50%
 	// 0xFE      :  0%
@@ -379,7 +323,11 @@ function decode_backlight_con(data) {
 function decode_status_con(data) {
 	// console.log('[%s] status', log.chalk.boldyellow('CON1'));
 	if (data.msg[4] == 0x06) { // CON needs init
-		console.log('[%s] '+module_name+' init', log.chalk.boldpurple('TRIGGR'));
+		log.msg({
+			src : module_name,
+			msg : 'Init triggered',
+		});
+
 		send_status_cic();
 	}
 }
@@ -392,8 +340,18 @@ function decode_status_cic(data) {
 	// console.log('CIC status message');
 }
 
+function send_heartbeat() {
+	// 2BA -> 00 00 00 00 10
+	// 2BA -> 00 00 00 00 20
 
-function send_backlight_con(value) {
+	switch (status.con1.last.heartbeat) {
+		case 0x10 : status.con1.last.heartbeat = 0x20; break;
+		default   : status.con1.last.heartbeat = 0x10;
+	}
+}
+
+
+function send_backlight(value) {
 	// data.msg[0]: Backlight intensity
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
@@ -436,19 +394,12 @@ function send_backlight_con(value) {
 	});
 }
 
-function send_heartbeat() {
-	// 2BA -> 00 00 00 00 10
-	// 2BA -> 00 00 00 00 20
-
-	switch (status.con1.last.heartbeat) {
-		case 0x10 : status.con1.last.heartbeat = 0x20; break;
-		default   : status.con1.last.heartbeat = 0x10;
-	}
-}
-
 // E90 CIC status
 function send_status_cic() {
-	console.log('[ %s ] %s', log.chalk.pink('SEND'), 'CIC status');
+	log.module({
+		src : module_name,
+		msg : 'Sending CIC status',
+	});
 
 	let msg = [0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04];
 	bus_data.send({
@@ -462,7 +413,10 @@ function send_status_cic() {
 
 // E90 Ignition status
 function send_status_ignition_new() {
-	// console.log('[ %s ] %s', log.chalk.pink('SEND'), 'ignition status');
+	log.module({
+		src : module_name,
+		msg : 'Sending ignition status',
+	});
 
 	bus_data.send({
 		bus  : 'can1',
@@ -494,18 +448,13 @@ function send_status_ignition_new() {
 	CON1.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
 }
 
-function fireup(fireup_callback) {
-	send_status_ignition_new();
-	send_backlight_con(status.con1.backlight);
-}
-
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.src.id) {
 		case 0x202:
 			data.command = 'bro';
 			data.value   = 'Dimmer status';
-			decode_backlight_con(data);
+			decode_backlight(data);
 			break; // Backlight message
 
 		case 0x264:
@@ -569,7 +518,7 @@ module.exports = {
 	// Functions
 	parse_out : (data) => { parse_out(data); },
 
-	send_backlight_con       : (value) => { send_backlight_con(value);   },
+	send_backlight           : (value) => { send_backlight(value);      },
 	send_status_ignition_new : ()      => { send_status_ignition_new(); },
 };
 
