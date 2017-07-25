@@ -355,10 +355,12 @@ function decode_speed_values(data) {
 function decode_temperature_values(data) {
 	// Update external and engine coolant temp variables
 	update.status('temperature.exterior.c', parseFloat(data.msg[1]));
-	update.status('temperature.coolant.c',  parseFloat(data.msg[2]));
-
 	update.status('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
-	update.status('temperature.coolant.f',  Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
+
+	if (config.canbus.coolant === false) {
+		update.status('temperature.coolant.c',  parseFloat(data.msg[2]));
+		update.status('temperature.coolant.f',  Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
+	}
 
 	// Trigger a HUD refresh
 	IKE.hud_refresh();
@@ -396,14 +398,9 @@ function hud_refresh(interval = false) {
 
 	// Format the output (ghetto-ly)
 	switch (string_temp.length) {
-		case 4:
-			string_temp = pad(string_temp, 3);
-			break;
-		case 3:
-			string_temp = ' '+string_temp+'   ';
-			break;
-		case 2:
-			string_temp = ' '+string_temp+'    ';
+		case 4 : string_temp = ' '+string_temp+'  ';  break;
+		case 3 : string_temp = ' '+string_temp+'   '; break;
+		case 2 : string_temp = ' '+string_temp+'    ';
 	}
 
 	// HUD strings object
