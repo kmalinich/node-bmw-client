@@ -1,8 +1,7 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Node.js clustering
-cluster = require('cluster');
-workers = [];
+// cluster = require('cluster');
 
 app_path = __dirname;
 app_name = 'bmwcd';
@@ -122,54 +121,63 @@ function load_modules(load_modules_callback) {
 	load_modules_callback = undefined;
 }
 
+function messageHandler(msg) {
+	socket.send(msg.event, msg.data);
+}
+
+
 // Global startup
 function startup() {
-	if (cluster.isMaster) {
-		log.msg({
-			src : module_name,
-			msg : 'Started master PID '+process.pid,
-		});
+	// if (cluster.isMaster) {
+	// 	log.msg({
+	// 		src : module_name,
+	// 		msg : 'Started master PID '+process.pid,
+	// 	});
 
-		// Fork workers
-		for (let i = 0; i < os.cpus().length; i++) {
-			workers.push(cluster.fork());
-		}
+	// 	// Fork workers
+	// 	for (let i = 0; i < os.cpus().length; i++) {
+	// 		cluster.fork();
+	// 	}
 
-		cluster.on('exit', (worker, code, signal) => {
-			log.msg({
-				src : module_name,
-				msg : 'Terminated worker PID '+worker.process.pid,
-			});
-		});
+	// 	for (const id in cluster.workers) {
+	// 		cluster.workers[id].on('message', messageHandler);
+	// 	}
 
-		// setTimeout(() => {
-		// 	for (let i = 0; i < numCPUs; i++) {
-		// 		workers[i].send('hello from master');
-		// 	}
-		// }, 2000);
-	}
+	// 	cluster.on('exit', (worker, code, signal) => {
+	// 		log.msg({
+	// 			src : module_name,
+	// 			msg : 'Terminated worker PID '+worker.process.pid,
+	// 		});
+	// 	});
+
+	// 	// setTimeout(() => {
+	// 	// 	for (let i = 0; i < numCPUs; i++) {
+	// 	// 		cluster.workers[i].send('hello from master');
+	// 	// 	}
+	// 	// }, 2000);
+	// }
 
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS module node modules
 			host_data.init(() => { // Initialize host data object
-				if (cluster.isMaster) {
+				// if (cluster.isMaster) {
 					kodi.start(); // Start Kodi WebSocket client
 					BT.start(); // Start Linux D-Bus Bluetooth handler
-				}
+				// }
 
 				gpio.init(() => { // Initialize GPIO relays
 
 					// Shutdown events/signals
-					if (cluster.isMaster) {
+					// if (cluster.isMaster) {
 						process.on('SIGTERM', () => { shutdown('SIGTERM'); });
 						process.on('SIGINT',  () => { shutdown('SIGINT');  });
 						process.on('SIGPIPE', () => { shutdown('SIGPIPE'); });
-					}
+					// }
 
 					HDMI.startup(() => { // Open HDMI-CEC
 						socket.init(); // Start WebSocket client
 
-						if (cluster.isMaster) {
+						// if (cluster.isMaster) {
 							log.msg({
 								src : module_name,
 								msg : 'Init complete',
@@ -185,7 +193,7 @@ function startup() {
 									lower : 'node-bmw restart',
 								});
 							}, 250);
-						}
+						// }
 
 					});
 				});
