@@ -35,7 +35,7 @@ function parse_out(data) {
 
 // Enable/disable aux heat/vent
 function aux(type, action) {
-	var cmd;
+	let cmd;
 
 	// Set command base value based on type argument
 	switch (type) {
@@ -58,8 +58,8 @@ function aux(type, action) {
 // Request various things from IHKA
 function request(value) {
 	// Init variables
-	var src;
-	var cmd;
+	let src;
+	let cmd;
 
 	switch (value) {
 		case 'io-status':
