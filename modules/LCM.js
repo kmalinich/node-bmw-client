@@ -87,10 +87,15 @@ function auto_lights_process() {
 		return;
 	}
 
-	log.module({
-		src : module_name,
-		msg : 'Processing auto lights',
-	});
+	if (config.lights.auto !== true) {
+		auto_lights();
+		return;
+	}
+
+	// log.module({
+	// 	src : module_name,
+	// 	msg : 'Processing auto lights',
+	// });
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed != 'off') {
