@@ -342,25 +342,23 @@ function decode_sensor_status(data) {
 
 function decode_speed_values(data) {
 	// Update vehicle and engine speed variables
-	status.vehicle.speed.kmh = parseFloat(data.msg[1]*2);
-	status.engine.speed      = parseFloat(data.msg[2]*100);
+	if (config.canbus.speed === false) {
+		status.vehicle.speed.kmh = parseFloat(data.msg[1]*2);
+		status.vehicle.speed.mph = parseFloat(convert(parseFloat((data.msg[1]*2))).from('kilometre').to('us mile').toFixed(2));
+	}
 
-	// Convert values and round to 2 decimals
-	status.vehicle.speed.mph = parseFloat(convert(parseFloat((data.msg[1]*2))).from('kilometre').to('us mile').toFixed(2));
-
-	socket.status_tx('vehicle');
-	socket.status_tx('engine');
+	if (config.canbus.rpm === false) {
+		update.status('engine.speed', parseFloat(data.msg[2]*100));
+	}
 }
 
 function decode_temperature_values(data) {
 	// Update external and engine coolant temp variables
-	status.temperature.exterior.c = parseFloat(data.msg[1]);
-	status.temperature.coolant.c  = parseFloat(data.msg[2]);
+	status.update('temperature.exterior.c', parseFloat(data.msg[1]));
+	status.update('temperature.coolant.c',  parseFloat(data.msg[2]));
 
-	status.temperature.exterior.f = Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit'));
-	status.temperature.coolant.f  = Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit'));
-
-	socket.status_tx('temperature');
+	status.update('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
+	status.update('temperature.coolant.f',  Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 
 	// Trigger a HUD refresh
 	IKE.hud_refresh();
@@ -452,7 +450,6 @@ function ignition(value) {
 			break;
 		case 'pos3':
 			status = 0x07;
-			break;
 	}
 
 	bus_data.send({
@@ -466,7 +463,7 @@ function ignition(value) {
 function logmod(msg) {
 	log.module({
 		src : module_name,
-		msg : 'Powerup state',
+		msg : msg,
 	});
 }
 
@@ -1006,7 +1003,7 @@ function text(message) {
 // IKE cluster text send message, override other messages
 function text_override(message, timeout = 2500, direction = 'left', turn = false) {
 	// kodi.notify(module_name, message);
-	var max_length   = 20;
+	var max_length = 20;
 
 	var scroll_delay         = 300;
 	var scroll_delay_timeout = scroll_delay*5;
