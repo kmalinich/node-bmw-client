@@ -295,7 +295,7 @@ function decode(data) {
 			update.status('lights.faulty.all_ok', !Boolean(data.msg[2]));
 
 			update.status('lights.faulty.standing.front', bitmask.test(data.msg[2], bitmask.bit[0]));
-			update.status('lights.faulty.lowbeam',        bitmask.test(data.msg[2], bitmask.bit[1]));
+			update.status('lights.faulty.lowbeam.both',   bitmask.test(data.msg[2], bitmask.bit[1]));
 			update.status('lights.faulty.highbeam',       bitmask.test(data.msg[2], bitmask.bit[2]));
 			update.status('lights.faulty.fog.front',      bitmask.test(data.msg[2], bitmask.bit[3]));
 			update.status('lights.faulty.fog.rear',       bitmask.test(data.msg[2], bitmask.bit[4]));
@@ -309,8 +309,6 @@ function decode(data) {
 			update.status('lights.faulty.standing.rear.left',  bitmask.test(data.msg[4], bitmask.bit[3]));
 			update.status('lights.faulty.lowbeam.right',       bitmask.test(data.msg[4], bitmask.bit[4]));
 			update.status('lights.faulty.lowbeam.left',        bitmask.test(data.msg[4], bitmask.bit[5]));
-
-			// log.module({ src : module_name, msg : 'Decoded light status' });
 			break;
 
 		case 0xA0: // Decode IO status and output true/false values
