@@ -57,7 +57,8 @@ function parse_329(data) {
   let parse = {
     msg      : '0x329',
     clutch   : bitmask.test(data.msg[3], 0x01),
-    throttle : parseFloat((data.msg[5]/2.54).toFixed(2)),
+    //throttle : parseFloat((data.msg[5]/2.54).toFixed(2)),
+    throttle : parseFloat((data.msg[5]/2.54).toFixed(0)),
     coolant  : {
       c : ((data.msg[1]*.75)-48.373).toFixed(2),
     },
