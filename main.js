@@ -6,13 +6,14 @@ app_type = 'client';
 app_intf = app_type;
 
 // node-bmw libraries
-os           = require('os');
-bitmask      = require('bitmask');
-hex          = require('hex');
-json         = require('json');
-log          = require('log-output');
-obc_values   = require('obc-values');
-socket       = require('socket');
+bitmask    = require('bitmask');
+hex        = require('hex');
+json       = require('json');
+log        = require('log-output');
+obc_values = require('obc-values');
+os         = require('os');
+socket     = require('socket');
+update     = require('update');
 
 bus = {
 	arbids   : require('bus-arbids'),
