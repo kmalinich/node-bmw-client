@@ -54,7 +54,7 @@ function parse_out(data) {
 
 // CDC->RAD CD status
 function send_cd_status(value) {
-	var bit;
+	let bit;
 
 	switch (value) {
 		case 'status':

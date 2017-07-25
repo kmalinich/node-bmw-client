@@ -37,20 +37,20 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Parse data sent from NAV module
 function parse_out(data) {
-  switch (data.msg[0]) {
-    case 0x1F: // Broadcast: Time and date
-      data.command = 'bro';
-      data.value   = 'GPS time and date '+data.msg;
-      break;
+	switch (data.msg[0]) {
+		case 0x1F: // Broadcast: Time and date
+			data.command = 'bro';
+			data.value   = 'GPS time and date '+data.msg;
+			break;
 
-    default:
-      data.command = 'unk';
-      data.value   = Buffer.from(data.msg);
-  }
+		default:
+			data.command = 'unk';
+			data.value   = Buffer.from(data.msg);
+	}
 
-  log.bus(data);
+	log.bus(data);
 }
 
 module.exports = {
-  parse_out : (data) => { parse_out(data); },
+	parse_out : (data) => { parse_out(data); },
 };

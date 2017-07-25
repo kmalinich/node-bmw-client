@@ -22,10 +22,10 @@ function status_loop(action) {
 			// Set status variable
 			BMBT.status_status_loop = false;
 
-			if (BMBT.timeout_status_loop !== null) {
+			if (BMBT.timeouts.status_loop !== null) {
 				log.module({ src : module_name, msg : 'Unset status refresh timeout' });
-				clearTimeout(BMBT.timeout_status_loop);
-				BMBT.timeout_status_loop = null;
+				clearTimeout(BMBT.timeouts.status_loop);
+				BMBT.timeouts.status_loop = null;
 			}
 			break;
 		case true:
@@ -43,10 +43,14 @@ function status_loop(action) {
 // Send BMBT status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
+		bus.commands.send_device_status('CDC');
+		bus.commands.send_device_status('BMBT');
+		bus.commands.send_device_status('DSPC');
+
 		bus.commands.request_device_status(module_name, 'RAD');
 		bus.commands.request_device_status('RAD',  'DSP');
 
-		BMBT.timeout_status_loop = setTimeout(refresh_status, 20000);
+		BMBT.timeouts.status_loop = setTimeout(refresh_status, 10000);
 
 		return;
 	}
@@ -58,25 +62,30 @@ function refresh_status() {
 function power_on_if_ready() {
 	if (config.emulate.bmbt !== true) return;
 
-	// Debug logging
-	// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
-	// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
+	// Only setTimeout if we don't already have one waiting
+	if (BMBT.timeouts.power_on === null) {
+		BMBT.timeouts.power_on = setTimeout(() => {
+			// Debug logging
+			// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
+			// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
 
-	// setTimeout(() => {
-	if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
-		kodi.notify(module_name, 'power on');
-		IKE.text_override(module_name+' power');
+			if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
+				kodi.notify(module_name, 'power on');
+				IKE.text_override(module_name+' power');
 
-		log.module({
-			src : module_name,
-			msg : 'Sending power!',
-		});
+				log.module({
+					src : module_name,
+					msg : 'Sending power!',
+				});
 
-		// send_button('power');
-		DSP.request('memory'); // Get the DSP memory
+				// send_button('power');
+				DSP.request('memory'); // Get the DSP memory
+			}
+
+			BMBT.timeouts.power_on = null;
+		}, 2000);
 	}
-		// }, 2000);
-	}
+}
 
 // Parse data sent to BMBT module
 function parse_in(data) {
@@ -145,9 +154,9 @@ function send_cassette_status(value = 0x05) {
 
 // Emulate button presses
 function send_button(button) {
-	var button_down = 0x00;
-	var button_hold;
-	var button_up;
+	let button_down = 0x00;
+	let button_hold;
+	let button_up;
 
 	// Switch statement to determine button, then encode bitmask
 	switch (button) {
@@ -165,9 +174,9 @@ function send_button(button) {
 	log.module({ src : module_name, msg : 'Button down '+button });
 
 	// Init variables
-	var command     = 0x48; // Button action
-	var packet_down = [command, button_down];
-	var packet_up   = [command, button_up];
+	let command     = 0x48; // Button action
+	let packet_down = [command, button_down];
+	let packet_up   = [command, button_up];
 
 	bus_data.send({
 		src: module_name,
@@ -178,23 +187,28 @@ function send_button(button) {
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
 		log.module({ src : module_name, msg : 'Button up '+button });
+
 		bus_data.send({
 			src: module_name,
 			dst: 'RAD',
 			msg: packet_up,
 		});
-	}, 100);
+	}, 150);
 }
 
 
 module.exports = {
-	status_status_loop  : false,
-	timeout_status_loop : null,
+	status_status_loop : false,
 
-	parse_in             : (data)   => { parse_in(data);         },
-	parse_out            : (data)   => { parse_out(data);        },
-	power_on_if_ready    : ()       => { power_on_if_ready();    },
-	send_button          : (button) => { send_button(button);    },
+	timeouts : {
+		power_on    : null,
+		status_loop : null,
+	},
+
+	parse_in             : (data)   => { parse_in(data);              },
+	parse_out            : (data)   => { parse_out(data);             },
+	power_on_if_ready    : ()       => { power_on_if_ready();         },
+	send_button          : (button) => { send_button(button);         },
 	send_cassette_status : (value)  => { send_cassette_status(value); },
-	status_loop          : (action) => { status_loop(action);    },
+	status_loop          : (action) => { status_loop(action);         },
 }
