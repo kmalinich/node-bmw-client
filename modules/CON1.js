@@ -36,7 +36,7 @@ function out(src, data) {
 }
 
 function json_out(data) {
-	var json = JSON.stringify(data, null, 2);
+	let json = JSON.stringify(data, null, 2);
 	console.log(json);
 }
 
@@ -74,7 +74,7 @@ function decode_con_rotation(data) {
 		status.con1.rotation.direction = 'down';
 	}
 
-	var subtract = data.msg[3]-status.con1.rotation.relative;
+	let subtract = data.msg[3]-status.con1.rotation.relative;
 
 	// Spin it hard enough and you can get it to jump up to 24 notches!
 
@@ -108,10 +108,11 @@ function decode_con_rotation(data) {
 	status.con1.rotation.absolute = data.msg[2];
 	status.con1.rotation.relative = data.msg[3];
 
+	let direction_fmt;
 	switch (status.con1.rotation.direction) {
-		case 'up'   : var direction_fmt = log.chalk.boldgreen('up');  break;
-		case 'down' : var direction_fmt = log.chalk.boldred('down'); break;
-		default     : var direction_fmt = log.chalk.boldyellow(status.con1.rotation.relative.toString());
+		case 'up'   : direction_fmt = log.chalk.boldgreen('up');  break;
+		case 'down' : direction_fmt = log.chalk.boldred('down'); break;
+		default     : direction_fmt = log.chalk.boldyellow(status.con1.rotation.relative.toString());
 	}
 
 	console.log('[%s] %s', log.chalk.boldpurple('ROTATE'), direction_fmt);
