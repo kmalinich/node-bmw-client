@@ -22,8 +22,8 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
+		"amp-message": "^0.1.2",
 		"chump": "^1.2.0",
-		"cluster": "^0.7.7",
 		"dark-sky": "^1.0.10",
 		"defaults-deep": "^0.2.3",
 		"json-colorizer": "^1.1.0",
@@ -36,9 +36,9 @@
 		"os": "^0.1.1",
 		"pad": "^1.1.0",
 		"performance-now": "^2.1.0",
-		"socket.io-client": "^2.0.3",
 		"suncalc": "^1.8.0",
-		"trucolor": "^0.6.6"
+		"trucolor": "^0.6.6",
+		"zeromq": "^4.5.0"
 	},
 	"optionalDependencies": {
 		"dbus-native": "^0.2.2",
