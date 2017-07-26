@@ -107,8 +107,8 @@ function decode_con_rotation(data) {
 
 	if (status.con1.rotation.volume === true) {
 		switch (status.con1.rotation.direction) {
-			case 'up'   : kodi.volume('up');   break;
-			case 'down' : kodi.volume('down'); break;
+			case 'up'   : kodi.volume('down');   break;
+			case 'down' : kodi.volume('up'); break;
 		}
 		return;
 	}
