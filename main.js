@@ -5,6 +5,8 @@ app_name = 'bmwcd';
 app_type = 'client';
 app_intf = app_type;
 
+process.title = app_name;
+
 // node-bmw libraries
 bitmask    = require('bitmask');
 hex        = require('hex');
@@ -184,7 +186,7 @@ function init() {
 
 // Save-N-Exit
 function bail() {
-	json.status_write(() => { // Write JSON status file
+	json.write(() => { // Write JSON config and status files
 		process.exit();
 	});
 }
