@@ -175,7 +175,7 @@ function parse_out(data) {
 			return;
 
 		case 0x76: // Broadcast: 'Crash alarm' ..
-				data.command = 'bro';
+			data.command = 'bro';
 			data.value   = 'crash alarm - ';
 
 			switch (data.msg[1]) {
