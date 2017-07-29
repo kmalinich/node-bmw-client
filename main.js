@@ -5,6 +5,8 @@ app_name = 'bmwcd';
 app_type = 'client';
 app_intf = app_type;
 
+process.title = app_name;
+
 // node-bmw libraries
 bitmask    = require('bitmask');
 hex        = require('hex');
@@ -22,7 +24,33 @@ bus = {
 };
 
 
-function load_modules(load_modules_callback) {
+// Configure term event listeners
+function term_config(pass) {
+	process.on('SIGTERM', () => {
+		console.log('');
+		log.msg({ src : module_name, msg : 'Caught SIGTERM' });
+		term();
+	});
+
+	process.on('SIGINT', () => {
+		console.log('');
+		log.msg({ src : module_name, msg : 'Caught SIGINT' });
+		term();
+	});
+
+	process.on('exit', () => {
+		log.msg({
+			src : module_name,
+			msg : 'Terminated',
+		});
+	});
+
+	pass();
+}
+
+// Function to load modules that require data from config object,
+// AFTER the config object is loaded
+function load_modules(pass) {
 	// DBUS/KBUS/IBUS modules
 	ABG  = require('ABG');
 	AHL  = require('AHL');
@@ -98,11 +126,6 @@ function load_modules(load_modules_callback) {
 	HDMI = require('HDMI');
 	kodi = require('kodi');
 
-	log.msg({
-		src : module_name,
-		msg : 'Loaded modules',
-	});
-
 	// Data handler/router
 	bus_data = require('bus-data');
 
@@ -115,82 +138,76 @@ function load_modules(load_modules_callback) {
 	// Push notification library
 	if (config.notification.method !== null) notify = require('notify');
 
-	if (typeof load_modules_callback === 'function') load_modules_callback();
-	load_modules_callback = undefined;
+	log.module({
+		src : module_name,
+		msg : 'Loaded modules',
+	});
+
+	pass();
+	return true;
 }
 
-function messageHandler(msg) {
-	socket.send(msg.event, msg.data);
-}
 
+// Global init
+function init() {
+	log.msg({ src : module_name, msg : 'Initializing' });
 
-// Global startup
-function startup() {
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS module node modules
 			host_data.init(() => { // Initialize host data object
-				kodi.start(); // Start Kodi WebSocket client
-				BT.start(); // Start Linux D-Bus Bluetooth handler
+				kodi.init(); // Start Kodi zeroMQ client
+				BT.init(); // Start Linux D-Bus Bluetooth handler
 
 				gpio.init(() => { // Initialize GPIO relays
 
-					// Shutdown events/signals
-					process.on('SIGTERM', () => { shutdown('SIGTERM'); });
-					process.on('SIGINT',  () => { shutdown('SIGINT');  });
-					process.on('SIGPIPE', () => { shutdown('SIGPIPE'); });
+					HDMI.init(() => { // Open HDMI-CEC
+						socket.init(() => { // Start zeroMQ client
 
-					HDMI.startup(() => { // Open HDMI-CEC
-						socket.init(); // Start WebSocket client
+							log.msg({ src : module_name, msg : 'Initialized' });
 
-						log.msg({
-							src : module_name,
-							msg : 'Init complete',
-						});
+							// notify.notify('Started');
 
-						// notify.notify('Started');
+							IKE.text_warning('     bmwcd restart', 3000);
 
-						IKE.text_warning('  node-bmw restart', 3000);
+							setTimeout(() => {
+								socket.lcd_text_tx({
+									upper : app_name+' '+status.system.host.short,
+									lower : 'restarted',
+								});
+							}, 250);
 
-						setTimeout(() => {
-							socket.lcd_text_tx({
-								upper : 'bmwcd '+status.system.host.short,
-								lower : 'node-bmw restart',
-							});
-						}, 250);
+						}, term);
+					}, term);
+				}, term);
+			}, term);
+		}, term);
+	}, term);
+}
 
-					});
-				});
-			});
-		});
+// Save-N-Exit
+function bail() {
+	json.write(() => { // Write JSON config and status files
+		process.exit();
 	});
 }
 
-// Global shutdown
-function shutdown(signal) {
-	log.msg({
-		src : module_name,
-		msg : 'Received '+signal+', shutting down',
-	});
+// Global term
+function term() {
+	log.msg({ src : module_name, msg : 'Terminating' });
 
 	gpio.term(() => { // Terminate GPIO relays
 		host_data.term(() => { // Terminate host data timeout
-			socket.term(() => { // Stop WebSocket client
-				HDMI.shutdown(() => { // Close HDMI-CEC
-					kodi.stop(() => { // Stop Kodi WebSocket client
-						json.write(() => { // Write JSON config and status files
-
-							log.msg({
-								src : module_name,
-								msg : 'Shut down',
-							});
-
-							process.exit();
-						});
-					});
-				});
-			});
-		});
-	});
+			socket.term(() => { // Stop zeroMQ client
+				HDMI.term(() => { // Close HDMI-CEC
+					kodi.term(bail); // Stop Kodi zeroMQ client
+				}, bail);
+			}, bail);
+		}, bail);
+	}, bail);
 }
 
-startup();
+
+// FASTEN SEATBELTS
+term_config(() => {
+	init();
+});
