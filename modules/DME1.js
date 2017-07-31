@@ -3,10 +3,10 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 const convert = require('node-unit-conversion');
 
 function logmod(string) {
-  log.msg({
-    src : module_name,
-    msg : string,
-  });
+	log.msg({
+		src : module_name,
+		msg : string,
+	});
 };
 
 function parse_316(data) {
@@ -33,10 +33,10 @@ function parse_316(data) {
 }
 
 function lcd_update() {
-  socket.lcd_text_tx({
-    upper : 'THR|CLT|CHC|XXXXX',
-    lower : Math.round(status.engine.throttle)+'%|'+Math.round(status.dme.coolant)+'C|'+status.vehicle.clutch,
-  });
+	socket.lcd_text_tx({
+		upper : 'THR|CLT|CHC|XXXXX',
+		lower : Math.round(status.engine.throttle)+'%|'+Math.round(status.dme.coolant)+'C|'+status.vehicle.clutch,
+	});
 }
 
 function parse_329(data) {
@@ -62,42 +62,42 @@ function parse_329(data) {
 
 // Parse data sent from module
 function parse_out(data) {
-  data.command = 'bro';
+	data.command = 'bro';
 
-  switch (data.src.id) {
-    case 0x316:
-      data.value = 'RPM';
-      parse_316(data);
-      break;
+	switch (data.src.id) {
+		case 0x316:
+			data.value = 'RPM';
+			parse_316(data);
+			break;
 
-    case 0x329:
-      data.value = 'Temp/Brake pedal depressed/Throttle position';
-      parse_329(data);
-      break;
+		case 0x329:
+			data.value = 'Temp/Brake pedal depressed/Throttle position';
+			parse_329(data);
+			break;
 
-    case 0x545:
-      data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
-      break;
+		case 0x545:
+			data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
+			break;
 
-    case 0x610:
-      data.value = 'VIN/info';
-      break;
+		case 0x610:
+			data.value = 'VIN/info';
+			break;
 
-    case 0x613:
-      data.value = 'Odometer/Running clock/Fuel level [0x615 ACK]';
-      break;
+		case 0x613:
+			data.value = 'Odometer/Running clock/Fuel level [0x615 ACK]';
+			break;
 
-    case 0x615:
-      data.value = 'A/C request/Outside air temp/Intake air temp/Parking brake/door contacts';
-      break;
+		case 0x615:
+			data.value = 'A/C request/Outside air temp/Intake air temp/Parking brake/door contacts';
+			break;
 
-    default:
-      data.value = data.src.id.toString(16);
-  }
+		default:
+			data.value = data.src.id.toString(16);
+	}
 
-  // log.bus(data);
+	// log.bus(data);
 }
 
 module.exports = {
-  parse_out : (data) => { parse_out(data); },
+	parse_out : (data) => { parse_out(data); },
 };
