@@ -59,7 +59,7 @@ function refresh_status() {
 }
 
 // Send the power on button command if needed/ready
-function power_on_if_ready() {
+function toggle_power_if_ready() {
 	if (config.emulate.bmbt !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
@@ -93,7 +93,7 @@ function parse_in(data) {
 	switch (data.msg[0]) {
 		case 0x4A: // Cassette control
 			send_cassette_status();
-			power_on_if_ready();
+			toggle_power_if_ready();
 			break;
 	}
 }
@@ -207,7 +207,7 @@ module.exports = {
 
 	parse_in             : (data)   => { parse_in(data);              },
 	parse_out            : (data)   => { parse_out(data);             },
-	power_on_if_ready    : ()       => { power_on_if_ready();         },
+	toggle_power_if_ready    : ()       => { toggle_power_if_ready();         },
 	send_button          : (button) => { send_button(button);         },
 	send_cassette_status : (value)  => { send_cassette_status(value); },
 	status_loop          : (action) => { status_loop(action);         },
