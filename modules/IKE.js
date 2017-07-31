@@ -417,6 +417,11 @@ function hud_refresh(interval = false) {
 	// Space-pad load_1m
 	load_1m = pad(load_1m, 8);
 
+	// socket.lcd_text_tx({
+	// 	upper : 'kdm-e39-01',
+	// 	lower : status.system.temperature+'C|'+status.system.cpu.load_pct+'%',
+	// });
+
 	// Change left string to be load/CPU temp if over threshold
 	if (status.system.temperature > 65) hud_strings.left = load_1m;
 

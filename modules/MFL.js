@@ -107,15 +107,15 @@ function parse_out(data) {
 			switch (data.msg[1]) {
 				case 0x10:
 					data.value += 'decrease';
-					if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-						kodi.volume('down');
-					}
+					// if (config.media.bluetooth === false && config.media.kodi.enable === true) {
+					// 	kodi.volume('down');
+					// }
 					break;
 				case 0x11:
 					data.value += 'increase';
-					if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-						kodi.volume('up');
-					}
+					// if (config.media.bluetooth === false && config.media.kodi.enable === true) {
+					// 	kodi.volume('up');
+					// }
 			}
 			break;
 
