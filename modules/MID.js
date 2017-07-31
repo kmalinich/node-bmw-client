@@ -158,7 +158,7 @@ function refresh_status() {
 }
 
 // Send the power on button command if needed/ready
-function power_on_if_ready() {
+function toggle_power_if_ready() {
 	if (status.vehicle.ignition_level === 0 || config.emulate.mid !== true) return;
 
 	// Debug logging
@@ -410,7 +410,7 @@ module.exports = {
 
 	parse_in          : (data)   => { parse_in(data);      },
 	parse_out         : (data)   => { parse_out(data);     },
-	power_on_if_ready : ()       => { power_on_if_ready(); },
+	toggle_power_if_ready : ()       => { toggle_power_if_ready(); },
 	send_button       : (button) => { send_button(button); },
 	status_loop       : (action) => { status_loop(action); },
 	text_loop         : (action) => { text_loop(action);   },
