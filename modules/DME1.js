@@ -10,10 +10,6 @@ function logmod(string) {
 };
 
 function parse_316(data) {
-  // console.log('');
-  // console.log('');
-  // console.log(object_format(data));
-
   let parse = {
     arbid : '0x316',
     msg : data.msg_f,
@@ -30,16 +26,10 @@ function parse_316(data) {
     },
   };
 
-  update.status('engine.speed', parse.rpm);
-
-  // console.log('');
-  // console.log(JSON.stringify(parse, null, 2));
-  // console.log(object_format(parse));
-  // console.log(parse.throttle.current);
-  // console.log('Coolant temp: '+parse.temp.coolant_internal);
-
-  // console.log('');
-  // console.log('');
+  // let upd1 = update.status('engine.speed',            parse.rpm);
+  let upd2 = update.status('engine.ac_clutch',        parse.ac_clutch);
+  let upd3 = update.status('engine.throttle.current', parse.throttle.current);
+  let upd4 = update.status('engine.throttle.target',  parse.throttle.target);
 }
 
 function lcd_update() {
@@ -50,54 +40,23 @@ function lcd_update() {
 }
 
 function parse_329(data) {
-  // console.log('');
-  // console.log('');
-  // console.log(object_format(data));
-
   let parse = {
     msg      : '0x329',
     clutch   : bitmask.test(data.msg[3], 0x01),
-    //throttle : parseFloat((data.msg[5]/2.54).toFixed(2)),
-    throttle : parseFloat((data.msg[5]/2.54).toFixed(0)),
+    throttle_pedal : parseFloat((data.msg[5]/2.54).toFixed(2)),
     coolant  : {
-      c : ((data.msg[1]*.75)-48.373).toFixed(2),
+      c : parseFloat(((data.msg[1]*.75)-48.373).toFixed(2)),
     },
   };
 
-  // parse.coolant.f = parseFloat(convert(parse.coolant.c).from('celsius').to('fahrenheit'));
-  // console.log(parse.coolant);
+  parse.coolant.f = parseFloat(convert(parse.coolant.c).from('celsius').to('fahrenheit'));
 
-  update.status('vehicle.clutch', parse.clutch);
-  update.status('engine.throttle', parse.throttle);
-  update.status('temperature.coolant.c', parse.coolant.c);
-  // update.status('temperature.coolant.f', parse.coolant.f);
+  let upd1 = update.status('vehicle.clutch', parse.clutch);
+  let upd2 = update.status('engine.throttle.pedal', parse.throttle_pedal);
+  let upd3 = update.status('temperature.coolant.c', parse.coolant.c);
+  let upd4 = update.status('temperature.coolant.f', parse.coolant.f);
 
-  // if (status.vehicle.clutch !== parse.clutch) {
-  // 	status.vehicle.clutch = parse.clutch;
-  // 	socket.status_tx('vehicle');
-  // 	// logmod('Clutch: '+status.vehicle.clutch);
-  // }
-
-  // if (status.temperature.coolant.c !== parse.coolant.c) {
-  // 	status.temperature.coolant.c = parse.coolant.c;
-  // 	status.temperature.coolant.f = parse.coolant.f;
-  // 	socket.status_tx('temperature');
-  // 	// logmod('Coolant: '+status.temperature.coolant.c);
-  // }
-
-  // if (status.engine.throttle !== parse.throttle) {
-  // 	status.engine.throttle = parse.throttle;
-  // 	socket.status_tx('engine');
-  // 	// logmod('Throttle: '+status.engine.throttle);
-  // }
-
-  // console.log('');
-  // console.log(JSON.stringify(parse, null, 2));
-  // console.log(parse.coolant+','+parse.throttle);
-  // console.log('Coolant temp: '+parse.temp.coolant_internal);
-
-  // console.log('');
-  // console.log('');
+	if (upd3) lcd_update();
 }
 
 

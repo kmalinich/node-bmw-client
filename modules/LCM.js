@@ -70,12 +70,12 @@ function auto_lights(override = false) {
 // Logic based on location and time of day, determine if the low beams should be on
 function auto_lights_process() {
 	// Init variables
-	let current_reason  = status.lights.auto.reason;
-	let current_lowbeam = status.lights.auto.lowbeam;
-	let current_time    = Date.now();
-	let sun_times       = suncalc.getTimes(current_time, config.location.latitude, config.location.longitude);
-	let lights_on       = sun_times.sunsetStart;
-	let lights_off      = sun_times.sunriseEnd;
+	let new_reason;
+	let new_lowbeam;
+	let current_time = Date.now();
+	let sun_times    = suncalc.getTimes(current_time, config.location.latitude, config.location.longitude);
+	let lights_on    = sun_times.sunsetStart;
+	let lights_off   = sun_times.sunriseEnd;
 
 	// Debug logging
 	// log.module({ src : module_name, msg : '   current : \''+current_time+'\'' });
@@ -99,30 +99,30 @@ function auto_lights_process() {
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed != 'off') {
-		status.lights.auto.reason  = 'wipers on';
-		status.lights.auto.lowbeam = true;
+		new_reason  = 'wipers on';
+		new_lowbeam = true;
 	}
 	// Check time of day
 	else if (current_time < lights_off) {
-		status.lights.auto.reason  = 'before dawn';
-		status.lights.auto.lowbeam = true;
+		new_reason  = 'before dawn';
+		new_lowbeam = true;
 	}
 	else if (current_time > lights_off && current_time < lights_on) {
-		status.lights.auto.reason  = 'after dawn, before dusk';
-		status.lights.auto.lowbeam = false;
+		new_reason  = 'after dawn, before dusk';
+		new_lowbeam = false;
 	}
 	else if (current_time > lights_on) {
-		status.lights.auto.reason  = 'after dusk';
-		status.lights.auto.lowbeam = true;
+		new_reason  = 'after dusk';
+		new_lowbeam = true;
 	}
 	else {
-		status.lights.auto.reason  = 'failsafe';
-		status.lights.auto.lowbeam = true;
+		new_reason  = 'failsafe';
+		new_lowbeam = true;
 	}
 
-	update.status('lights.auto.reason', current_reason);
+	update.status('lights.auto.reason', new_reason);
 
-	if (update.status('lights.auto.lowbeam', current_lowbeam)) {
+	if (update.status('lights.auto.lowbeam', new_lowbeam)) {
 		// Show autolights status in cluster
 		IKE.text_override('AL: '+status.lights.auto.lowbeam);
 	}
