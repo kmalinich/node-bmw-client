@@ -62,8 +62,8 @@ function parse_out(data) {
 					// IKE.text_override('BMBT power ('+module_name+')');
 					// kodi.notify('BMBT', 'power ('+module_name+')');
 					// setTimeout(() => {
-					// 	BMBT.power_on_if_ready();
-					// 	MID.power_on_if_ready();
+					// 	BMBT.toggle_power_if_ready();
+					// 	MID.toggle_power_if_ready();
 					// }, 4000);
 					break;
 
