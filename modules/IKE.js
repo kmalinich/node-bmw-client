@@ -1,3 +1,6 @@
+/* global IKE GM LCM BMBT MID CON1 BT HDMI EWS json bus bus_data bitmask update gpio socket kodi log status config hex obc_values */
+
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const convert = require('node-unit-conversion');
@@ -18,9 +21,6 @@ function api_command(data) {
 			break;
 		case 'obc-clock': // Set OBC clock
 			obc_clock();
-			break;
-		case 'obc-gong': // Fire OBC gong
-			obc_gong(data.value);
 			break;
 		case 'obc-get-all': // Refresh all OBC data value
 			obc_refresh();
@@ -369,7 +369,7 @@ function decode_temperature_values(data) {
 }
 
 // Refresh custom HUD
-function hud_refresh(interval = false) {
+function hud_refresh() {
 	// Bounce if the ignition is off
 	if (status.vehicle.ignition_level < 1) return;
 	// Bounce if override is active
@@ -377,8 +377,6 @@ function hud_refresh(interval = false) {
 	// Bounce if the last update was less than 1 sec ago
 	if (now()-IKE.last_hud_refresh <= 1000) return;
 
-	let spacing1;
-	let spacing_temp;
 	let string_cons;
 	let string_temp;
 	let string_time = moment().format('HH:mm');
@@ -494,11 +492,10 @@ function obc_clock() {
 
 // OBC data request
 function obc_data(action, value, target) {
-	var cmd = 0x41; // OBC data request
+	let cmd = 0x41; // OBC data request
 
-	// Init action_id, value_id
-	var action_id;
-	var value_id;
+	// Init variables
+	let action_id;
 
 	// Determine action_id from action argument
 	switch (action) {
@@ -641,7 +638,10 @@ function parse_out(data) {
 			var layout = obc_values.h2n(data.msg[1]);
 
 			switch (layout) {
-				case 'time':
+				case 'time': {
+					let string_time_unit;
+					let string_time;
+
 					// Parse unit
 					string_time_unit = Buffer.from([data.msg[8], data.msg[9]]);
 					string_time_unit = string_time_unit.toString().trim().toLowerCase();
@@ -661,8 +661,11 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.time = string_time;
 					break;
+				}
 
-				case 'date':
+				case 'date': {
+					let string_date;
+
 					// Parse value
 					string_date = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9], data.msg[10], data.msg[11], data.msg[12]]);
 					string_date = string_date.toString().trim();
@@ -670,6 +673,7 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.date = string_date;
 					break;
+				}
 
 				case 'outside-temp':
 					// Parse unit
@@ -882,7 +886,7 @@ function parse_out(data) {
 					break;
 			}
 
-			data.value = 'OBC '+layout.replace(/\-/, ' ')+': \''+hex.h2s(data.msg)+'\'';
+			data.value = 'OBC '+layout.replace(/-/, ' ')+': \''+hex.h2s(data.msg)+'\'';
 			break;
 
 		case 0x2A: // Broadcast: Aux heat LED status
@@ -911,6 +915,8 @@ function request(value) {
 	var src = 'VID';
 	var dst = module_name;
 
+	let loop_dst;
+
 	switch (value) {
 		case 'ignition':
 			cmd = [0x10];
@@ -934,9 +940,9 @@ function request(value) {
 			src = 'LCM';
 			cmd = [0x1D, 0xC5];
 			break;
-		case 'status-glo':
+		case 'status-glo': {
 			src = module_name;
-			for (var loop_dst in bus.modules.modules) {
+			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
 					bus_data.send({
 						src: src,
@@ -946,9 +952,11 @@ function request(value) {
 				}
 			}
 			break;
-		case 'status-loc':
+		}
+
+		case 'status-loc': {
 			src = module_name;
-			for (var loop_dst in bus.modules.modules) {
+			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
 					bus_data.send({
 						src: src,
@@ -958,6 +966,7 @@ function request(value) {
 				}
 			}
 			break;
+		}
 
 		case 'status-short':
 			bus.modules.modules_check.forEach((loop_dst) => {
@@ -990,12 +999,13 @@ function request(value) {
 
 // IKE cluster text send message
 function text(message) {
-	var max_length = 20;
+	let message_hex;
+	let max_length = 20;
 
-	var message_hex = [0x23, 0x50, 0x30, 0x07];
+	message_hex = [0x23, 0x50, 0x30, 0x07];
 	// Trim string to max length
-	var message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
-	var message_hex = message_hex.concat(0x04);
+	message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
+	message_hex = message_hex.concat(0x04);
 
 	bus_data.send({
 		src: 'RAD',
@@ -1007,16 +1017,16 @@ function text(message) {
 // IKE cluster text send message, override other messages
 function text_override(message, timeout = 2500, direction = 'left', turn = false) {
 	// kodi.notify(module_name, message);
-	var max_length = 20;
+	let max_length = 20;
 
-	var scroll_delay         = 300;
-	var scroll_delay_timeout = scroll_delay*5;
+	let scroll_delay         = 300;
+	let scroll_delay_timeout = scroll_delay*5;
 
 	// Override scroll_delay_timeout if we're showing a turn signal message
 	if (turn === true) {
-		var scroll_delay         = 200;
-		var scroll_delay_timeout = 250;
-		var timeout              = 0;
+		scroll_delay         = 200;
+		scroll_delay_timeout = 250;
+		timeout              = 0;
 	}
 
 	// Delare that we're currently first up
@@ -1073,10 +1083,12 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 
 // Check control messages
 function text_urgent(message, timeout = 5000) {
+	let message_hex;
+
 	kodi.notify(module_name, message);
 
-	var message_hex = [0x1A, 0x35, 0x00];
-	var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
+	message_hex = [0x1A, 0x35, 0x00];
+	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
 	bus_data.send({
 		src : 'CCM',
@@ -1103,6 +1115,8 @@ function text_urgent_off() {
 
 // Check control warnings
 function text_warning(message, timeout = 10000) {
+	let message_hex;
+
 	// 3rd byte:
 	// 0x00 : no gong,   no arrow
 	// 0x01 : no gong,   solid arrow
@@ -1114,8 +1128,8 @@ function text_warning(message, timeout = 10000) {
 	// 0x10 : 1 lo gong, no arrow
 	// 0x18 : 3 beep,    no arrow
 
-	var message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
-	var message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
+	message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
+	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
 	bus_data.send({
 		src : 'CCM',
@@ -1157,7 +1171,7 @@ module.exports = {
 	decode_sensor_status      : (data)                  => { decode_sensor_status(data);      },
 	decode_speed_values       : (data)                  => { decode_speed_values(data);       },
 	decode_temperature_values : (data)                  => { decode_temperature_values(data); },
-	hud_refresh               : (interval)              => { hud_refresh(interval);           },
+	hud_refresh               : ()                      => { hud_refresh();                   },
 	ignition                  : (value)                 => { ignition(value);                 },
 	logmod                    : (msg)                   => { logmod(msg);                     },
 	obc_clock                 : ()                      => { obc_clock();                     },

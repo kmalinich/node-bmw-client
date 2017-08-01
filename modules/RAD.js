@@ -47,7 +47,7 @@ function parse_out(data) {
 
 		case 0x36: // Audio control (i.e. source)
 			data.command = 'con';
-			data.value   = 'audio '
+			data.value   = 'audio ';
 
 			switch (data.msg[1]) {
 				case 0xAF:
@@ -67,7 +67,7 @@ function parse_out(data) {
 			break;
 
 		case 0x38: // Control: CD
-			data.command = 'con'
+			data.command = 'con';
 			data.value   = 'CD - ';
 
 			// Command

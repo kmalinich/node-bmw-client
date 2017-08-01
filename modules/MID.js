@@ -1,3 +1,5 @@
+/* global MID bus IKE DSP BT LCM bitmask log status config bus_data hex */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const pad = require('pad');
@@ -17,9 +19,11 @@ function refresh_text() {
 
 	log.module({ src: module_name, msg: 'Updating MID text' });
 
+	let message_hex;
+
 	// Upper left - 11 char radio display
-	var message_hex = [0x23, 0x40, 0x20];
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
+	message_hex = [0x23, 0x40, 0x20];
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
 
 	bus_data.send({
 		src: 'RAD',
@@ -28,8 +32,8 @@ function refresh_text() {
 	});
 
 	// Upper right - 20 char OBC display
-	var message_hex = [0x23, 0x40, 0x20];
-	var message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
+	message_hex = [0x23, 0x40, 0x20];
+	message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
 
 	bus_data.send({
 		src: 'IKE',
@@ -38,18 +42,18 @@ function refresh_text() {
 	});
 
 	// Left side menu
-	var message_hex = [0x21, 0x00, 0x15, 0x20];
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_1, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_2, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_3, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_4, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_5, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_6, 4).substring(0, 4)));
+	message_hex = [0x21, 0x00, 0x15, 0x20];
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_1, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_2, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_3, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_4, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_5, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_6, 4).substring(0, 4)));
 
 	bus_data.send({
 		src: 'RAD',
@@ -58,18 +62,18 @@ function refresh_text() {
 	});
 
 	// Right side menu
-	var message_hex = [0x21, 0x00, 0x15, 0x06];
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_7, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_8, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_9, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_10, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_11, 4).substring(0, 4)));
-	var message_hex = message_hex.concat(0x05);
-	var message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_12, 4).substring(0, 4)));
+	message_hex = [0x21, 0x00, 0x15, 0x06];
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_7, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_8, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_9, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_10, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_11, 4).substring(0, 4)));
+	message_hex = message_hex.concat(0x05);
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_12, 4).substring(0, 4)));
 
 	bus_data.send({
 		src: 'RAD',
@@ -191,10 +195,6 @@ function parse_in(data) {
 
 // Parse data sent from MID module
 function parse_out(data) {
-	// Init variables
-	let command;
-	let value;
-
 	switch (data.msg[0]) {
 		case 0x20: // Broadcast: Display status
 			data.command = 'bro';
@@ -337,7 +337,7 @@ function send_button(button) {
 			break;
 	}
 
-	log.module({ src: module_name, msg: 'Button down: '+button });
+	log.module({ src: module_name, msg: 'Button down: '+button+', hold: '+button_hold });
 
 	// Init variables
 	let command     = 0x48; // Button action

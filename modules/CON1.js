@@ -1,3 +1,5 @@
+/* global status kodi bitmask log update bus_data CON1 */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const now = require('performance-now');
@@ -32,23 +34,6 @@ const now = require('performance-now');
 // 2BA -> 00 00 00 00 10
 // 2BA -> 00 00 00 00 20
 
-
-
-function button_out(data) {
-	let strings = {
-		b3 : data.msg[3].toString(16).toUpperCase(),
-		b4 : data.msg[4].toString(16).toUpperCase(),
-		b5 : data.msg[5].toString(16).toUpperCase(),
-		string : null,
-	};
-
-	strings.string = strings.b3+' '+strings.b4+' '+strings.b5;
-
-	if (status.con1.last.string != strings.string) {
-		status.con1.last.string = strings.string;
-		console.log('%s %s %s', strings.b3, strings.b4, strings.b5);
-	}
-}
 
 
 // iDrive knob rotation
@@ -306,12 +291,12 @@ function button_check(button) {
 				case 'tel':
 					// To use the TEL button as a toggle for rotation = Kodi volume control
 					if (update.status('con1.rotation.volume', true)) {
-						kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
+						kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button');
 
 						// In 8000ms, set it back
 						setTimeout(() => {
 							if (update.status('con1.rotation.volume', false)) {
-								kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via timeout')
+								kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via timeout');
 							}
 						}, 8000);
 					}
@@ -320,14 +305,16 @@ function button_check(button) {
 				case 'nav':
 					// To use the NAV button as a toggle for left<->right or up<->down rotation
 					if (update.status('con1.rotation.alternate', true)) {
-						kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
+						kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button');
 
 						// In 8000ms, set it back
 						setTimeout(() => {
 							if (update.status('con1.rotation.alternate', false)) {
-								kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via timeout')
+								kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via timeout');
 							}
 						}, 8000);
+					}
+					break;
 
 				default:
 					kodi.input(button.button);
@@ -343,7 +330,8 @@ function decode_backlight(data) {
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
 
-	console.log('RECV : '+module_name+' backlight \'%s\'', data.msg[0]);
+	// console.log('RECV : '+module_name+' backlight \'%s\'', data.msg[0]);
+	update.status('con1.backlight', data.msg[0]);
 }
 
 function decode_status_con(data) {
@@ -359,22 +347,28 @@ function decode_status_con(data) {
 }
 
 function decode_ignition_new(data) {
-	// console.log('Ignition message');
+	log.msg({
+		src : module_name,
+		msg : 'Ignition message '+data.msg[0],
+	});
 }
 
 function decode_status_cic(data) {
-	// console.log('CIC1 status message');
+	log.msg({
+		src : module_name,
+		msg : 'CIC1 status message '+data.msg[0],
+	});
 }
 
-function send_heartbeat() {
-	// 2BA -> 00 00 00 00 10
-	// 2BA -> 00 00 00 00 20
-
-	switch (status.con1.last.heartbeat) {
-		case 0x10 : update.status('con1.last.heartbeat', 0x20); break;
-		default   : update.status('con1.last.heartbeat', 0x10);
-	}
-}
+// function send_heartbeat() {
+// 	// 2BA -> 00 00 00 00 10
+// 	// 2BA -> 00 00 00 00 20
+//
+// 	switch (status.con1.last.heartbeat) {
+// 		case 0x10 : update.status('con1.last.heartbeat', 0x20); break;
+// 		default   : update.status('con1.last.heartbeat', 0x10);
+// 	}
+// }
 
 
 function send_backlight(value) {
@@ -392,14 +386,10 @@ function send_backlight(value) {
 
 	// Workarounds
 	switch (value) {
-		// 0% workaround
-		case 0x00 : value = 0xFE; break;
-		// 50% workaround
-		case 0x7F : value = 0xFF; break;
-		// Almost-100% workaround
-		case 0xFE : value = 0xFD; break;
-		// Decrement value by one (see above)
-		default: value--;
+		case 0x00 : value = 0xFE; break; // 0% workaround
+		case 0x7F : value = 0xFF; break; // 50% workaround
+		case 0xFE : value = 0xFD; break; // Almost-100% workaround
+		default   : value--;             // Decrement value by one (see above)
 	}
 
 	bus_data.send({
@@ -507,18 +497,16 @@ function parse_out(data) {
 			break;
 
 		case 0x4E7:
-			decode_status_con(data);
-			return;
-			data.command = 'sta';
-			data.value   = module_name+' status';
-			break;
+			return decode_status_con(data);
+			// data.command = 'sta';
+			// data.value   = module_name+' status';
+			// break;
 
 		case 0x5E7:
-			decode_status_con(data);
-			return;
-			data.command = 'sta';
-			data.value   = module_name+' counter';
-			break;
+			return decode_status_con(data);
+			// data.command = 'sta';
+			// data.value   = module_name+' counter';
+			// break;
 
 		default:
 			data.command = 'unk';
