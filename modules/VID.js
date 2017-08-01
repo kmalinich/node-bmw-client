@@ -47,4 +47,4 @@ function parse_out(data) {
 
 module.exports = {
 	parse_out : (data) => { parse_out(data); },
-}
+};
