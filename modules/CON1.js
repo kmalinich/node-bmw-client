@@ -301,11 +301,13 @@ function button_check(button) {
 					update.status('con1.rotation.volume', !status.con1.rotation.volume);
 					kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
 
-					// In 5000ms, set it back
-					setTimeout(() => {
-						update.status('con1.rotation.volume', !status.con1.rotation.volume);
-						kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
-					}, 5000);
+					// In 8000ms, set it back
+					if (status.con1.rotation.volume) {
+						setTimeout(() => {
+							update.status('con1.rotation.volume', !status.con1.rotation.volume);
+							kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
+						}, 8000);
+					}
 					break;
 
 				case 'nav':
@@ -313,11 +315,13 @@ function button_check(button) {
 					update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
 					kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
 
-					// In 5000ms, set it back
-					setTimeout(() => {
-						update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
-						kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
-					}, 5000);
+					// In 8000ms, set it back
+					if (status.con1.rotation.alternate) {
+						setTimeout(() => {
+							update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
+							kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
+						}, 8000);
+					}
 					break;
 
 				default:
