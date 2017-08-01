@@ -101,11 +101,6 @@ function parse_in(data) {
 // Parse data sent from BMBT module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x32: // Broadcast: volume control
-			data.command = 'bro';
-			data.value   = 'volume control';
-			break;
-
 		case 0x4B: // Cassette status
 			data.command = 'sta';
 			data.value   = 'cassette: ';

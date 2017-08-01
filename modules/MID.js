@@ -179,7 +179,6 @@ function toggle_power_if_ready() {
 
 // Parse data sent to MID module
 function parse_in(data) {
-	// Init variables
 	switch (data.msg[0]) {
 		default:
 			data.command = 'unk';
@@ -193,8 +192,8 @@ function parse_in(data) {
 // Parse data sent from MID module
 function parse_out(data) {
 	// Init variables
-	var command;
-	var value;
+	let command;
+	let value;
 
 	switch (data.msg[0]) {
 		case 0x20: // Broadcast: Display status
@@ -300,46 +299,6 @@ function parse_out(data) {
 			// 01 20 40,MID,IKE,Button Button_0_released
 			break;
 
-		case 0x32: // Broadcast: Volume control
-			data.command = 'con';
-			var volume = data.msg[1];
-
-			// Determine volume change direction
-			if (bitmask.test(volume, 0x01)) {
-				var direction = '+';
-				var volume = parseFloat(volume)-1;
-			}
-			else {
-				var direction = '-';
-				var volume = parseFloat(volume);
-			}
-
-			switch (volume) {
-				case 0x10 : volume = 1; break;
-				case 0x20 : volume = 2; break;
-				case 0x30 : volume = 3; break;
-				case 0x40 : volume = 4; break;
-				case 0x50 : volume = 5; break;
-				case 0x96 : volume = 9; break;
-				case 0xA0 : volume = 10; break;
-					// 112 128 96
-			}
-
-			data.value = 'volume '+direction+volume;
-
-			// data.msg[1] -
-			// -1 : 10
-			// -2 : 20
-			// -3 : 30
-			// -4 : 40
-			// -5 : 50
-			// +1 : 11
-			// +2 : 21
-			// +3 : 31
-			// +4 : 41
-			// +5 : 51
-			break;
-
 		case 0x47: // Broadcast: BM status
 			data.command = 'bro';
 			data.value   = 'BM status';
@@ -361,9 +320,9 @@ function parse_out(data) {
 
 // Emulate button presses
 function send_button(button) {
-	var button_down = 0x00;
-	var button_hold;
-	var button_up;
+	let button_down = 0x00;
+	let button_hold;
+	let button_up;
 
 	// Switch statement to determine button, then encode bitmask
 	switch (button) {
@@ -381,9 +340,9 @@ function send_button(button) {
 	log.module({ src: module_name, msg: 'Button down: '+button });
 
 	// Init variables
-	var command = 0x48; // Button action
-	var packet_down = [command, button_down];
-	var packet_up = [command, button_up];
+	let command     = 0x48; // Button action
+	let packet_down = [command, button_down];
+	let packet_up   = [command, button_up];
 
 	bus_data.send({
 		src: module_name,
@@ -408,11 +367,11 @@ module.exports = {
 	status_status_loop   : false,
 	status_text_loop     : false,
 
-	parse_in          : (data)   => { parse_in(data);      },
-	parse_out         : (data)   => { parse_out(data);     },
+	parse_in              : (data)   => { parse_in(data);          },
+	parse_out             : (data)   => { parse_out(data);         },
+	refresh_text          : ()       => { refresh_text();          },
+	send_button           : (button) => { send_button(button);     },
+	status_loop           : (action) => { status_loop(action);     },
+	text_loop             : (action) => { text_loop(action);       },
 	toggle_power_if_ready : ()       => { toggle_power_if_ready(); },
-	send_button       : (button) => { send_button(button); },
-	status_loop       : (action) => { status_loop(action); },
-	text_loop         : (action) => { text_loop(action);   },
-	refresh_text      : ()       => { refresh_text();      },
 };

@@ -222,6 +222,7 @@ function decode_ignition_status(data) {
 
 		// Toggle media playback
 		if (status.kodi.player.status == 'playing') kodi.command('toggle');
+		kodi.volume(25);
 		BT.command('disconnect');
 
 		// Set modules as not ready
@@ -267,6 +268,7 @@ function decode_ignition_status(data) {
 		BT.command('connect');
 
 		// Toggle media playback
+		kodi.volume(25);
 		setTimeout(() => {
 			if (status.kodi.player.status != 'playing') kodi.command('toggle');
 		}, 6000);
