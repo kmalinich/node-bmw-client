@@ -1,3 +1,5 @@
+/* global LCM config status log update IKE bus_data hex bitmask */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const suncalc = require('suncalc');
@@ -136,9 +138,9 @@ function set_backlight(value) {
 	log.module({ src : module_name, msg : 'Setting backlight to '+value });
 
 	bus_data.send({
-		src: module_name,
-		dst: 'GLO',
-		msg: [0x5C, value.toString(16), 0x00]
+		src : module_name,
+		dst : 'GLO',
+		msg : [0x5C, value.toString(16), 0x00]
 	});
 }
 
@@ -147,9 +149,9 @@ function coding_get() {
 	// Get all 20 blocks of coding data
 	for (let byte = 0; byte < 21; byte++) {
 		bus_data.send({
-			src: 'DIA',
-			dst: module_name,
-			msg: [0x08, byte],
+			src : 'DIA',
+			dst : module_name,
+			msg : [0x08, byte],
 		});
 	}
 }
@@ -228,7 +230,7 @@ function comfort_turn(data) {
 		// Send cluster message if configured to do so
 		if (config.lights.comfort_turn.cluster_msg === true) {
 			// Concat message string
-			cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '+cluster_msg_outer;
+			let cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '+cluster_msg_outer;
 
 			IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed, action, true);
 		}
@@ -256,13 +258,14 @@ function comfort_turn(data) {
 // Decode various bits of data into usable information
 function decode(data) {
 	switch (data.msg[0]) {
-		case 0x54: // Vehicle data
+		case 0x54: { // Vehicle data
 			// This message also has days since service and total kms, but, baby steps...
-			let vin_string     = hex.h2a(data.msg[1].toString(16))+hex.h2a(data.msg[2].toString(16))+data.msg[3].toString(16)+data.msg[4].toString(16)+data.msg[5].toString(16)[0];
+			let vin_string = hex.h2a(data.msg[1].toString(16))+hex.h2a(data.msg[2].toString(16))+data.msg[3].toString(16)+data.msg[4].toString(16)+data.msg[5].toString(16)[0];
 			update.status('vehicle.vin', vin_string);
 			break;
+		}
 
-		case 0x5B: // Decode a light status message from the LCM and act upon the results
+		case 0x5B: { // Decode a light status message from the LCM and act upon the results
 			// Send data to comfort turn function
 			comfort_turn({
 				before : status.lights.turn,
@@ -277,7 +280,7 @@ function decode(data) {
 			});
 
 			// On
-			update.status('lights.all_off', !Boolean(data.msg[1]));
+			update.status('lights.all_off', !data.msg[1]);
 
 			update.status('lights.standing.front',    bitmask.test(data.msg[1], bitmask.bit[0]));
 			update.status('lights.lowbeam',           bitmask.test(data.msg[1], bitmask.bit[1]));
@@ -297,7 +300,7 @@ function decode(data) {
 			update.status('lights.hazard',           bitmask.test(data.msg[3], bitmask.bit[7]));
 
 			// Faulty
-			update.status('lights.faulty.all_ok', !Boolean(data.msg[2]));
+			update.status('lights.faulty.all_ok', !data.msg[2]);
 
 			update.status('lights.faulty.standing.front', bitmask.test(data.msg[2], bitmask.bit[0]));
 			update.status('lights.faulty.lowbeam.both',   bitmask.test(data.msg[2], bitmask.bit[1]));
@@ -315,6 +318,7 @@ function decode(data) {
 			update.status('lights.faulty.lowbeam.right',       bitmask.test(data.msg[4], bitmask.bit[4]));
 			update.status('lights.faulty.lowbeam.left',        bitmask.test(data.msg[4], bitmask.bit[5]));
 			break;
+		}
 
 		case 0xA0: // Decode IO status and output true/false values
 			// Remove command byte
@@ -614,7 +618,7 @@ function request(value) {
 
 	switch (value) {
 		case 'coding':
-			get_coding();
+			coding_get();
 			break;
 		case 'dimmer':
 			src = 'BMBT';

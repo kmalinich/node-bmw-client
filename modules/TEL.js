@@ -68,4 +68,4 @@ function led(object) {
 module.exports = {
 	led       : (object) => { led(object);     },
 	parse_out : (data)   => { parse_out(data); },
-}
+};

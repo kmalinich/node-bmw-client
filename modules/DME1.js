@@ -7,7 +7,7 @@ function logmod(string) {
 		src : module_name,
 		msg : string,
 	});
-};
+}
 
 function parse_316(data) {
 	let parse = {

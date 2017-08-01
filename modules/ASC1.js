@@ -5,7 +5,7 @@ function logmod(string) {
 		src : module_name,
 		msg : string,
 	});
-};
+}
 
 // Parse data sent from module
 function parse_out(data) {

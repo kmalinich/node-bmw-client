@@ -1,3 +1,5 @@
+/* global log bus_data status bitmask */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Array of all DSP modes
@@ -9,7 +11,7 @@ let dsp_modes = {
 	4 : 'memory 2',
 	5 : 'memory 3',
 	6 : 'DSP off',
-}
+};
 
 // Request various things from DSP
 function request(value) {
@@ -42,7 +44,7 @@ function dsp_mode(mode) {
 
 	let cmd;
 
-	switch (value) {
+	switch (mode) {
 		case 'concert-hall' : cmd = [0x34, 0x09]; break;
 		case 'jazz-club'    : cmd = [0x34, 0x0A]; break;
 		case 'cathedral'    : cmd = [0x34, 0x0B]; break;
