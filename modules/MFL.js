@@ -100,25 +100,6 @@ function parse_out(data) {
 	// 50 C8 01,MFL --> TEL: Device status request
 
 	switch (data.msg[0]) {
-		case 0x32: // Control: Volume
-			data.command = 'con';
-			data.value   = 'volume - 1 step ';
-
-			switch (data.msg[1]) {
-				case 0x10:
-					data.value += 'decrease';
-					// if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-					// 	kodi.volume('down');
-					// }
-					break;
-				case 0x11:
-					data.value += 'increase';
-					// if (config.media.bluetooth === false && config.media.kodi.enable === true) {
-					// 	kodi.volume('up');
-					// }
-			}
-			break;
-
 		case 0x3A: // Button: Recirculation
 			data.command = 'con';
 			data.value   = 'recirculation button - ';
