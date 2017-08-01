@@ -1,5 +1,7 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+const now = require('performance-now');
+
 // Allegedly required messages:
 // Message asking the data from the unit
 // message preventing the sleep mode
@@ -19,7 +21,7 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Message examples:
 
-// CIC status
+// CIC1 status
 // 273 -> 1D E1 00 F0 FF 7F DE 04
 
 // Ignition status
@@ -96,9 +98,14 @@ function decode_con_rotation(data) {
 		}
 	}
 
-	// Replace the data to the status object
+	// Replace the data in global status object
 	status.con1.rotation.absolute = data.msg[2];
 	status.con1.rotation.relative = data.msg[3];
+
+	// Not gonna finish this now - but later, I want to do
+	// a dynamic timeout for the 'alternate' and 'volume' rotation modes -
+	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds.
+	status.con1.rotation.last_msg = now();
 
 	log.msg({
 		src : module_name,
@@ -128,7 +135,7 @@ function decode_con_rotation(data) {
 }
 
 
-// CON button press, length 6
+// CON1 button press, length 6
 function decode_con_button(data) {
 	// Action bitmask data.msg[3]:
 	// bit0 : Press
@@ -281,7 +288,7 @@ function button_check(button) {
 	if (joystick_release === true) button.button = status.con1.last.button.button;
 
 	// Detect if there is a change from the last button message, bounce if not
-	// CON sends a lot of repeat messages (it's CANBUS)
+	// CON1 sends a lot of repeat messages (it's CANBUS)
 	let change = status.con1.last.button.action != button.action || status.con1.last.button.button != button.button || status.con1.last.button.mode != button.mode;
 	if (change === false) return;
 
@@ -298,31 +305,29 @@ function button_check(button) {
 			switch (button.button) {
 				case 'tel':
 					// To use the TEL button as a toggle for rotation = Kodi volume control
-					update.status('con1.rotation.volume', !status.con1.rotation.volume);
-					kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
+					if (update.status('con1.rotation.volume', true)) {
+						kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
 
-					// In 8000ms, set it back
-					if (status.con1.rotation.volume) {
+						// In 8000ms, set it back
 						setTimeout(() => {
-							update.status('con1.rotation.volume', !status.con1.rotation.volume);
-							kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
+							if (update.status('con1.rotation.volume', false)) {
+								kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via timeout')
+							}
 						}, 8000);
 					}
 					break;
 
 				case 'nav':
 					// To use the NAV button as a toggle for left<->right or up<->down rotation
-					update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
-					kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
+					if (update.status('con1.rotation.alternate', true)) {
+						kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
 
-					// In 8000ms, set it back
-					if (status.con1.rotation.alternate) {
+						// In 8000ms, set it back
 						setTimeout(() => {
-							update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
-							kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
+							if (update.status('con1.rotation.alternate', false)) {
+								kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via timeout')
+							}
 						}, 8000);
-					}
-					break;
 
 				default:
 					kodi.input(button.button);
@@ -343,7 +348,7 @@ function decode_backlight(data) {
 
 function decode_status_con(data) {
 	// console.log('[%s] status', log.chalk.boldyellow('CON1'));
-	if (data.msg[4] == 0x06) { // CON needs init
+	if (data.msg[4] == 0x06) { // CON1 needs init
 		log.msg({
 			src : module_name,
 			msg : 'Init triggered',
@@ -358,7 +363,7 @@ function decode_ignition_new(data) {
 }
 
 function decode_status_cic(data) {
-	// console.log('CIC status message');
+	// console.log('CIC1 status message');
 }
 
 function send_heartbeat() {
@@ -387,20 +392,14 @@ function send_backlight(value) {
 
 	// Workarounds
 	switch (value) {
-		case 0x00: // 0% workaround
-			value = 0xFE;
-			break;
-
-		case 0x7F: // 50% workaround
-			value = 0xFF;
-			break;
-
-		case 0xFE: // Almost-100% workaround
-			value = 0xFD;
-			break;
-
-		default: // Decrement value by one (see above)
-			value--;
+		// 0% workaround
+		case 0x00 : value = 0xFE; break;
+		// 50% workaround
+		case 0x7F : value = 0xFF; break;
+		// Almost-100% workaround
+		case 0xFE : value = 0xFD; break;
+		// Decrement value by one (see above)
+		default: value--;
 	}
 
 	bus_data.send({
@@ -415,11 +414,11 @@ function send_backlight(value) {
 	});
 }
 
-// E90 CIC status
+// E90 CIC1 status
 function send_status_cic() {
 	log.module({
 		src : module_name,
-		msg : 'Sending CIC status',
+		msg : 'Sending CIC1 status',
 	});
 
 	let msg = [0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04];
@@ -492,14 +491,14 @@ function parse_out(data) {
 
 		case 0x273:
 			data.command = 'con';
-			data.value   = 'CIC init iDrive knob';
+			data.value   = 'CIC1 init iDrive knob';
 			decode_status_cic(data);
 			break; // Used for iDrive knob rotational initialization
 
 		case 0x277:
 			data.command = 'rep';
-			data.value   = module_name+' ACK to CIC init';
-			break; // CON ACK to rotational initialization message
+			data.value   = module_name+' ACK to CIC1 init';
+			break; // CON1 ACK to rotational initialization message
 
 		case 0x4F8:
 			data.command = 'bro';
