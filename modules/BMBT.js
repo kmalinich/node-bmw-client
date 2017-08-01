@@ -206,4 +206,4 @@ module.exports = {
 	send_button          : (button) => { send_button(button);         },
 	send_cassette_status : (value)  => { send_cassette_status(value); },
 	status_loop          : (action) => { status_loop(action);         },
-}
+};

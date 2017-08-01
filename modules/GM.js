@@ -1,45 +1,47 @@
+/* global GM IKE bus_data bitmask LCM log status */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // All the possible values to send to the GM
-var array_of_possible_values = {
-	light_alarm                   : true,
-	light_alarm_blink             : true,
-	light_interior                : true,
-	locks_lock                    : true,
-	locks_toggle                  : true,
-	locks_trunk                   : true,
-	locks_unlock                  : true,
-	seat_driver_backrest_backward : true,
-	seat_driver_backrest_forward  : true,
-	seat_driver_backward          : true,
-	seat_driver_down              : true,
-	seat_driver_forward           : true,
-	seat_driver_headrest_down     : true,
-	seat_driver_headrest_up       : true,
-	seat_driver_tilt_backward     : true,
-	seat_driver_tilt_forward      : true,
-	seat_driver_up                : true,
-	seat_driver_upper_backwards   : true,
-	seat_driver_upper_forwards    : true,
-	wheel_backward                : true,
-	wheel_down                    : true,
-	wheel_forward                 : true,
-	wheel_up                      : true,
-	window_front_left_down        : true,
-	window_front_left_up          : true,
-	window_front_right_down       : true,
-	window_front_right_up         : true,
-	window_rear_left_down         : true,
-	window_rear_left_up           : true,
-	window_rear_right_down        : true,
-	window_rear_right_up          : true,
-	window_sunroof_down           : true,
-	window_sunroof_up             : true,
-	wipers_auto                   : true,
-	wipers_maintenance            : true,
-	wipers_once                   : true,
-	wipers_spray                  : true,
-};
+// var array_of_possible_values = {
+// 	light_alarm                   : true,
+// 	light_alarm_blink             : true,
+// 	light_interior                : true,
+// 	locks_lock                    : true,
+// 	locks_toggle                  : true,
+// 	locks_trunk                   : true,
+// 	locks_unlock                  : true,
+// 	seat_driver_backrest_backward : true,
+// 	seat_driver_backrest_forward  : true,
+// 	seat_driver_backward          : true,
+// 	seat_driver_down              : true,
+// 	seat_driver_forward           : true,
+// 	seat_driver_headrest_down     : true,
+// 	seat_driver_headrest_up       : true,
+// 	seat_driver_tilt_backward     : true,
+// 	seat_driver_tilt_forward      : true,
+// 	seat_driver_up                : true,
+// 	seat_driver_upper_backwards   : true,
+// 	seat_driver_upper_forwards    : true,
+// 	wheel_backward                : true,
+// 	wheel_down                    : true,
+// 	wheel_forward                 : true,
+// 	wheel_up                      : true,
+// 	window_front_left_down        : true,
+// 	window_front_left_up          : true,
+// 	window_front_right_down       : true,
+// 	window_front_right_up         : true,
+// 	window_rear_left_down         : true,
+// 	window_rear_left_up           : true,
+// 	window_rear_right_down        : true,
+// 	window_rear_right_up          : true,
+// 	window_sunroof_down           : true,
+// 	window_sunroof_up             : true,
+// 	wipers_auto                   : true,
+// 	wipers_maintenance            : true,
+// 	wipers_once                   : true,
+// 	wipers_spray                  : true,
+// };
 
 // [0x72] Decode a key fob bitmask message, and act upon the results
 function decode_message_keyfob(data) {
@@ -165,7 +167,7 @@ function io_set(packet) {
 function io_decode(data) {
 	return {
 		seat_driver_backrest_backward : bitmask.test(data[0], bitmask.bit[0]),
-	}
+	};
 }
 
 function parse_out(data) {
@@ -360,7 +362,7 @@ module.exports = {
 		// Send the notification to the log and the cluster
 		var notify_message = 'Toggling door locks';
 		log.module({ src : module_name, msg : notify_message });
-		IKE.text_override(notify_message)
+		IKE.text_override(notify_message);
 
 		// Hex:
 		// 01 3A 01 : LF unlock (CL)
@@ -424,5 +426,5 @@ module.exports = {
 	},
 
 	// Decode the GM bitmask string and output an array of true/false values
-	io_decode : () => { io_decode(array); },
+	io_decode : (array) => { io_decode(array); },
 };
