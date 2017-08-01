@@ -8,11 +8,6 @@ function parse_out(data) {
 
 	// Device status
 	switch (data.msg[0]) {
-		case 0x32: // Volume control
-			data.command = 'con';
-			data.value   = 'volume '+data.msg;
-			break;
-
 		case 0x34: // DSP control
 			data.command = 'con';
 			data.value   = 'DSP - ';
@@ -58,13 +53,6 @@ function parse_out(data) {
 				case 0xAF:
 					data.value += 'off';
 					status.rad.audio_control = data.value;
-
-					// IKE.text_override('BMBT power ('+module_name+')');
-					// kodi.notify('BMBT', 'power ('+module_name+')');
-					// setTimeout(() => {
-					// 	BMBT.toggle_power_if_ready();
-					// 	MID.toggle_power_if_ready();
-					// }, 4000);
 					break;
 
 				case 0xA1:

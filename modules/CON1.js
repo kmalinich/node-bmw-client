@@ -105,6 +105,7 @@ function decode_con_rotation(data) {
 		msg : 'Rotation: '+status.con1.rotation.direction,
 	});
 
+	// If volume rotation is currently active
 	if (status.con1.rotation.volume === true) {
 		switch (status.con1.rotation.direction) {
 			case 'up'   : kodi.volume('down'); break;
@@ -113,11 +114,13 @@ function decode_con_rotation(data) {
 		return;
 	}
 
+	// If alternate rotation is not currently active
 	if (status.con1.rotation.alternate === false) {
 		kodi.input(status.con1.rotation.direction);
 		return;
 	}
 
+	// If alternate rotation IS currently active
 	switch (status.con1.rotation.direction) {
 		case 'up'   : kodi.input('left');  break;
 		case 'down' : kodi.input('right'); break;
@@ -278,7 +281,7 @@ function button_check(button) {
 	if (joystick_release === true) button.button = status.con1.last.button.button;
 
 	// Detect if there is a change from the last button message, bounce if not
-	// CON sends a lot of repeat messages
+	// CON sends a lot of repeat messages (it's CANBUS)
 	let change = status.con1.last.button.action != button.action || status.con1.last.button.button != button.button || status.con1.last.button.mode != button.mode;
 	if (change === false) return;
 
@@ -290,23 +293,37 @@ function button_check(button) {
 		msg : 'Button: '+button.action+' '+button.button,
 	});
 
-	if (button.action == 'press') {
+	switch (button.action) {
+		case 'press':
+			switch (button.button) {
+				case 'tel':
+					// To use the TEL button as a toggle for rotation = Kodi volume control
+					update.status('con1.rotation.volume', !status.con1.rotation.volume);
+					kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
 
-		switch (button.button) {
-			case 'nav':
-				// To use the nav button as a toggle for left<->right or up<->down rotation
-				update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
-				break;
+					// In 5000ms, set it back
+					setTimeout(() => {
+						update.status('con1.rotation.volume', !status.con1.rotation.volume);
+						kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button')
+					}, 5000);
+					break;
 
-			case 'cd':
-				// To use the CD button as a toggle for rotation = Kodi volume control
-				update.status('con1.rotation.volume', !status.con1.rotation.volume);
-				break;
+				case 'nav':
+					// To use the NAV button as a toggle for left<->right or up<->down rotation
+					update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
+					kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
 
-			default:
-				kodi.input(button.button);
-		}
+					// In 5000ms, set it back
+					setTimeout(() => {
+						update.status('con1.rotation.alternate', !status.con1.rotation.alternate);
+						kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button')
+					}, 5000);
+					break;
 
+				default:
+					kodi.input(button.button);
+			}
+			break;
 	}
 }
 
@@ -345,8 +362,8 @@ function send_heartbeat() {
 	// 2BA -> 00 00 00 00 20
 
 	switch (status.con1.last.heartbeat) {
-		case 0x10 : status.con1.last.heartbeat = 0x20; break;
-		default   : status.con1.last.heartbeat = 0x10;
+		case 0x10 : update.status('con1.last.heartbeat', 0x20); break;
+		default   : update.status('con1.last.heartbeat', 0x10);
 	}
 }
 
@@ -362,7 +379,7 @@ function send_backlight(value) {
 	if (value < 0x00) value = 0xFF;
 
 	// Set status value
-	status.con1.backlight = value;
+	update.status('con1.backlight', value);
 
 	// Workarounds
 	switch (value) {
@@ -408,7 +425,7 @@ function send_status_cic() {
 		data : Buffer.from(msg),
 	});
 
-	status.con1.rotation.relative = -1;
+	update.status('con1.rotation.relative', -1);
 }
 
 // E90 Ignition status
