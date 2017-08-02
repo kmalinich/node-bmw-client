@@ -1,4 +1,4 @@
-/* global log bus_data status bitmask */
+/* global log bus status bitmask */
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
@@ -31,7 +31,7 @@ function request(value) {
 			break;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src: src,
 		dst: module_name,
 		msg: cmd,
@@ -54,7 +54,7 @@ function dsp_mode(mode) {
 		case 'off'          : cmd = [0x34, 0x0F]; break;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src: 'RAD',
 		dst: module_name,
 		msg: cmd,
@@ -72,7 +72,7 @@ function m_audio(value) {
 		case 'off' : cmd = [0x34, 0x90, 0x00]; break;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src: 'RAD',
 		dst: module_name,
 		msg: cmd,
@@ -102,7 +102,7 @@ function parse_out(data) {
 
 // Send EQ data to DSP
 function eq_send(msg) {
-	bus_data.send({
+	bus.data.send({
 		src : 'DSPC',
 		dst : module_name,
 		msg : msg,
@@ -168,6 +168,7 @@ function eq_encode(data) {
 }
 
 module.exports = {
+	dsp_mode  : (mode)  => { dsp_mode(mode);  },
 	eq_decode : (data)  => { eq_decode(data); },
 	eq_encode : (data)  => { eq_encode(data); },
 	eq_send   : (msg)   => { eq_send(msg);    },

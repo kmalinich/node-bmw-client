@@ -1,3 +1,5 @@
+/* eslint no-global-assign: "off", no-console: "off" */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 app_path = __dirname;
@@ -19,6 +21,7 @@ update     = require('update');
 
 bus = {
 	arbids   : require('bus-arbids'),
+	data     : null,
 	commands : require('bus-commands'),
 	modules  : require('bus-modules'),
 };
@@ -127,7 +130,7 @@ function load_modules(pass) {
 	kodi = require('kodi');
 
 	// Data handler/router
-	bus_data = require('bus-data');
+	bus.data = require('bus-data');
 
 	// Host data object (CPU, memory, etc.)
 	host_data = require('host-data');

@@ -48,7 +48,7 @@ function aux(type, action) {
 		case true : cmd++; break;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src: 'GT',
 		dst: 'IKE',
 		msg: [0x41, cmd],
@@ -70,7 +70,7 @@ function request(value) {
 			break;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src : src,
 		dst : module_name,
 		msg : cmd,

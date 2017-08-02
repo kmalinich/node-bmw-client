@@ -1,4 +1,4 @@
-/* global LCM config status log update IKE bus_data hex bitmask */
+/* global LCM config status log update IKE bus hex bitmask */
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
@@ -137,7 +137,7 @@ function auto_lights_process() {
 function set_backlight(value) {
 	log.module({ src : module_name, msg : 'Setting backlight to '+value });
 
-	bus_data.send({
+	bus.data.send({
 		src : module_name,
 		dst : 'GLO',
 		msg : [0x5C, value.toString(16), 0x00]
@@ -148,7 +148,7 @@ function set_backlight(value) {
 function coding_get() {
 	// Get all 20 blocks of coding data
 	for (let byte = 0; byte < 21; byte++) {
-		bus_data.send({
+		bus.data.send({
 			src : 'DIA',
 			dst : module_name,
 			msg : [0x08, byte],
@@ -550,7 +550,7 @@ function io_set(packet) {
 	// log.module({ src : module_name, msg : 'Setting IO status' });
 
 	packet.unshift(0x0C);
-	bus_data.send({
+	bus.data.send({
 		src: 'DIA',
 		dst: module_name,
 		msg: packet,
@@ -637,7 +637,7 @@ function request(value) {
 			cmd = [0x53];
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src: src,
 		dst: module_name,
 		msg: cmd,

@@ -4,7 +4,97 @@
 		"node": true
 	},
 	"extends": "eslint:recommended",
+	"globals": {
+		"ABG": false,
+		"AHL": false,
+		"ANZV": false,
+		"ASC": false,
+		"ASC1": false,
+		"ASST": false,
+		"BMBT": false,
+		"BT": false,
+		"CCM": false,
+		"CDC": false,
+		"CDCD": false,
+		"CID": false,
+		"CON1": false,
+		"CSU": false,
+		"CVM": false,
+		"DIA": false,
+		"DME": false,
+		"DME1": false,
+		"DSP": false,
+		"DSPC": false,
+		"EGS": false,
+		"EHC": false,
+		"EKM": false,
+		"EKP": false,
+		"EWS": false,
+		"FBZV": false,
+		"FHK": false,
+		"FID": false,
+		"FMBT": false,
+		"GM": false,
+		"GR": false,
+		"GT": false,
+		"GTF": false,
+		"HAC": false,
+		"HDMI": false,
+		"HKM": false,
+		"IHKA": false,
+		"IKE": false,
+		"IRIS": false,
+		"LCM": false,
+		"LWS": false,
+		"MFL": false,
+		"MID": false,
+		"MID1": false,
+		"MM3": false,
+		"MML": false,
+		"MMR": false,
+		"NAV": false,
+		"NAVC": false,
+		"NAVE": false,
+		"NAVJ": false,
+		"PDC": false,
+		"PIC": false,
+		"RAD": false,
+		"RCC": false,
+		"RCSC": false,
+		"RDC": false,
+		"RLS": false,
+		"SDRS": false,
+		"SES": false,
+		"SHD": false,
+		"SM": false,
+		"SMAD": false,
+		"SOR": false,
+		"STH": false,
+		"TCU": false,
+		"TEL": false,
+		"VID": false,
+		"app_intf": false,
+		"app_name": false,
+		"app_path": false,
+		"app_type": false,
+		"bitmask": false,
+		"bus": false,
+		"config": false,
+		"gpio": false,
+		"hex": false,
+		"host_data": false,
+		"json": false,
+		"kodi": false,
+		"log": false,
+		"notify": false,
+		"obc_values": false,
+		"os": false,
+		"socket": false,
+		"status": false,
+		"update": false
+	},
 	"parserOptions": {
+		"ecmaVersion": 6,
 		"sourceType": "module"
 	},
 	"rules": {
@@ -19,6 +109,12 @@
 			"error",
 			"unix"
 		],
+		"no-unused-vars": [
+			"error",
+			{
+				"varsIgnorePattern": "module_name"
+			}
+		],
 		"quotes": [
 			"error",
 			"single"
@@ -26,12 +122,6 @@
 		"semi": [
 			"error",
 			"always"
-		],
-		"no-unused-vars": [
-			"error",
-			{
-				"varsIgnorePattern": "module_name"
-			}
 		]
 	}
 }

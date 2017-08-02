@@ -1,4 +1,4 @@
-/* global IKE GM LCM BMBT MID CON1 BT HDMI EWS json bus bus_data bitmask update gpio socket kodi log status config hex obc_values */
+/* global IKE GM LCM BMBT MID CON1 BT HDMI EWS json bus bitmask update gpio socket kodi log status config hex obc_values */
 
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
@@ -454,7 +454,7 @@ function ignition(value) {
 			status = 0x07;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src: module_name,
 		dst: 'GLO',
 		msg: [0x11, status],
@@ -476,14 +476,14 @@ function obc_clock() {
 	var time = moment();
 
 	// Time
-	bus_data.send({
+	bus.data.send({
 		src: 'GT',
 		dst: module_name,
 		msg: [0x40, 0x01, time.format('H'), time.format('m')],
 	});
 
 	// Date
-	bus_data.send({
+	bus.data.send({
 		src: 'GT',
 		dst: module_name,
 		msg: [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
@@ -521,7 +521,7 @@ function obc_data(action, value, target) {
 
 	// log.module({ src : module_name, msg : action+' OBC value \''+value+'\'' });
 
-	bus_data.send({
+	bus.data.send({
 		src: 'GT',
 		dst: module_name,
 		msg: msg,
@@ -675,7 +675,11 @@ function parse_out(data) {
 					break;
 				}
 
-				case 'outside-temp':
+				case 'outside-temp': {
+					let string_outside_temp_unit;
+					let string_outside_temp_negative;
+					let string_outside_temp_value;
+
 					// Parse unit
 					string_outside_temp_unit = Buffer.from([data.msg[9]]);
 					string_outside_temp_unit = string_outside_temp_unit.toString().trim().toLowerCase();
@@ -708,8 +712,14 @@ function parse_out(data) {
 							break;
 					}
 					break;
+				}
 
-				case 'consumption-1':
+				case 'consumption-1': {
+					let consumption_l100;
+					let consumption_mpg;
+					let string_consumption_1;
+					let string_consumption_1_unit;
+
 					// Parse unit
 					string_consumption_1_unit = Buffer.from([data.msg[8]]);
 					string_consumption_1_unit = string_consumption_1_unit.toString().trim().toLowerCase();
@@ -737,8 +747,14 @@ function parse_out(data) {
 					status.obc.consumption.c1.mpg  = parseFloat(consumption_mpg.toFixed(2));
 					status.obc.consumption.c1.l100 = parseFloat(consumption_l100.toFixed(2));
 					break;
+				}
 
-				case 'consumption-2':
+				case 'consumption-2': {
+					let consumption_l100;
+					let consumption_mpg;
+					let string_consumption_2;
+					let string_consumption_2_unit;
+
 					// Parse unit
 					string_consumption_2_unit = Buffer.from([data.msg[8]]);
 					string_consumption_2_unit = string_consumption_2_unit.toString().trim().toLowerCase();
@@ -761,8 +777,12 @@ function parse_out(data) {
 					status.obc.consumption.c2.mpg  = parseFloat(consumption_mpg.toFixed(2));
 					status.obc.consumption.c2.l100 = parseFloat(consumption_l100.toFixed(2));
 					break;
+				}
 
-				case 'range':
+				case 'range': {
+					let string_range;
+					let string_range_unit;
+
 					// Parse value
 					string_range = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 					string_range = string_range.toString().trim();
@@ -785,8 +805,11 @@ function parse_out(data) {
 							break;
 					}
 					break;
+				}
 
-				case 'distance':
+				case 'distance': {
+					let string_distance;
+
 					// Parse value
 					string_distance = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 					string_distance = string_distance.toString().trim().toLowerCase();
@@ -794,8 +817,11 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.distance = parseFloat(string_distance);
 					break;
+				}
 
-				case 'arrival':
+				case 'arrival': {
+					let string_arrival;
+
 					// Parse value
 					string_arrival = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
 					string_arrival = string_arrival.toString().trim().toLowerCase();
@@ -803,8 +829,11 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.arrival = string_arrival;
 					break;
+				}
 
-				case 'limit':
+				case 'limit': {
+					let string_limit;
+
 					// Parse value
 					string_limit = Buffer.from([data.msg[3], data.msg[4], data.msg[5]]);
 					string_limit = parseFloat(string_limit.toString().trim().toLowerCase());
@@ -812,8 +841,12 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.limit = parseFloat(string_limit.toFixed(2));
 					break;
+				}
 
-				case 'average-speed':
+				case 'average-speed': {
+					let string_average_speed;
+					let string_average_speed_unit;
+
 					// Parse unit
 					string_average_speed_unit = Buffer.from([data.msg[8]]);
 					string_average_speed_unit = string_average_speed_unit.toString().trim().toLowerCase();
@@ -839,8 +872,11 @@ function parse_out(data) {
 							break;
 					}
 					break;
+				}
 
-				case 'code':
+				case 'code': {
+					let string_code;
+
 					// Parse value
 					string_code = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 					string_code = string_code.toString().trim().toLowerCase();
@@ -848,8 +884,11 @@ function parse_out(data) {
 					// Update status variable
 					status.obc.code = string_code;
 					break;
+				}
 
-				case 'stopwatch':
+				case 'stopwatch': {
+					let string_stopwatch;
+
 					// Parse value
 					string_stopwatch = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 					string_stopwatch = parseFloat(string_stopwatch.toString().trim().toLowerCase()).toFixed(2);
@@ -857,8 +896,11 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.stopwatch = string_stopwatch;
 					break;
+				}
 
-				case 'timer-1':
+				case 'timer-1': {
+					let string_aux_heat_timer_1;
+
 					// Parse value
 					string_aux_heat_timer_1 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
 					string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
@@ -866,8 +908,11 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.aux_heat_timer.t1 = string_aux_heat_timer_1;
 					break;
+				}
 
-				case 'timer-2':
+				case 'timer-2': {
+					let string_aux_heat_timer_2;
+
 					// Parse value
 					string_aux_heat_timer_2 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
 					string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
@@ -875,8 +920,11 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.aux_heat_timer.t2 = string_aux_heat_timer_2;
 					break;
+				}
 
-				case 'interim':
+				case 'interim': {
+					let string_interim;
+
 					// Parse value
 					string_interim = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
 					string_interim = parseFloat(string_interim.toString().trim().toLowerCase()).toFixed(2);
@@ -884,6 +932,7 @@ function parse_out(data) {
 					// Update status variables
 					status.obc.interim = parseFloat(string_interim);
 					break;
+				}
 			}
 
 			data.value = 'OBC '+layout.replace(/-/, ' ')+': \''+hex.h2s(data.msg)+'\'';
@@ -944,7 +993,7 @@ function request(value) {
 			src = module_name;
 			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus_data.send({
+					bus.data.send({
 						src: src,
 						dst: loop_dst,
 						msg: [0x01],
@@ -958,7 +1007,7 @@ function request(value) {
 			src = module_name;
 			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus_data.send({
+					bus.data.send({
 						src: src,
 						dst: loop_dst,
 						msg: [0x01],
@@ -972,7 +1021,7 @@ function request(value) {
 			bus.modules.modules_check.forEach((loop_dst) => {
 				src = module_name;
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus_data.send({
+					bus.data.send({
 						src: src,
 						dst: loop_dst,
 						msg: [0x01],
@@ -989,7 +1038,7 @@ function request(value) {
 	}
 
 	if (cmd !== null) {
-		bus_data.send({
+		bus.data.send({
 			src: src,
 			dst: dst,
 			msg: cmd,
@@ -1007,7 +1056,7 @@ function text(message) {
 	message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
 	message_hex = message_hex.concat(0x04);
 
-	bus_data.send({
+	bus.data.send({
 		src: 'RAD',
 		dst: module_name,
 		msg: message_hex,
@@ -1090,7 +1139,7 @@ function text_urgent(message, timeout = 5000) {
 	message_hex = [0x1A, 0x35, 0x00];
 	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
-	bus_data.send({
+	bus.data.send({
 		src : 'CCM',
 		dst : module_name,
 		msg : message_hex,
@@ -1104,7 +1153,7 @@ function text_urgent(message, timeout = 5000) {
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-	bus_data.send({
+	bus.data.send({
 		src: 'CCM',
 		dst: module_name,
 		msg: [0x1A, 0x30, 0x00],
@@ -1131,7 +1180,7 @@ function text_warning(message, timeout = 10000) {
 	message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
 	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
-	bus_data.send({
+	bus.data.send({
 		src : 'CCM',
 		dst : module_name,
 		msg : message_hex,

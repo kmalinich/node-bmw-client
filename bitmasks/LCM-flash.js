@@ -97,7 +97,7 @@ function bit_sample(dsc, hex, callback) {
 			src: src,
 			dst: dst,
 			msg: msg,
-		}
+		};
 
 		callback(null, 'message sent');
 	}, 2000);

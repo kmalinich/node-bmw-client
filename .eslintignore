@@ -1,2 +1,5 @@
 /.git
+/bitmasks
+/candump
 /node_modules
+/ref

@@ -2,13 +2,6 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const convert = require('node-unit-conversion');
 
-function logmod(string) {
-	log.msg({
-		src : module_name,
-		msg : string,
-	});
-}
-
 function parse_316(data) {
 	let parse = {
 		arbid : '0x316',
@@ -26,17 +19,10 @@ function parse_316(data) {
 		},
 	};
 
-	// let upd1 = update.status('engine.speed',            parse.rpm);
-	let upd2 = update.status('engine.ac_clutch',        parse.ac_clutch);
-	let upd3 = update.status('engine.throttle.current', parse.throttle.current);
-	let upd4 = update.status('engine.throttle.target',  parse.throttle.target);
-}
-
-function lcd_update() {
-	socket.lcd_text_tx({
-		upper : 'THR|CLT|CHC|XXXXX',
-		lower : Math.round(status.engine.throttle)+'%|'+Math.round(status.dme.coolant)+'C|'+status.vehicle.clutch,
-	});
+	update.status('engine.speed',            parse.rpm);
+	update.status('engine.ac_clutch',        parse.ac_clutch);
+	update.status('engine.throttle.current', parse.throttle.current);
+	update.status('engine.throttle.target',  parse.throttle.target);
 }
 
 function parse_329(data) {
@@ -51,14 +37,11 @@ function parse_329(data) {
 
 	parse.coolant.f = parseFloat(convert(parse.coolant.c).from('celsius').to('fahrenheit'));
 
-	let upd1 = update.status('vehicle.clutch', parse.clutch);
-	let upd2 = update.status('engine.throttle.pedal', parse.throttle_pedal);
-	let upd3 = update.status('temperature.coolant.c', parse.coolant.c);
-	let upd4 = update.status('temperature.coolant.f', parse.coolant.f);
-
-	if (upd3) lcd_update();
+	update.status('vehicle.clutch', parse.clutch);
+	update.status('engine.throttle.pedal', parse.throttle_pedal);
+	update.status('temperature.coolant.c', parse.coolant.c);
+	update.status('temperature.coolant.f', parse.coolant.f);
 }
-
 
 // Parse data sent from module
 function parse_out(data) {
