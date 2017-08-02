@@ -1,4 +1,4 @@
-/* global GM IKE bus_data bitmask LCM log status */
+/* global GM IKE bus bitmask LCM log status */
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
@@ -156,7 +156,7 @@ function io_set(packet) {
 	packet.unshift(0x0C);
 
 	// Set IO status
-	bus_data.send({
+	bus.data.send({
 		src: 'DIA',
 		dst: module_name,
 		msg: packet,
@@ -394,7 +394,7 @@ module.exports = {
 				break;
 		}
 
-		bus_data.send({
+		bus.data.send({
 			src : src,
 			dst : module_name,
 			msg : cmd,

@@ -21,7 +21,7 @@ var dsp_modes = {
 	4 : 'memory 2',
 	5 : 'memory 3',
 	6 : 'DSP off',
-}
+};
 
 function decode_dsp(data) {
 	dsp_mode  = data[1] - 1;
@@ -106,6 +106,6 @@ var dsp_data = {
 		5 : 5,
 		6 : 9,
 	},
-}
+};
 
 // encode_dsp(dsp_data);

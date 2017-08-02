@@ -35,7 +35,7 @@ function request(value) {
 			break;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src : src,
 		dst : module_name,
 		msg : cmd,
