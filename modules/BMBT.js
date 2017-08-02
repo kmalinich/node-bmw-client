@@ -1,3 +1,5 @@
+/* global IKE */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Set or unset the status timeout
@@ -140,7 +142,7 @@ function parse_out(data) {
 
 // Say we have no tape in the player
 function send_cassette_status(value = 0x05) {
-	bus_data.send({
+	bus.data.send({
 		src: module_name,
 		dst: 'RAD',
 		msg: [0x4B, value],
@@ -150,7 +152,7 @@ function send_cassette_status(value = 0x05) {
 // Emulate button presses
 function send_button(button) {
 	let button_down = 0x00;
-	let button_hold;
+	// let button_hold;
 	let button_up;
 
 	// Switch statement to determine button, then encode bitmask
@@ -161,7 +163,7 @@ function send_button(button) {
 			button_down = bitmask.set(button_down, bitmask.bit[2]);
 
 			// Generate hold and up values
-			button_hold = bitmask.set(button_down, bitmask.bit[6]);
+			// button_hold = bitmask.set(button_down, bitmask.bit[6]);
 			button_up   = bitmask.set(button_down, bitmask.bit[7]);
 			break;
 	}
@@ -173,7 +175,7 @@ function send_button(button) {
 	let packet_down = [command, button_down];
 	let packet_up   = [command, button_up];
 
-	bus_data.send({
+	bus.data.send({
 		src: module_name,
 		dst: 'RAD',
 		msg: packet_down,
@@ -183,7 +185,7 @@ function send_button(button) {
 	setTimeout(() => {
 		log.module({ src : module_name, msg : 'Button up '+button });
 
-		bus_data.send({
+		bus.data.send({
 			src: module_name,
 			dst: 'RAD',
 			msg: packet_up,

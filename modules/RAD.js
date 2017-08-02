@@ -2,10 +2,6 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Parse data sent from RAD module
 function parse_out(data) {
-	// Init variables
-	let command;
-	let value;
-
 	// Device status
 	switch (data.msg[0]) {
 		case 0x34: // DSP control
@@ -132,15 +128,23 @@ function parse_out(data) {
 function send_audio_control(source) {
 	let msg_tunertape = [0x36, 0xA1];
 	let msg_cd        = [0x36, 0xA0];
+	let msg;
 
-	log.module({ src : module_name, msg : 'Sending audio control: tuner/tape' });
-	bus_data.send({
+	switch (source) {
+		case 'cd'         : msg = msg_cd;        break;
+		case 'tuner/tape' : msg = msg_tunertape; break;
+	}
+
+	log.module({ src : module_name, msg : 'Sending audio control: '+source });
+
+	bus.data.send({
 		src: module_name,
 		dst: 'LOC',
-		msg : msg_tunertape,
+		msg : msg,
 	});
 }
 
 module.exports = {
-	parse_out : (data) => { parse_out(data); },
+	parse_out          : (data)   => { parse_out(data);            },
+	send_audio_control : (source) => { send_audio_control(source); },
 };

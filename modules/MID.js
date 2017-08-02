@@ -1,4 +1,4 @@
-/* global MID bus IKE DSP BT LCM bitmask log status config bus_data hex */
+/* global MID bus IKE DSP BT LCM bitmask log status config bus hex */
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
@@ -25,7 +25,7 @@ function refresh_text() {
 	message_hex = [0x23, 0x40, 0x20];
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
 
-	bus_data.send({
+	bus.data.send({
 		src: 'RAD',
 		dst: module_name,
 		msg: message_hex,
@@ -35,7 +35,7 @@ function refresh_text() {
 	message_hex = [0x23, 0x40, 0x20];
 	message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
 
-	bus_data.send({
+	bus.data.send({
 		src: 'IKE',
 		dst: module_name,
 		msg: message_hex,
@@ -55,7 +55,7 @@ function refresh_text() {
 	message_hex = message_hex.concat(0x05);
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_6, 4).substring(0, 4)));
 
-	bus_data.send({
+	bus.data.send({
 		src: 'RAD',
 		dst: module_name,
 		msg: message_hex,
@@ -75,7 +75,7 @@ function refresh_text() {
 	message_hex = message_hex.concat(0x05);
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_12, 4).substring(0, 4)));
 
-	bus_data.send({
+	bus.data.send({
 		src: 'RAD',
 		dst: module_name,
 		msg: message_hex,
@@ -344,7 +344,7 @@ function send_button(button) {
 	let packet_down = [command, button_down];
 	let packet_up   = [command, button_up];
 
-	bus_data.send({
+	bus.data.send({
 		src: module_name,
 		dst: 'RAD',
 		msg: packet_down,
@@ -353,7 +353,7 @@ function send_button(button) {
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
 		log.module({ src: module_name, msg: 'Button up: '+button });
-		bus_data.send({
+		bus.data.send({
 			src: module_name,
 			dst: 'RAD',
 			msg: packet_up,

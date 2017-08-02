@@ -16,7 +16,7 @@ function request(value) {
 			break;
 	}
 
-	bus_data.send({
+	bus.data.send({
 		src: 'CCM',
 		dst: module_name,
 		msg: cmd,
