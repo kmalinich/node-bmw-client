@@ -190,10 +190,10 @@ function bail() {
 function term() {
 	log.msg({ msg : 'Terminating' });
 
-	gpio.term(() => { // Terminate GPIO relays
-		host_data.term(() => { // Terminate host data timeout
-			socket.term(() => { // Stop zeroMQ client
-				HDMI.term(() => { // Close HDMI-CEC
+	HDMI.term(() => { // Close HDMI-CEC
+		gpio.term(() => { // Terminate GPIO relays
+			host_data.term(() => { // Terminate host data timeout
+				socket.term(() => { // Stop zeroMQ client
 					kodi.term(bail); // Stop Kodi zeroMQ client
 				}, bail);
 			}, bail);
