@@ -1,7 +1,3 @@
-/* global MID bus IKE DSP BT LCM bitmask log status config bus hex */
-
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 const pad = require('pad');
 
 
@@ -17,7 +13,7 @@ const pad = require('pad');
 function refresh_text() {
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
-	log.module({ src: module_name, msg: 'Updating MID text' });
+	log.module({ msg: 'Updating MID text' });
 
 	let message_hex;
 
@@ -26,9 +22,8 @@ function refresh_text() {
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
 
 	bus.data.send({
-		src: 'RAD',
-		dst: module_name,
-		msg: message_hex,
+		src : 'RAD',
+		msg : message_hex,
 	});
 
 	// Upper right - 20 char OBC display
@@ -36,9 +31,8 @@ function refresh_text() {
 	message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
 
 	bus.data.send({
-		src: 'IKE',
-		dst: module_name,
-		msg: message_hex,
+		src : 'IKE',
+		msg : message_hex,
 	});
 
 	// Left side menu
@@ -56,9 +50,8 @@ function refresh_text() {
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_6, 4).substring(0, 4)));
 
 	bus.data.send({
-		src: 'RAD',
-		dst: module_name,
-		msg: message_hex,
+		src : 'RAD',
+		msg : message_hex,
 	});
 
 	// Right side menu
@@ -77,7 +70,6 @@ function refresh_text() {
 
 	bus.data.send({
 		src: 'RAD',
-		dst: module_name,
 		msg: message_hex,
 	});
 }
@@ -88,7 +80,7 @@ function text_loop(action) {
 	if (status.vehicle.ignition_level < 1) action = false;
 	if (MID.text_text_loop == action) return;
 
-	log.module({ src : module_name, msg : 'Text loop '+action });
+	log.module({ msg : 'Text loop '+action });
 
 	switch (action) {
 		case false:
@@ -117,7 +109,7 @@ function status_loop(action) {
 	if (status.vehicle.ignition_level < 1) action = false;
 	if (MID.status_status_loop == action) return;
 
-	log.module({ src : module_name, msg : 'Status loop '+action });
+	log.module({ msg : 'Status loop '+action });
 
 	switch (action) {
 		case false:
@@ -153,8 +145,8 @@ function status_loop(action) {
 // Send MID status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
-		bus.commands.request_device_status(module_name, 'RAD');
-		bus.commands.request_device_status('RAD',  'DSP');
+		bus.commands.request_device_status('MID', 'RAD');
+		bus.commands.request_device_status('RAD', 'DSP');
 		return;
 	}
 
@@ -166,15 +158,12 @@ function toggle_power_if_ready() {
 	if (status.vehicle.ignition_level === 0 || config.emulate.mid !== true) return;
 
 	// Debug logging
-	// log.module({ src: module_name, msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
-	// log.module({ src: module_name, msg: 'rad.audio_control : \''+status.rad.audio_control+'\'' });
+	// log.module({ msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
+	// log.module({ msg: 'rad.audio_control : \''+status.rad.audio_control+'\'' });
 
 	if (status.rad.audio_control == 'audio off') {
-		IKE.text_override(module_name+' power, from '+module_name);
-		log.module({
-			src : module_name,
-			msg : 'Sending power!',
-		});
+		IKE.text_override('MID power, from MID');
+		log.module({ msg : 'Sending power!'	});
 
 		send_button('power');
 		DSP.request('memory'); // Get the DSP memory
@@ -217,8 +206,14 @@ function parse_out(data) {
 					case 0x07 : BT.command('play');       break;
 					case 0x08 : BT.command('repeat');     break;
 					case 0x09 : BT.command('shuffle');    break;
-					case 0x0A : config.lights.auto = false; LCM.auto_lights(true); break;
-					case 0x0B : config.lights.auto = true; LCM.auto_lights(true); break;
+					case 0x0A :
+						update.config('lights.auto', false);
+						LCM.auto_lights();
+						break;
+					case 0x0B :
+						update.config('lights.auto', true);
+						LCM.auto_lights();
+						break;
 				}
 			}
 
@@ -337,7 +332,7 @@ function send_button(button) {
 			break;
 	}
 
-	log.module({ src: module_name, msg: 'Button down: '+button+', hold: '+button_hold });
+	log.module({ msg: 'Button down: '+button+', hold: '+button_hold });
 
 	// Init variables
 	let command     = 0x48; // Button action
@@ -345,18 +340,16 @@ function send_button(button) {
 	let packet_up   = [command, button_up];
 
 	bus.data.send({
-		src: module_name,
-		dst: 'RAD',
-		msg: packet_down,
+		dst : 'RAD',
+		msg : packet_down,
 	});
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ src: module_name, msg: 'Button up: '+button });
+		log.module({ msg: 'Button up: '+button });
 		bus.data.send({
-			src: module_name,
-			dst: 'RAD',
-			msg: packet_up,
+			dst : 'RAD',
+			msg : packet_up,
 		});
 	}, 150);
 }

@@ -1,72 +1,53 @@
-/* global LCM config status log update IKE bus hex bitmask */
-
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 const suncalc = require('suncalc');
 const now     = require('performance-now');
 
+
 // Handle incoming commands from API
 function api_command(data) {
-	if (typeof data['lcm-get'] !== 'undefined') {
+	if (typeof data['lcm-get'] !== 'undefined')
 		LCM.request('io-status');
-	}
-	else {
-		// Dirty assumption
-		io_encode(data);
-	}
+	else
+		io_encode(data); // Very dirty assumption
 }
 
 // Automatic lights handling
-function auto_lights(override = false) {
+function auto_lights() {
+	// Default action is true (enable/process auto lights)
 	let action = true;
 
-	if (config.lights.auto !== true && override === false) return;
+	// Action is false if auto lights are disabled in the config
+	if (config.lights.auto !== true) action = false;
 
-	if (override === true) action = false;
-
+	// Action is false if ignition is not in run
 	if (status.vehicle.ignition_level < 3) action = false;
-
-	if (action === false) io_encode({});
-
-	if (LCM.status_lights_auto === action) return;
-
-	log.change({
-		src   : module_name,
-		value : 'Auto lights',
-		old   : LCM.status_lights_auto,
-		new   : action,
-	});
 
 	switch (action) {
 		case false:
 			io_encode({});
+
 			if (LCM.timeouts.lights_auto !== null) {
 				clearTimeout(LCM.timeouts.lights_auto);
 				LCM.timeouts.lights_auto = null;
-				log.module({ src : module_name, msg : 'Unset autolights timeout' });
+				log.module({ msg : 'Unset autolights timeout' });
 			}
 
 			// Set status variables
-			LCM.status_lights_auto = false;
-
-			update.status('lights.auto.reason',  null);
+			update.status('lights.auto.active',  false);
 			update.status('lights.auto.lowbeam', false);
+			update.status('lights.auto.reason',  null);
 			break;
 		case true:
 			if (LCM.timeouts.lights_auto === null) {
-				log.module({ src : module_name, msg : 'Set autolights timeout' });
+				log.module({ msg : 'Set autolights timeout' });
 			}
 
 			// Set status variable
-			LCM.status_lights_auto = true;
+			update.status('lights.auto.active', true);
 
-			// Process/send LCM data on 7 second timeout
+			// Process/send LCM data on 6 second timeout (for safety)
 			// LCM diag command timeout is 15 seconds
 			auto_lights_process();
 	}
-
-	// Set status variable
-	update.status('lights.auto.active', LCM.status_lights_auto);
 }
 
 // Logic based on location and time of day, determine if the low beams should be on
@@ -80,24 +61,18 @@ function auto_lights_process() {
 	let lights_off   = sun_times.sunriseEnd;
 
 	// Debug logging
-	// log.module({ src : module_name, msg : '   current : \''+current_time+'\'' });
-	// log.module({ src : module_name, msg : ' lights_on : \''+lights_on+'\''    });
-	// log.module({ src : module_name, msg : 'lights_off : \''+lights_off+'\''   });
+	// log.module({ msg : '   current : \''+current_time+'\'' });
+	// log.module({ msg : ' lights_on : \''+lights_on+'\''    });
+	// log.module({ msg : 'lights_off : \''+lights_off+'\''   });
 
-	if (status.vehicle.ignition_level < 3) {
+	// If ignition is not in run or auto lights are disabled in config,
+	// call auto_lights() to clean up
+	if (status.vehicle.ignition_level < 3 || config.lights.auto !== true) {
 		auto_lights();
 		return;
 	}
 
-	if (config.lights.auto !== true) {
-		auto_lights();
-		return;
-	}
-
-	// log.module({
-	// 	src : module_name,
-	// 	msg : 'Processing auto lights',
-	// });
+	// log.module({ msg : 'Processing auto lights' });
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed != 'off') {
@@ -130,15 +105,17 @@ function auto_lights_process() {
 	}
 
 	reset();
+
+	// Fire 6sec timeout
 	LCM.timeouts.lights_auto = setTimeout(auto_lights_process, 6000);
 }
 
 // Cluster/interior backlight
 function set_backlight(value) {
-	log.module({ src : module_name, msg : 'Setting backlight to '+value });
+	log.module({ msg : 'Setting backlight to '+value });
 
 	bus.data.send({
-		src : module_name,
+		src : 'LCM',
 		dst : 'GLO',
 		msg : [0x5C, value.toString(16), 0x00]
 	});
@@ -150,7 +127,6 @@ function coding_get() {
 	for (let byte = 0; byte < 21; byte++) {
 		bus.data.send({
 			src : 'DIA',
-			dst : module_name,
 			msg : [0x08, byte],
 		});
 	}
@@ -177,15 +153,15 @@ function comfort_turn(data) {
 
 	if (data.before.left.active === false) { // left turn was previously off
 		if (data.after.left.active && !data.after.right.active) { // left turn is now on, and right turn is now off
-			status.lights.turn.left.depress = now();
+			update.status('lights.turn.left.depress', now());
 			return;
 		}
 	}
 	else { // left turn was previously on
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
-			status.lights.turn.depress_elapsed = now()-status.lights.turn.left.depress;
-			// log.module({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
+			update.status('lights.turn.depress_elapsed', now()-status.lights.turn.left.depress);
+			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'left';
 			}
@@ -194,15 +170,15 @@ function comfort_turn(data) {
 
 	if (data.before.right.active === false) { // right turn was previously off
 		if (!data.after.left.active && data.after.right.active) { // left turn is now off, and right turn is now on
-			status.lights.turn.right.depress = now();
+			update.status('lights.turn.right.depress', now());
 			return;
 		}
 	}
 	else { // right turn was previously on
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
-			status.lights.turn.depress_elapsed = now()-status.lights.turn.right.depress;
-			// log.module({ src : module_name, msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
+			update.status('lights.turn.depress_elapsed', now()-status.lights.turn.right.depress);
+			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'right';
 			}
@@ -210,20 +186,20 @@ function comfort_turn(data) {
 	}
 
 	if (action === 'left' || action === 'right') {
-		log.module({ src : module_name, msg : 'Comfort turn: '+action });
+		log.module({ msg : 'Comfort turn: '+action });
 
 		switch (action) {
 			case 'left':
 				// Set status variables
-				status.lights.turn.left.comfort  = true;
-				status.lights.turn.right.comfort = false;
+				update.status('lights.turn.left.comfort',  true);
+				update.status('lights.turn.right.comfort', false);
 				cluster_msg_outer = '< < < < < < <';
 				break;
 
 			case 'right':
 				// Set status variables
-				status.lights.turn.left.comfort  = false;
-				status.lights.turn.right.comfort = true;
+				update.status('lights.turn.left.comfort',  false);
+				update.status('lights.turn.right.comfort', true);
 				cluster_msg_outer = '> > > > > > >';
 		}
 
@@ -231,26 +207,24 @@ function comfort_turn(data) {
 		if (config.lights.comfort_turn.cluster_msg === true) {
 			// Concat message string
 			let cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '+cluster_msg_outer;
-
 			IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed, action, true);
 		}
 
 		reset();
-		status.lights.turn.comfort_cool = false;
+		update.status('lights.turn.comfort_cool', false);
 
 		// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
 		setTimeout(() => {
-			log.module({ src : module_name, msg : 'Comfort turn: off' });
-			// Set status variables
-			status.lights.turn.left.comfort  = false;
-			status.lights.turn.right.comfort = false;
+			// Update status variables
+			update.status('lights.turn.left.comfort',  false);
+			update.status('lights.turn.right.comfort', false);
+
 			reset();
 		}, (300*config.lights.comfort_turn.flashes)+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
 
 		// Timeout for cooldown period
 		setTimeout(() => {
-			log.module({ src : module_name, msg : 'Comfort turn: cooldown done' });
-			status.lights.turn.comfort_cool = true;
+			update.status('lights.turn.comfort_cool', true);
 		}, (300*config.lights.comfort_turn.flashes)+status.lights.turn.depress_elapsed+1500); // Subtract the time from the initial blink
 	}
 }
@@ -547,12 +521,11 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
-	// log.module({ src : module_name, msg : 'Setting IO status' });
+	// log.module({ msg : 'Setting IO status' });
 
 	packet.unshift(0x0C);
 	bus.data.send({
 		src: 'DIA',
-		dst: module_name,
 		msg: packet,
 	});
 
@@ -602,19 +575,9 @@ function reset() {
 // Request various things from LCM
 function request(value) {
 	let src;
-	let cmd;
+	let msg;
 
-	log.bus({
-		bus : 'node',
-		src : {
-			name : 'NODE',
-		},
-		dst : {
-			name : module_name,
-		},
-		command : 'req',
-		value : value,
-	});
+	log.module({ msg : 'Requesting \''+value+'\'' });
 
 	switch (value) {
 		case 'coding':
@@ -622,25 +585,24 @@ function request(value) {
 			break;
 		case 'dimmer':
 			src = 'BMBT';
-			cmd = [0x5D];
+			msg = [0x5D];
 			break;
 		case 'io-status':
 			src = 'DIA';
-			cmd = [0x0B, 0x00]; // Get IO status
+			msg = [0x0B, 0x00]; // Get IO status
 			break;
 		case 'light-status':
 			src = 'GT';
-			cmd = [0x5A];
+			msg = [0x5A];
 			break;
 		case 'vehicledata':
 			src = 'IKE';
-			cmd = [0x53];
+			msg = [0x53];
 	}
 
 	bus.data.send({
-		src: src,
-		dst: module_name,
-		msg: cmd,
+		src : src,
+		msg : msg,
 	});
 }
 
@@ -696,44 +658,57 @@ function parse_out(data) {
 
 // Welcome lights on unlocking/locking
 function welcome_lights(action) {
-	if (status.vehicle.ignition_level > 0 || status.lights.welcome_lights === action) return;
+	// Disable welcome lights if ignition is not fully off
+	if (status.vehicle.ignition_level !== 0) action = false;
 
 	switch (action) {
 		case true :
-			log.module({ src : module_name, msg : 'Welcome lights activating' });
+			// Set status var to true
 			update.status('lights.welcome_lights', true);
 
 			// Send configured welcome lights
 			io_encode(config.lights.welcome_lights);
 
+			// Increment welcome lights counter
+			LCM.counter_welcome_lights++;
+
 			// Clear welcome lights status after 15 seconds
 			LCM.timeouts.lights_welcome = setTimeout(() => {
-				update.status('lights.welcome_lights', false);
-				// io_encode({});
-			}, 15000);
+				// If we're not over the configured welcome lights limit yet
+				if (LCM.counter_welcome_lights <= (config.lights.welcome_lights_sec)) {
+					LCM.welcome_lights(true);
+				}
+				else {
+					LCM.welcome_lights(false);
+				}
+			}, 1000);
 			break;
+
 		case false:
+			// Clear any remaining timeout(s)
 			clearTimeout(LCM.timeouts.lights_welcome);
+
+			// Set status var back to false
 			update.status('lights.welcome_lights', false);
-			io_encode({});
+
+			// Send empty object to turn off all LCM outputs (if vehicle is off)
+			if (status.vehicle.ignition_level === 0) io_encode({});
 			break;
 	}
 }
 
 module.exports = {
-	// Variables
-	counter_lights_welcome : null,
-
+	// Timeout variables
 	timeouts : {
 		lights_auto    : null,
 		lights_welcome : null,
 	},
 
-	status_lights_auto : false,
+	counter_welcome_lights : 0,
 
 	// Functions
 	api_command         : (data) => { api_command(data);         },
-	auto_lights         : (data) => { auto_lights(data);         },
+	auto_lights         : ()     => { auto_lights();             },
 	auto_lights_process : (data) => { auto_lights_process(data); },
 	parse_out           : (data) => { parse_out(data);           },
 	request             : (data) => { request(data);             },

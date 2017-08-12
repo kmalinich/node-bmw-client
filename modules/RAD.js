@@ -135,10 +135,10 @@ function send_audio_control(source) {
 		case 'tuner/tape' : msg = msg_tunertape; break;
 	}
 
-	log.module({ src : module_name, msg : 'Sending audio control: '+source });
+	log.module({ msg : 'Sending audio control: '+source });
 
 	bus.data.send({
-		src: module_name,
+		src : module_name,
 		dst: 'LOC',
 		msg : msg,
 	});

@@ -4,10 +4,7 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 function request(value) {
 	let cmd;
 
-	log.module({
-		src : module_name,
-		msg : 'Requesting \''+value+'\'',
-	});
+	log.module({ msg : 'Requesting \''+value+'\'' });
 
 	switch (value) {
 		case 'immobiliserstatus':
@@ -18,7 +15,7 @@ function request(value) {
 
 	bus.data.send({
 		src: 'CCM',
-		dst: module_name,
+		dst : module_name,
 		msg: cmd,
 	});
 }

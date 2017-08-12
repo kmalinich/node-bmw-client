@@ -76,7 +76,7 @@ function send_cd_status(value) {
 	}
 
 	bus.data.send({
-		src: module_name,
+		src : module_name,
 		dst: 'RAD',
 		msg: [0x39, bit, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01],
 	});

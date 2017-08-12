@@ -69,6 +69,7 @@ function load_modules(pass) {
 	CVM  = require('CVM');
 	DIA  = require('DIA');
 	DME  = require('DME');
+	DMEK = require('DMEK');
 	DSP  = require('DSP');
 	DSPC = require('DSPC');
 	EGS  = require('EGS');
@@ -93,7 +94,6 @@ function load_modules(pass) {
 	LWS  = require('LWS');
 	MFL  = require('MFL');
 	MID  = require('MID');
-	MID1 = require('MID1');
 	MM3  = require('MM3');
 	MML  = require('MML');
 	MMR  = require('MMR');

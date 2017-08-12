@@ -1,6 +1,3 @@
-/* global IKE GM LCM BMBT MID CON1 BT HDMI EWS json bus bitmask update gpio socket kodi log status config hex obc_values */
-
-
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const convert = require('node-unit-conversion');
@@ -32,7 +29,7 @@ function api_command(data) {
 			obc_data('reset', data.value);
 			break;
 		default: // Dunno.
-			log.module({ src : module_name, msg : 'Unknown API command: '+data.command });
+			log.module({ msg : 'Unknown API command: '+data.command });
 	}
 }
 
@@ -43,10 +40,7 @@ function data_refresh() {
 			clearTimeout(IKE.timeout_data_refresh);
 			IKE.timeout_data_refresh = null;
 
-			log.module({
-				src : module_name,
-				msg : 'Unset data refresh timeout',
-			});
+			log.module({ msg : 'Unset data refresh timeout' });
 
 			return;
 		}
@@ -65,10 +59,7 @@ function data_refresh() {
 	// RLS.request('rain-sensor-status');
 
 	if (IKE.timeout_data_refresh === null) {
-		log.module({
-			src : module_name,
-			msg : 'Set data refresh timeout',
-		});
+		log.module({ msg : 'Set data refresh timeout' });
 	}
 
 	// setTimeout for next update
@@ -106,40 +97,29 @@ function decode_ignition_status(data) {
 	if (data.msg[1] > status.vehicle.ignition_level) {
 		switch (data.msg[1]) { // Evaluate new ignition state
 			case 1: // Accessory
-				log.module({
-					src : module_name,
-					msg : 'Powerup state',
-				});
+				log.module({ msg : 'Powerup state' });
 				IKE.state_powerup = true;
 				break;
+
 			case 3: // Run
+				// If the accessory (1) ignition message wasn't caught
 				if (status.vehicle.ignition_level === 0) {
-					log.module({
-						src : module_name,
-						msg : 'Powerup state',
-					});
+					log.module({ msg : 'Powerup state' });
 					IKE.state_powerup = true;
 				}
 
-				log.module({
-					src : module_name,
-					msg : 'Run state',
-				});
+				log.module({ msg : 'Run state' });
 				IKE.state_run = true;
 				break;
+
 			case 7: // Start
-				if (status.vehicle.ignition_level === 0) {
-					log.module({
-						src : module_name,
-						msg : 'Powerup state',
-					});
+				// If the accessory (1) or run (3) ignition message(s) weren't caught
+				if (status.vehicle.ignition_level === 0 || status.vehicle.ignition_level === 3) {
+					log.module({ msg : 'Powerup state' });
 					IKE.state_powerup = true;
 				}
 
-				log.module({
-					src : module_name,
-					msg : 'Start-begin state',
-				});
+				log.module({ msg : 'Start-begin state' });
 				IKE.state_start_begin = true;
 		}
 	}
@@ -148,55 +128,39 @@ function decode_ignition_status(data) {
 	else if (data.msg[1] < status.vehicle.ignition_level) {
 		switch (data.msg[1]) { // Evaluate new ignition state
 			case 0: // Off
+				// If the accessory (1) ignition message wasn't caught
 				if (status.vehicle.ignition_level === 3) {
-					log.module({
-						src : module_name,
-						msg : 'Powerdown state',
-					});
+					log.module({ msg : 'Powerdown state' });
 					IKE.state_powerdown = true;
 				}
 
-				log.module({
-					src : module_name,
-					msg : 'Poweroff state',
-				});
+				log.module({ msg : 'Poweroff state' });
 				IKE.state_poweroff = true;
 				break;
+
 			case 1: // Accessory
-				log.module({
-					src : module_name,
-					msg : 'Powerdown state',
-				});
+				log.module({ msg : 'Powerdown state' });
 				IKE.state_powerdown = true;
 				break;
+
 			case 3: // Run
-				log.module({
-					src : module_name,
-					msg : 'Start-end state',
-				});
+				log.module({ msg : 'Start-end state' });
 				IKE.state_start_end = true;
 		}
 	}
 
 	// Set ignition status value
-	if (status.vehicle.ignition_level != data.msg[1]) {
-		log.module({
-			src : module_name,
-			msg : 'Ignition level change \''+status.vehicle.ignition_level+'\' => \''+data.msg[1]+'\'',
-		});
-
-		status.vehicle.ignition_level = data.msg[1];
-
+	if (update.status('vehicle.ignition_level', data.msg[1])) {
 		// Activate autolights if we got 'em
 		LCM.auto_lights_process();
 	}
 
 	switch (data.msg[1]) {
-		case 0  : status.vehicle.ignition = 'off';       break;
-		case 1  : status.vehicle.ignition = 'accessory'; break;
-		case 3  : status.vehicle.ignition = 'run';       break;
-		case 7  : status.vehicle.ignition = 'start';     break;
-		default : status.vehicle.ignition = 'unknown';   break;
+		case 0  : update.status('vehicle.ignition', 'off');       break;
+		case 1  : update.status('vehicle.ignition', 'accessory'); break;
+		case 3  : update.status('vehicle.ignition', 'run');       break;
+		case 7  : update.status('vehicle.ignition', 'start');     break;
+		default : update.status('vehicle.ignition', 'unknown');   break;
 	}
 
 	// Ignition changed to off
@@ -209,7 +173,7 @@ function decode_ignition_status(data) {
 		MID.status_loop(false);
 		MID.text_loop(false);
 
-		// iDrive knob
+		// iDrive knob init
 		CON1.send_status_ignition_new();
 
 		// GPIO relays
@@ -291,13 +255,20 @@ function decode_ignition_status(data) {
 	if (IKE.state_run === true) {
 		IKE.state_run = false;
 
-		if (config.json.write_on_run) {
-			json.write(); // Write JSON config and status files
-		}
+		// If the HDMI display is currently on, power it off
+		// This helps prepare for engine start during scenarios
+		// like at the fuel pump, when the ignition is switched
+		// from run to accessory, which ordinarily leaves the screen on.
+		// That causes and issue if you go back to run from accessory,
+		// with the screen still on, since it may cause damage to the screen
+		// to experience a low-voltage event caused by the starter motor.
+		if (status.hdmi.power_status !== 'STANDBY') HDMI.command('poweroff');
 
-		if (config.options.obc_refresh_on_start === true) {
-			IKE.obc_refresh();
-		}
+		// Write JSON config and status files
+		if (config.json.write_on_run) json.write();
+
+		// Refresh OBC data
+		if (config.options.obc_refresh_on_start === true) IKE.obc_refresh();
 	}
 }
 
@@ -321,32 +292,24 @@ function decode_sensor_status(data) {
 	// 192 = 4 (6+7)
 	// 208 = 3 (4+6+7)
 
-	if (status.vehicle.handbrake != bitmask.test(data.msg[1], bitmask.bit[0])) {
-		status.vehicle.handbrake = bitmask.test(data.msg[1], bitmask.bit[0]);
+	update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]));
+
+	// If the engine is newly running, power up HDMI display
+	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
+		HDMI.command('poweron');
 	}
 
-	if (status.engine.running != bitmask.test(data.msg[2], bitmask.bit[0])) {
-		status.engine.running = bitmask.test(data.msg[2], bitmask.bit[0]);
-		// If the engine is newly running, power up HDMI display
-		if (status.engine.running === true) {
-			HDMI.command('poweron');
-		}
-	}
-
-	if (status.vehicle.reverse != bitmask.test(data.msg[2], bitmask.bit[4])) {
-		status.vehicle.reverse = bitmask.test(data.msg[2], bitmask.bit[4]);
-		// If the vehicle is newly in reverse, send message
-		if (status.vehicle.reverse === true) {
-			if (config.options.message_reverse === true) IKE.text_override('you\'re in reverse..');
-		}
+	// If the vehicle is newly in reverse, send message
+	if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
+		if (config.options.message_reverse === true) IKE.text_override('you\'re in reverse..');
 	}
 }
 
 function decode_speed_values(data) {
 	// Update vehicle and engine speed variables
 	if (config.canbus.speed === false) {
-		status.vehicle.speed.kmh = parseFloat(data.msg[1]*2);
-		status.vehicle.speed.mph = parseFloat(convert(parseFloat((data.msg[1]*2))).from('kilometre').to('us mile').toFixed(2));
+		update.status('vehicle.speed.kmh', parseFloat(data.msg[1]*2));
+		update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1]*2))).from('kilometre').to('us mile').toFixed(2)));
 	}
 
 	if (config.canbus.rpm === false) {
@@ -437,7 +400,7 @@ function hud_refresh() {
 // Pretend to be IKE saying the car is on
 // Note - this can and WILL set the alarm off - kudos to the Germans...
 function ignition(value) {
-	log.module({ src : module_name, msg : 'Sending ignition status: '+value });
+	log.module({ msg : 'Sending ignition status: '+value });
 
 	var status;
 	switch (value) {
@@ -455,38 +418,34 @@ function ignition(value) {
 	}
 
 	bus.data.send({
-		src: module_name,
 		dst: 'GLO',
-		msg: [0x11, status],
+		msg : [0x11, status],
 	});
 }
 
 // Logging shortcut
 function logmod(msg) {
 	log.module({
-		src : module_name,
 		msg : msg,
 	});
 }
 
 // OBC set clock
 function obc_clock() {
-	log.module({ src : module_name, msg : 'Setting OBC clock to current time'});
+	log.module({ msg : 'Setting OBC clock to current time'});
 
 	var time = moment();
 
 	// Time
 	bus.data.send({
-		src: 'GT',
-		dst: module_name,
-		msg: [0x40, 0x01, time.format('H'), time.format('m')],
+		src : 'GT',
+		msg : [0x40, 0x01, time.format('H'), time.format('m')],
 	});
 
 	// Date
 	bus.data.send({
-		src: 'GT',
-		dst: module_name,
-		msg: [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
+		src : 'GT',
+		msg : [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
 	});
 }
 
@@ -519,21 +478,17 @@ function obc_data(action, value, target) {
 		msg = [msg, target];
 	}
 
-	// log.module({ src : module_name, msg : action+' OBC value \''+value+'\'' });
+	// log.module({ msg : action+' OBC value \''+value+'\'' });
 
 	bus.data.send({
-		src: 'GT',
-		dst: module_name,
+		src : 'GT',
 		msg: msg,
 	});
 }
 
 // Refresh OBC data
 function obc_refresh() {
-	log.module({
-		src : module_name,
-		msg : 'Refreshing all OBC data',
-	});
+	log.module({ msg : 'Refreshing all OBC data' });
 
 	// LCM data
 	LCM.request('vehicledata');
@@ -648,18 +603,18 @@ function parse_out(data) {
 
 					// Detect 12h or 24h time and parse value
 					if (string_time_unit === 'am' || string_time_unit === 'pm') {
-						status.coding.unit.time = '12h';
+						update.status('coding.unit.time', '12h');
 						string_time = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
 					}
 					else {
-						status.coding.unit.time = '24h';
+						update.status('coding.unit.time', '24h');
 						string_time = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
 					}
 
 					string_time = string_time.toString().trim().toLowerCase();
 
 					// Update status variables
-					status.obc.time = string_time;
+					update.status('obc.time', string_time);
 					break;
 				}
 
@@ -671,7 +626,7 @@ function parse_out(data) {
 					string_date = string_date.toString().trim();
 
 					// Update status variables
-					status.obc.date = string_date;
+					update.status('obc.date', string_date);
 					break;
 				}
 
@@ -996,7 +951,7 @@ function request(value) {
 					bus.data.send({
 						src: src,
 						dst: loop_dst,
-						msg: [0x01],
+						msg : [0x01],
 					});
 				}
 			}
@@ -1010,7 +965,7 @@ function request(value) {
 					bus.data.send({
 						src: src,
 						dst: loop_dst,
-						msg: [0x01],
+						msg : [0x01],
 					});
 				}
 			}
@@ -1024,7 +979,7 @@ function request(value) {
 					bus.data.send({
 						src: src,
 						dst: loop_dst,
-						msg: [0x01],
+						msg : [0x01],
 					});
 				}
 			});
@@ -1038,6 +993,8 @@ function request(value) {
 	}
 
 	if (cmd !== null) {
+		log.module({ msg : 'Requesting \''+value+'\'' });
+
 		bus.data.send({
 			src: src,
 			dst: dst,
@@ -1057,8 +1014,7 @@ function text(message) {
 	message_hex = message_hex.concat(0x04);
 
 	bus.data.send({
-		src: 'RAD',
-		dst: module_name,
+		src : 'RAD',
 		msg: message_hex,
 	});
 }
@@ -1141,7 +1097,6 @@ function text_urgent(message, timeout = 5000) {
 
 	bus.data.send({
 		src : 'CCM',
-		dst : module_name,
 		msg : message_hex,
 	});
 
@@ -1154,9 +1109,8 @@ function text_urgent(message, timeout = 5000) {
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
 	bus.data.send({
-		src: 'CCM',
-		dst: module_name,
-		msg: [0x1A, 0x30, 0x00],
+		src : 'CCM',
+		msg : [0x1A, 0x30, 0x00],
 	});
 
 	IKE.hud_refresh();
@@ -1182,7 +1136,6 @@ function text_warning(message, timeout = 10000) {
 
 	bus.data.send({
 		src : 'CCM',
-		dst : module_name,
 		msg : message_hex,
 	});
 
