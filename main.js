@@ -1,7 +1,5 @@
 /* eslint no-global-assign: "off", no-console: "off" */
 
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 app_path = __dirname;
 app_name = 'bmwcd';
 app_type = 'client';
@@ -31,21 +29,18 @@ bus = {
 function term_config(pass) {
 	process.on('SIGTERM', () => {
 		console.log('');
-		log.msg({ src : module_name, msg : 'Caught SIGTERM' });
+		log.msg({ msg : 'Caught SIGTERM' });
 		term();
 	});
 
 	process.on('SIGINT', () => {
 		console.log('');
-		log.msg({ src : module_name, msg : 'Caught SIGINT' });
+		log.msg({ msg : 'Caught SIGINT' });
 		term();
 	});
 
 	process.on('exit', () => {
-		log.msg({
-			src : module_name,
-			msg : 'Terminated',
-		});
+		log.msg({ msg : 'Terminated' });
 	});
 
 	pass();
@@ -141,19 +136,16 @@ function load_modules(pass) {
 	// Push notification library
 	if (config.notification.method !== null) notify = require('notify');
 
-	log.module({
-		src : module_name,
-		msg : 'Loaded modules',
-	});
+	log.module({ msg : 'Loaded modules' });
 
-	pass();
+	process.nextTick(pass);
 	return true;
 }
 
 
 // Global init
 function init() {
-	log.msg({ src : module_name, msg : 'Initializing' });
+	log.msg({ msg : 'Initializing' });
 
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS module node modules
@@ -166,7 +158,7 @@ function init() {
 					HDMI.init(() => { // Open HDMI-CEC
 						socket.init(() => { // Start zeroMQ client
 
-							log.msg({ src : module_name, msg : 'Initialized' });
+							log.msg({ msg : 'Initialized' });
 
 							// notify.notify('Started');
 
@@ -196,7 +188,7 @@ function bail() {
 
 // Global term
 function term() {
-	log.msg({ src : module_name, msg : 'Terminating' });
+	log.msg({ msg : 'Terminating' });
 
 	gpio.term(() => { // Terminate GPIO relays
 		host_data.term(() => { // Terminate host data timeout
