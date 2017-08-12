@@ -945,42 +945,18 @@ function request(value) {
 			cmd = [0x1D, 0xC5];
 			break;
 		case 'status-glo': {
-			src = module_name;
 			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus.data.send({
-						src: src,
-						dst: loop_dst,
-						msg : [0x01],
-					});
+					bus.commands.request_device_status('IKE', loop_dst);
 				}
 			}
 			break;
 		}
-
-		case 'status-loc': {
-			src = module_name;
-			for (loop_dst in bus.modules.modules) {
-				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus.data.send({
-						src: src,
-						dst: loop_dst,
-						msg : [0x01],
-					});
-				}
-			}
-			break;
-		}
-
 		case 'status-short':
 			bus.modules.modules_check.forEach((loop_dst) => {
 				src = module_name;
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus.data.send({
-						src: src,
-						dst: loop_dst,
-						msg : [0x01],
-					});
+					bus.commands.request_device_status('IKE', loop_dst);
 				}
 			});
 			break;
@@ -992,9 +968,9 @@ function request(value) {
 			break;
 	}
 
-	if (cmd !== null) {
-		log.module({ msg : 'Requesting \''+value+'\'' });
+	log.module({ msg : 'Requesting \''+value+'\'' });
 
+	if (cmd !== null) {
 		bus.data.send({
 			src: src,
 			dst: dst,
