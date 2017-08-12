@@ -118,6 +118,7 @@ function decode_status_open(message) {
 	status.vehicle.locked = bitmask.test(message[1], 0x20);
 
 	// Set status.doors.sealed var if all doors are closed
+	let update_sealed_doors;
 	if (
 		!status.doors.front_left  &&
 		!status.doors.front_right &&
@@ -126,13 +127,15 @@ function decode_status_open(message) {
 		!status.doors.rear_right  &&
 		!status.doors.trunk
 	) {
-		status.doors.sealed = true;
+		update_sealed_doors = true;
 	}
 	else {
-		status.doors.sealed = false;
+		update_sealed_doors = false;
 	}
+	update.status('doors.sealed', update_sealed_doors);
 
 	// Set status.windows.sealed var if all windows are closed
+	let update_sealed_windows;
 	if (
 		!status.windows.front_left  &&
 		!status.windows.front_right &&
@@ -140,25 +143,26 @@ function decode_status_open(message) {
 		!status.windows.rear_left   &&
 		!status.windows.rear_right
 	) {
-		status.windows.sealed = true;
+		update_sealed_windows = true;
 	}
 	else {
-		status.windows.sealed = false;
+		update_sealed_windows = false;
 	}
+	update.status('windows.sealed', update_sealed_windows);
 
 	// Set status.vehicle.sealed var if all doors and windows are closed
-	status.vehicle.sealed = status.doors.sealed && status.windows.sealed;
+	update.status('vehicle.sealed', status.doors.sealed && status.windows.sealed);
 }
 
 // Send message to GM
 function io_set(packet) {
-	log.module({ src : module_name, msg : 'Setting IO status' });
+	log.module({ msg : 'Setting IO status' });
 	packet.unshift(0x0C);
 
 	// Set IO status
 	bus.data.send({
 		src: 'DIA',
-		dst: module_name,
+		dst : module_name,
 		msg: packet,
 	});
 }
@@ -219,32 +223,12 @@ function parse_out(data) {
 			if (bitmask.test(data.msg[1], 0x04)) data.sensitivity = 1;
 			if (bitmask.test(data.msg[1], 0x08) && bitmask.test(data.msg[1], 0x04)) data.sensitivity = 3;
 
-			if (status.gm.wipers.sensitivity != data.sensitivity) {
-				log.change({
-					src   : module_name,
-					value : 'Wiper sensitivity',
-					old   : status.gm.wipers.sensitivity,
-					new   : data.sensitivity,
-				});
+			// Set status var
+			update.status('gm.wipers.sensitivity', data.sensitivity);
 
-				// Set status var
-				status.gm.wipers.sensitivity = data.sensitivity;
-			}
-
-			if (status.gm.wipers.speed != data.speed) {
-				log.change({
-					src   : module_name,
-					value : 'Wiper speed',
-					old   : status.gm.wipers.speed,
-					new   : data.speed,
-				});
-
-				// Set status var
-				status.gm.wipers.speed = data.speed;
-
-				// Trigger auto lights processing
-				LCM.auto_lights_process();
-			}
+			// Set status var
+			// Trigger auto lights processing, trigger auto light processing if changed
+			if (update.status('gm.wipers.speed', data.speed)) LCM.auto_lights_process();
 			break;
 
 		case 0x78: // Broadcast: Seat memory data
@@ -285,7 +269,7 @@ function api_command(data) {
 			case 'door-status' : GM.request('door-status'); break; // Get IO status
 			case 'locks'       : GM.locks();                break; // Toggle central locking
 			default: // Dunno what I sent
-				log.module({ src : module_name, msg : 'API call '+data['command']+' unknown' });
+				log.module({ msg : 'API call '+data['command']+' unknown' });
 				break;
 		}
 	}
@@ -296,12 +280,12 @@ function api_command(data) {
 	}
 
 	else {
-		log.module({ src : module_name, msg : 'Unknown data: '+data });
+		log.module({ msg : 'Unknown data: '+data });
 	}
 }
 
 function windows(window, action) {
-	log.module({ src : module_name, msg : 'Window control: '+window+', '+action });
+	log.module({ msg : 'Window control: '+window+', '+action });
 
 	// Init message variable
 	var msg;
@@ -353,7 +337,7 @@ module.exports = {
 
 	// Cluster/interior backlight
 	interior_light : (value) => {
-		log.module({ src : module_name, msg : 'Setting interior light to '+value });
+		log.module({ msg : 'Setting interior light to '+value });
 		io_set([0x10, 0x05, value.toString(16)]);
 	},
 
@@ -361,7 +345,7 @@ module.exports = {
 	locks : () => {
 		// Send the notification to the log and the cluster
 		var notify_message = 'Toggling door locks';
-		log.module({ src : module_name, msg : notify_message });
+		log.module({ msg : notify_message });
 		IKE.text_override(notify_message);
 
 		// Hex:
@@ -394,6 +378,8 @@ module.exports = {
 				break;
 		}
 
+		log.module({ msg : 'Requesting \''+value+'\'' });
+
 		bus.data.send({
 			src : src,
 			dst : module_name,
@@ -421,7 +407,7 @@ module.exports = {
 			bitmask_3,
 		];
 
-		log.module({ src : module_name, msg : 'Encoding IO status' });
+		log.module({ msg : 'Encoding IO status' });
 		io_set(output);
 	},
 
