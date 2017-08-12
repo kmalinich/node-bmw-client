@@ -1,7 +1,3 @@
-/* global log bus status bitmask */
-
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Array of all DSP modes
 let dsp_modes = {
 	0 : 'concert hall',
@@ -18,7 +14,7 @@ function request(value) {
 	let src;
 	let cmd;
 
-	log.module({ src : module_name, msg : 'Requesting \''+value+'\'' });
+	log.module({ msg : 'Requesting \''+value+'\'' });
 
 	switch (value) {
 		case 'io-status':
@@ -32,15 +28,14 @@ function request(value) {
 	}
 
 	bus.data.send({
-		src: src,
-		dst: module_name,
-		msg: cmd,
+		src : src,
+		msg : cmd,
 	});
 }
 
 // Select DSP mode
 function dsp_mode(mode) {
-	log.module({ src : module_name, msg : 'DSP mode set to \''+mode+'\'' });
+	log.module({ msg : 'DSP mode set to \''+mode+'\'' });
 
 	let cmd;
 
@@ -55,15 +50,14 @@ function dsp_mode(mode) {
 	}
 
 	bus.data.send({
-		src: 'RAD',
-		dst: module_name,
-		msg: cmd,
+		src : 'RAD',
+		msg : cmd,
 	});
 }
 
 // Set M-Audio on/off
 function m_audio(value) {
-	log.module({ src : module_name, msg : 'Setting M-Audio to \''+value+'\'' });
+	log.module({ msg : 'Setting M-Audio to \''+value+'\'' });
 
 	let cmd;
 
@@ -73,9 +67,8 @@ function m_audio(value) {
 	}
 
 	bus.data.send({
-		src: 'RAD',
-		dst: module_name,
-		msg: cmd,
+		src : 'RAD',
+		msg : cmd,
 	});
 }
 
@@ -104,11 +97,10 @@ function parse_out(data) {
 function eq_send(msg) {
 	bus.data.send({
 		src : 'DSPC',
-		dst : module_name,
 		msg : msg,
 	});
 
-	log.module({ src : module_name, msg : 'DSP EQ sent' });
+	log.module({ msg : 'DSP EQ sent' });
 }
 
 // Parse message from DSP amp
@@ -148,7 +140,7 @@ function eq_decode(data) {
 	status.dsp.eq.band5  = band[5];
 	status.dsp.eq.band6  = band[6];
 
-	log.module({ src : module_name, msg : 'DSP EQ decoded' });
+	log.module({ msg : 'DSP EQ decoded' });
 }
 
 function eq_encode(data) {
@@ -164,7 +156,7 @@ function eq_encode(data) {
 		eq_send(band_out);
 	}
 
-	log.module({ src : module_name, msg : 'DSP EQ encoded' });
+	log.module({ msg : 'DSP EQ encoded' });
 }
 
 module.exports = {

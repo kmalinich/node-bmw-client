@@ -25,7 +25,7 @@ function status_loop(action) {
 			BMBT.status_status_loop = false;
 
 			if (BMBT.timeouts.status_loop !== null) {
-				log.module({ src : module_name, msg : 'Unset status refresh timeout' });
+				log.module({ msg : 'Unset status refresh timeout' });
 				clearTimeout(BMBT.timeouts.status_loop);
 				BMBT.timeouts.status_loop = null;
 			}
@@ -37,7 +37,7 @@ function status_loop(action) {
 			// Set status variable
 			BMBT.status_status_loop = true;
 
-			log.module({ src : module_name, msg : 'Set status refresh timeout' });
+			log.module({ msg : 'Set status refresh timeout' });
 			break;
 	}
 }
@@ -68,8 +68,8 @@ function toggle_power_if_ready() {
 	if (BMBT.timeouts.power_on === null) {
 		BMBT.timeouts.power_on = setTimeout(() => {
 			// Debug logging
-			// log.module({ src : module_name, msg : 'dsp.ready: '+status.dsp.ready });
-			// log.module({ src : module_name, msg : 'rad.audio_control: '+status.rad.audio_control });
+			// log.module({ msg : 'dsp.ready: '+status.dsp.ready });
+			// log.module({ msg : 'rad.audio_control: '+status.rad.audio_control });
 
 			if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
 				kodi.notify(module_name, 'power on');
@@ -143,7 +143,7 @@ function parse_out(data) {
 // Say we have no tape in the player
 function send_cassette_status(value = 0x05) {
 	bus.data.send({
-		src: module_name,
+		src : module_name,
 		dst: 'RAD',
 		msg: [0x4B, value],
 	});
@@ -168,7 +168,7 @@ function send_button(button) {
 			break;
 	}
 
-	log.module({ src : module_name, msg : 'Button down '+button });
+	log.module({ msg : 'Button down '+button });
 
 	// Init variables
 	let command     = 0x48; // Button action
@@ -176,17 +176,17 @@ function send_button(button) {
 	let packet_up   = [command, button_up];
 
 	bus.data.send({
-		src: module_name,
+		src : module_name,
 		dst: 'RAD',
 		msg: packet_down,
 	});
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ src : module_name, msg : 'Button up '+button });
+		log.module({ msg : 'Button up '+button });
 
 		bus.data.send({
-			src: module_name,
+			src : module_name,
 			dst: 'RAD',
 			msg: packet_up,
 		});

@@ -1,5 +1,3 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Parse data sent from TEL module
 function parse_out(data) {
 	switch (data.msg[0]) {
@@ -57,9 +55,9 @@ function led(object) {
 	if (object.flash_green)  byte = bitmask.set(byte, bitmask.bit[5]);
 
 	// Send message
-	log.module({ src : module_name, msg : 'Setting LED' });
+	log.module({ msg : 'Setting LED' });
 	bus.data.send({
-		src: module_name,
+		src : 'TEL',
 		dst: 'ANZV',
 		msg: [0x2B, byte], // Turn on TEL LED
 	});
