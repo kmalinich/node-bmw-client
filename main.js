@@ -9,6 +9,7 @@ process.title = app_name;
 
 // node-bmw libraries
 bitmask    = require('bitmask');
+bus        = require('bus');
 hex        = require('hex');
 json       = require('json');
 log        = require('log-output');
@@ -17,12 +18,6 @@ os         = require('os');
 socket     = require('socket');
 update     = require('update');
 
-bus = {
-	arbids   : require('bus-arbids'),
-	data     : null,
-	commands : require('bus-commands'),
-	modules  : require('bus-modules'),
-};
 
 
 // Configure term event listeners
@@ -30,20 +25,20 @@ function term_config(pass) {
 	process.on('SIGTERM', () => {
 		console.log('');
 		log.msg({ msg : 'Caught SIGTERM' });
-		term();
+		process.nextTick(term);
 	});
 
 	process.on('SIGINT', () => {
 		console.log('');
 		log.msg({ msg : 'Caught SIGINT' });
-		term();
+		process.nextTick(term);
 	});
 
 	process.on('exit', () => {
 		log.msg({ msg : 'Terminated' });
 	});
 
-	pass();
+	process.nextTick(pass);
 }
 
 // Function to load modules that require data from config object,
@@ -139,7 +134,6 @@ function load_modules(pass) {
 	log.module({ msg : 'Loaded modules' });
 
 	process.nextTick(pass);
-	return true;
 }
 
 
