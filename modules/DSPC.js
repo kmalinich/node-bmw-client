@@ -9,7 +9,7 @@ function parse_in(data) {
 
 			// Send the ready packet since this module doesn't actually exist
 			if (config.emulate.dspc === true) {
-				bus.commands.send_device_status(module_name);
+				bus.cmds.send_device_status(module_name);
 			}
 			break;
 

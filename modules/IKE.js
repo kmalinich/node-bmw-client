@@ -212,7 +212,7 @@ function decode_ignition_status(data) {
 		BMBT.status_loop(true);
 		MID.status_loop(true);
 		MID.text_loop(true);
-		bus.commands.request_device_status(module_name, 'RAD');
+		bus.cmds.request_device_status(module_name, 'RAD');
 
 		// iDrive knob
 		CON1.send_status_ignition_new();
@@ -947,7 +947,7 @@ function request(value) {
 		case 'status-glo': {
 			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus.commands.request_device_status('IKE', loop_dst);
+					bus.cmds.request_device_status('IKE', loop_dst);
 				}
 			}
 			break;
@@ -956,7 +956,7 @@ function request(value) {
 			bus.modules.modules_check.forEach((loop_dst) => {
 				src = module_name;
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus.commands.request_device_status('IKE', loop_dst);
+					bus.cmds.request_device_status('IKE', loop_dst);
 				}
 			});
 			break;
