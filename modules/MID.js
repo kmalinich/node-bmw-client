@@ -145,8 +145,8 @@ function status_loop(action) {
 // Send MID status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
-		bus.commands.request_device_status('MID', 'RAD');
-		bus.commands.request_device_status('RAD', 'DSP');
+		bus.cmds.request_device_status('MID', 'RAD');
+		bus.cmds.request_device_status('RAD', 'DSP');
 		return;
 	}
 
