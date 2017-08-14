@@ -91,17 +91,17 @@ function decode_message_keyfob(data) {
 	switch (keyfob.button) {
 		case 'lock' :
 			LCM.welcome_lights(false); // Disable welcome lights
-			gpio.set(1, 0);            // Disable fan relay
+			gpio.set(2, 1);            // Disable fan relay
 			break;
 
 		case 'unlock' :
 			LCM.welcome_lights(false); // Enable welcome lights
-			gpio.set(1, 1);            // Enable fan relay
+			gpio.set(2, 0);            // Enable fan relay
 
 			// 5 minutes after fan enable,
 			// turn fan back off if ignition is off
 			setTimeout(() => {
-				if (status.vehicle.ignition_level === 0) gpio.set(1, 0);
+				if (status.vehicle.ignition_level === 0) gpio.set(2, 1);
 			}, 300000);
 	}
 
