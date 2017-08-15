@@ -668,7 +668,6 @@ function welcome_lights(action) {
 
 			// Send configured welcome lights
 			io_encode(config.lights.welcome_lights);
-			console.log(config.lights.welcome_lights);
 
 			// Increment welcome lights counter
 			LCM.counter_welcome_lights++;
@@ -676,18 +675,19 @@ function welcome_lights(action) {
 			// Clear welcome lights status after 15 seconds
 			LCM.timeouts.lights_welcome = setTimeout(() => {
 				// If we're not over the configured welcome lights limit yet
-				if (LCM.counter_welcome_lights <= (config.lights.welcome_lights_sec)) {
+				if (LCM.counter_welcome_lights <= (config.lights.welcome_lights_sec))
 					LCM.welcome_lights(true);
-				}
-				else {
+				else
 					LCM.welcome_lights(false);
-				}
 			}, 1000);
 			break;
 
 		case false:
 			// Clear any remaining timeout(s)
 			clearTimeout(LCM.timeouts.lights_welcome);
+
+			// Reset welcome lights counter
+			LCM.counter_welcome_lights = 0;
 
 			// Set status var back to false
 			update.status('lights.welcome_lights', false);
