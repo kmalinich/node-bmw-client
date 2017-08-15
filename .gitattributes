@@ -1,0 +1,213 @@
+# Automatically handle line endings for text files
+# Leave all files detected as binary untouched
+# This handles all files NOT found below
+* text=auto
+
+
+# These files are binary and should be left untouched
+# (binary is a macro for -text -diff)
+*.3gp   binary
+*.3gpp  binary
+*.7z    binary
+*.ai    binary
+*.as    binary
+*.asf   binary
+*.asx   binary
+*.bmp   binary
+*.db    binary
+*.eot   binary
+*.eps   binary
+*.exe   binary
+*.fla   binary
+*.flv   binary
+*.gif   binary
+*.gz    binary
+*.ico   binary
+*.jar   binary
+*.jng   binary
+*.jp2   binary
+*.jpeg  binary
+*.jpg   binary
+*.jpx   binary
+*.jxr   binary
+*.kar   binary
+*.m4a   binary
+*.m4v   binary
+*.mid   binary
+*.midi  binary
+*.mng   binary
+*.mov   binary
+*.mp3   binary
+*.mp4   binary
+*.mpeg  binary
+*.mpg   binary
+*.node  binary
+*.o     binary
+*.ogg   binary
+*.ogv   binary
+*.otf   binary
+*.p     binary
+*.pdf   binary
+*.phar  binary
+*.pkl   binary
+*.png   binary
+*.psb   binary
+*.psd   binary
+*.pyc   binary
+*.pyd   binary
+*.pyo   binary
+*.ra    binary
+*.rar   binary
+*.svgz  binary
+*.swc   binary
+*.swf   binary
+*.tar   binary
+*.tif   binary
+*.tiff  binary
+*.ttf   binary
+*.wbmp  binary
+*.webm  binary
+*.webp  binary
+*.woff  binary
+*.woff2 binary
+*.xz    binary
+*.zip   binary
+
+
+# These files are text and should be normalized (Convert crlf => lf)
+*.bat           text eol=crlf
+*.bnf           text
+*.bowerrc       text
+*.bsd           text
+*.c             text
+*.cc            text
+*.cnf           text
+*.coffee        text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.conf          text
+*.config        text
+*.css           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.csv           text
+*.d             text
+*.def           text
+*.df            text
+*.dockerignore  text
+*.dot           text
+*.dts           text
+*.ejs           text
+*.el            text
+*.engine        text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.gnu           text
+*.gyp           text
+*.gypi          text
+*.h             text
+*.haml          text
+*.handlebars    text
+*.hbs           text
+*.hbt           text
+*.htm           text
+*.html          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=html
+*.in            text
+*.inc           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.info          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.ini           text
+*.install       text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.jade          text
+*.js            text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.json          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.jst           text
+*.jsx           text
+*.latte         text
+*.less          text
+*.lock          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.ls            text
+*.map           text
+*.markdown      text
+*.md            text
+*.mdown         text
+*.mdtxt         text
+*.mdwn          text
+*.mit           text
+*.mk            text
+*.mkd           text
+*.mkdn          text
+*.module        text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.mount         text
+*.mustache      text
+*.njk           text
+*.npmignore     text
+*.od            text
+*.opts          text
+*.patch         text
+*.php           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.phtml         text
+*.pl            text
+*.po            text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.pxd           text
+*.py            text
+*.py3           text
+*.pyw           text
+*.pyx           text
+*.rb            text
+*.sass          text
+*.scm           text
+*.script        text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.scss          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.sh            text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.sql           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.styl          text
+*.svg           text
+*.tag           text
+*.tagx          text
+*.tap           text
+*.targ          text
+*.test          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.theme         text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2 diff=php
+*.tld           text
+*.tmpl          text
+*.tpl           text
+*.trc           text
+*.ts            text
+*.tsx           text
+*.twig          text
+*.txt           text
+*.txt           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.xhtml         text
+*.xml           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.yaml          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*.yml           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
+*COPYRIGHT*     text
+*README*        text
+.babelrc        text
+.browserslistrc text
+.csslintrc      text
+.editorconfig   text
+.eslintignore   text
+.eslintrc       text
+.gitattributes  text
+.gitconfig      text
+.gitignore      text
+.gitmodules     text
+.htaccess       text
+.htmlhintrc     text
+.jscsrc         text
+.jshintignore   text
+.jshintrc       text
+.slugignore     text
+.stylelintrc    text
+AUTHORS         text
+CHANGELOG       text
+CHANGES         text
+CONTRIBUTING    text
+COPYING         text
+Dockerfile      text
+INSTALL         text
+LICENSE         text
+Makefile        text
+NEWS            text
+Procfile        text
+TODO            text
+browserslist    text
+copyright       text
+license         text
+makefile        text
+readme          text
