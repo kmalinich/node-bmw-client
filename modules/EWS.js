@@ -1,5 +1,3 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Request various things from EWS
 function request(value) {
 	let cmd;
@@ -14,9 +12,8 @@ function request(value) {
 	}
 
 	bus.data.send({
-		src: 'CCM',
-		dst : module_name,
-		msg: cmd,
+		src : 'CCM',
+		msg : cmd,
 	});
 }
 
