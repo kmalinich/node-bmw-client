@@ -9,7 +9,6 @@ process.title = app_name;
 
 // node-bmw libraries
 bitmask    = require('bitmask');
-bus        = require('bus');
 hex        = require('hex');
 json       = require('json');
 log        = require('log-output');
@@ -120,7 +119,7 @@ function load_modules(pass) {
 	kodi = require('kodi');
 
 	// Data handler/router
-	bus.data = require('bus-data');
+	bus = require('bus');
 
 	// Host data object (CPU, memory, etc.)
 	host_data = require('host-data');
