@@ -668,6 +668,7 @@ function welcome_lights(action) {
 
 			// Send configured welcome lights
 			io_encode(config.lights.welcome_lights);
+			console.log(config.lights.welcome_lights);
 
 			// Increment welcome lights counter
 			LCM.counter_welcome_lights++;
