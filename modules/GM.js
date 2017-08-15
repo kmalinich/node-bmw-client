@@ -95,8 +95,8 @@ function decode_message_keyfob(data) {
 			break;
 
 		case 'unlock' :
-			LCM.welcome_lights(false); // Enable welcome lights
-			gpio.set(2, 0);            // Enable fan relay
+			LCM.welcome_lights(true); // Enable welcome lights
+			gpio.set(2, 0);           // Enable fan relay
 
 			// 5 minutes after fan enable,
 			// turn fan back off if ignition is off
