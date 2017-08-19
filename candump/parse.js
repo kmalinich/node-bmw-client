@@ -4,8 +4,8 @@ app_path = __dirname;
 app_name = 'bmwcd';
 app_type = 'client';
 
-const input = require('input').input;
-// const input = require('input-short').input;
+// const input = require('input').input;
+const input = require('input-short').input;
 // const input = require('input-329').input;
 // console.log(input);
 
@@ -19,15 +19,15 @@ pad     = require('pad');
 suncalc = require('suncalc');
 
 // node-bmw libraries
-bitmask      = require('bitmask');
-bus_arbids   = require('bus-arbids');
-bus_commands = require('bus-commands');
-bus_modules  = require('bus-modules');
-hex          = require('hex');
-log          = require('log-output');
-obc_values   = require('obc-values');
-socket       = require('socket');
-object_format       = require('object-format');
+bitmask       = require('bitmask');
+bus_arbids    = require('bus-arbids');
+update        = require('update');
+hex           = require('hex');
+log           = require('log-output');
+obc_values    = require('obc-values');
+socket        = require('socket');
+object_format = require('object-format');
+status = require('./../status.json');
 
 ASC1 = require('ASC1');
 DME1 = require('DME1');
@@ -74,7 +74,7 @@ input.forEach((message) => {
 	data.src.name = bus_arbids.h2n(src_id);
 
 	switch (data.src.name) {
-		// case 'ASC1' : ASC1.parse_out(data); break;
+		case 'ASC1' : ASC1.parse_out(data); break;
 		case 'DME1' : DME1.parse_out(data); break;
 	}
 
