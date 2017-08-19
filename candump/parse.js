@@ -25,8 +25,12 @@ update        = require('update');
 hex           = require('hex');
 log           = require('log-output');
 obc_values    = require('obc-values');
-socket        = require('socket');
 object_format = require('object-format');
+
+socket = {
+	status_tx : (status) => { },
+};
+
 status = require('./../status.json');
 
 ASC1 = require('ASC1');
