@@ -41,7 +41,7 @@ function parse_1f5(data) {
 	};
 
 	update.status('vehicle.steering.angle', steering.angle);
-	update.status('vehicle.steering.velocity', steering.angle);
+	update.status('vehicle.steering.velocity', steering.velocity);
 }
 
 
