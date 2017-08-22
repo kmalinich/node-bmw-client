@@ -27,20 +27,55 @@ function parse_316(data) {
 
 function parse_329(data) {
 	let parse = {
-		msg      : '0x329',
-		clutch   : bitmask.test(data.msg[3], 0x01),
-		throttle_pedal : parseFloat((data.msg[5]/2.54).toFixed(2)),
-		coolant  : {
-			c : parseFloat(((data.msg[1]*.75)-48.373).toFixed(2)),
+		msg : '0x329',
+		engine : {
+			throttle : {
+				cruise : parseFloat((data.msg[4]/2.54).toFixed(2)),
+				pedal : parseFloat((data.msg[5]/2.54).toFixed(2)),
+			},
+		},
+		temperature : {
+			coolant : {
+				c : parseFloat(((data.msg[1]*.75)-48.373).toFixed(2)),
+				f : null,
+			},
+		},
+		vehicle : {
+			brake : bitmask.test(data.msg[6], 0x01),
+			clutch : bitmask.test(data.msg[3], 0x01),
+			cruise : {
+				button : {
+					minus : bitmask.test(data.msg[3], 0x20),
+					onoff : bitmask.test(data.msg[3], 0x80),
+					plus : bitmask.test(data.msg[3], 0x20),
+				},
+				status : {
+					activating : bitmask.test(data.msg[6], 0x20),
+					active : bitmask.test(data.msg[6], 0x08),
+					resume : bitmask.test(data.msg[6], 0x10),
+				},
+			},
 		},
 	};
 
-	parse.coolant.f = parseFloat(convert(parse.coolant.c).from('celsius').to('fahrenheit'));
+	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 
-	update.status('vehicle.clutch', parse.clutch);
-	update.status('engine.throttle.pedal', parse.throttle_pedal);
-	update.status('temperature.coolant.c', parse.coolant.c);
-	update.status('temperature.coolant.f', parse.coolant.f);
+	update.status('vehicle.cruise.button.minus', parse.vehicle.cruise.button.minus);
+	update.status('vehicle.cruise.button.onoff', parse.vehicle.cruise.button.onoff);
+	update.status('vehicle.cruise.button.plus',  parse.vehicle.cruise.button.plus);
+
+	update.status('vehicle.cruise.status.activating', parse.vehicle.cruise.status.activating);
+	update.status('vehicle.cruise.status.active',     parse.vehicle.cruise.status.active);
+	update.status('vehicle.cruise.status.resume',     parse.vehicle.cruise.status.resume);
+
+	update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
+	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
+
+	update.status('temperature.coolant.c', parse.temperature.coolant.c);
+	update.status('temperature.coolant.f', parse.temperature.coolant.f);
+
+	update.status('vehicle.brake',  parse.vehicle.brake);
+	update.status('vehicle.clutch', parse.vehicle.clutch);
 }
 
 // Parse data sent from module
