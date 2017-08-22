@@ -45,14 +45,16 @@ function parse_329(data) {
 			clutch : bitmask.test(data.msg[3], 0x01),
 			cruise : {
 				button : {
-					minus : bitmask.test(data.msg[3], 0x20),
+					minus : bitmask.test(data.msg[3], 0x40),
 					onoff : bitmask.test(data.msg[3], 0x80),
 					plus : bitmask.test(data.msg[3], 0x20),
+					unk1 : bitmask.test(data.msg[3], 0x01),
 				},
 				status : {
 					activating : bitmask.test(data.msg[6], 0x20),
 					active : bitmask.test(data.msg[6], 0x08),
 					resume : bitmask.test(data.msg[6], 0x10),
+					unk1 : bitmask.test(data.msg[6], 0x01),
 				},
 			},
 		},
@@ -63,10 +65,12 @@ function parse_329(data) {
 	update.status('vehicle.cruise.button.minus', parse.vehicle.cruise.button.minus);
 	update.status('vehicle.cruise.button.onoff', parse.vehicle.cruise.button.onoff);
 	update.status('vehicle.cruise.button.plus',  parse.vehicle.cruise.button.plus);
+	update.status('vehicle.cruise.button.unk1',  parse.vehicle.cruise.button.unk1);
 
 	update.status('vehicle.cruise.status.activating', parse.vehicle.cruise.status.activating);
 	update.status('vehicle.cruise.status.active',     parse.vehicle.cruise.status.active);
 	update.status('vehicle.cruise.status.resume',     parse.vehicle.cruise.status.resume);
+	update.status('vehicle.cruise.status.unk1',     parse.vehicle.cruise.status.unk1);
 
 	update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
 	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
