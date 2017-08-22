@@ -83,6 +83,31 @@ function parse_329(data) {
 	update.status('vehicle.clutch', parse.vehicle.clutch);
 }
 
+function parse_615(data) {
+	let parse = {
+		msg : '0x615',
+		temperature : {
+			exterior : {
+				c : (data.msg[3] >= 0x80) && data.msg[3]-0x80 || data.msg[3],
+				f : null,
+			},
+			intake : {
+				c : (data.msg[6] >= 0x80) && data.msg[6]-0x80 || data.msg[6],
+				f : null,
+			},
+		}
+	};
+
+	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
+	parse.temperature.intake.f   = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
+
+	update.status('temperature.exterior.c', parse.temperature.exterior.c);
+	update.status('temperature.exterior.f', parse.temperature.exterior.f);
+
+	update.status('temperature.intake.c', parse.temperature.intake.c);
+	update.status('temperature.intake.f', parse.temperature.intake.f);
+}
+
 // Parse data sent from module
 function parse_out(data) {
 	data.command = 'bro';
@@ -112,6 +137,7 @@ function parse_out(data) {
 
 		case 0x615:
 			data.value = 'A/C request/Outside air temp/Intake air temp/Parking brake/door contacts';
+			parse_615(data);
 			break;
 
 		default:
