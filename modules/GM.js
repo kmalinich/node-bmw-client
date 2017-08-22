@@ -91,7 +91,7 @@ function decode_message_keyfob(data) {
 	switch (keyfob.button) {
 		case 'lock' :
 			LCM.welcome_lights(false); // Disable welcome lights
-			gpio.set(2, 1);            // Disable fan relay
+			// gpio.set(2, 1);            // Disable fan relay
 			break;
 
 		case 'unlock' :
