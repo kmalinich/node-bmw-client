@@ -4,9 +4,7 @@ app_path = __dirname;
 app_name = 'bmwcd';
 app_type = 'client';
 
-// const input = require('input').input;
-const input = require('input-short').input;
-// const input = require('input-329').input;
+const input = require('input').input;
 // console.log(input);
 
 
