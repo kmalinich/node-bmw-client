@@ -36,8 +36,8 @@ function parse_1f5(data) {
 	}
 
 	let steering = {
-		angle    : angle*0.045,
-		velocity : velocity*0.045,
+		angle    : parseInt((angle*0.045).toFixed(4)),
+		velocity : parseInt((velocity*0.045).toFixed(4)),
 	};
 
 	update.status('vehicle.steering.angle', steering.angle);
