@@ -51,6 +51,14 @@ function parse_out(data) {
 
 	switch (data.src.id) {
 		case 0x153:
+			// DSC off (DSC light on) (b0/b1)
+			// 04 61 01 FF 00 FE FF 0
+			// DSC on (DSC light off) (b0/b1)
+			// 00 60 01 FF 00 FE FF 0C
+			// Brake pedal depressed, also when key off (b0)
+			// 10 60 01 FF 00 FE FF 09
+			// ~5 sec on initial key in run
+			// A4 61 01 FF 00 FE FF 0B
 			data.value = 'Speed/DSC light';
 			break;
 
