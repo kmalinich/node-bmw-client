@@ -43,6 +43,7 @@ function parse_329(data) {
 		vehicle : {
 			brake : bitmask.test(data.msg[6], 0x01),
 			clutch : bitmask.test(data.msg[3], 0x01),
+			kickdown : bitmask.test(data.msg[6], 0x08),
 			cruise : {
 				button : {
 					resume : bitmask.test(data.msg[3], 0x40) && bitmask.test(data.msg[3], 0x20),
@@ -83,6 +84,9 @@ function parse_329(data) {
 	update.status('vehicle.clutch', parse.vehicle.clutch);
 }
 
+function parse_545(data) {
+}
+
 function parse_615(data) {
 	let parse = {
 		msg : '0x615',
@@ -99,11 +103,10 @@ function parse_615(data) {
 	};
 
 	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
-	parse.temperature.intake.f   = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
-
 	update.status('temperature.exterior.c', parse.temperature.exterior.c);
 	update.status('temperature.exterior.f', parse.temperature.exterior.f);
 
+	parse.temperature.intake.f = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
 	update.status('temperature.intake.c', parse.temperature.intake.c);
 	update.status('temperature.intake.f', parse.temperature.intake.f);
 }
@@ -124,6 +127,7 @@ function parse_out(data) {
 			break;
 
 		case 0x545:
+			parse_545(data);
 			data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
 			break;
 
