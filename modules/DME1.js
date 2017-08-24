@@ -16,6 +16,7 @@ function parse_316(data) {
 		throttle : {
 			current : (data.msg[1]/2.54).toFixed(2),
 			target  : (data.msg[4]/2.54).toFixed(2),
+
 		},
 	};
 
@@ -85,6 +86,7 @@ function parse_329(data) {
 }
 
 function parse_545(data) {
+	return data;
 }
 
 function parse_615(data) {
