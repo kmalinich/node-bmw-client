@@ -4,7 +4,7 @@ The 3rd byte being the AC status bit.
 
 5B 05 80 83 00 00 5D
 Sends the AC request off.
-The status byte in each case being resent by the IKE over the canbus as byte B0 in ID 0x615. 
+The status byte in each case being resent by the IKE over the canbus as byte B0 in ID 0x615.
 
 To be exact the most significant Bit is the status request.
 other bits:
