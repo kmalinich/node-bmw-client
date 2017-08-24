@@ -319,8 +319,10 @@ function decode_speed_values(data) {
 
 function decode_temperature_values(data) {
 	// Update external and engine coolant temp variables
-	update.status('temperature.exterior.c', parseFloat(data.msg[1]));
-	update.status('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
+	if (config.canbus.exterior === false) {
+		update.status('temperature.exterior.c', parseFloat(data.msg[1]));
+		update.status('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
+	}
 
 	if (config.canbus.coolant === false) {
 		update.status('temperature.coolant.c',  parseFloat(data.msg[2]));
