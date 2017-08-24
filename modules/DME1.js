@@ -86,7 +86,20 @@ function parse_329(data) {
 }
 
 function parse_545(data) {
-	return data;
+	let parse = {
+		msg : '0x545',
+	};
+
+	return [ data, parse ];
+}
+
+function parse_613(data) {
+	let parse = {
+		msg : '0x613',
+		fuel_level : (data.msg[2] >= 0x80) && data.msg[2]-0x80 || data.msg[2],
+	};
+
+	return [ data, parse ];
 }
 
 function parse_615(data) {
@@ -97,6 +110,7 @@ function parse_615(data) {
 				c : (data.msg[3] >= 0x80) && data.msg[3]-0x80 || data.msg[3],
 				f : null,
 			},
+			// This isn't right
 			intake : {
 				c : (data.msg[6] >= 0x80) && data.msg[6]-0x80 || data.msg[6],
 				f : null,
@@ -139,6 +153,7 @@ function parse_out(data) {
 
 		case 0x613:
 			data.value = 'Odometer/Running clock/Fuel level [0x615 ACK]';
+			parse_613(data);
 			break;
 
 		case 0x615:
