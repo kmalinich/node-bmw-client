@@ -17,6 +17,9 @@ os         = require('os');
 socket     = require('socket');
 update     = require('update');
 
+const express = require('express');
+const app = express();
+
 
 
 // Configure term event listeners
@@ -163,6 +166,18 @@ function init() {
 									lower : 'restarted',
 								});
 							}, 250);
+
+							app.get('/config', (req, res) => {
+								res.send(JSON.stringify(config));
+							});
+
+							app.get('/status', (req, res) => {
+								res.send(JSON.stringify(status));
+							});
+
+							app.listen(3000, () => {
+								log.msg({ msg : 'Express listening on port 3000' });
+							});
 
 						}, term);
 					}, term);
