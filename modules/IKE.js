@@ -28,7 +28,7 @@ function api_command(data) {
 		case 'obc-reset': // Reset specific OBC data value
 			obc_data('reset', data.value);
 			break;
-		default: // Dunno.
+		default: // Dunno
 			log.module({ msg : 'Unknown API command: '+data.command });
 	}
 }
@@ -258,10 +258,10 @@ function decode_ignition_status(data) {
 		// If the HDMI display is currently on, power it off
 		// This helps prepare for engine start during scenarios
 		// like at the fuel pump, when the ignition is switched
-		// from run to accessory, which ordinarily leaves the screen on.
+		// from run to accessory, which ordinarily leaves the screen on
 		// That causes and issue if you go back to run from accessory,
 		// with the screen still on, since it may cause damage to the screen
-		// to experience a low-voltage event caused by the starter motor.
+		// to experience a low-voltage event caused by the starter motor
 		if (status.hdmi.power_status !== 'STANDBY') HDMI.command('poweroff');
 
 		// Write JSON config and status files
@@ -299,9 +299,11 @@ function decode_sensor_status(data) {
 		HDMI.command('poweron');
 	}
 
-	// If the vehicle is newly in reverse, send message
-	if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
-		if (config.options.message_reverse === true) IKE.text_override('you\'re in reverse..');
+	// If the vehicle is newly in reverse, show IKE message if configured to do so
+	if (config.options.message_reverse === true) {
+		if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
+			if (status.vehicle.reverse === true) IKE.text_override('you\'re in reverse..');
+		}
 	}
 }
 
@@ -325,8 +327,8 @@ function decode_temperature_values(data) {
 	}
 
 	if (config.canbus.coolant === false) {
-		update.status('temperature.coolant.c',  parseFloat(data.msg[2]));
-		update.status('temperature.coolant.f',  Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
+		update.status('temperature.coolant.c', parseFloat(data.msg[2]));
+		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
 
 	// Trigger a HUD refresh
@@ -400,7 +402,7 @@ function hud_refresh() {
 }
 
 // Pretend to be IKE saying the car is on
-// Note - this can and WILL set the alarm off - kudos to the Germans...
+// Note - this can and WILL set the alarm off - kudos to the Germans
 function ignition(value) {
 	log.module({ msg : 'Sending ignition status: '+value });
 
@@ -657,16 +659,19 @@ function parse_out(data) {
 
 					// Update status variables
 					switch (string_outside_temp_unit) {
-						case 'c':
+						case 'c': {
 							status.coding.unit.temp           = 'c';
 							status.temperature.exterior.obc.c = parseFloat(string_outside_temp_value);
 							status.temperature.exterior.obc.f = parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'));
 							break;
-						case 'f':
+						}
+
+						case 'f': {
 							status.coding.unit.temp           = 'f';
 							status.temperature.exterior.obc.c = parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'));
 							status.temperature.exterior.obc.f = parseFloat(string_outside_temp_value);
 							break;
+						}
 					}
 					break;
 				}
@@ -687,17 +692,19 @@ function parse_out(data) {
 
 					// Perform appropriate conversions between units
 					switch (string_consumption_1_unit) {
-						case 'm':
+						case 'm': {
 							status.coding.unit.cons = 'mpg';
 							consumption_mpg         = string_consumption_1;
 							consumption_l100        = 235.21/string_consumption_1;
 							break;
+						}
 
-						default:
+						default: {
 							status.coding.unit.cons = 'l100';
 							consumption_mpg         = 235.21/string_consumption_1;
 							consumption_l100        = string_consumption_1;
 							break;
+						}
 					}
 
 					// Update status variables
@@ -749,17 +756,19 @@ function parse_out(data) {
 
 					// Update status variables
 					switch (string_range_unit) {
-						case 'ml':
+						case 'ml': {
 							status.coding.unit.distance = 'mi';
 							status.obc.range.mi = parseFloat(string_range);
 							status.obc.range.km = parseFloat(convert(parseFloat(string_range)).from('kilometre').to('us mile').toFixed(2));
 							break;
+						}
 
-						case 'km':
+						case 'km': {
 							status.coding.unit.distance = 'km';
 							status.obc.range.mi = parseFloat(convert(parseFloat(string_range)).from('us mile').to('kilometre').toFixed(2));
 							status.obc.range.km = parseFloat(string_range);
 							break;
+						}
 					}
 					break;
 				}
@@ -814,19 +823,21 @@ function parse_out(data) {
 
 					// Convert values appropriately based on coding valueunits
 					switch (string_average_speed_unit) {
-						case 'k':
+						case 'k': {
 							status.coding.unit.speed = 'kmh';
 							// Update status variables
 							status.obc.average_speed.kmh = parseFloat(string_average_speed.toFixed(2));
 							status.obc.average_speed.mph = parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2));
 							break;
+						}
 
-						case 'm':
+						case 'm': {
 							status.coding.unit.speed = 'mph';
 							// Update status variables
 							status.obc.average_speed.kmh = parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2));
 							status.obc.average_speed.mph = parseFloat(string_average_speed.toFixed(2));
 							break;
+						}
 					}
 					break;
 				}

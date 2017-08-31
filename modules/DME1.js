@@ -88,23 +88,32 @@ function parse_329(data) {
 function parse_545(data) {
 	let parse = {
 		msg : '0x545',
+		engine : {
+			fuel_consumption : parseFloat((parseInt('0x'+data.msg[2].toString(16)+data.msg[1].toString(16))).toFixed(0)),
+		},
 	};
 
-	return [ data, parse ];
+	update.status('engine.fuel_consumption', parse.engine.fuel_consumption);
 }
 
 function parse_613(data) {
 	let parse = {
 		msg : '0x613',
-		fuel_level : (data.msg[2] >= 0x80) && data.msg[2]-0x80 || data.msg[2],
+		vehicle : {
+			fuel_level : (data.msg[2] >= 0x80) && data.msg[2]-0x80 || data.msg[2],
+		},
 	};
 
-	return [ data, parse ];
+	update.status('vehicle.fuel_level', parse.vehicle.fuel_level);
 }
 
 function parse_615(data) {
 	let parse = {
 		msg : '0x615',
+		engine : {
+			ac_request : data.msg[0],
+			aux_fan_speed : data.msg[1],
+		},
 		temperature : {
 			exterior : {
 				c : (data.msg[3] >= 0x80) && data.msg[3]-0x80 || data.msg[3],
@@ -118,14 +127,18 @@ function parse_615(data) {
 		}
 	};
 
+	update.status('engine.ac_request',    parse.engine.ac_request);
+	update.status('engine.aux_fan_speed', parse.engine.aux_fan_speed);
+
 	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
 	update.status('temperature.exterior.c', parse.temperature.exterior.c);
 	update.status('temperature.exterior.f', parse.temperature.exterior.f);
 
-	parse.temperature.intake.f = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
-	update.status('temperature.intake.c', parse.temperature.intake.c);
-	update.status('temperature.intake.f', parse.temperature.intake.f);
+	// parse.temperature.intake.f = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
+	// update.status('temperature.intake.c', parse.temperature.intake.c);
+	// update.status('temperature.intake.f', parse.temperature.intake.f);
 }
+
 
 // Parse data sent from module
 function parse_out(data) {
