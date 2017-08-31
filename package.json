@@ -8,7 +8,6 @@
 		"callers-path": "^1.0.5",
 		"chump": "^1.2.0",
 		"dark-sky": "^1.1.2",
-		"defaults-deep": "^0.2.3",
 		"express": "^4.15.4",
 		"json-colorizer": "^1.1.0",
 		"jsonfile": "^3.0.1",
