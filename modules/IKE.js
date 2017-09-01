@@ -309,24 +309,25 @@ function decode_sensor_status(data) {
 
 function decode_speed_values(data) {
 	// Update vehicle and engine speed variables
-	if (config.canbus.speed === false) {
+	// Also allow update from IBUS/KBUS even if CANBUS is enabled when the ignition
+	if (config.canbus.speed === false || status.vehicle.ignition_level < 3) {
 		update.status('vehicle.speed.kmh', parseFloat(data.msg[1]*2));
 		update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1]*2))).from('kilometre').to('us mile').toFixed(2)));
 	}
 
-	if (config.canbus.rpm === false) {
+	if (config.canbus.rpm === false || status.vehicle.ignition_level < 3) {
 		update.status('engine.speed', parseFloat(data.msg[2]*100));
 	}
 }
 
 function decode_temperature_values(data) {
 	// Update external and engine coolant temp variables
-	if (config.canbus.exterior === false) {
+	if (config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
 		update.status('temperature.exterior.c', parseFloat(data.msg[1]));
 		update.status('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
 	}
 
-	if (config.canbus.coolant === false) {
+	if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
 		update.status('temperature.coolant.c', parseFloat(data.msg[2]));
 		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
@@ -1004,7 +1005,7 @@ function text(message) {
 
 	bus.data.send({
 		src : 'RAD',
-		msg: message_hex,
+		msg : message_hex,
 	});
 }
 
