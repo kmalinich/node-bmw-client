@@ -1,5 +1,3 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // 7F 80 1F 40 14 58 07 00 07 20 11,NAV --> IKE Time & date UTC 14:58 07 Juli 2011
 // 7F 80 1F 40 14 59 07 00 07 20 11,NAV --> IKE Time & date UTC 14:59 07 Juli 2011
 // 7F 80 1F 40 16 35 24 00 07 20 11,NAV --> IKE Time & date UTC 16:35 24 Juli 2011
@@ -40,7 +38,7 @@ function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x1F: // Broadcast: Time and date
 			data.command = 'bro';
-			data.value   = 'GPS time and date '+data.msg;
+			data.value   = 'GPS time and date ' + data.msg;
 			break;
 
 		default:

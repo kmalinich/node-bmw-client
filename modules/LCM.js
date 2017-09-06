@@ -4,10 +4,8 @@ const now     = require('performance-now');
 
 // Handle incoming commands from API
 function api_command(data) {
-	if (typeof data['lcm-get'] !== 'undefined')
-		LCM.request('io-status');
-	else
-		io_encode(data); // Very dirty assumption
+	if (typeof data['lcm-get'] !== 'undefined') { LCM.request('io-status'); }
+	else { io_encode(data); } // Very dirty assumption
 }
 
 // Automatic lights handling
@@ -101,7 +99,7 @@ function auto_lights_process() {
 
 	if (update.status('lights.auto.lowbeam', new_lowbeam)) {
 		// Show autolights status in cluster
-		IKE.text_override('AL: '+status.lights.auto.lowbeam);
+		IKE.text_override('AL: ' + status.lights.auto.lowbeam);
 	}
 
 	reset();
@@ -112,12 +110,12 @@ function auto_lights_process() {
 
 // Cluster/interior backlight
 function set_backlight(value) {
-	log.module({ msg : 'Setting backlight to '+value });
+	log.module({ msg : 'Setting backlight to ' + value });
 
 	bus.data.send({
 		src : 'LCM',
 		dst : 'GLO',
-		msg : [0x5C, value.toString(16), 0x00]
+		msg : [ 0x5C, value.toString(16), 0x00 ],
 	});
 }
 
@@ -127,7 +125,7 @@ function coding_get() {
 	for (let byte = 0; byte < 21; byte++) {
 		bus.data.send({
 			src : 'DIA',
-			msg : [0x08, byte],
+			msg : [ 0x08, byte ],
 		});
 	}
 }
@@ -160,7 +158,7 @@ function comfort_turn(data) {
 	else { // left turn was previously on
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
-			update.status('lights.turn.depress_elapsed', now()-status.lights.turn.left.depress);
+			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.left.depress);
 			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'left';
@@ -177,7 +175,7 @@ function comfort_turn(data) {
 	else { // right turn was previously on
 		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
 			// If the time difference is less than 1000ms, fire comfort turn signal
-			update.status('lights.turn.depress_elapsed', now()-status.lights.turn.right.depress);
+			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.right.depress);
 			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
 				action = 'right';
@@ -186,7 +184,7 @@ function comfort_turn(data) {
 	}
 
 	if (action === 'left' || action === 'right') {
-		log.module({ msg : 'Comfort turn: '+action });
+		log.module({ msg : 'Comfort turn: ' + action });
 
 		switch (action) {
 			case 'left':
@@ -206,8 +204,8 @@ function comfort_turn(data) {
 		// Send cluster message if configured to do so
 		if (config.lights.comfort_turn.cluster_msg === true) {
 			// Concat message string
-			let cluster_msg = cluster_msg_outer+' '+action.charAt(0).toUpperCase()+' '+cluster_msg_outer;
-			IKE.text_override(cluster_msg, 2000+status.lights.turn.depress_elapsed, action, true);
+			let cluster_msg = cluster_msg_outer + ' ' + action.charAt(0).toUpperCase() + ' ' + cluster_msg_outer;
+			IKE.text_override(cluster_msg, 2000 + status.lights.turn.depress_elapsed, action, true);
 		}
 
 		reset();
@@ -220,12 +218,12 @@ function comfort_turn(data) {
 			update.status('lights.turn.right.comfort', false);
 
 			reset();
-		}, (300*config.lights.comfort_turn.flashes)+status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
+		}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
 
 		// Timeout for cooldown period
 		setTimeout(() => {
 			update.status('lights.turn.comfort_cool', true);
-		}, (300*config.lights.comfort_turn.flashes)+status.lights.turn.depress_elapsed+1500); // Subtract the time from the initial blink
+		}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed + 1500); // Subtract the time from the initial blink
 	}
 }
 
@@ -234,7 +232,7 @@ function decode(data) {
 	switch (data.msg[0]) {
 		case 0x54: { // Vehicle data
 			// This message also has days since service and total kms, but, baby steps...
-			let vin_string = hex.h2a(data.msg[1].toString(16))+hex.h2a(data.msg[2].toString(16))+data.msg[3].toString(16)+data.msg[4].toString(16)+data.msg[5].toString(16)[0];
+			let vin_string = hex.h2a(data.msg[1].toString(16)) + hex.h2a(data.msg[2].toString(16)) + data.msg[3].toString(16) + data.msg[4].toString(16) + data.msg[5].toString(16)[0];
 			update.status('vehicle.vin', vin_string);
 			break;
 		}
@@ -243,8 +241,8 @@ function decode(data) {
 			// Send data to comfort turn function
 			comfort_turn({
 				before : status.lights.turn,
-				after : {
-					left  : {
+				after  : {
+					left : {
 						active : bitmask.test(data.msg[1], bitmask.bit[5]),
 					},
 					right : {
@@ -305,9 +303,9 @@ function decode(data) {
 
 			update.status('lcm.dimmer.value_2', data.msg[15]);
 
-			update.status('lcm.voltage.terminal_30',        parseFloat((data.msg[9]*.0708).toFixed(2)));
-			update.status('lcm.voltage.flash_to_pass',      parseFloat(data.msg[29]/51));
-			update.status('lcm.voltage.turn_signal_switch', parseFloat(data.msg[30]/51));
+			update.status('lcm.voltage.terminal_30',        parseFloat((data.msg[9] * 0.0708).toFixed(2)));
+			update.status('lcm.voltage.flash_to_pass',      parseFloat(data.msg[29] / 51));
+			update.status('lcm.voltage.turn_signal_switch', parseFloat(data.msg[30] / 51));
 
 			// Bitmasks
 			update.status('lcm.clamp.c_30a', bitmask.test(data.msg[0], bitmask.bit[0]));
@@ -525,8 +523,8 @@ function io_set(packet) {
 
 	packet.unshift(0x0C);
 	bus.data.send({
-		src: 'DIA',
-		msg: packet,
+		src : 'DIA',
+		msg : packet,
 	});
 
 	// Request the IO status after
@@ -577,7 +575,7 @@ function request(value) {
 	let src;
 	let msg;
 
-	log.module({ msg : 'Requesting \''+value+'\'' });
+	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	switch (value) {
 		case 'coding':
@@ -585,19 +583,19 @@ function request(value) {
 			break;
 		case 'dimmer':
 			src = 'BMBT';
-			msg = [0x5D];
+			msg = [ 0x5D ];
 			break;
 		case 'io-status':
 			src = 'DIA';
-			msg = [0x0B, 0x00]; // Get IO status
+			msg = [ 0x0B, 0x00 ]; // Get IO status
 			break;
 		case 'light-status':
 			src = 'GT';
-			msg = [0x5A];
+			msg = [ 0x5A ];
 			break;
 		case 'vehicledata':
 			src = 'IKE';
-			msg = [0x53];
+			msg = [ 0x53 ];
 	}
 
 	bus.data.send({
@@ -624,7 +622,7 @@ function parse_out(data) {
 		case 0x5C: // Broadcast: light dimmer status
 			status.lights.dimmer_value_3 = data.msg[1];
 			data.command = 'bro';
-			data.value   = 'dimmer 3 : '+status.lights.dimmer_value_3;
+			data.value   = 'dimmer 3 : ' + status.lights.dimmer_value_3;
 			break;
 
 		case 0xA0: // Reply to DIA: success
@@ -675,10 +673,8 @@ function welcome_lights(action) {
 			// Clear welcome lights status after 15 seconds
 			LCM.timeouts.lights_welcome = setTimeout(() => {
 				// If we're not over the configured welcome lights limit yet
-				if (LCM.counter_welcome_lights <= (config.lights.welcome_lights_sec))
-					LCM.welcome_lights(true);
-				else
-					LCM.welcome_lights(false);
+				if (LCM.counter_welcome_lights <= (config.lights.welcome_lights_sec)) { LCM.welcome_lights(true); }
+				else { LCM.welcome_lights(false); }
 			}, 1000);
 			break;
 

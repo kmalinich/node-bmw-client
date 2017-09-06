@@ -1,14 +1,12 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 function parse_1f0(data) {
 	let wheel_speed = {
 		front : {
-			left  : (data.msg[0]+parseInt('0x'+data.msg[1].toString(16).slice(-1))*256)/16,
-			right : (data.msg[2]+parseInt('0x'+data.msg[3].toString(16).slice(-1))*256)/16,
+			left  : (data.msg[0] + parseInt('0x' + data.msg[1].toString(16).slice(-1)) * 256) / 16,
+			right : (data.msg[2] + parseInt('0x' + data.msg[3].toString(16).slice(-1)) * 256) / 16,
 		},
 		rear : {
-			left  : (data.msg[4]+parseInt('0x'+data.msg[5].toString(16).slice(-1))*256)/16,
-			right : (data.msg[6]+parseInt('0x'+data.msg[7].toString(16).slice(-1))*256)/16,
+			left  : (data.msg[4] + parseInt('0x' + data.msg[5].toString(16).slice(-1)) * 256) / 16,
+			right : (data.msg[6] + parseInt('0x' + data.msg[7].toString(16).slice(-1)) * 256) / 16,
 		},
 	};
 
@@ -21,23 +19,23 @@ function parse_1f0(data) {
 function parse_1f5(data) {
 	let angle = 0;
 	if (data.msg[1] > 127) {
-		angle = -1*(((data.msg[1]-128)*256)+data.msg[0]);
+		angle = -1 * (((data.msg[1] - 128) * 256) + data.msg[0]);
 	}
 	else {
-		angle = (data.msg[1]*256)+data.msg[0];
+		angle = (data.msg[1] * 256) + data.msg[0];
 	}
 
 	let velocity = 0;
 	if (data.msg[3] > 127) {
-		velocity = -1*(((data.msg[3]-128)*256)+data.msg[2]);
+		velocity = -1 * (((data.msg[3] - 128) * 256) + data.msg[2]);
 	}
 	else {
-		velocity = (data.msg[3]*256)+data.msg[2];
+		velocity = (data.msg[3] * 256) + data.msg[2];
 	}
 
 	let steering = {
-		angle    : parseInt((angle*0.045).toFixed(4)),
-		velocity : parseInt((velocity*0.045).toFixed(4)),
+		angle    : parseInt((angle * 0.045).toFixed(4)),
+		velocity : parseInt((velocity * 0.045).toFixed(4)),
 	};
 
 	update.status('vehicle.steering.angle', steering.angle);

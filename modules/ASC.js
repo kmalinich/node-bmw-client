@@ -16,7 +16,7 @@ function parse_out(data) {
 	}
 
 	if (data.msg == null || typeof data.msg == 'undefined') {
-		data.msg = [0xFF];
+		data.msg = [ 0xFF ];
 	}
 
 	log.bus(data);

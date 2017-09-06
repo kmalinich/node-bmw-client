@@ -14,16 +14,16 @@ function request(value) {
 	let src;
 	let cmd;
 
-	log.module({ msg : 'Requesting \''+value+'\'' });
+	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	switch (value) {
 		case 'io-status':
 			src = 'DIA';
-			cmd = [0x0B, 0x00]; // Get IO status
+			cmd = [ 0x0B, 0x00 ]; // Get IO status
 			break;
 		case 'memory':
 			src = 'RAD';
-			cmd = [0x34, 0x08]; // Get DSP memory
+			cmd = [ 0x34, 0x08 ]; // Get DSP memory
 			break;
 	}
 
@@ -35,18 +35,18 @@ function request(value) {
 
 // Select DSP mode
 function dsp_mode(mode) {
-	log.module({ msg : 'DSP mode set to \''+mode+'\'' });
+	log.module({ msg : 'DSP mode set to \'' + mode + '\'' });
 
 	let cmd;
 
 	switch (mode) {
-		case 'concert-hall' : cmd = [0x34, 0x09]; break;
-		case 'jazz-club'    : cmd = [0x34, 0x0A]; break;
-		case 'cathedral'    : cmd = [0x34, 0x0B]; break;
-		case 'memory-1'     : cmd = [0x34, 0x0C]; break;
-		case 'memory-2'     : cmd = [0x34, 0x0D]; break;
-		case 'memory-3'     : cmd = [0x34, 0x0E]; break;
-		case 'off'          : cmd = [0x34, 0x0F]; break;
+		case 'concert-hall' : cmd = [ 0x34, 0x09 ]; break;
+		case 'jazz-club'    : cmd = [ 0x34, 0x0A ]; break;
+		case 'cathedral'    : cmd = [ 0x34, 0x0B ]; break;
+		case 'memory-1'     : cmd = [ 0x34, 0x0C ]; break;
+		case 'memory-2'     : cmd = [ 0x34, 0x0D ]; break;
+		case 'memory-3'     : cmd = [ 0x34, 0x0E ]; break;
+		case 'off'          : cmd = [ 0x34, 0x0F ]; break;
 	}
 
 	bus.data.send({
@@ -57,13 +57,13 @@ function dsp_mode(mode) {
 
 // Set M-Audio on/off
 function m_audio(value) {
-	log.module({ msg : 'Setting M-Audio to \''+value+'\'' });
+	log.module({ msg : 'Setting M-Audio to \'' + value + '\'' });
 
 	let cmd;
 
 	switch (value) {
-		case 'on'  : cmd = [0x34, 0x91, 0x00]; break;
-		case 'off' : cmd = [0x34, 0x90, 0x00]; break;
+		case 'on'  : cmd = [ 0x34, 0x91, 0x00 ]; break;
+		case 'off' : cmd = [ 0x34, 0x90, 0x00 ]; break;
 	}
 
 	bus.data.send({
@@ -105,7 +105,7 @@ function eq_send(msg) {
 
 // Parse message from DSP amp
 function eq_decode(data) {
-	let dsp_mode = data[1]-1;
+	let dsp_mode = data[1] - 1;
 
 	let reverb = data[2] & 0x0F;
 	if (bitmask.test(data[2], 0x10)) {
@@ -120,11 +120,11 @@ function eq_decode(data) {
 	let band = [];
 	let n;
 
-	for (n = 0; n<7; n++) {
-		band[n] = data[4+n] & 0x0F;
+	for (n = 0; n < 7; n++) {
+		band[n] = data[4 + n] & 0x0F;
 
-		if (bitmask.test(data[n+4], 0x10)) {
-			band[n]*=-1;
+		if (bitmask.test(data[n + 4], 0x10)) {
+			band[n] *= -1;
 		}
 	}
 
@@ -144,15 +144,15 @@ function eq_decode(data) {
 }
 
 function eq_encode(data) {
-	let reverb_out = [0x34, 0x94 + data.memory, data.reverb & 0x0F];
+	let reverb_out = [ 0x34, 0x94 + data.memory, data.reverb & 0x0F ];
 	eq_send(reverb_out);
 
-	let room_size_out = [0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20];
+	let room_size_out = [ 0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20 ];
 	eq_send(room_size_out);
 
 	for (let band_num = 0; band_num < 7; band_num++) {
 		// ... Don't look at me...
-		let band_out = [0x34, 0x14+data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F)))];
+		let band_out = [ 0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F))) ];
 		eq_send(band_out);
 	}
 

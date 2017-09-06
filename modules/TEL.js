@@ -58,8 +58,8 @@ function led(object) {
 	log.module({ msg : 'Setting LED' });
 	bus.data.send({
 		src : 'TEL',
-		dst: 'ANZV',
-		msg: [0x2B, byte], // Turn on TEL LED
+		dst : 'ANZV',
+		msg : [ 0x2B, byte ], // Turn on TEL LED
 	});
 }
 
