@@ -84,12 +84,16 @@ function parse_329(data) {
 }
 
 function parse_545(data) {
+	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
+
 	let parse = {
 		msg    : '0x545',
 		engine : {
-			fuel_consumption : parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0)),
+			fuel_consumption : DME1.consumption_last - consumption_current,
 		},
 	};
+
+	DME1.consumption_last = consumption_current;
 
 	update.status('engine.fuel_consumption', parse.engine.fuel_consumption);
 }
@@ -180,5 +184,7 @@ function parse_out(data) {
 }
 
 module.exports = {
+	consumption_last : 0,
+
 	parse_out : (data) => { parse_out(data); },
 };
