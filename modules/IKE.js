@@ -29,7 +29,7 @@ function api_command(data) {
 			obc_data('reset', data.value);
 			break;
 		default: // Dunno
-			log.module({ msg : 'Unknown API command: '+data.command });
+			log.module({ msg : 'Unknown API command: ' + data.command });
 	}
 }
 
@@ -239,7 +239,7 @@ function decode_ignition_status(data) {
 
 		// Welcome message
 		if (config.options.message_welcome === true) {
-			IKE.text_override('node-bmw | Host:'+os.hostname().split('.')[0]+' | Mem:'+Math.round((os.freemem()/os.totalmem())*101)+'% | Up:'+parseFloat(os.uptime()/3600).toFixed(2)+' hrs');
+			IKE.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.round((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
 		}
 	}
 
@@ -311,12 +311,12 @@ function decode_speed_values(data) {
 	// Update vehicle and engine speed variables
 	// Also allow update from IBUS/KBUS even if CANBUS is enabled when the ignition
 	if (config.canbus.speed === false || status.vehicle.ignition_level < 3) {
-		update.status('vehicle.speed.kmh', parseFloat(data.msg[1]*2));
-		update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1]*2))).from('kilometre').to('us mile').toFixed(2)));
+		update.status('vehicle.speed.kmh', parseFloat(data.msg[1] * 2));
+		update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1] * 2))).from('kilometre').to('us mile').toFixed(2)));
 	}
 
 	if (config.canbus.rpm === false || status.vehicle.ignition_level < 3) {
-		update.status('engine.speed', parseFloat(data.msg[2]*100));
+		update.status('engine.speed', parseFloat(data.msg[2] * 100));
 	}
 }
 
@@ -343,7 +343,7 @@ function hud_refresh() {
 	// Bounce if override is active
 	if (IKE.hud_override === true) return;
 	// Bounce if the last update was less than 1 sec ago
-	if (now()-IKE.last_hud_refresh <= 1000) return;
+	if (now() - IKE.last_hud_refresh <= 1000) return;
 
 	let string_cons;
 	let string_temp;
@@ -352,23 +352,23 @@ function hud_refresh() {
 	// Only add data to strings if it is populated
 	string_cons = '     ';
 	if (status.obc.consumption.c1.mpg != null) {
-		string_cons = parseFloat(status.obc.consumption.c1.mpg).toFixed(1)+'m';
+		string_cons = parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm';
 	}
 	string_cons = pad(string_cons, 8);
 
 	// 0-pad string_cons
-	if (string_cons.length === 4) string_cons = '0'+string_cons;
+	if (string_cons.length === 4) string_cons = '0' + string_cons;
 
 	string_temp = '  ';
 	if (status.temperature.coolant.c != null) {
-		string_temp = Math.round(status.temperature.coolant.c)+'¨';
+		string_temp = Math.round(status.temperature.coolant.c) + '¨';
 	}
 
 	// Format the output (ghetto-ly)
 	switch (string_temp.length) {
-		case 4 : string_temp = ' '+string_temp+'  ';  break;
-		case 3 : string_temp = ' '+string_temp+'   '; break;
-		case 2 : string_temp = ' '+string_temp+'    ';
+		case 4 : string_temp = ' ' + string_temp + '  ';  break;
+		case 3 : string_temp = ' ' + string_temp + '   '; break;
+		case 2 : string_temp = ' ' + string_temp + '    ';
 	}
 
 	// HUD strings object
@@ -379,8 +379,8 @@ function hud_refresh() {
 	};
 
 	// 1m sysload to percentage
-	let load_1m = (parseFloat((os.loadavg()[0]/os.cpus().length).toFixed(2))*100).toFixed(0);
-	load_1m = status.system.temperature+'¨|'+load_1m+'%';
+	let load_1m = (parseFloat((os.loadavg()[0] / os.cpus().length).toFixed(2)) * 100).toFixed(0);
+	load_1m = status.system.temperature + '¨|' + load_1m + '%';
 
 	// Space-pad load_1m
 	load_1m = pad(load_1m, 8);
@@ -394,7 +394,7 @@ function hud_refresh() {
 	if (status.system.temperature > 65) hud_strings.left = load_1m;
 
 	// Assemble text string
-	let hud_string = hud_strings.left+hud_strings.center+hud_strings.right;
+	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
 	IKE.text(hud_string, () => {
@@ -405,7 +405,7 @@ function hud_refresh() {
 // Pretend to be IKE saying the car is on
 // Note - this can and WILL set the alarm off - kudos to the Germans
 function ignition(value) {
-	log.module({ msg : 'Sending ignition status: '+value });
+	log.module({ msg : 'Sending ignition status: ' + value });
 
 	var status;
 	switch (value) {
@@ -423,8 +423,8 @@ function ignition(value) {
 	}
 
 	bus.data.send({
-		dst: 'GLO',
-		msg : [0x11, status],
+		dst : 'GLO',
+		msg : [ 0x11, status ],
 	});
 }
 
@@ -437,20 +437,20 @@ function logmod(msg) {
 
 // OBC set clock
 function obc_clock() {
-	log.module({ msg : 'Setting OBC clock to current time'});
+	log.module({ msg : 'Setting OBC clock to current time' });
 
 	var time = moment();
 
 	// Time
 	bus.data.send({
 		src : 'GT',
-		msg : [0x40, 0x01, time.format('H'), time.format('m')],
+		msg : [ 0x40, 0x01, time.format('H'), time.format('m') ],
 	});
 
 	// Date
 	bus.data.send({
 		src : 'GT',
-		msg : [0x40, 0x02, time.format('D'), time.format('M'), time.format('YY')],
+		msg : [ 0x40, 0x02, time.format('D'), time.format('M'), time.format('YY') ],
 	});
 }
 
@@ -476,18 +476,18 @@ function obc_data(action, value, target) {
 	}
 
 	// Assemble message string, with OBC value from value argument
-	var msg = [cmd, obc_values.n2h(value), action_id];
+	var msg = [ cmd, obc_values.n2h(value), action_id ];
 
 	// If we're setting, insert the data
 	if (typeof target !== 'undefined' && target) {
-		msg = [msg, target];
+		msg = [ msg, target ];
 	}
 
 	// log.module({ msg : action+' OBC value \''+value+'\'' });
 
 	bus.data.send({
 		src : 'GT',
-		msg: msg,
+		msg : msg,
 	});
 }
 
@@ -553,13 +553,13 @@ function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x07: // Gong status
 			data.command = 'bro';
-			data.value   = 'gong status '+data.msg;
+			data.value   = 'gong status ' + data.msg;
 			break;
 
 		case 0x11: // Broadcast: Ignition status
 			decode_ignition_status(data);
 			data.command = 'bro';
-			data.value   = 'ignition: '+status.vehicle.ignition;
+			data.value   = 'ignition: ' + status.vehicle.ignition;
 			break;
 
 		case 0x13: // IKE sensor status
@@ -603,17 +603,17 @@ function parse_out(data) {
 					let string_time;
 
 					// Parse unit
-					string_time_unit = Buffer.from([data.msg[8], data.msg[9]]);
+					string_time_unit = Buffer.from([ data.msg[8], data.msg[9] ]);
 					string_time_unit = string_time_unit.toString().trim().toLowerCase();
 
 					// Detect 12h or 24h time and parse value
 					if (string_time_unit === 'am' || string_time_unit === 'pm') {
 						update.status('coding.unit.time', '12h');
-						string_time = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
+						string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 					}
 					else {
 						update.status('coding.unit.time', '24h');
-						string_time = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
+						string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
 					}
 
 					string_time = string_time.toString().trim().toLowerCase();
@@ -627,7 +627,7 @@ function parse_out(data) {
 					let string_date;
 
 					// Parse value
-					string_date = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9], data.msg[10], data.msg[11], data.msg[12]]);
+					string_date = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9], data.msg[10], data.msg[11], data.msg[12] ]);
 					string_date = string_date.toString().trim();
 
 					// Update status variables
@@ -641,20 +641,20 @@ function parse_out(data) {
 					let string_outside_temp_value;
 
 					// Parse unit
-					string_outside_temp_unit = Buffer.from([data.msg[9]]);
+					string_outside_temp_unit = Buffer.from([ data.msg[9] ]);
 					string_outside_temp_unit = string_outside_temp_unit.toString().trim().toLowerCase();
 
 					// Parse if it is +/-
-					string_outside_temp_negative = Buffer.from([data.msg[9]]);
+					string_outside_temp_negative = Buffer.from([ data.msg[9] ]);
 					string_outside_temp_negative = string_outside_temp_negative.toString().trim().toLowerCase();
 
 					// Parse value
 					if (string_outside_temp_negative === '-') {
-						string_outside_temp_value = Buffer.from(data.msg[3], [data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
+						string_outside_temp_value = Buffer.from(data.msg[3], [ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
 						string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
 					}
 					else {
-						string_outside_temp_value = Buffer.from([data.msg[4], data.msg[5], data.msg[6], data.msg[7]]);
+						string_outside_temp_value = Buffer.from([ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
 						string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
 					}
 
@@ -684,11 +684,11 @@ function parse_out(data) {
 					let string_consumption_1_unit;
 
 					// Parse unit
-					string_consumption_1_unit = Buffer.from([data.msg[8]]);
+					string_consumption_1_unit = Buffer.from([ data.msg[8] ]);
 					string_consumption_1_unit = string_consumption_1_unit.toString().trim().toLowerCase();
 
 					// Parse value
-					string_consumption_1 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_consumption_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_consumption_1 = parseFloat(string_consumption_1.toString().trim().toLowerCase());
 
 					// Perform appropriate conversions between units
@@ -696,13 +696,13 @@ function parse_out(data) {
 						case 'm': {
 							status.coding.unit.cons = 'mpg';
 							consumption_mpg         = string_consumption_1;
-							consumption_l100        = 235.21/string_consumption_1;
+							consumption_l100        = 235.21 / string_consumption_1;
 							break;
 						}
 
 						default: {
 							status.coding.unit.cons = 'l100';
-							consumption_mpg         = 235.21/string_consumption_1;
+							consumption_mpg         = 235.21 / string_consumption_1;
 							consumption_l100        = string_consumption_1;
 							break;
 						}
@@ -721,20 +721,20 @@ function parse_out(data) {
 					let string_consumption_2_unit;
 
 					// Parse unit
-					string_consumption_2_unit = Buffer.from([data.msg[8]]);
+					string_consumption_2_unit = Buffer.from([ data.msg[8] ]);
 					string_consumption_2_unit = string_consumption_2_unit.toString().trim().toLowerCase();
 
 					// Parse value
-					string_consumption_2 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_consumption_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_consumption_2 = parseFloat(string_consumption_2.toString().trim().toLowerCase());
 
 					// Perform appropriate conversions between units and round to 2 decimals
 					if (string_consumption_2_unit === 'm') {
 						consumption_mpg  = string_consumption_2;
-						consumption_l100 = 235.215/string_consumption_2;
+						consumption_l100 = 235.215 / string_consumption_2;
 					}
 					else {
-						consumption_mpg  = 235.215/string_consumption_2;
+						consumption_mpg  = 235.215 / string_consumption_2;
 						consumption_l100 = string_consumption_2;
 					}
 
@@ -749,10 +749,10 @@ function parse_out(data) {
 					let string_range_unit;
 
 					// Parse value
-					string_range = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_range = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_range = string_range.toString().trim();
 
-					string_range_unit = Buffer.from([data.msg[7], data.msg[8]]);
+					string_range_unit = Buffer.from([ data.msg[7], data.msg[8] ]);
 					string_range_unit = string_range_unit.toString().trim().toLowerCase();
 
 					// Update status variables
@@ -778,7 +778,7 @@ function parse_out(data) {
 					let string_distance;
 
 					// Parse value
-					string_distance = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_distance = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_distance = string_distance.toString().trim().toLowerCase();
 
 					// Update status variables
@@ -790,7 +790,7 @@ function parse_out(data) {
 					let string_arrival;
 
 					// Parse value
-					string_arrival = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
+					string_arrival = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 					string_arrival = string_arrival.toString().trim().toLowerCase();
 
 					// Update status variables
@@ -802,7 +802,7 @@ function parse_out(data) {
 					let string_limit;
 
 					// Parse value
-					string_limit = Buffer.from([data.msg[3], data.msg[4], data.msg[5]]);
+					string_limit = Buffer.from([ data.msg[3], data.msg[4], data.msg[5] ]);
 					string_limit = parseFloat(string_limit.toString().trim().toLowerCase());
 
 					// Update status variables
@@ -815,11 +815,11 @@ function parse_out(data) {
 					let string_average_speed_unit;
 
 					// Parse unit
-					string_average_speed_unit = Buffer.from([data.msg[8]]);
+					string_average_speed_unit = Buffer.from([ data.msg[8] ]);
 					string_average_speed_unit = string_average_speed_unit.toString().trim().toLowerCase();
 
 					// Parse value
-					string_average_speed = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_average_speed = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_average_speed = parseFloat(string_average_speed.toString().trim().toLowerCase());
 
 					// Convert values appropriately based on coding valueunits
@@ -847,7 +847,7 @@ function parse_out(data) {
 					let string_code;
 
 					// Parse value
-					string_code = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_code = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_code = string_code.toString().trim().toLowerCase();
 
 					// Update status variable
@@ -859,7 +859,7 @@ function parse_out(data) {
 					let string_stopwatch;
 
 					// Parse value
-					string_stopwatch = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_stopwatch = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_stopwatch = parseFloat(string_stopwatch.toString().trim().toLowerCase()).toFixed(2);
 
 					// Update status variables
@@ -871,7 +871,7 @@ function parse_out(data) {
 					let string_aux_heat_timer_1;
 
 					// Parse value
-					string_aux_heat_timer_1 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
+					string_aux_heat_timer_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 					string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
 
 					// Update status variables
@@ -883,7 +883,7 @@ function parse_out(data) {
 					let string_aux_heat_timer_2;
 
 					// Parse value
-					string_aux_heat_timer_2 = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9]]);
+					string_aux_heat_timer_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 					string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
 
 					// Update status variables
@@ -895,7 +895,7 @@ function parse_out(data) {
 					let string_interim;
 
 					// Parse value
-					string_interim = Buffer.from([data.msg[3], data.msg[4], data.msg[5], data.msg[6]]);
+					string_interim = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 					string_interim = parseFloat(string_interim.toString().trim().toLowerCase()).toFixed(2);
 
 					// Update status variables
@@ -904,13 +904,13 @@ function parse_out(data) {
 				}
 			}
 
-			data.value = 'OBC '+layout.replace(/-/, ' ')+': \''+hex.h2s(data.msg)+'\'';
+			data.value = 'OBC ' + layout.replace(/-/, ' ') + ': \'' + hex.h2s(data.msg) + '\'';
 			break;
 
 		case 0x2A: // Broadcast: Aux heat LED status
 			decode_aux_heat_led(data);
 			data.command = 'bro';
-			data.value   = 'aux heat LED: '+status.obc.aux_heat_led;
+			data.value   = 'aux heat LED: ' + status.obc.aux_heat_led;
 			break;
 
 		case 0x57: // Broadcast: BC button press (MFL BC stalk button)
@@ -937,26 +937,26 @@ function request(value) {
 
 	switch (value) {
 		case 'ignition':
-			cmd = [0x10];
+			cmd = [ 0x10 ];
 			break;
 		case 'sensor':
-			cmd = [0x12];
+			cmd = [ 0x12 ];
 			break;
 		case 'coding':
 			src = 'RAD';
-			cmd = [0x14];
+			cmd = [ 0x14 ];
 			break;
 		case 'odometer':
 			src = 'EWS';
-			cmd = [0x16];
+			cmd = [ 0x16 ];
 			break;
 		case 'dimmer':
 			src = 'IHKA';
-			cmd = [0x1D, 0xC5];
+			cmd = [ 0x1D, 0xC5 ];
 			break;
 		case 'temperature':
 			src = 'LCM';
-			cmd = [0x1D, 0xC5];
+			cmd = [ 0x1D, 0xC5 ];
 			break;
 		case 'status-glo': {
 			for (loop_dst in bus.modules.modules) {
@@ -978,17 +978,17 @@ function request(value) {
 		case 'vin':
 			src = module_name;
 			dst = 'LCM';
-			cmd = [0x53];
+			cmd = [ 0x53 ];
 			break;
 	}
 
-	log.module({ msg : 'Requesting \''+value+'\'' });
+	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	if (cmd !== null) {
 		bus.data.send({
-			src: src,
-			dst: dst,
-			msg: cmd,
+			src : src,
+			dst : dst,
+			msg : cmd,
 		});
 	}
 }
@@ -998,7 +998,7 @@ function text(message) {
 	let message_hex;
 	let max_length = 20;
 
-	message_hex = [0x23, 0x50, 0x30, 0x07];
+	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
 	// Trim string to max length
 	message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
 	message_hex = message_hex.concat(0x04);
@@ -1015,7 +1015,7 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 	let max_length = 20;
 
 	let scroll_delay         = 300;
-	let scroll_delay_timeout = scroll_delay*5;
+	let scroll_delay_timeout = scroll_delay * 5;
 
 	// Override scroll_delay_timeout if we're showing a turn signal message
 	if (turn === true) {
@@ -1029,14 +1029,14 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 	IKE.hud_override_text = message;
 
 	// Equal to or less than 20 char
-	if (message.length-max_length <= 0) {
+	if (message.length - max_length <= 0) {
 		if (IKE.hud_override_text == message) {
 			IKE.text(message);
 		}
 	}
 	else {
 		// Adjust timeout since we will be scrolling
-		timeout = timeout+(scroll_delay*5)+(scroll_delay*(message.length-max_length));
+		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - max_length));
 
 		// Send initial string if we're currently the first up
 		if (IKE.hud_override_text == message) {
@@ -1044,24 +1044,24 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 				IKE.text(message);
 			}
 			else {
-				IKE.text(message.substring(message.length-max_length, message.length));
+				IKE.text(message.substring(message.length - max_length, message.length));
 			}
 		}
 
 		// Add a time buffer before scrolling starts (if this isn't a turn signal message)
 		setTimeout(() => {
-			for (var scroll = 0; scroll <= message.length-max_length; scroll++) {
+			for (var scroll = 0; scroll <= message.length - max_length; scroll++) {
 				setTimeout((current_scroll, message_full, direction) => {
 					// Only send the message if we're currently the first up
 					if (IKE.hud_override_text == message_full) {
 						if (direction == 'left') {
-							IKE.text(message.substring(current_scroll, current_scroll+max_length));
+							IKE.text(message.substring(current_scroll, current_scroll + max_length));
 						}
 						else {
-							IKE.text(message.substring(message.length-max_length-current_scroll, message.length-current_scroll));
+							IKE.text(message.substring(message.length - max_length - current_scroll, message.length - current_scroll));
 						}
 					}
-				}, scroll_delay*scroll, scroll, message, direction);
+				}, scroll_delay * scroll, scroll, message, direction);
 			}
 		}, scroll_delay_timeout);
 	}
@@ -1082,7 +1082,7 @@ function text_urgent(message, timeout = 5000) {
 
 	kodi.notify(module_name, message);
 
-	message_hex = [0x1A, 0x35, 0x00];
+	message_hex = [ 0x1A, 0x35, 0x00 ];
 	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
 	bus.data.send({
@@ -1100,7 +1100,7 @@ function text_urgent(message, timeout = 5000) {
 function text_urgent_off() {
 	bus.data.send({
 		src : 'CCM',
-		msg : [0x1A, 0x30, 0x00],
+		msg : [ 0x1A, 0x30, 0x00 ],
 	});
 
 	IKE.hud_refresh();
@@ -1121,7 +1121,7 @@ function text_warning(message, timeout = 10000) {
 	// 0x10 : 1 lo gong, no arrow
 	// 0x18 : 3 beep,    no arrow
 
-	message_hex = [0x1A, 0x37, 0x03]; // no gong, flash arrow
+	message_hex = [ 0x1A, 0x37, 0x03 ]; // no gong, flash arrow
 	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
 
 	bus.data.send({

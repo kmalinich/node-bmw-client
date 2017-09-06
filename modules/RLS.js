@@ -1,11 +1,9 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Parse data sent from RLS module
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x58: // Broadcast: Headlight wipe interval
 			data.command = 'bro';
-			data.value   = 'headlight wipe interval '+data.msg;
+			data.value   = 'headlight wipe interval ' + data.msg;
 			break;
 
 		default:
@@ -25,7 +23,7 @@ function request(value) {
 	switch (value) {
 		case 'rain-sensor-status':
 			src = 'IHKA';
-			cmd = [0x71]; // Get IO status
+			cmd = [ 0x71 ]; // Get IO status
 			break;
 	}
 

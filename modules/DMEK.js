@@ -16,7 +16,7 @@ function parse_out(data) {
 	}
 
 	if (data.msg[0] == null || typeof data.msg[0] == 'undefined') {
-		data.msg = [0xFF];
+		data.msg = [ 0xFF ];
 	}
 
 	log.bus(data);
@@ -31,7 +31,7 @@ function request(value) {
 	switch (value) {
 		case 'motor-values':
 			src = 'DIA';
-			cmd = [0xB8, 0x12, 0xF1, 0x03, 0x22, 0x40, 0x00];
+			cmd = [ 0xB8, 0x12, 0xF1, 0x03, 0x22, 0x40, 0x00 ];
 			break;
 	}
 

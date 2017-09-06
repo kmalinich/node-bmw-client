@@ -1,5 +1,3 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Parse data sent from CCM module
 function parse_out(data) {
 	switch (data.msg[0]) {

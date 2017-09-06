@@ -35,7 +35,6 @@ const now = require('performance-now');
 // 2BA -> 00 00 00 00 20
 
 
-
 // iDrive knob rotation
 // ARBID 0x264: <Buffer e1 fd b5 fb 7f 1e>
 function decode_con_rotation(data) {
@@ -53,7 +52,7 @@ function decode_con_rotation(data) {
 		status.con1.rotation.direction = 'down';
 	}
 
-	let subtract = data.msg[3]-status.con1.rotation.relative;
+	let subtract = data.msg[3] - status.con1.rotation.relative;
 
 	// Spin it hard enough and you can get it to jump up to 24 notches!
 
@@ -73,7 +72,6 @@ function decode_con_rotation(data) {
 			status.con1.rotation.direction = 'down';
 		}
 		else {
-
 			if (subtract > 0 && subtract < 25) {
 				status.con1.rotation.direction = 'down';
 			}
@@ -94,7 +92,7 @@ function decode_con_rotation(data) {
 
 	log.msg({
 		src : module_name,
-		msg : 'Rotation: '+status.con1.rotation.direction,
+		msg : 'Rotation: ' + status.con1.rotation.direction,
 	});
 
 	// If volume rotation is currently active
@@ -210,7 +208,7 @@ function decode_con_button(data) {
 	unmask.modes = {
 		button   : !m.m.bit0 && !m.m.bit1 && !m.m.bit2 && !m.m.bit3 && !m.m.bit4 && !m.m.bit5 &&  m.m.bit6 &&  m.m.bit7 && !m.m.bit8, // bit6+bit7 are true, all others false
 		push     : !m.m.bit0 &&  m.m.bit1 &&  m.m.bit2 &&  m.m.bit3 &&  m.m.bit4 && !m.m.bit5 &&  m.m.bit6 &&  m.m.bit7 && !m.m.bit8, // bit0+bit5+bit8 are false, all others true
-		joystick :  m.m.bit0 && !m.m.bit1 &&  m.m.bit2 &&  m.m.bit3 &&  m.m.bit4 && !m.m.bit5 &&  m.m.bit6 &&  m.m.bit7 && !m.m.bit8, // bit1+bit5+bit8 are false, all others true
+		joystick : m.m.bit0 && !m.m.bit1 &&  m.m.bit2 &&  m.m.bit3 &&  m.m.bit4 && !m.m.bit5 &&  m.m.bit6 &&  m.m.bit7 && !m.m.bit8, // bit1+bit5+bit8 are false, all others true
 	};
 
 	// Loop unmask object to determine action+button combination
@@ -222,7 +220,7 @@ function decode_con_button(data) {
 	}
 
 	unmask.actions = {
-		press   :  m.a.bit0 && !m.a.bit1 && !m.a.bit8,
+		press   : m.a.bit0 && !m.a.bit1 && !m.a.bit8,
 		hold    : !m.a.bit0 &&  m.a.bit1 && !m.a.bit8,
 		release : !m.a.bit0 && !m.a.bit1 &&  m.a.bit8,
 	};
@@ -282,7 +280,7 @@ function button_check(button) {
 
 	log.msg({
 		src : module_name,
-		msg : 'Button: '+button.action+' '+button.button,
+		msg : 'Button: ' + button.action + ' ' + button.button,
 	});
 
 	switch (button.action) {
@@ -291,12 +289,12 @@ function button_check(button) {
 				case 'tel':
 					// To use the TEL button as a toggle for rotation = Kodi volume control
 					if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
-						kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via button');
+						kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
 
 						// In 8000ms, set it back
 						setTimeout(() => {
 							if (update.status('con1.rotation.volume', false)) {
-								kodi.notify('CON1 volume: '+status.con1.rotation.volume, 'Updated via timeout');
+								kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via timeout');
 							}
 						}, 8000);
 					}
@@ -305,12 +303,12 @@ function button_check(button) {
 				case 'nav':
 					// To use the NAV button as a toggle for left<->right or up<->down rotation
 					if (update.status('con1.rotation.alternate', !status.con1.rotation.alternate)) {
-						kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via button');
+						kodi.notify('CON1 horizontal: ' + status.con1.rotation.alternate, 'Updated via button');
 
 						// In 8000ms, set it back
 						setTimeout(() => {
 							if (update.status('con1.rotation.alternate', false)) {
-								kodi.notify('CON1 horizontal: '+status.con1.rotation.alternate, 'Updated via timeout');
+								kodi.notify('CON1 horizontal: ' + status.con1.rotation.alternate, 'Updated via timeout');
 							}
 						}, 8000);
 					}
@@ -349,14 +347,14 @@ function decode_status_con(data) {
 function decode_ignition_new(data) {
 	log.msg({
 		src : module_name,
-		msg : 'Ignition message '+data.msg[0],
+		msg : 'Ignition message ' + data.msg[0],
 	});
 }
 
 function decode_status_cic(data) {
 	log.msg({
 		src : module_name,
-		msg : 'CIC1 status message '+data.msg[0],
+		msg : 'CIC1 status message ' + data.msg[0],
 	});
 }
 
@@ -395,12 +393,12 @@ function send_backlight(value) {
 	bus.data.send({
 		bus  : 'can1',
 		id   : 0x202,
-		data : Buffer.from([value, 0x00]),
+		data : Buffer.from([ value, 0x00 ]),
 	});
 
 	log.module({
 		src : module_name,
-		msg : 'Set backlight value to: '+status.con1.backlight,
+		msg : 'Set backlight value to: ' + status.con1.backlight,
 	});
 }
 
@@ -411,7 +409,7 @@ function send_status_cic() {
 		msg : 'Sending CIC1 status',
 	});
 
-	let msg = [0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04];
+	let msg = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
 	bus.data.send({
 		bus  : 'can1',
 		id   : 0x273,
@@ -431,7 +429,7 @@ function send_status_ignition_new() {
 	bus.data.send({
 		bus  : 'can1',
 		id   : 0x4F8,
-		data : Buffer.from([0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF]),
+		data : Buffer.from([ 0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF ]),
 	});
 
 	if (status.vehicle.ignition_level === 0) {
@@ -487,7 +485,7 @@ function parse_out(data) {
 
 		case 0x277:
 			data.command = 'rep';
-			data.value   = module_name+' ACK to CIC1 init';
+			data.value   = module_name + ' ACK to CIC1 init';
 			break; // CON1 ACK to rotational initialization message
 
 		case 0x4F8:
@@ -529,4 +527,3 @@ module.exports = {
 	send_backlight           : (value) => { send_backlight(value);      },
 	send_status_ignition_new : ()      => { send_status_ignition_new(); },
 };
-

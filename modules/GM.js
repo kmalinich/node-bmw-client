@@ -51,15 +51,15 @@ function decode_message_keyfob(data) {
 	let mask   = bitmask.check(data.msg[1]).mask;
 	let keyfob = {
 		low_batt     : mask.bit0,
-		low_batt_str : 'battery low: '+mask.bit0,
-		keys : {
+		low_batt_str : 'battery low: ' + mask.bit0,
+		keys         : {
 			key0 : !mask.bit1 && !mask.bit2,
-			key1 :  mask.bit1 && !mask.bit2,
+			key1 : mask.bit1 && !mask.bit2,
 			key2 : !mask.bit1 &&  mask.bit2,
-			key3 :  mask.bit1 &&  mask.bit2,
+			key3 : mask.bit1 &&  mask.bit2,
 		},
 		buttons : {
-			lock   :  mask.bit4 && !mask.bit5 && !mask.bit6 && !mask.bit8,
+			lock   : mask.bit4 && !mask.bit5 && !mask.bit6 && !mask.bit8,
 			unlock : !mask.bit4 &&  mask.bit5 && !mask.bit6 && !mask.bit8,
 			trunk  : !mask.bit4 && !mask.bit5 &&  mask.bit6 && !mask.bit8,
 			none   : !mask.bit4 && !mask.bit5 && !mask.bit6 &&  mask.bit8,
@@ -70,7 +70,7 @@ function decode_message_keyfob(data) {
 	for (let key in keyfob.keys) {
 		if (keyfob.keys[key] === true) {
 			keyfob.key     = key;
-			keyfob.key_str = 'key: '+key;
+			keyfob.key_str = 'key: ' + key;
 			break;
 		}
 	}
@@ -79,13 +79,13 @@ function decode_message_keyfob(data) {
 	for (let button in keyfob.buttons) {
 		if (keyfob.buttons[button] === true) {
 			keyfob.button     = button;
-			keyfob.button_str = 'button: '+button;
+			keyfob.button_str = 'button: ' + button;
 			break;
 		}
 	}
 
 	// Assemble log string
-	data.value += keyfob.key_str+', '+keyfob.button_str+', '+keyfob.low_batt_str;
+	data.value += keyfob.key_str + ', ' + keyfob.button_str + ', ' + keyfob.low_batt_str;
 
 	// Actuate welcome lights on lock/unlock
 	switch (keyfob.button) {
@@ -173,9 +173,9 @@ function io_set(packet) {
 
 	// Set IO status
 	bus.data.send({
-		src: 'DIA',
+		src : 'DIA',
 		dst : module_name,
-		msg: packet,
+		msg : packet,
 	});
 }
 
@@ -281,7 +281,7 @@ function api_command(data) {
 			case 'door-status' : GM.request('door-status'); break; // Get IO status
 			case 'locks'       : GM.locks();                break; // Toggle central locking
 			default: // Dunno what I sent
-				log.module({ msg : 'API call '+data['command']+' unknown' });
+				log.module({ msg : 'API call ' + data['command'] + ' unknown' });
 				break;
 		}
 	}
@@ -292,12 +292,12 @@ function api_command(data) {
 	}
 
 	else {
-		log.module({ msg : 'Unknown data: '+data });
+		log.module({ msg : 'Unknown data: ' + data });
 	}
 }
 
 function windows(window, action) {
-	log.module({ msg : 'Window control: '+window+', '+action });
+	log.module({ msg : 'Window control: ' + window + ', ' + action });
 
 	// Init message variable
 	var msg;
@@ -306,33 +306,33 @@ function windows(window, action) {
 	switch (window) {
 		case 'roof': // Moonroof
 			switch (action) {
-				case 'dn' : msg = [0x03, 0x01, 0x01]; break;
-				case 'up' : msg = [0x03, 0x02, 0x01]; break;
-				case 'tt' : msg = [0x03, 0x00, 0x01]; break;
+				case 'dn' : msg = [ 0x03, 0x01, 0x01 ]; break;
+				case 'up' : msg = [ 0x03, 0x02, 0x01 ]; break;
+				case 'tt' : msg = [ 0x03, 0x00, 0x01 ]; break;
 			}
 			break;
 		case 'lf' : // Left front
 			switch (action) {
-				case 'dn' : msg = [0x01, 0x36, 0x01]; break;
-				case 'up' : msg = [0x01, 0x1A, 0x01]; break;
+				case 'dn' : msg = [ 0x01, 0x36, 0x01 ]; break;
+				case 'up' : msg = [ 0x01, 0x1A, 0x01 ]; break;
 			}
 			break;
 		case 'rf' : // Right front
 			switch (action) {
-				case 'dn' : msg = [0x02, 0x20, 0x01]; break;
-				case 'up' : msg = [0x02, 0x22, 0x01]; break;
+				case 'dn' : msg = [ 0x02, 0x20, 0x01 ]; break;
+				case 'up' : msg = [ 0x02, 0x22, 0x01 ]; break;
 			}
 			break;
 		case 'lr' : // Left rear
 			switch (action) {
-				case 'dn' : msg = [0x00, 0x00, 0x01]; break;
-				case 'up' : msg = [0x42, 0x01];       break;
+				case 'dn' : msg = [ 0x00, 0x00, 0x01 ]; break;
+				case 'up' : msg = [ 0x42, 0x01 ];       break;
 			}
 			break;
 		case 'rr' : // Right rear
 			switch (action) {
-				case 'dn' : msg = [0x00, 0x03, 0x01]; break;
-				case 'up' : msg = [0x43, 0x01];       break;
+				case 'dn' : msg = [ 0x00, 0x03, 0x01 ]; break;
+				case 'up' : msg = [ 0x43, 0x01 ];       break;
 			}
 	}
 
@@ -341,16 +341,16 @@ function windows(window, action) {
 
 module.exports = {
 	// Parse data sent from GM module
-	parse_out : (data) => { parse_out(data); },
+	parse_out   : (data) => { parse_out(data); },
 	// Handle incoming commands from API
 	api_command : (data) => { api_command(data); },
 	// GM window control
-	windows : (window, action) => { windows(window, action); },
+	windows     : (window, action) => { windows(window, action); },
 
 	// Cluster/interior backlight
 	interior_light : (value) => {
-		log.module({ msg : 'Setting interior light to '+value });
-		io_set([0x10, 0x05, value.toString(16)]);
+		log.module({ msg : 'Setting interior light to ' + value });
+		io_set([ 0x10, 0x05, value.toString(16) ]);
 	},
 
 	// Central locking
@@ -370,7 +370,7 @@ module.exports = {
 		// 01 42 02 : Rear unlock
 
 		// Init message variable
-		io_set([0x00, 0x0B]);
+		io_set([ 0x00, 0x0B ]);
 	},
 
 	// Request various things from GM
@@ -382,15 +382,15 @@ module.exports = {
 		switch (value) {
 			case 'io-status':
 				src = 'DIA';
-				cmd = [0x0B, 0x00]; // Get IO status
+				cmd = [ 0x0B, 0x00 ]; // Get IO status
 				break;
 			case 'door-status':
 				src = 'BMBT';
-				cmd = [0x79];
+				cmd = [ 0x79 ];
 				break;
 		}
 
-		log.module({ msg : 'Requesting \''+value+'\'' });
+		log.module({ msg : 'Requesting \'' + value + '\'' });
 
 		bus.data.send({
 			src : src,
