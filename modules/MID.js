@@ -13,12 +13,12 @@ const pad = require('pad');
 function refresh_text() {
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
-	log.module({ msg: 'Updating MID text' });
+	log.module({ msg : 'Updating MID text' });
 
 	let message_hex;
 
 	// Upper left - 11 char radio display
-	message_hex = [0x23, 0x40, 0x20];
+	message_hex = [ 0x23, 0x40, 0x20 ];
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
 
 	bus.data.send({
@@ -27,7 +27,7 @@ function refresh_text() {
 	});
 
 	// Upper right - 20 char OBC display
-	message_hex = [0x23, 0x40, 0x20];
+	message_hex = [ 0x23, 0x40, 0x20 ];
 	message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
 
 	bus.data.send({
@@ -36,7 +36,7 @@ function refresh_text() {
 	});
 
 	// Left side menu
-	message_hex = [0x21, 0x00, 0x15, 0x20];
+	message_hex = [ 0x21, 0x00, 0x15, 0x20 ];
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_1, 4).substring(0, 4)));
 	message_hex = message_hex.concat(0x05);
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_2, 4).substring(0, 4)));
@@ -55,7 +55,7 @@ function refresh_text() {
 	});
 
 	// Right side menu
-	message_hex = [0x21, 0x00, 0x15, 0x06];
+	message_hex = [ 0x21, 0x00, 0x15, 0x06 ];
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_7, 4).substring(0, 4)));
 	message_hex = message_hex.concat(0x05);
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_8, 4).substring(0, 4)));
@@ -69,8 +69,8 @@ function refresh_text() {
 	message_hex = message_hex.concat(hex.a2h(pad(status.mid.menu.button_12, 4).substring(0, 4)));
 
 	bus.data.send({
-		src: 'RAD',
-		msg: message_hex,
+		src : 'RAD',
+		msg : message_hex,
 	});
 }
 
@@ -80,7 +80,7 @@ function text_loop(action) {
 	if (status.vehicle.ignition_level < 1) action = false;
 	if (MID.text_text_loop == action) return;
 
-	log.module({ msg : 'Text loop '+action });
+	log.module({ msg : 'Text loop ' + action });
 
 	switch (action) {
 		case false:
@@ -109,7 +109,7 @@ function status_loop(action) {
 	if (status.vehicle.ignition_level < 1) action = false;
 	if (MID.status_status_loop == action) return;
 
-	log.module({ msg : 'Status loop '+action });
+	log.module({ msg : 'Status loop ' + action });
 
 	switch (action) {
 		case false:
@@ -192,7 +192,7 @@ function parse_out(data) {
 
 		case 0x31: // Broadcast: Button pressed
 			data.command = 'bro';
-			data.value   = 'button pressed: '+data.msg[1]+' '+data.msg[2]+' '+data.msg[3];
+			data.value   = 'button pressed: ' + data.msg[1] + ' ' + data.msg[2] + ' ' + data.msg[3];
 
 			if (data.msg[1] == 0x00 && data.msg[2] == 0x15) {
 				switch (data.msg[3]) {
@@ -332,12 +332,12 @@ function send_button(button) {
 			break;
 	}
 
-	log.module({ msg: 'Button down: '+button+', hold: '+button_hold });
+	log.module({ msg : 'Button down: ' + button + ', hold: ' + button_hold });
 
 	// Init variables
 	let command     = 0x48; // Button action
-	let packet_down = [command, button_down];
-	let packet_up   = [command, button_up];
+	let packet_down = [ command, button_down ];
+	let packet_up   = [ command, button_up ];
 
 	bus.data.send({
 		dst : 'RAD',
@@ -346,7 +346,7 @@ function send_button(button) {
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ msg: 'Button up: '+button });
+		log.module({ msg : 'Button up: ' + button });
 		bus.data.send({
 			dst : 'RAD',
 			msg : packet_up,

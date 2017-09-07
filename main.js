@@ -21,7 +21,6 @@ const express = require('express');
 const app = express();
 
 
-
 // Configure term event listeners
 function term_config(pass) {
 	process.on('SIGTERM', () => {
@@ -150,10 +149,8 @@ function init() {
 				BT.init(); // Start Linux D-Bus Bluetooth handler
 
 				gpio.init(() => { // Initialize GPIO relays
-
 					HDMI.init(() => { // Open HDMI-CEC
 						socket.init(() => { // Start zeroMQ client
-
 							log.msg({ msg : 'Initialized' });
 
 							// notify.notify('Started');
@@ -162,7 +159,7 @@ function init() {
 
 							setTimeout(() => {
 								socket.lcd_text_tx({
-									upper : app_name+' '+status.system.host.short,
+									upper : app_name + ' ' + status.system.host.short,
 									lower : 'restarted',
 								});
 							}, 250);
@@ -178,7 +175,6 @@ function init() {
 							app.listen(3000, () => {
 								log.msg({ msg : 'Express listening on port 3000' });
 							});
-
 						}, term);
 					}, term);
 				}, term);

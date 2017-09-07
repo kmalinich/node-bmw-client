@@ -73,7 +73,7 @@ function toggle_power_if_ready() {
 
 			if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
 				kodi.notify(module_name, 'power on');
-				IKE.text_override(module_name+' power');
+				IKE.text_override(module_name + ' power');
 
 				log.module({
 					src : module_name,
@@ -117,7 +117,7 @@ function parse_out(data) {
 					data.value += 'on';
 					break;
 				default:
-					data.value += 'unknown 0x'+data.msg[1].toString(16);
+					data.value += 'unknown 0x' + data.msg[1].toString(16);
 			}
 			break;
 
@@ -144,8 +144,8 @@ function parse_out(data) {
 function send_cassette_status(value = 0x05) {
 	bus.data.send({
 		src : module_name,
-		dst: 'RAD',
-		msg: [0x4B, value],
+		dst : 'RAD',
+		msg : [ 0x4B, value ],
 	});
 }
 
@@ -168,27 +168,27 @@ function send_button(button) {
 			break;
 	}
 
-	log.module({ msg : 'Button down '+button });
+	log.module({ msg : 'Button down ' + button });
 
 	// Init variables
 	let command     = 0x48; // Button action
-	let packet_down = [command, button_down];
-	let packet_up   = [command, button_up];
+	let packet_down = [ command, button_down ];
+	let packet_up   = [ command, button_up ];
 
 	bus.data.send({
 		src : module_name,
-		dst: 'RAD',
-		msg: packet_down,
+		dst : 'RAD',
+		msg : packet_down,
 	});
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ msg : 'Button up '+button });
+		log.module({ msg : 'Button up ' + button });
 
 		bus.data.send({
 			src : module_name,
-			dst: 'RAD',
-			msg: packet_up,
+			dst : 'RAD',
+			msg : packet_up,
 		});
 	}, 150);
 }
@@ -202,10 +202,10 @@ module.exports = {
 		status_loop : null,
 	},
 
-	parse_in             : (data)   => { parse_in(data);              },
-	parse_out            : (data)   => { parse_out(data);             },
-	toggle_power_if_ready    : ()       => { toggle_power_if_ready();         },
-	send_button          : (button) => { send_button(button);         },
-	send_cassette_status : (value)  => { send_cassette_status(value); },
-	status_loop          : (action) => { status_loop(action);         },
+	parse_in              : (data)   => { parse_in(data);              },
+	parse_out             : (data)   => { parse_out(data);             },
+	toggle_power_if_ready : ()       => { toggle_power_if_ready();         },
+	send_button           : (button) => { send_button(button);         },
+	send_cassette_status  : (value)  => { send_cassette_status(value); },
+	status_loop           : (action) => { status_loop(action);         },
 };

@@ -1,5 +1,3 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Parse data sent from VID module
 function parse_out(data) {
 	switch (data.msg[0]) {
@@ -27,7 +25,7 @@ function parse_out(data) {
 					data.value = 'LCD on NAVJ';
 					break;
 				default:
-					data.value = 'LCD on unknown \''+Buffer.from([data.msg[1]])+'\'';
+					data.value = 'LCD on unknown \'' + Buffer.from([ data.msg[1] ]) + '\'';
 					break;
 			}
 			break;

@@ -6,13 +6,13 @@ function parse_out(data) {
 		case 0x83: // Broadcast: AC compressor status
 			status.ihka.ac = bitmask.test(data.msg[1], 0x80);
 			data.command = 'bro';
-			data.value   = 'AC compressor status '+data.msg;
+			data.value   = 'AC compressor status ' + data.msg;
 			break;
 
 		case 0x86: // Broadcast: Rear defroster status
 			status.ihka.defroster = bitmask.test(data.msg[1], 0x01);
 			data.command = 'bro';
-			data.value   = 'defroster status '+status.ihka.defroster;
+			data.value   = 'defroster status ' + status.ihka.defroster;
 			break;
 
 		case 0xA0: // Reply: Diagnostic command
@@ -39,8 +39,8 @@ function aux(type, action) {
 
 	// Set command base value based on type argument
 	switch (type) {
-		case 'heat' : cmd = [0x11]; break;
-		case 'vent' : cmd = [0x13]; break;
+		case 'heat' : cmd = [ 0x11 ]; break;
+		case 'vent' : cmd = [ 0x13 ]; break;
 	}
 
 	// Add 1 if we're turning it on
@@ -49,9 +49,9 @@ function aux(type, action) {
 	}
 
 	bus.data.send({
-		src: 'GT',
-		dst: 'IKE',
-		msg: [0x41, cmd],
+		src : 'GT',
+		dst : 'IKE',
+		msg : [ 0x41, cmd ],
 	});
 }
 
@@ -64,7 +64,7 @@ function request(value) {
 	switch (value) {
 		case 'io-status':
 			src = 'DIA';
-			cmd = [0x0B, 0x04, 0x51]; // Get IO status
+			cmd = [ 0x0B, 0x04, 0x51 ]; // Get IO status
 			// cmd = [0x0B, 0x00]; // Get IO status
 			// cmd = [0x0B]; // Get IO status
 			break;

@@ -94,7 +94,7 @@ function parse_out(data) {
 					data.value += 'power on';
 					break;
 				default:
-					data.value += 'unknown 0x'+data.msg[1].toString(16);
+					data.value += 'unknown 0x' + data.msg[1].toString(16);
 			}
 			break;
 
@@ -126,8 +126,8 @@ function parse_out(data) {
 }
 
 function send_audio_control(source) {
-	let msg_tunertape = [0x36, 0xA1];
-	let msg_cd        = [0x36, 0xA0];
+	let msg_tunertape = [ 0x36, 0xA1 ];
+	let msg_cd        = [ 0x36, 0xA0 ];
 	let msg;
 
 	switch (source) {
@@ -135,11 +135,11 @@ function send_audio_control(source) {
 		case 'tuner/tape' : msg = msg_tunertape; break;
 	}
 
-	log.module({ msg : 'Sending audio control: '+source });
+	log.module({ msg : 'Sending audio control: ' + source });
 
 	bus.data.send({
 		src : module_name,
-		dst: 'LOC',
+		dst : 'LOC',
 		msg : msg,
 	});
 }
