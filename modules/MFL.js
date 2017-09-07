@@ -1,5 +1,3 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Decode button action message from MFL
 function decode_button_media(data) {
 	data.command = 'con';
@@ -20,11 +18,11 @@ function decode_button_media(data) {
 	let unmask = {
 		actions : {
 			press   : !mask.bit4 && !mask.bit5 && !mask.bit8,
-			hold    :  mask.bit4 && !mask.bit5 && !mask.bit8,
+			hold    : mask.bit4 && !mask.bit5 && !mask.bit8,
 			release : !mask.bit4 &&  mask.bit5 && !mask.bit8,
 		},
 		buttons : {
-			right :  mask.bit0 && !mask.bit3 && !mask.bit7 && !mask.bit8,
+			right : mask.bit0 && !mask.bit3 && !mask.bit7 && !mask.bit8,
 			left  : !mask.bit0 &&  mask.bit3 && !mask.bit7 && !mask.bit8,
 			voice : !mask.bit0 && !mask.bit3 &&  mask.bit7 && !mask.bit8,
 			none  : !mask.bit0 && !mask.bit3 && !mask.bit7 &&  mask.bit8,
@@ -48,7 +46,7 @@ function decode_button_media(data) {
 	}
 
 	// Assemble log string
-	data.value += unmask.action+' '+unmask.button;
+	data.value += unmask.action + ' ' + unmask.button;
 	log.bus(data);
 
 	// Create bitmask for switch statement to use below
@@ -61,7 +59,7 @@ function decode_button_media(data) {
 		case 0x03: return; // Both media services enabled
 
 		case bitmask.bit[0]: // Bluetooth version
-			switch (unmask.action+unmask.button) {
+			switch (unmask.action + unmask.button) {
 				case 'pressleft'  : BT.command('previous'); break;
 				case 'pressright' : BT.command('next');     break;
 				case 'pressvoice' : BT.command('pause');    break; // Think about it...
@@ -77,7 +75,7 @@ function decode_button_media(data) {
 			break;
 
 		case bitmask.bit[1]: // Kodi version
-			switch (unmask.action+unmask.button) {
+			switch (unmask.action + unmask.button) {
 				case 'pressleft'  : kodi.command('previous'); break;
 				case 'pressright' : kodi.command('next');     break;
 				case 'pressvoice' : kodi.command('toggle');   break;

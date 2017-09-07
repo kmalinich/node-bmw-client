@@ -2,12 +2,12 @@
 function request(value) {
 	let cmd;
 
-	log.module({ msg : 'Requesting \''+value+'\'' });
+	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	switch (value) {
 		case 'immobiliserstatus':
 			// cmd = [0x73, 0x00, 0x00, 0x80];
-			cmd = [0x73];
+			cmd = [ 0x73 ];
 			break;
 	}
 
@@ -46,7 +46,7 @@ function parse_out(data) {
 					status.immobilizer.immobilized = false;
 					break;
 				default:
-					data.value += Buffer.from([data.msg[1]]);
+					data.value += Buffer.from([ data.msg[1] ]);
 			}
 
 			// Key number 255/0xFF = no key
@@ -57,7 +57,7 @@ function parse_out(data) {
 				status.immobilizer.key_number = data.msg[2];
 			}
 
-			data.value += ', key '+status.immobilizer.key_number;
+			data.value += ', key ' + status.immobilizer.key_number;
 			break;
 
 		case 0xA0: // Broadcast: diagnostic command acknowledged
