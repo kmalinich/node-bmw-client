@@ -22,7 +22,7 @@
 		"performance-now": "^2.1.0",
 		"suncalc": "^1.8.0",
 		"trucolor": "^0.6.6",
-		"zeromq": "^4.5.0"
+		"zeromq": "^4.6.0"
 	},
 	"description": "NodeJS-powered BMW IBUS client interface",
 	"devDependencies": {},
@@ -38,9 +38,9 @@
 	"main": "launch.sh",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
-		"dbus-native": "^0.2.2",
+		"dbus-native": "^0.2.3",
 		"node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
-		"onoff": "^1.1.5",
+		"onoff": "^1.1.7",
 		"pi-temperature": "^2.0.0",
 		"smc": "^2.0.0"
 	},
