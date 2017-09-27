@@ -12,7 +12,7 @@ function status_loop(action) {
 
 	switch (action) {
 		case false:
-			status.rad.audio_control = 'audio off';
+			status.rad.source_name = 'off';
 
 			status.dsp.reset  = true;
 			status.dsp.ready  = false;
@@ -69,9 +69,9 @@ function toggle_power_if_ready() {
 		BMBT.timeouts.power_on = setTimeout(() => {
 			// Debug logging
 			// log.module({ msg : 'dsp.ready: '+status.dsp.ready });
-			// log.module({ msg : 'rad.audio_control: '+status.rad.audio_control });
+			// log.module({ msg : 'rad.source_name: '+status.rad.source_name });
 
-			if (status.rad.audio_control == 'audio off' && status.vehicle.ignition_level > 0) {
+			if (status.rad.source_name == 'off' && status.vehicle.ignition_level > 0) {
 				kodi.notify(module_name, 'power on');
 				IKE.text_override(module_name + ' power');
 
