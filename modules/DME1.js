@@ -75,8 +75,11 @@ function parse_329(data) {
 	update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
 	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
-	update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	update.status('temperature.coolant.f', parse.temperature.coolant.f);
+	if (update.status('temperature.coolant.c', parse.temperature.coolant.c)) {
+		// Trigger a HUD refresh
+		IKE.hud_refresh();
+	}
 
 	update.status('vehicle.brake',  parse.vehicle.brake);
 	update.status('vehicle.clutch', parse.vehicle.clutch);
