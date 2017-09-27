@@ -215,7 +215,12 @@ function decode_audio_control(data) {
 			}
 
 			// Technically not legit
-			data.value += status.rad.source_name;
+			data.value += 'source ' + status.rad.source_name;
+			break;
+
+		default:
+			// Technically not legit
+			data.value += 'command ' + cmd_type;
 	}
 
 	// Update status var with interpreted value
