@@ -10,6 +10,13 @@ function parse_1f0(data) {
 		},
 	};
 
+	// Calculated data bottoms out at 2.75, let's address that
+	// (lol, this is the same way the E38/E39/E53 cluster works - you can see it in the 'secret' menu)
+	if (wheel_speed.front.left  <= 2.76) wheel_speed.front.left  = 0;
+	if (wheel_speed.front.right <= 2.76) wheel_speed.front.right = 0;
+	if (wheel_speed.rear.left   <= 2.76) wheel_speed.rear.left   = 0;
+	if (wheel_speed.rear.right  <= 2.76) wheel_speed.rear.right  = 0;
+
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
 	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
 	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
