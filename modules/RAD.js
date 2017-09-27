@@ -36,7 +36,7 @@ function decode_audio_control_command(data) {
 							switch (mask.bit4) {
 								case true : // 7T.6T.5T.4T
 									console.log('7T.6T.5T.4T');
-									return;
+									break;
 
 								case false : // 7T.6T.5T.4F
 									console.log('7T.6T.5T.4F');
@@ -50,7 +50,7 @@ function decode_audio_control_command(data) {
 							switch (mask.bit4) {
 								case true : // 7T.6T.5F.4T
 									console.log('7T.6T.5F.4T');
-									return;
+									break;
 
 								case false : // 7T.6T.5F.4F
 									console.log('7T.6T.5F.4F');
@@ -70,7 +70,7 @@ function decode_audio_control_command(data) {
 							switch (mask.bit4) {
 								case true : // 7T.6F.5T.4T
 									console.log('7T.6F.5T.4T');
-									return;
+									break;
 
 								case false : // 7T.6F.5T.4F
 									console.log('7T.6F.5T.4F');
@@ -84,7 +84,7 @@ function decode_audio_control_command(data) {
 							switch (mask.bit4) {
 								case true : // 7T.6F.5F.4T
 									console.log('7T.6F.5F.4T');
-									return;
+									break;
 
 								case false : // 7T.6F.5F.4F
 									console.log('7T.6F.5F.4F');
@@ -111,7 +111,7 @@ function decode_audio_control_command(data) {
 								case true : // 7F.6T.5T.4T
 									console.log('7F.6T.5T.4T');
 									command = 'bass';
-									return;
+									break;
 
 								case false : // 7F.6T.5T.4F
 									console.log('7F.6T.5T.4F');
@@ -126,7 +126,7 @@ function decode_audio_control_command(data) {
 								case true : // 7F.6T.5F.4T
 									console.log('7F.6T.5F.4T');
 									command = 'balance';
-									return;
+									break;
 
 								case false : // 7F.6T.5F.4F
 									console.log('7F.6T.5F.4F');
@@ -150,7 +150,7 @@ function decode_audio_control_command(data) {
 
 								case false : // 7F.6F.5T.4F
 									console.log('7F.6F.5T.4F');
-									return;
+									break;
 							}
 							break;
 						}
@@ -159,11 +159,11 @@ function decode_audio_control_command(data) {
 							switch (mask.bit4) {
 								case true : // 7F.6F.5F.4T
 									console.log('7F.6F.5F.4T');
-									return;
+									break;
 
 								case false : // 7F.6F.5F.4F
 									console.log('7F.6F.5F.4F');
-									return;
+									break;
 							}
 						} // 7F.6F.5F
 					}
