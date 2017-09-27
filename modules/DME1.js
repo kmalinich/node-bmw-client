@@ -12,9 +12,8 @@ function parse_316(data) {
 			start : bitmask.test(data.msg[0], 0x10),
 		},
 		throttle : {
-			current : (data.msg[1] / 2.54).toFixed(2),
-			target  : (data.msg[4] / 2.54).toFixed(2),
-
+			current : parseFloat((data.msg[1] / 2.54).toFixed(2)),
+			target  : parseFloat((data.msg[4] / 2.54).toFixed(2)),
 		},
 	};
 
