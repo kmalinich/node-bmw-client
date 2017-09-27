@@ -298,7 +298,7 @@ function decode_sensor_status(data) {
 
 	// If the engine is newly running, power up HDMI display
 	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
-		HDMI.command('poweron');
+		if (status.hdmi.power_status === 'STANDBY') HDMI.command('poweron');
 	}
 
 	// If the vehicle is newly in reverse, show IKE message if configured to do so
