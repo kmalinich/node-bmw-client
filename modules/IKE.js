@@ -264,7 +264,7 @@ function decode_ignition_status(data) {
 		// That causes an issue if you go back to run from accessory,
 		// with the screen still on, since it may damage the screen
 		// if it experiences a low-voltage event caused by the starter motor
-		if (status.hdmi.power_status !== 'STANDBY') HDMI.command('poweroff');
+		HDMI.command('poweroff_powered_on_once');
 
 		// Write JSON config and status files
 		if (config.json.write_on_run) json.write();
