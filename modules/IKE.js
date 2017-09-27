@@ -256,12 +256,14 @@ function decode_ignition_status(data) {
 		IKE.state_run = false;
 
 		// If the HDMI display is currently on, power it off
+		//
 		// This helps prepare for engine start during scenarios
 		// like at the fuel pump, when the ignition is switched
-		// from run to accessory, which ordinarily leaves the screen on
-		// That causes and issue if you go back to run from accessory,
-		// with the screen still on, since it may cause damage to the screen
-		// to experience a low-voltage event caused by the starter motor
+		// from run to accessory, which ordinarily would leave the screen on
+		//
+		// That causes an issue if you go back to run from accessory,
+		// with the screen still on, since it may damage the screen
+		// if it experiences a low-voltage event caused by the starter motor
 		if (status.hdmi.power_status !== 'STANDBY') HDMI.command('poweroff');
 
 		// Write JSON config and status files
