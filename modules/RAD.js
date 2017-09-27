@@ -100,6 +100,7 @@ function decode_audio_control_command(data) {
 						case false: { // 7F.6T.5F
 							switch (mask.bit4) {
 								case true : // 7F.6T.5F.4T
+									command = 'balance';
 									return;
 
 								case false : // 7F.6T.5F.4F
@@ -151,6 +152,7 @@ function decode_audio_control(data) {
 	// Base units
 	// 0x30 - dsp0
 	// 0x40 - balance
+	// 0x50 - balance?
 	// 0x60 - bass
 	// 0x80 - fader
 	// 0xA0 - source
@@ -160,7 +162,7 @@ function decode_audio_control(data) {
 	let cmd_value;
 	let cmd_type = decode_audio_control_command(data);
 	switch (cmd_type) {
-		case 'balance' : cmd_value = data.msg[1] - 0x40; break;
+		case 'balance' : cmd_value = data.msg[1] - 0x50; break;
 		case 'bass'    : cmd_value = data.msg[1] - 0x60; break;
 		case 'dsp0'    : cmd_value = data.msg[1] - 0x30; break;
 		case 'dsp1'    : cmd_value = data.msg[1] - 0xE0; break;
