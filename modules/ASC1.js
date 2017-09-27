@@ -1,14 +1,21 @@
 function parse_1f0(data) {
 	let wheel_speed = {
 		front : {
-			left  : (data.msg[0] + parseInt('0x' + data.msg[1].toString(16).slice(-1)) * 256) / 16,
-			right : (data.msg[2] + parseInt('0x' + data.msg[3].toString(16).slice(-1)) * 256) / 16,
+			left  : Math.round((data.msg[0] + parseInt('0x' + data.msg[1].toString(16).slice(-1)) * 256) / 16),
+			right : Math.round((data.msg[2] + parseInt('0x' + data.msg[3].toString(16).slice(-1)) * 256) / 16),
 		},
 		rear : {
-			left  : (data.msg[4] + parseInt('0x' + data.msg[5].toString(16).slice(-1)) * 256) / 16,
-			right : (data.msg[6] + parseInt('0x' + data.msg[7].toString(16).slice(-1)) * 256) / 16,
+			left  : Math.round((data.msg[4] + parseInt('0x' + data.msg[5].toString(16).slice(-1)) * 256) / 16),
+			right : Math.round((data.msg[6] + parseInt('0x' + data.msg[7].toString(16).slice(-1)) * 256) / 16),
 		},
 	};
+
+	// Calculated data bottoms out at 2.75, let's address that
+	// (lol, this is the same way the E38/E39/E53 cluster works - you can see it in the 'secret' menu)
+	if (wheel_speed.front.left  <= 3) wheel_speed.front.left  = 0;
+	if (wheel_speed.front.right <= 3) wheel_speed.front.right = 0;
+	if (wheel_speed.rear.left   <= 3) wheel_speed.rear.left   = 0;
+	if (wheel_speed.rear.right  <= 3) wheel_speed.rear.right  = 0;
 
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
 	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);

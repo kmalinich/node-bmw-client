@@ -63,7 +63,7 @@ function data_refresh() {
 	}
 
 	// setTimeout for next update
-	IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
+	IKE.timeout_data_refresh = setTimeout(data_refresh, 10000);
 }
 
 // This actually is a bitmask but.. this is also a freetime project
@@ -256,13 +256,15 @@ function decode_ignition_status(data) {
 		IKE.state_run = false;
 
 		// If the HDMI display is currently on, power it off
+		//
 		// This helps prepare for engine start during scenarios
 		// like at the fuel pump, when the ignition is switched
-		// from run to accessory, which ordinarily leaves the screen on
-		// That causes and issue if you go back to run from accessory,
-		// with the screen still on, since it may cause damage to the screen
-		// to experience a low-voltage event caused by the starter motor
-		if (status.hdmi.power_status !== 'STANDBY') HDMI.command('poweroff');
+		// from run to accessory, which ordinarily would leave the screen on
+		//
+		// That causes an issue if you go back to run from accessory,
+		// with the screen still on, since it may damage the screen
+		// if it experiences a low-voltage event caused by the starter motor
+		HDMI.command('poweroff_powered_on_once');
 
 		// Write JSON config and status files
 		if (config.json.write_on_run) json.write();
@@ -296,7 +298,7 @@ function decode_sensor_status(data) {
 
 	// If the engine is newly running, power up HDMI display
 	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
-		HDMI.command('poweron');
+		if (status.hdmi.power_status === 'STANDBY') HDMI.command('poweron');
 	}
 
 	// If the vehicle is newly in reverse, show IKE message if configured to do so

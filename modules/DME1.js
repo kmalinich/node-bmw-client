@@ -12,9 +12,8 @@ function parse_316(data) {
 			start : bitmask.test(data.msg[0], 0x10),
 		},
 		throttle : {
-			current : (data.msg[1] / 2.54).toFixed(2),
-			target  : (data.msg[4] / 2.54).toFixed(2),
-
+			current : parseFloat((data.msg[1] / 2.54).toFixed(2)),
+			target  : parseFloat((data.msg[4] / 2.54).toFixed(2)),
 		},
 	};
 
@@ -76,8 +75,11 @@ function parse_329(data) {
 	update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
 	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
-	update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	update.status('temperature.coolant.f', parse.temperature.coolant.f);
+	if (update.status('temperature.coolant.c', parse.temperature.coolant.c)) {
+		// Trigger a HUD refresh
+		IKE.hud_refresh();
+	}
 
 	update.status('vehicle.brake',  parse.vehicle.brake);
 	update.status('vehicle.clutch', parse.vehicle.clutch);

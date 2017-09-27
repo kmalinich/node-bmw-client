@@ -118,7 +118,7 @@ function status_loop(action) {
 			// Set status variables
 			MID.status_status_loop = false;
 
-			status.rad.audio_control = 'audio off';
+			status.rad.source_name = 'off';
 
 			status.dsp.reset  = true;
 			status.dsp.ready  = false;
@@ -159,9 +159,9 @@ function toggle_power_if_ready() {
 
 	// Debug logging
 	// log.module({ msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
-	// log.module({ msg: 'rad.audio_control : \''+status.rad.audio_control+'\'' });
+	// log.module({ msg: 'rad.source_name : \''+status.rad.source_name+'\'' });
 
-	if (status.rad.audio_control == 'audio off') {
+	if (status.rad.source_name == 'off') {
 		IKE.text_override('MID power, from MID');
 		log.module({ msg : 'Sending power!'	});
 

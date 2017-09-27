@@ -54,12 +54,12 @@ function decode_message_keyfob(data) {
 		low_batt_str : 'battery low: ' + mask.bit0,
 		keys         : {
 			key0 : !mask.bit1 && !mask.bit2,
-			key1 : mask.bit1 && !mask.bit2,
+			key1 : mask.bit1  && !mask.bit2,
 			key2 : !mask.bit1 &&  mask.bit2,
-			key3 : mask.bit1 &&  mask.bit2,
+			key3 : mask.bit1  &&  mask.bit2,
 		},
 		buttons : {
-			lock   : mask.bit4 && !mask.bit5 && !mask.bit6 && !mask.bit8,
+			lock   : mask.bit4  && !mask.bit5 && !mask.bit6 && !mask.bit8,
 			unlock : !mask.bit4 &&  mask.bit5 && !mask.bit6 && !mask.bit8,
 			trunk  : !mask.bit4 && !mask.bit5 &&  mask.bit6 && !mask.bit8,
 			none   : !mask.bit4 && !mask.bit5 && !mask.bit6 &&  mask.bit8,
