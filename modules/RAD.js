@@ -12,6 +12,7 @@ function decode_audio_control_command(data) {
 	// 0xE0 - dsp1+
 
 	let mask = bitmask.check(data.msg[1]).mask;
+	console.dir(mask, { colors : true });
 
 	// Bounce if bit8 (no bits set) is true
 	if (mask.bit8) {
