@@ -63,7 +63,7 @@ function data_refresh() {
 	}
 
 	// setTimeout for next update
-	IKE.timeout_data_refresh = setTimeout(data_refresh, 5000);
+	IKE.timeout_data_refresh = setTimeout(data_refresh, 1000);
 }
 
 // This actually is a bitmask but.. this is also a freetime project
