@@ -11,7 +11,7 @@ function decode_audio_control_command(data) {
 	// 0xC0 - treble
 	// 0xE0 - dsp1+
 
-	let mask = bitmask.check(data.msg[2]).mask;
+	let mask = bitmask.check(data.msg[1]).mask;
 
 	// Bounce if bit8 (no bits set) is true
 	if (mask.bit8) {
@@ -40,6 +40,8 @@ function decode_audio_control_command(data) {
 						case false: { // 7T.6T.5F
 							switch (mask.bit4) {
 								case true  : // 7T.6T.5F.4T
+									return;
+
 								case false : // 7T.6T.5F.4F
 									command = 'treble';
 									break;
@@ -54,6 +56,8 @@ function decode_audio_control_command(data) {
 						case true: { // 7T.6F.5T
 							switch (mask.bit4) {
 								case true  : // 7T.6F.5T.4T
+									return;
+
 								case false : // 7T.6F.5T.4F
 									command = 'source';
 									break;
@@ -64,6 +68,8 @@ function decode_audio_control_command(data) {
 						case false: { // 7T.6F.5F
 							switch (mask.bit4) {
 								case true  : // 7T.6F.5F.4T
+									return;
+
 								case false : // 7T.6F.5F.4F
 									command = 'fader';
 									break;
@@ -81,7 +87,9 @@ function decode_audio_control_command(data) {
 					switch (mask.bit5) {
 						case true: { // 7F.6T.5T
 							switch (mask.bit4) {
-								case true  : // 7F.6T.5T.4T
+								case true : // 7F.6T.5T.4T
+									return;
+
 								case false : // 7F.6T.5T.4F
 									command = 'bass';
 									break;
@@ -91,7 +99,9 @@ function decode_audio_control_command(data) {
 
 						case false: { // 7F.6T.5F
 							switch (mask.bit4) {
-								case true  : // 7F.6T.5F.4T
+								case true : // 7F.6T.5F.4T
+									return;
+
 								case false : // 7F.6T.5F.4F
 									command = 'balance';
 									break;
@@ -105,19 +115,23 @@ function decode_audio_control_command(data) {
 					switch (mask.bit5) {
 						case true: { // 7F.6F.5T
 							switch (mask.bit4) {
-								case true  : // 7F.6F.5T.4T
+								case true : // 7F.6F.5T.4T
 									command = 'dsp0';
 									break;
 
 								case false : // 7F.6F.5T.4F
+									return;
 							}
 							break;
 						}
 
 						case false: { // 7F.6F.5F
 							switch (mask.bit4) {
-								case true  : // 7F.6F.5F.4T
+								case true : // 7F.6F.5F.4T
+									return;
+
 								case false : // 7F.6F.5F.4F
+									return;
 							}
 						} // 7F.6F.5F
 					}
@@ -146,15 +160,15 @@ function decode_audio_control(data) {
 	let cmd_value;
 	let cmd_type = decode_audio_control_command(data);
 	switch (cmd_type) {
-		case 'balance' : cmd_value = data.msg[2] - 0x40; break;
-		case 'bass'    : cmd_value = data.msg[2] - 0x60; break;
-		case 'dsp0'    : cmd_value = data.msg[2] - 0x30; break;
-		case 'dsp1'    : cmd_value = data.msg[2] - 0xE0; break;
-		case 'fader'   : cmd_value = data.msg[2] - 0x80; break;
-		case 'source'  : cmd_value = data.msg[2] - 0xA0; break;
-		case 'treble'  : cmd_value = data.msg[2] - 0xC0; break;
+		case 'balance' : cmd_value = data.msg[1] - 0x40; break;
+		case 'bass'    : cmd_value = data.msg[1] - 0x60; break;
+		case 'dsp0'    : cmd_value = data.msg[1] - 0x30; break;
+		case 'dsp1'    : cmd_value = data.msg[1] - 0xE0; break;
+		case 'fader'   : cmd_value = data.msg[1] - 0x80; break;
+		case 'source'  : cmd_value = data.msg[1] - 0xA0; break;
+		case 'treble'  : cmd_value = data.msg[1] - 0xC0; break;
 		default        :
-			data.value += 'unknown cmd_type ' + cmd_type + ' - 0x' + data.msg[2].toString(16);
+			data.value += 'unknown cmd_type ' + cmd_type + ' - 0x' + data.msg[1].toString(16);
 			return data;
 	}
 
