@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Decode type of audio control command
@@ -12,7 +14,7 @@ function decode_audio_control_command(data) {
 	// 0xE0 - dsp1+
 
 	let mask = bitmask.check(data.msg[1]).mask;
-	console.log('0x'+data.msg[1].toString(16));
+	console.log('0x' + data.msg[1].toString(16));
 	console.dir(mask, { colors : true });
 
 	// Bounce if bit8 (no bits set) is true
@@ -24,15 +26,20 @@ function decode_audio_control_command(data) {
 	let command;
 	switch (mask.bit7) {
 		case true: { // 7T
+			console.log('7T');
 			switch (mask.bit6) {
 				case true: { // 7T.6T
+					console.log('7T.6T');
 					switch (mask.bit5) {
 						case true: { // 7T.6T.5T
+							console.log('7T.6T.5T');
 							switch (mask.bit4) {
 								case true : // 7T.6T.5T.4T
+									console.log('7T.6T.5T.4T');
 									return;
 
 								case false : // 7T.6T.5T.4F
+									console.log('7T.6T.5T.4F');
 									command = 'dsp1';
 									break;
 							}
@@ -41,10 +48,12 @@ function decode_audio_control_command(data) {
 
 						case false: { // 7T.6T.5F
 							switch (mask.bit4) {
-								case true  : // 7T.6T.5F.4T
+								case true : // 7T.6T.5F.4T
+									console.log('7T.6T.5F.4T');
 									return;
 
 								case false : // 7T.6T.5F.4F
+									console.log('7T.6T.5F.4F');
 									command = 'treble';
 									break;
 							}
@@ -54,13 +63,17 @@ function decode_audio_control_command(data) {
 				} // 7T.6T
 
 				case false: { // 7T.6F
+					console.log('7T.6F');
 					switch (mask.bit5) {
 						case true: { // 7T.6F.5T
+							console.log('7T.6F.5T');
 							switch (mask.bit4) {
-								case true  : // 7T.6F.5T.4T
+								case true : // 7T.6F.5T.4T
+									console.log('7T.6F.5T.4T');
 									return;
 
 								case false : // 7T.6F.5T.4F
+									console.log('7T.6F.5T.4F');
 									command = 'source';
 									break;
 							}
@@ -69,10 +82,13 @@ function decode_audio_control_command(data) {
 
 						case false: { // 7T.6F.5F
 							switch (mask.bit4) {
-								case true  : // 7T.6F.5F.4T
+								case true : // 7T.6F.5F.4T
+									console.log('7T.6F.5F.4T');
 									return;
 
 								case false : // 7T.6F.5F.4F
+									console.log('7T.6F.5F.4F');
+									console.log('7F.6.5.4');
 									command = 'fader';
 									break;
 							}
@@ -84,28 +100,36 @@ function decode_audio_control_command(data) {
 		} // 7T
 
 		case false: { // 7F
+			console.log('7F');
 			switch (mask.bit6) {
 				case true: { // 7F.6T
+					console.log('7F.6T');
 					switch (mask.bit5) {
 						case true: { // 7F.6T.5T
+							console.log('7F.6T.5T');
 							switch (mask.bit4) {
 								case true : // 7F.6T.5T.4T
+									console.log('7F.6T.5T.4T');
 									command = 'bass';
 									return;
 
 								case false : // 7F.6T.5T.4F
+									console.log('7F.6T.5T.4F');
 									break;
 							}
 							break;
 						}
 
 						case false: { // 7F.6T.5F
+							console.log('7F.6T.5F');
 							switch (mask.bit4) {
 								case true : // 7F.6T.5F.4T
+									console.log('7F.6T.5F.4T');
 									command = 'balance';
 									return;
 
 								case false : // 7F.6T.5F.4F
+									console.log('7F.6T.5F.4F');
 									break;
 							}
 						} // 7F.6T.5F
@@ -114,14 +138,18 @@ function decode_audio_control_command(data) {
 				} // 7F.6T
 
 				case false: { // 7F.6F
+					console.log('7F.6F');
 					switch (mask.bit5) {
 						case true: { // 7F.6F.5T
+							console.log('7F.6T.5T');
 							switch (mask.bit4) {
 								case true : // 7F.6F.5T.4T
+									console.log('7F.6F.5T.4T');
 									command = 'dsp0';
 									break;
 
 								case false : // 7F.6F.5T.4F
+									console.log('7F.6F.5T.4F');
 									return;
 							}
 							break;
@@ -130,9 +158,11 @@ function decode_audio_control_command(data) {
 						case false: { // 7F.6F.5F
 							switch (mask.bit4) {
 								case true : // 7F.6F.5F.4T
+									console.log('7F.6F.5F.4T');
 									return;
 
 								case false : // 7F.6F.5F.4F
+									console.log('7F.6F.5F.4F');
 									return;
 							}
 						} // 7F.6F.5F
