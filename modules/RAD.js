@@ -90,10 +90,10 @@ function decode_audio_control_command(data) {
 						case true: { // 7F.6T.5T
 							switch (mask.bit4) {
 								case true : // 7F.6T.5T.4T
+									command = 'bass';
 									return;
 
 								case false : // 7F.6T.5T.4F
-									command = 'bass';
 									break;
 							}
 							break;
@@ -106,7 +106,6 @@ function decode_audio_control_command(data) {
 									return;
 
 								case false : // 7F.6T.5F.4F
-									command = 'balance';
 									break;
 							}
 						} // 7F.6T.5F
