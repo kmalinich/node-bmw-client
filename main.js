@@ -2,8 +2,7 @@
 
 app_path = __dirname;
 app_name = 'bmwcd';
-app_type = 'client';
-app_intf = app_type;
+app_intf = 'client';
 
 process.title = app_name;
 
