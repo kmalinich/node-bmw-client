@@ -330,12 +330,12 @@ function decode_temperature_values(data) {
 	}
 
 	if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
-		update.status('temperature.coolant.c', parseFloat(data.msg[2]));
+		// If updated, trigger a HUD refresh
+		// This should be event-based
+		if (update.status('temperature.coolant.c', parseFloat(data.msg[2]))) IKE.hud_refresh();
+
 		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
-
-	// Trigger a HUD refresh
-	IKE.hud_refresh();
 }
 
 // Refresh custom HUD
@@ -344,16 +344,20 @@ function hud_refresh() {
 	if (status.vehicle.ignition_level < 1) return;
 	// Bounce if override is active
 	if (IKE.hud_override === true) return;
-	// Bounce if the last update was less than 1 sec ago
-	if (now() - IKE.last_hud_refresh <= 1000) return;
+	// Bounce if the last update was less than 500ms ago
+	if (now() - IKE.last_hud_refresh <= 500) return;
 
+
+	let load_1m;
 	let string_cons;
+	let string_speed;
 	let string_temp;
 	let string_time = moment().format('HH:mm');
 
+
 	// Only add data to strings if it is populated
 	string_cons = '     ';
-	if (status.obc.consumption.c1.mpg != null) {
+	if (status.obc.consumption.c1.mpg !== null) {
 		string_cons = parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm';
 	}
 	string_cons = pad(string_cons, 8);
@@ -361,10 +365,18 @@ function hud_refresh() {
 	// 0-pad string_cons
 	if (string_cons.length === 4) string_cons = '0' + string_cons;
 
+
+	string_speed = '     ';
+	if (status.vehicle.wheel_speed.rear.left !== null) {
+		string_speed = Math.round(convert(status.vehicle.wheel_speed.rear.left).from('kilometre').to('us mile')) + 'm';
+	}
+	string_speed = pad(string_speed, 8);
+
 	string_temp = '  ';
-	if (status.temperature.coolant.c != null) {
+	if (status.temperature.coolant.c !== null) {
 		string_temp = Math.round(status.temperature.coolant.c) + '¨';
 	}
+
 
 	// Format the output (ghetto-ly)
 	switch (string_temp.length) {
@@ -373,24 +385,18 @@ function hud_refresh() {
 		case 2 : string_temp = ' ' + string_temp + '    ';
 	}
 
+
 	// HUD strings object
 	let hud_strings = {
-		left   : string_cons,
+		left   : string_speed,
 		center : string_temp,
 		right  : string_time,
 	};
 
 	// 1m sysload to percentage
-	let load_1m = (parseFloat((os.loadavg()[0] / os.cpus().length).toFixed(2)) * 100).toFixed(0);
+	load_1m = (parseFloat((os.loadavg()[0] / os.cpus().length).toFixed(2)) * 100).toFixed(0);
 	load_1m = status.system.temperature + '¨|' + load_1m + '%';
-
-	// Space-pad load_1m
 	load_1m = pad(load_1m, 8);
-
-	// socket.lcd_text_tx({
-	// 	upper : 'kdm-e39-01',
-	// 	lower : status.system.temperature+'C|'+status.system.cpu.load_pct+'%',
-	// });
 
 	// Change left string to be load/CPU temp if over threshold
 	if (status.system.temperature > 65) hud_strings.left = load_1m;
@@ -402,6 +408,11 @@ function hud_refresh() {
 	IKE.text(hud_string, () => {
 		IKE.last_hud_refresh = now();
 	});
+
+	// socket.lcd_text_tx({
+	//   upper : 'kdm-e39-01',
+	//   lower : status.system.temperature+'C|'+status.system.cpu.load_pct+'%',
+	// });
 }
 
 // Pretend to be IKE saying the car is on

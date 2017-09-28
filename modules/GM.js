@@ -4,43 +4,43 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // All the possible values to send to the GM
 // var array_of_possible_values = {
-// 	light_alarm                   : true,
-// 	light_alarm_blink             : true,
-// 	light_interior                : true,
-// 	locks_lock                    : true,
-// 	locks_toggle                  : true,
-// 	locks_trunk                   : true,
-// 	locks_unlock                  : true,
-// 	seat_driver_backrest_backward : true,
-// 	seat_driver_backrest_forward  : true,
-// 	seat_driver_backward          : true,
-// 	seat_driver_down              : true,
-// 	seat_driver_forward           : true,
-// 	seat_driver_headrest_down     : true,
-// 	seat_driver_headrest_up       : true,
-// 	seat_driver_tilt_backward     : true,
-// 	seat_driver_tilt_forward      : true,
-// 	seat_driver_up                : true,
-// 	seat_driver_upper_backwards   : true,
-// 	seat_driver_upper_forwards    : true,
-// 	wheel_backward                : true,
-// 	wheel_down                    : true,
-// 	wheel_forward                 : true,
-// 	wheel_up                      : true,
-// 	window_front_left_down        : true,
-// 	window_front_left_up          : true,
-// 	window_front_right_down       : true,
-// 	window_front_right_up         : true,
-// 	window_rear_left_down         : true,
-// 	window_rear_left_up           : true,
-// 	window_rear_right_down        : true,
-// 	window_rear_right_up          : true,
-// 	window_sunroof_down           : true,
-// 	window_sunroof_up             : true,
-// 	wipers_auto                   : true,
-// 	wipers_maintenance            : true,
-// 	wipers_once                   : true,
-// 	wipers_spray                  : true,
+//   light_alarm                   : true,
+//   light_alarm_blink             : true,
+//   light_interior                : true,
+//   locks_lock                    : true,
+//   locks_toggle                  : true,
+//   locks_trunk                   : true,
+//   locks_unlock                  : true,
+//   seat_driver_backrest_backward : true,
+//   seat_driver_backrest_forward  : true,
+//   seat_driver_backward          : true,
+//   seat_driver_down              : true,
+//   seat_driver_forward           : true,
+//   seat_driver_headrest_down     : true,
+//   seat_driver_headrest_up       : true,
+//   seat_driver_tilt_backward     : true,
+//   seat_driver_tilt_forward      : true,
+//   seat_driver_up                : true,
+//   seat_driver_upper_backwards   : true,
+//   seat_driver_upper_forwards    : true,
+//   wheel_backward                : true,
+//   wheel_down                    : true,
+//   wheel_forward                 : true,
+//   wheel_up                      : true,
+//   window_front_left_down        : true,
+//   window_front_left_up          : true,
+//   window_front_right_down       : true,
+//   window_front_right_up         : true,
+//   window_rear_left_down         : true,
+//   window_rear_left_up           : true,
+//   window_rear_right_down        : true,
+//   window_rear_right_up          : true,
+//   window_sunroof_down           : true,
+//   window_sunroof_up             : true,
+//   wipers_auto                   : true,
+//   wipers_maintenance            : true,
+//   wipers_once                   : true,
+//   wipers_spray                  : true,
 // };
 
 // [0x72] Decode a key fob bitmask message, and act upon the results
@@ -240,7 +240,12 @@ function parse_out(data) {
 
 			// Set status var
 			// Trigger auto lights processing, trigger auto light processing if changed
-			if (update.status('gm.wipers.speed', data.speed)) LCM.auto_lights_process();
+			if (update.status('gm.wipers.speed', data.speed)) {
+				// Call LCM.auto_lights_process() after 1.5s, else just tapping mist/spray turns on the lights
+				setTimeout(() => {
+					LCM.auto_lights_process();
+				}, 1500);
+			}
 			break;
 
 		case 0x78: // Broadcast: Seat memory data
