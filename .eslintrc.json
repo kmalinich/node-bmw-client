@@ -97,7 +97,8 @@
 		"os": false,
 		"socket": false,
 		"status": false,
-		"update": false
+		"update": false,
+		"weather": false
 	},
 	"parserOptions": {
 		"ecmaVersion": 6,

@@ -17,6 +17,7 @@ obc_values = require('obc-values');
 os         = require('os');
 socket     = require('socket');
 update     = require('update');
+weather    = require('weather');
 
 
 // Configure term event listeners
@@ -143,25 +144,28 @@ function init() {
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS module node modules
 			host_data.init(() => { // Initialize host data object
-				kodi.init(); // Start Kodi zeroMQ client
-				BT.init(); // Start Linux D-Bus Bluetooth handler
+				weather.init(() => { // Initialize weather object
+					kodi.init(); // Start Kodi zeroMQ client
+					BT.init(); // Start Linux D-Bus Bluetooth handler
 
-				gpio.init(() => { // Initialize GPIO relays
-					HDMI.init(() => { // Open HDMI-CEC
-						socket.init(() => { // Start zeroMQ client
-							api.init(() => { // Start Express API server
-								log.msg({ msg : 'Initialized' });
+					gpio.init(() => { // Initialize GPIO relays
+						HDMI.init(() => { // Open HDMI-CEC
+							socket.init(() => { // Start zeroMQ client
+								api.init(() => { // Start Express API server
+									log.msg({ msg : 'Initialized' });
 
-								// notify.notify('Started');
 
-								IKE.text_warning('     bmwcd restart', 3000);
+									// notify.notify('Started');
 
-								setTimeout(() => {
-									socket.lcd_text_tx({
-										upper : app_name + ' ' + status.system.host.short,
-										lower : 'restarted',
-									});
-								}, 250);
+									IKE.text_warning('     bmwcd restart', 3000);
+
+									setTimeout(() => {
+										socket.lcd_text_tx({
+											upper : app_name + ' ' + status.system.host.short,
+											lower : 'restarted',
+										});
+									}, 250);
+								}, term);
 							}, term);
 						}, term);
 					}, term);
