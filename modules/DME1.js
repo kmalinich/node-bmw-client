@@ -97,7 +97,7 @@ function parse_545(data) {
 
 	DME1.consumption_last = consumption_current;
 
-	update.status('engine.fuel_consumption', parse.engine.fuel_consumption);
+	// update.status('engine.fuel_consumption', parse.engine.fuel_consumption);
 }
 
 function parse_613(data) {
