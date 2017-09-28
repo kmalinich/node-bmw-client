@@ -1,3 +1,5 @@
+const convert = require('node-unit-conversion');
+
 function parse_1f0(data) {
 	let wheel_speed = {
 		front : {
@@ -17,12 +19,19 @@ function parse_1f0(data) {
 	if (wheel_speed.rear.left   <= 3) wheel_speed.rear.left   = 0;
 	if (wheel_speed.rear.right  <= 3) wheel_speed.rear.right  = 0;
 
+	update.status('vehicle.speed.kmh',               wheel_speed.rear.left);
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
 	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
+	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
 	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right);
-	if (update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left)) {
-		IKE.hud_refresh();
-	}
+
+	// Calculate vehicle speed from rear left wheel speed sensor
+	// This is identical to the actual speedometer signal on E39
+	let vehicle_speed_mph = Math.round(convert(status.vehicle.wheel_speed.rear.left).from('kilometre').to('us mile'));
+
+	// Trigger IKE speedometer refresh on value change
+	// This should really be event based, but fuck it, you write this shit
+	if (update.status('vehicle.speed.mph', vehicle_speed_mph)) IKE.hud_refresh_speed();
 }
 
 function parse_1f5(data) {
