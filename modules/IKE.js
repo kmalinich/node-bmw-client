@@ -178,7 +178,10 @@ function decode_ignition_status(data) {
 
 		// GPIO relays
 		gpio.set(1, 1);
-		gpio.set(2, 1);
+		// Run fan for additional 60s after poweroff
+		setTimeout(() => {
+			gpio.set(2, 1);
+		}, 60000);
 
 		// Overhead LCD commands
 		socket.lcd_command_tx('clear');
@@ -339,42 +342,38 @@ function decode_temperature_values(data) {
 	IKE.hud_refresh();
 }
 
+function ok2hud() {
+	// Bounce if the ignition is off
+	if (status.vehicle.ignition_level < 1) return false;
+
+	// Bounce if override is active
+	if (IKE.hud_override === true) return false;
+
+	// Bounce if the last update was less than 500ms ago
+	if (now() - IKE.last_hud_refresh <= 250) return false;
+
+	return true;
+}
+
 // Refresh custom HUD speed
 function hud_refresh_speed() {
-	// Bounce if the ignition is off
-	if (status.vehicle.ignition_level < 1) return;
-	// Bounce if override is active
-	if (IKE.hud_override === true) return;
-	// Bounce if the last update was less than 500ms ago
-	if (now() - IKE.last_hud_refresh <= 500) return;
-
-	let string_speed;
-	if (status.vehicle.wheel_speed.rear.left !== null) {
-		string_speed = Math.round(convert(status.vehicle.wheel_speed.rear.left).from('kilometre').to('us mile')) + 'm';
-	}
+	if (!ok2hud()) return;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
-	IKE.text_nopad(string_speed, () => {
+	text_nopad(status.vehicle.speed.mph + 'mph', () => {
 		IKE.last_hud_refresh = now();
 	});
 }
 
 // Refresh custom HUD
 function hud_refresh() {
-	// Bounce if the ignition is off
-	if (status.vehicle.ignition_level < 1) return;
-	// Bounce if override is active
-	if (IKE.hud_override === true) return;
-	// Bounce if the last update was less than 500ms ago
-	if (now() - IKE.last_hud_refresh <= 500) return;
-
+	if (!ok2hud()) return;
 
 	let load_1m;
 	let string_cons;
 	let string_speed;
 	let string_temp;
 	let string_time = moment().format('HH:mm');
-
 
 	// Only add data to strings if it is populated
 	string_cons = '     ';
@@ -388,8 +387,8 @@ function hud_refresh() {
 
 
 	string_speed = '     ';
-	if (status.vehicle.wheel_speed.rear.left !== null) {
-		string_speed = Math.round(convert(status.vehicle.wheel_speed.rear.left).from('kilometre').to('us mile')) + 'm';
+	if (status.vehicle.speed.mph !== null) {
+		string_speed = status.vehicle.speed.mph + 'mph';
 	}
 	string_speed = pad(string_speed, 8);
 
@@ -426,7 +425,7 @@ function hud_refresh() {
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
-	IKE.text(hud_string, () => {
+	text(hud_string, () => {
 		IKE.last_hud_refresh = now();
 	});
 
@@ -1028,7 +1027,7 @@ function request(value) {
 }
 
 // IKE cluster text send message - without space padding
-function text_nopad(message) {
+function text_nopad(message, cb = null) {
 	let message_hex;
 
 	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
@@ -1039,10 +1038,13 @@ function text_nopad(message) {
 		src : 'RAD',
 		msg : message_hex,
 	});
+
+	// Exec callback function if present
+	if (typeof cb === 'function') process.nextTick(cb);
 }
 
 // IKE cluster text send message
-function text(message) {
+function text(message, cb = null) {
 	let message_hex;
 	let max_length = 20;
 
@@ -1055,6 +1057,9 @@ function text(message) {
 		src : 'RAD',
 		msg : message_hex,
 	});
+
+	// Exec callback function if present
+	if (typeof cb === 'function') process.nextTick(cb);
 }
 
 // IKE cluster text send message, override other messages
