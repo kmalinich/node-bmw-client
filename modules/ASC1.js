@@ -19,8 +19,10 @@ function parse_1f0(data) {
 
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
 	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
-	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
 	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right);
+	if (update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left)) {
+		IKE.hud_refresh();
+	}
 }
 
 function parse_1f5(data) {

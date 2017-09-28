@@ -332,10 +332,11 @@ function decode_temperature_values(data) {
 	if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
 		// If updated, trigger a HUD refresh
 		// This should be event-based
-		if (update.status('temperature.coolant.c', parseFloat(data.msg[2]))) IKE.hud_refresh();
-
+		update.status('temperature.coolant.c', parseFloat(data.msg[2]))
 		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
+
+	IKE.hud_refresh();
 }
 
 // Refresh custom HUD
