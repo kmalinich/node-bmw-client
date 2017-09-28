@@ -73,7 +73,7 @@ function auto_lights_process() {
 	// log.module({ msg : 'Processing auto lights' });
 
 	// Check wipers
-	if (status.gm.wipers.speed !== null && status.gm.wipers.speed != 'off') {
+	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
 		new_reason  = 'wipers on';
 		new_lowbeam = true;
 	}
