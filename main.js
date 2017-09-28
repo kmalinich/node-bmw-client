@@ -8,6 +8,7 @@ app_intf = app_type;
 process.title = app_name;
 
 // node-bmw libraries
+api        = require('api');
 bitmask    = require('bitmask');
 hex        = require('hex');
 json       = require('json');
@@ -16,9 +17,6 @@ obc_values = require('obc-values');
 os         = require('os');
 socket     = require('socket');
 update     = require('update');
-
-const express = require('express');
-const app = express();
 
 
 // Configure term event listeners
@@ -151,30 +149,20 @@ function init() {
 				gpio.init(() => { // Initialize GPIO relays
 					HDMI.init(() => { // Open HDMI-CEC
 						socket.init(() => { // Start zeroMQ client
-							log.msg({ msg : 'Initialized' });
+							api.init(() => { // Start Express API server
+								log.msg({ msg : 'Initialized' });
 
-							// notify.notify('Started');
+								// notify.notify('Started');
 
-							IKE.text_warning('     bmwcd restart', 3000);
+								IKE.text_warning('     bmwcd restart', 3000);
 
-							setTimeout(() => {
-								socket.lcd_text_tx({
-									upper : app_name + ' ' + status.system.host.short,
-									lower : 'restarted',
-								});
-							}, 250);
-
-							app.get('/config', (req, res) => {
-								res.send(JSON.stringify(config));
-							});
-
-							app.get('/status', (req, res) => {
-								res.send(JSON.stringify(status));
-							});
-
-							app.listen(3000, () => {
-								log.msg({ msg : 'Express listening on port 3000' });
-							});
+								setTimeout(() => {
+									socket.lcd_text_tx({
+										upper : app_name + ' ' + status.system.host.short,
+										lower : 'restarted',
+									});
+								}, 250);
+							}, term);
 						}, term);
 					}, term);
 				}, term);

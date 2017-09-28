@@ -78,6 +78,7 @@
 		"TCU": false,
 		"TEL": false,
 		"VID": false,
+		"api": false,
 		"app_intf": false,
 		"app_name": false,
 		"app_path": false,
@@ -458,7 +459,7 @@
 			"error",
 			"never"
 		],
-		"space-infix-ops": "error",
+		"space-infix-ops": "warn",
 		"space-unary-ops": [
 			"error",
 			{
