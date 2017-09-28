@@ -332,11 +332,31 @@ function decode_temperature_values(data) {
 	if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
 		// If updated, trigger a HUD refresh
 		// This should be event-based
-		update.status('temperature.coolant.c', parseFloat(data.msg[2]))
+		update.status('temperature.coolant.c', parseFloat(data.msg[2]));
 		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
 
 	IKE.hud_refresh();
+}
+
+// Refresh custom HUD speed
+function hud_refresh_speed() {
+	// Bounce if the ignition is off
+	if (status.vehicle.ignition_level < 1) return;
+	// Bounce if override is active
+	if (IKE.hud_override === true) return;
+	// Bounce if the last update was less than 500ms ago
+	if (now() - IKE.last_hud_refresh <= 500) return;
+
+	let string_speed;
+	if (status.vehicle.wheel_speed.rear.left !== null) {
+		string_speed = Math.round(convert(status.vehicle.wheel_speed.rear.left).from('kilometre').to('us mile')) + 'm';
+	}
+
+	// Send text to IKE and update IKE.last_hud_refresh value
+	IKE.text_nopad(string_speed, () => {
+		IKE.last_hud_refresh = now();
+	});
 }
 
 // Refresh custom HUD
@@ -1007,6 +1027,20 @@ function request(value) {
 	}
 }
 
+// IKE cluster text send message - without space padding
+function text_nopad(message) {
+	let message_hex;
+
+	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+	message_hex = message_hex.concat(hex.a2h(message));
+	message_hex = message_hex.concat(0x04);
+
+	bus.data.send({
+		src : 'RAD',
+		msg : message_hex,
+	});
+}
+
 // IKE cluster text send message
 function text(message) {
 	let message_hex;
@@ -1178,6 +1212,7 @@ module.exports = {
 	decode_speed_values       : decode_speed_values,
 	decode_temperature_values : decode_temperature_values,
 	hud_refresh               : hud_refresh,
+	hud_refresh_speed         : hud_refresh_speed,
 	ignition                  : ignition,
 	logmod                    : logmod,
 	obc_clock                 : obc_clock,
@@ -1185,6 +1220,7 @@ module.exports = {
 	obc_refresh               : obc_refresh,
 	parse_out                 : parse_out,
 	text                      : text,
+	text_nopad                : text_nopad,
 	text_override             : text_override,
 	text_urgent               : text_urgent,
 	text_urgent_off           : text_urgent_off,
