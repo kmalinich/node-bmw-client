@@ -82,7 +82,6 @@
 		"app_intf": false,
 		"app_name": false,
 		"app_path": false,
-		"app_type": false,
 		"bitmask": false,
 		"bus": false,
 		"config": false,
