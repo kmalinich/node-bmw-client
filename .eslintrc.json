@@ -82,7 +82,6 @@
 		"app_intf": false,
 		"app_name": false,
 		"app_path": false,
-		"app_type": false,
 		"bitmask": false,
 		"bus": false,
 		"config": false,
@@ -97,7 +96,8 @@
 		"os": false,
 		"socket": false,
 		"status": false,
-		"update": false
+		"update": false,
+		"weather": false
 	},
 	"parserOptions": {
 		"ecmaVersion": 6,

@@ -9,7 +9,7 @@
 		"chump": "^1.2.0",
 		"dark-sky": "^1.1.2",
 		"defaults-deep": "^0.2.3",
-		"express": "^4.15.5",
+		"express": "^4.16.0",
 		"json-colorizer": "^1.1.0",
 		"jsonfile": "^4.0.0",
 		"kodi-ws": "^2.4.3",
