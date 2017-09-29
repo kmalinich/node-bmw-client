@@ -349,8 +349,8 @@ function ok2hud() {
 	// Bounce if override is active
 	if (IKE.hud_override === true) return false;
 
-	// Bounce if the last update was less than 500ms ago
-	if (now() - IKE.last_hud_refresh <= 250) return false;
+	// Bounce if the last update was less than 200ms ago
+	if (now() - IKE.last_hud_refresh <= 200) return false;
 
 	return true;
 }
@@ -369,70 +369,42 @@ function hud_refresh_speed() {
 function hud_refresh() {
 	if (!ok2hud()) return;
 
-	let load_1m;
-	let string_cons;
-	let string_speed;
-	let string_temp;
-	let string_time = moment().format('HH:mm');
+	let string_load;
+	let string_cons  = '';
+	let string_speed = '';
+	let string_temp  = '';
+	let string_time  = moment().format('HH:mm');
 
 	// Only add data to strings if it is populated
-	string_cons = '     ';
-	if (status.obc.consumption.c1.mpg !== null) {
-		string_cons = parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm';
-	}
-	string_cons = pad(string_cons, 8);
-
-	// 0-pad string_cons
-	if (string_cons.length === 4) string_cons = '0' + string_cons;
-
-
-	string_speed = '     ';
-	if (status.vehicle.speed.mph !== null) {
-		string_speed = status.vehicle.speed.mph + 'mph';
-	}
-	string_speed = pad(string_speed, 8);
-
-	string_temp = '  ';
-	if (status.temperature.coolant.c !== null) {
-		string_temp = Math.round(status.temperature.coolant.c) + '¨';
-	}
-
-
-	// Format the output (ghetto-ly)
-	switch (string_temp.length) {
-		case 4 : string_temp = ' ' + string_temp + '  ';  break;
-		case 3 : string_temp = ' ' + string_temp + '   '; break;
-		case 2 : string_temp = ' ' + string_temp + '    ';
-	}
-
-
-	// HUD strings object
-	let hud_strings = {
-		left   : string_speed,
-		center : string_temp,
-		right  : string_time,
-	};
+	if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
+	if (status.vehicle.speed.mph      !== null) string_speed = (status.vehicle.speed.mph - config.speedometer.offset) + 'mph';
+	if (status.temperature.coolant.c  !== null) string_temp  = Math.round(status.temperature.coolant.c) + '¨';
 
 	// 1m sysload to percentage
-	load_1m = (parseFloat((os.loadavg()[0] / os.cpus().length).toFixed(2)) * 100).toFixed(0);
-	load_1m = status.system.temperature + '¨|' + load_1m + '%';
-	load_1m = pad(load_1m, 8);
+	string_load = Math.round(status.system.cpu.load_pct);
+	string_load = status.system.temperature + '¨|' + string_load + '%';
+
+	// Space-pad strings
+	let hud_strings = {
+		cons   : pad(string_cons,  9),
+		left   : pad(string_speed, 9),
+		center : pad(string_temp,  6),
+		right  : pad(string_time,  9),
+	};
 
 	// Change left string to be load/CPU temp if over threshold
-	if (status.system.temperature > 65) hud_strings.left = load_1m;
+	if (status.system.temperature > 65) hud_strings.left = pad(string_load, 9);
 
 	// Assemble text string
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
-	text(hud_string, () => {
-		IKE.last_hud_refresh = now();
-	});
+	text(hud_string, () => { IKE.last_hud_refresh = now(); });
 
-	// socket.lcd_text_tx({
-	//   upper : 'kdm-e39-01',
-	//   lower : status.system.temperature+'C|'+status.system.cpu.load_pct+'%',
-	// });
+	socket.lcd_text_tx({
+		upper : 'kdm-e39-01',
+		lower : status.system.temperature + 'C|' + status.system.cpu.load_pct + '%',
+	});
 }
 
 // Pretend to be IKE saying the car is on
@@ -442,29 +414,15 @@ function ignition(value) {
 
 	var status;
 	switch (value) {
-		case 'off':
-			status = 0x00;
-			break;
-		case 'pos1':
-			status = 0x01;
-			break;
-		case 'pos2':
-			status = 0x03;
-			break;
-		case 'pos3':
-			status = 0x07;
+		case 'off'  : status = 0x00; break;
+		case 'pos1' : status = 0x01; break;
+		case 'pos2' : status = 0x03; break;
+		case 'pos3' : status = 0x07;
 	}
 
 	bus.data.send({
 		dst : 'GLO',
 		msg : [ 0x11, status ],
-	});
-}
-
-// Logging shortcut
-function logmod(msg) {
-	log.module({
-		msg : msg,
 	});
 }
 
@@ -1040,7 +998,7 @@ function text_nopad(message, cb = null) {
 	});
 
 	// Exec callback function if present
-	if (typeof cb === 'function') process.nextTick(cb);
+	typeof cb === 'function' && process.nextTick(cb);
 }
 
 // IKE cluster text send message
@@ -1059,7 +1017,7 @@ function text(message, cb = null) {
 	});
 
 	// Exec callback function if present
-	if (typeof cb === 'function') process.nextTick(cb);
+	typeof cb === 'function' && process.nextTick(cb);
 }
 
 // IKE cluster text send message, override other messages
@@ -1219,7 +1177,6 @@ module.exports = {
 	hud_refresh               : hud_refresh,
 	hud_refresh_speed         : hud_refresh_speed,
 	ignition                  : ignition,
-	logmod                    : logmod,
 	obc_clock                 : obc_clock,
 	obc_data                  : obc_data,
 	obc_refresh               : obc_refresh,
