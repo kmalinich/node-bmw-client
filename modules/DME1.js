@@ -34,7 +34,7 @@ function parse_329(data) {
 		},
 		temperature : {
 			coolant : {
-				c : parseFloat(((data.msg[1] * 0.75) - 48.373).toFixed(2)),
+				c : Math.round(parseFloat(((data.msg[1] * 0.75) - 48.373).toFixed(2))),
 				f : null,
 			},
 		},
@@ -60,7 +60,7 @@ function parse_329(data) {
 		},
 	};
 
-	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
+	parse.temperature.coolant.f = Math.round(parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit')));
 
 	update.status('vehicle.cruise.button.minus', parse.vehicle.cruise.button.minus);
 	update.status('vehicle.cruise.button.onoff', parse.vehicle.cruise.button.onoff);
