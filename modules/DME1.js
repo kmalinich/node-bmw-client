@@ -12,14 +12,14 @@ function parse_316(data) {
 			start : bitmask.test(data.msg[0], 0x10),
 		},
 		throttle : {
-			current : parseFloat((data.msg[1] / 2.54).toFixed(2)),
-			target  : parseFloat((data.msg[4] / 2.54).toFixed(2)),
+			current : parseFloat((data.msg[1] / 2.54).toFixed(1)),
+			target  : parseFloat((data.msg[4] / 2.54).toFixed(1)),
 		},
 	};
 
 	update.status('engine.speed',            parse.rpm, false);
 	update.status('engine.ac_clutch',        parse.ac_clutch);
-	update.status('engine.throttle.current', parse.throttle.current);
+	update.status('engine.throttle.current', parse.throttle.current, false);
 	update.status('engine.throttle.target',  parse.throttle.target, false);
 }
 
