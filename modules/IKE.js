@@ -377,8 +377,8 @@ function hud_refresh() {
 
 	// Only add data to strings if it is populated
 	if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
-	if (status.vehicle.speed.mph      !== null) string_speed = (status.vehicle.speed.mph - config.speedometer.offset) + 'mph';
 	if (status.temperature.coolant.c  !== null) string_temp  = Math.round(status.temperature.coolant.c) + '¨';
+	if (status.vehicle.speed.mph      !== null) string_speed = Math.round(status.vehicle.speed.mph * config.speedometer.offset) + 'mph';
 
 	// 1m sysload to percentage
 	string_load = Math.round(status.system.cpu.load_pct);
