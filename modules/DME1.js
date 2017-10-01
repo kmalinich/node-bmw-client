@@ -34,7 +34,7 @@ function parse_329(data) {
 		},
 		temperature : {
 			coolant : {
-				c : Math.round(parseFloat(((data.msg[1] * 0.75) - 48.373).toFixed(2))),
+				c : parseFloat(((data.msg[1] * 0.75) - 48.373).toFixed(2)),
 				f : null,
 			},
 		},
@@ -60,8 +60,14 @@ function parse_329(data) {
 		},
 	};
 
-	parse.temperature.coolant.f = Math.round(parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit')));
+	// Calculate fahrenheit temperature values
+	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 
+	// Round temperature values
+	parse.temperature.coolant.c = Math.round(parse.temperature.coolant.c);
+	parse.temperature.coolant.f = Math.round(parse.temperature.coolant.f);
+
+	// Update status object
 	update.status('vehicle.cruise.button.minus', parse.vehicle.cruise.button.minus);
 	update.status('vehicle.cruise.button.onoff', parse.vehicle.cruise.button.onoff);
 	update.status('vehicle.cruise.button.plus',  parse.vehicle.cruise.button.plus);
@@ -130,14 +136,23 @@ function parse_615(data) {
 		},
 	};
 
+	// Calculate fahrenheit temperature values
+	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
+	parse.temperature.intake.f   = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
+
+	// Round temperature values
+	parse.temperature.exterior.c = Math.round(parse.temperature.exterior.c);
+	parse.temperature.exterior.f = Math.round(parse.temperature.exterior.f);
+	parse.temperature.intake.c   = Math.round(parse.temperature.intake.c);
+	parse.temperature.intake.f   = Math.round(parse.temperature.intake.f);
+
+	// Update status object
 	update.status('engine.ac_request',    parse.engine.ac_request);
 	update.status('engine.aux_fan_speed', parse.engine.aux_fan_speed);
 
-	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
 	update.status('temperature.exterior.c', parse.temperature.exterior.c);
 	update.status('temperature.exterior.f', parse.temperature.exterior.f);
 
-	// parse.temperature.intake.f = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
 	// update.status('temperature.intake.c', parse.temperature.intake.c);
 	// update.status('temperature.intake.f', parse.temperature.intake.f);
 }
