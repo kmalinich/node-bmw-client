@@ -377,7 +377,7 @@ function hud_refresh() {
 
 	// Only add data to strings if it is populated
 	if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
-	if (status.temperature.coolant.c  !== null) string_temp  = Math.round(status.temperature.coolant.c) + '¨';
+	if (status.temperature.coolant.c  !== null) string_temp  = status.temperature.coolant.c + '¨';
 	if (status.vehicle.speed.mph      !== null) string_speed = status.vehicle.speed.mph + 'mph';
 
 	// 1m sysload to percentage
