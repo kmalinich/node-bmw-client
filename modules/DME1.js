@@ -17,10 +17,10 @@ function parse_316(data) {
 		},
 	};
 
-	update.status('engine.speed',            parse.rpm);
+	update.status('engine.speed',            parse.rpm, false);
 	update.status('engine.ac_clutch',        parse.ac_clutch);
 	update.status('engine.throttle.current', parse.throttle.current);
-	update.status('engine.throttle.target',  parse.throttle.target);
+	update.status('engine.throttle.target',  parse.throttle.target, false);
 }
 
 function parse_329(data) {
@@ -76,10 +76,9 @@ function parse_329(data) {
 	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
 	update.status('temperature.coolant.f', parse.temperature.coolant.f);
-	if (update.status('temperature.coolant.c', parse.temperature.coolant.c)) {
-		// Trigger a HUD refresh
-		IKE.hud_refresh();
-	}
+
+	// Trigger a HUD refresh if coolant temp is updated
+	if (update.status('temperature.coolant.c', parse.temperature.coolant.c)) IKE.hud_refresh();
 
 	update.status('vehicle.brake',  parse.vehicle.brake);
 	update.status('vehicle.clutch', parse.vehicle.clutch);

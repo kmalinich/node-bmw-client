@@ -378,7 +378,7 @@ function hud_refresh() {
 	// Only add data to strings if it is populated
 	if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
 	if (status.temperature.coolant.c  !== null) string_temp  = Math.round(status.temperature.coolant.c) + '¨';
-	if (status.vehicle.speed.mph      !== null) string_speed = Math.round(status.vehicle.speed.mph * config.speedometer.offset) + 'mph';
+	if (status.vehicle.speed.mph      !== null) string_speed = status.vehicle.speed.mph + 'mph';
 
 	// 1m sysload to percentage
 	string_load = Math.round(status.system.cpu.load_pct);
@@ -401,10 +401,10 @@ function hud_refresh() {
 	// Send text to IKE and update IKE.last_hud_refresh value
 	text(hud_string, () => { IKE.last_hud_refresh = now(); });
 
-	socket.lcd_text_tx({
-		upper : 'kdm-e39-01',
-		lower : status.system.temperature + 'C|' + status.system.cpu.load_pct + '%',
-	});
+	// socket.lcd_text_tx({
+	// 	upper : 'kdm-e39-01',
+	// 	lower : status.system.temperature + 'C|' + status.system.cpu.load_pct + '%',
+	// });
 }
 
 // Pretend to be IKE saying the car is on
