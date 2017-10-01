@@ -197,7 +197,7 @@ function decode_ignition_status(data) {
 
 		// Turn off HDMI display after configured delay
 		setTimeout(() => {
-			HDMI.command('poweroff');
+			HDMI.command('poweroff', true);
 		}, config.media.hdmi.poweroff_delay);
 
 		// Write JSON config and status files
@@ -301,7 +301,7 @@ function decode_sensor_status(data) {
 
 	// If the engine is newly running, power up HDMI display
 	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
-		if (status.hdmi.power_status === 'STANDBY') HDMI.command('poweron');
+		HDMI.command('poweron');
 	}
 
 	// If the vehicle is newly in reverse, show IKE message if configured to do so
@@ -328,14 +328,14 @@ function decode_speed_values(data) {
 function decode_temperature_values(data) {
 	// Update external and engine coolant temp variables
 	if (config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
-		update.status('temperature.exterior.c', parseFloat(data.msg[1]));
+		update.status('temperature.exterior.c', Math.round(parseFloat(data.msg[1])));
 		update.status('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
 	}
 
 	if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
 		// If updated, trigger a HUD refresh
 		// This should be event-based
-		update.status('temperature.coolant.c', parseFloat(data.msg[2]));
+		update.status('temperature.coolant.c', Math.round(parseFloat(data.msg[2])));
 		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
 
@@ -653,15 +653,15 @@ function parse_out(data) {
 					switch (string_outside_temp_unit) {
 						case 'c': {
 							status.coding.unit.temp           = 'c';
-							status.temperature.exterior.obc.c = parseFloat(string_outside_temp_value);
-							status.temperature.exterior.obc.f = parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'));
+							status.temperature.exterior.obc.c = Math.round(parseFloat(string_outside_temp_value));
+							status.temperature.exterior.obc.f = Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit')));
 							break;
 						}
 
 						case 'f': {
 							status.coding.unit.temp           = 'f';
-							status.temperature.exterior.obc.c = parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'));
-							status.temperature.exterior.obc.f = parseFloat(string_outside_temp_value);
+							status.temperature.exterior.obc.c = Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius')));
+							status.temperature.exterior.obc.f = Math.round(parseFloat(string_outside_temp_value));
 							break;
 						}
 					}
