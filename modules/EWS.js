@@ -33,17 +33,17 @@ function parse_out(data) {
 			switch (data.msg[1]) {
 				case 0x00:
 					data.value += 'no key';
-					status.immobilizer.key_present = false;
+					update.status('immobilizer.key_present', false);
 					break;
 				case 0x01:
 					data.value += 'immobilisation deactivated';
-					// status.immobilizer.key_present = null;
-					status.immobilizer.immobilized = false;
+					// update.status('immobilizer.key_present', null);
+					update.status('immobilizer.immobilized', false);
 					break;
 				case 0x04:
 					data.value += 'valid key';
-					status.immobilizer.key_present = true;
-					status.immobilizer.immobilized = false;
+					update.status('immobilizer.key_present', true);
+					update.status('immobilizer.immobilized', false);
 					break;
 				default:
 					data.value += Buffer.from([ data.msg[1] ]);
@@ -51,10 +51,10 @@ function parse_out(data) {
 
 			// Key number 255/0xFF = no key
 			if (data.msg[2] == 0xFF) {
-				status.immobilizer.key_number = null;
+				update.status('immobilizer.key_number', null);
 			}
 			else {
-				status.immobilizer.key_number = data.msg[2];
+				update.status('immobilizer.key_number', data.msg[2]);
 			}
 
 			data.value += ', key ' + status.immobilizer.key_number;

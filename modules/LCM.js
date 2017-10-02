@@ -620,27 +620,31 @@ function parse_out(data) {
 			break;
 
 		case 0x5C: // Broadcast: light dimmer status
-			status.lights.dimmer_value_3 = data.msg[1];
 			data.command = 'bro';
 			data.value   = 'dimmer 3 : ' + status.lights.dimmer_value_3;
+			update.status('lights.dimmer_value_3', data.msg[1]);
 			break;
 
 		case 0xA0: // Reply to DIA: success
 			data.command = 'rep';
+
 			switch (data.msg.length) {
 				case 33:
 					data.command = 'bro';
 					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
+
 				case 13:
 					data.command = 'bro';
 					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
+
 				case 1:
 					data.value = 'ACK';
 					break;
+
 				default:
 					data.value = Buffer.from(data.msg);
 			}
