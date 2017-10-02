@@ -12,14 +12,14 @@ function status_loop(action) {
 
 	switch (action) {
 		case false:
-			status.rad.source_name = 'off';
+			update.status('rad.source_name', 'off');
 
-			status.dsp.reset  = true;
-			status.dsp.ready  = false;
-			status.dspc.reset = true;
-			status.dspc.ready = false;
-			status.rad.reset  = true;
-			status.rad.ready  = false;
+			update.status('dsp.reset',  true);
+			update.status('dsp.ready',  false);
+			update.status('dspc.reset', true);
+			update.status('dspc.ready', false);
+			update.status('rad.reset',  true);
+			update.status('rad.ready',  false);
 
 			// Set status variable
 			BMBT.status_status_loop = false;

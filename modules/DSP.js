@@ -24,7 +24,6 @@ function request(value) {
 		case 'memory':
 			src = 'RAD';
 			cmd = [ 0x34, 0x08 ]; // Get DSP memory
-			break;
 	}
 
 	bus.data.send({
@@ -129,16 +128,16 @@ function eq_decode(data) {
 	}
 
 	// Insert parsed data into status
-	status.dsp.mode      = dsp_modes[dsp_mode];
-	status.dsp.reverb    = reverb;
-	status.dsp.room_size = room_size;
-	status.dsp.eq.band0  = band[0];
-	status.dsp.eq.band1  = band[1];
-	status.dsp.eq.band2  = band[2];
-	status.dsp.eq.band3  = band[3];
-	status.dsp.eq.band4  = band[4];
-	status.dsp.eq.band5  = band[5];
-	status.dsp.eq.band6  = band[6];
+	update.status('dsp.mode',      dsp_modes[dsp_mode]);
+	update.status('dsp.reverb',    reverb);
+	update.status('dsp.room_size', room_size);
+	update.status('dsp.eq.band0',  band[0]);
+	update.status('dsp.eq.band1',  band[1]);
+	update.status('dsp.eq.band2',  band[2]);
+	update.status('dsp.eq.band3',  band[3]);
+	update.status('dsp.eq.band4',  band[4]);
+	update.status('dsp.eq.band5',  band[5]);
+	update.status('dsp.eq.band6',  band[6]);
 
 	log.module({ msg : 'DSP EQ decoded' });
 }

@@ -43,14 +43,10 @@ function decode_con_rotation(data) {
 
 	// so do the math .. i've had several beers
 
-	if (data.msg[3] < status.con1.rotation.relative) {
-		status.con1.rotation.direction = 'up';
-	}
+	if (data.msg[3] < status.con1.rotation.relative) update.status('con1.rotation.direction', 'up');
 
 	// In the ghettoooooo
-	if (data.msg[3] > status.con1.rotation.relative) {
-		status.con1.rotation.direction = 'down';
-	}
+	if (data.msg[3] > status.con1.rotation.relative) update.status('con1.rotation.direction', 'down');
 
 	let subtract = data.msg[3] - status.con1.rotation.relative;
 
@@ -65,30 +61,30 @@ function decode_con_rotation(data) {
 	if (subtract == 0) return;
 
 	if (subtract == 255) {
-		status.con1.rotation.direction = 'up';
+		update.status('con1.rotation.direction', 'up');
 	}
 	else {
 		if (subtract < -240) {
-			status.con1.rotation.direction = 'down';
+			update.status('con1.rotation.direction', 'down');
 		}
 		else {
 			if (subtract > 0 && subtract < 25) {
-				status.con1.rotation.direction = 'down';
+				update.status('con1.rotation.direction', 'down');
 			}
 			else {
-				status.con1.rotation.direction = 'up';
+				update.status('con1.rotation.direction', 'up');
 			}
 		}
 	}
 
 	// Replace the data in global status object
-	status.con1.rotation.absolute = data.msg[2];
-	status.con1.rotation.relative = data.msg[3];
+	update.status('con1.rotation.absolute', data.msg[2]);
+	update.status('con1.rotation.relative', data.msg[3]);
 
 	// Not gonna finish this now - but later, I want to do
 	// a dynamic timeout for the 'alternate' and 'volume' rotation modes -
 	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds.
-	status.con1.rotation.last_msg = now();
+	update.status('con1.rotation.last_msg', now());
 
 	log.msg({
 		src : module_name,
@@ -276,7 +272,7 @@ function button_check(button) {
 	if (change === false) return;
 
 	// Store buttonpress data in 'last' object
-	status.con1.last.button = button;
+	update.status('con1.last.button', button);
 
 	log.msg({
 		src : module_name,
