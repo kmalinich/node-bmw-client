@@ -89,12 +89,13 @@ function decode_message_keyfob(data) {
 
 	// Actuate welcome lights on lock/unlock
 	switch (keyfob.button) {
-		case 'lock' :
+		case 'lock':
 			LCM.welcome_lights(false); // Disable welcome lights
 			// gpio.set(2, 1);            // Disable fan relay
 			break;
 
-		case 'unlock' :
+		case 'unlock':
+			IKE.data_refresh();       // Refresh some data
 			LCM.welcome_lights(true); // Enable welcome lights
 			gpio.set(2, 0);           // Enable fan relay
 

@@ -41,7 +41,7 @@ function data_refresh() {
 	}
 
 	// Request fresh data
-	// GM.request('door-status');
+	GM.request('door-status');
 	IKE.request('ignition');
 	IKE.request('temperature');
 	// LCM.request('dimmer');
@@ -52,10 +52,11 @@ function data_refresh() {
 	// DME.request('motor-values');
 	// RLS.request('rain-sensor-status');
 
-	if (IKE.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
-
-	// setTimeout for next update
-	IKE.timeout_data_refresh = setTimeout(data_refresh, 10000);
+	if (status.vehicle.ignition_level !== 0) {
+		if (IKE.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
+		// setTimeout for next update
+		IKE.timeout_data_refresh = setTimeout(data_refresh, 10000);
+	}
 }
 
 // This actually is a bitmask but.. this is also a freetime project
