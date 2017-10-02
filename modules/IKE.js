@@ -349,8 +349,8 @@ function ok2hud() {
 	// Bounce if override is active
 	if (IKE.hud_override === true) return false;
 
-	// Bounce if the last update was less than 200ms ago
-	if (now() - IKE.last_hud_refresh <= 200) return false;
+	// Bounce if the last update was less than 4000ms ago
+	if (now() - IKE.last_hud_refresh <= 4000) return false;
 
 	return true;
 }
@@ -1004,11 +1004,10 @@ function text_nopad(message, cb = null) {
 // IKE cluster text send message
 function text(message, cb = null) {
 	let message_hex;
-	let max_length = 20;
 
 	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
 	// Trim string to max length
-	message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
+	message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, IKE.max_len_text), 20)));
 	message_hex = message_hex.concat(0x04);
 
 	bus.data.send({
@@ -1023,8 +1022,6 @@ function text(message, cb = null) {
 // IKE cluster text send message, override other messages
 function text_override(message, timeout = 2500, direction = 'left', turn = false) {
 	// kodi.notify(module_name, message);
-	let max_length = 20;
-
 	let scroll_delay         = 300;
 	let scroll_delay_timeout = scroll_delay * 5;
 
@@ -1040,14 +1037,14 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 	IKE.hud_override_text = message;
 
 	// Equal to or less than 20 char
-	if (message.length - max_length <= 0) {
+	if (message.length - IKE.max_len_text <= 0) {
 		if (IKE.hud_override_text == message) {
 			IKE.text(message);
 		}
 	}
 	else {
 		// Adjust timeout since we will be scrolling
-		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - max_length));
+		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - IKE.max_len_text));
 
 		// Send initial string if we're currently the first up
 		if (IKE.hud_override_text == message) {
@@ -1055,21 +1052,21 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 				IKE.text(message);
 			}
 			else {
-				IKE.text(message.substring(message.length - max_length, message.length));
+				IKE.text(message.substring(message.length - IKE.max_len_text, message.length));
 			}
 		}
 
 		// Add a time buffer before scrolling starts (if this isn't a turn signal message)
 		setTimeout(() => {
-			for (var scroll = 0; scroll <= message.length - max_length; scroll++) {
+			for (var scroll = 0; scroll <= message.length - IKE.max_len_text; scroll++) {
 				setTimeout((current_scroll, message_full, direction) => {
 					// Only send the message if we're currently the first up
 					if (IKE.hud_override_text == message_full) {
 						if (direction == 'left') {
-							IKE.text(message.substring(current_scroll, current_scroll + max_length));
+							IKE.text(message.substring(current_scroll, current_scroll + IKE.max_len_text));
 						}
 						else {
-							IKE.text(message.substring(message.length - max_length - current_scroll, message.length - current_scroll));
+							IKE.text(message.substring(message.length - IKE.max_len_text - current_scroll, message.length - current_scroll));
 						}
 					}
 				}, scroll_delay * scroll, scroll, message, direction);
@@ -1149,6 +1146,8 @@ function text_warning(message, timeout = 10000) {
 
 // Exported data
 module.exports = {
+	max_len_text : 20,
+
 	// HUD refresh vars
 	timeout_data_refresh : null,
 	last_hud_refresh     : now(),
