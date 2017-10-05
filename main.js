@@ -144,7 +144,7 @@ function init() {
 		load_modules(() => { // Load IBUS module node modules
 			host_data.init(() => { // Initialize host data object
 				weather.init(() => { // Initialize weather object
-					kodi.init(); // Start Kodi zeroMQ client
+					kodi.init(); // Start Kodi WebSocket client
 					BT.init(); // Start Linux D-Bus Bluetooth handler
 
 					gpio.init(() => { // Initialize GPIO relays
@@ -189,7 +189,7 @@ function term() {
 		gpio.term(() => { // Terminate GPIO relays
 			host_data.term(() => { // Terminate host data timeout
 				socket.term(() => { // Stop zeroMQ client
-					kodi.term(bail); // Stop Kodi zeroMQ client
+					kodi.term(bail); // Stop Kodi WebSocket client
 				}, bail);
 			}, bail);
 		}, bail);
