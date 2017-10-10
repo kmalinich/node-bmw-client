@@ -17,7 +17,7 @@ function decode_button_media(data) {
 	let mask   = bitmask.check(data.msg[1]).mask;
 	let unmask = {
 		actions : {
-			press   : !mask.bit4 && !mask.bit5 && !mask.bit8,
+			depress : !mask.bit4 && !mask.bit5 && !mask.bit8,
 			hold    : mask.bit4  && !mask.bit5 && !mask.bit8,
 			release : !mask.bit4 &&  mask.bit5 && !mask.bit8,
 		},
@@ -48,38 +48,37 @@ function decode_button_media(data) {
 	// Assemble log string and output message
 	data.value += unmask.action + ' ' + unmask.button;
 
-	switch (config.mfl.media) {
-		case false : break; // Function disabled
-
-		case 'bluetooth': // Bluetooth version
-			switch (unmask.action + unmask.button) {
-				case 'pressleft'  : BT.command('previous'); break;
-				case 'pressright' : BT.command('next');     break;
-				case 'pressvoice' : BT.command('pause');    break; // Think about it
-
-				case 'holdleft'  : break;
-				case 'holdright' : break;
-				case 'holdvoice' : BT.command('play'); break; // Think about it
-
-				case 'releaseleft'  : break;
-				case 'releaseright' : break;
-				case 'releasevoice' : break;
-			}
+	switch (unmask.action) {
+		case 'release':
 			break;
 
-		case 'kodi': // Kodi version
-			switch (unmask.action + unmask.button) {
-				case 'pressleft'  : kodi.command('previous'); break;
-				case 'pressright' : kodi.command('next');     break;
-				case 'pressvoice' : kodi.command('toggle');   break;
+		case 'depress':
+		case 'hold':
+			switch (config.mfl.media) {
+				case false : break; // Function disabled
 
-				case 'holdleft'  : break;
-				case 'holdright' : break;
-				case 'holdvoice' : break;
+				case 'bluetooth': // Bluetooth version
+					switch (unmask.action + unmask.button) {
+						case 'depressleft'  : BT.command('previous'); break;
+						case 'depressright' : BT.command('next');     break;
+						case 'depressvoice' : BT.command('pause');    break; // Think about it
 
-				case 'releaseleft'  : break;
-				case 'releaseright' : break;
-				case 'releasevoice' : break;
+						case 'holdleft'  : break;
+						case 'holdright' : break;
+						case 'holdvoice' : BT.command('play'); break; // Think about it
+					}
+					break;
+
+				case 'kodi': // Kodi version
+					switch (unmask.action + unmask.button) {
+						case 'depressleft'  : kodi.command('previous'); break;
+						case 'depressright' : kodi.command('next');     break;
+						case 'depressvoice' : kodi.command('toggle');   break;
+
+						case 'holdleft'  : break;
+						case 'holdright' : break;
+						case 'holdvoice' : break;
+					}
 			}
 	}
 
@@ -97,7 +96,7 @@ function decode_button_recirc(data) {
 
 	switch (data.msg[1]) {
 		case 0x00 : data.value += 'release'; break;
-		case 0x08 : data.value += 'press';
+		case 0x08 : data.value += 'depress';
 	}
 
 	return data;
