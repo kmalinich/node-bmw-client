@@ -50,10 +50,6 @@ function decode_button_media(data) {
 
 	switch (unmask.action) {
 		case 'release':
-			break;
-
-		case 'depress':
-		case 'hold':
 			switch (config.mfl.media) {
 				case false : break; // Function disabled
 
@@ -70,7 +66,7 @@ function decode_button_media(data) {
 					break;
 
 				case 'kodi': // Kodi version
-					switch (unmask.action + unmask.button) {
+					switch (status.mfl.last.action + status.mfl.last.button) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 						case 'depressvoice' : kodi.command('toggle');   break;
@@ -80,6 +76,10 @@ function decode_button_media(data) {
 						case 'holdvoice' : break;
 					}
 			}
+			break;
+
+		case 'depress':
+		case 'hold':
 	}
 
 	// Update status object with the new data
