@@ -91,26 +91,33 @@ function parse_329(data) {
 }
 
 // function parse_545(data) {
-// 	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
-// 	let parse = {
-// 		msg    : '0x545',
-// 		engine : {
-// 			fuel_consumption : DME1.consumption_last - consumption_current,
-// 		},
-// 	};
-// 	DME1.consumption_last = consumption_current;
-// 	update.status('engine.fuel_consumption', parse.engine.fuel_consumption);
+//   let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
+//
+//   let parse = {
+//     msg    : '0x545',
+//     fuel : {
+//       consumption : DME1.consumption_last - consumption_current,
+//     },
+//   };
+//
+//   DME1.consumption_last = consumption_current;
+//
+//   update.status('fuel.consumption', parse.fuel.consumption);
 // }
 
 function parse_613(data) {
 	let parse = {
-		msg     : '0x613',
-		vehicle : {
-			fuel_level : (data.msg[2] >= 0x80) && data.msg[2] - 0x80 || data.msg[2],
+		msg  : '0x613',
+		fuel : {
+			level  : null,
+			liters : (data.msg[2] >= 0x80) && data.msg[2] - 0x80 || data.msg[2],
 		},
 	};
 
-	update.status('vehicle.fuel_level', parse.vehicle.fuel_level);
+	parse.fuel.level = parseFloat((parse.fuel.liters / config.fuel.liters_max).toFixed(2));
+
+	update.status('fuel.level',  parse.fuel.level);
+	update.status('fuel.liters', parse.fuel.liters);
 }
 
 function parse_615(data) {
