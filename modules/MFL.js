@@ -48,13 +48,14 @@ function decode_button_media(data) {
 	// Assemble log string and output message
 	data.value += unmask.action + ' ' + unmask.button;
 
-	switch (unmask.action) {
-		case 'release':
-			switch (config.mfl.media) {
-				case false : break; // Function disabled
+	// If media control is disabled, return here
+	if (config.mfl.media) return data;
 
+	switch (unmask.action) {
+		case 'release': {
+			switch (config.mfl.media) {
 				case 'bluetooth': // Bluetooth version
-					switch (unmask.action + unmask.button) {
+					switch (status.mfl.last.action + status.mfl.last.button) {
 						case 'depressleft'  : BT.command('previous'); break;
 						case 'depressright' : BT.command('next');     break;
 						case 'depressvoice' : BT.command('pause');    break; // Think about it
@@ -71,15 +72,16 @@ function decode_button_media(data) {
 						case 'depressright' : kodi.command('next');     break;
 						case 'depressvoice' : kodi.command('toggle');   break;
 
-						case 'holdleft'  : break;
-						case 'holdright' : break;
+						case 'holdleft'  : kodi.command('seek-rewind'); break;
+						case 'holdright' : kodi.command('seek-forward'); break;
 						case 'holdvoice' : break;
 					}
 			}
 			break;
+		}
 
-		case 'depress':
-		case 'hold':
+		// case 'depress':
+		// case 'hold':
 	}
 
 	// Update status object with the new data
