@@ -1,4 +1,5 @@
-/* eslint no-global-assign: "off", no-console: "off" */
+/* eslint no-console       : 0 */
+/* eslint no-global-assign : 0 */
 
 app_path = __dirname;
 app_name = 'bmwcd';
