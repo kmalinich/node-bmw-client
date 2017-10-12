@@ -104,20 +104,21 @@ function parse_329(data) {
 	update.status('vehicle.clutch', parse.vehicle.clutch);
 }
 
-// function parse_545(data) {
-//   let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
-//
-//   let parse = {
-//     msg    : '0x545',
-//     fuel : {
-//       consumption : DME1.consumption_last - consumption_current,
-//     },
-//   };
-//
-//   DME1.consumption_last = consumption_current;
-//
-//   update.status('fuel.consumption', parse.fuel.consumption);
-// }
+function parse_545(data) {
+	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
+
+	let parse = {
+		msg  : '0x545',
+		fuel : {
+			consumption : consumption_current - DME1.consumption_last,
+		},
+	};
+
+	DME1.consumption_last = consumption_current;
+
+	update.status('fuel.consumption', parse.fuel.consumption);
+}
+
 
 function parse_613(data) {
 	let parse = {
@@ -197,7 +198,7 @@ function parse_out(data) {
 			break;
 
 		case 0x545:
-			// parse_545(data);
+			parse_545(data);
 			data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
 			break;
 
