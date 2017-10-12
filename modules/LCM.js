@@ -42,8 +42,6 @@ function auto_lights() {
 			// Set status variable
 			update.status('lights.auto.active', true);
 
-			// Process/send LCM data on 6 second timeout (for safety)
-			// LCM diag command timeout is 15 seconds
 			auto_lights_process();
 	}
 }
@@ -121,8 +119,9 @@ function auto_lights_process() {
 
 	reset();
 
-	// Fire 6sec timeout
-	LCM.timeouts.lights_auto = setTimeout(auto_lights_process, 6000);
+	// Process/send LCM data on 10 second timeout (for safety)
+	// LCM diag command timeout is 15 seconds
+	LCM.timeouts.lights_auto = setTimeout(auto_lights_process, 10000);
 }
 
 // Cluster/interior backlight
