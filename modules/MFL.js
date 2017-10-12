@@ -49,9 +49,21 @@ function decode_button_media(data) {
 	data.value += unmask.action + ' ' + unmask.button;
 
 	// If media control is disabled, return here
-	if (config.mfl.media) return data;
+	if (config.mfl.media === false) return data;
 
 	switch (unmask.action) {
+		case 'hold': {
+			switch (config.mfl.media) {
+				case 'kodi': // Kodi version
+					switch (unmask.button) {
+						case 'left'  : kodi.command('seek-rewind'); break;
+						case 'right' : kodi.command('seek-forward'); break;
+						case 'voice' : break;
+					}
+			}
+			break;
+		}
+
 		case 'release': {
 			switch (config.mfl.media) {
 				case 'bluetooth': // Bluetooth version
@@ -72,17 +84,16 @@ function decode_button_media(data) {
 						case 'depressright' : kodi.command('next');     break;
 						case 'depressvoice' : kodi.command('toggle');   break;
 
-						case 'holdleft'  : kodi.command('seek-rewind'); break;
-						case 'holdright' : kodi.command('seek-forward'); break;
+						case 'holdleft'  : kodi.command('toggle'); break;
+						case 'holdright' : kodi.command('toggle'); break;
 						case 'holdvoice' : break;
 					}
 			}
 			break;
 		}
-
-		// case 'depress':
-		// case 'hold':
 	}
+
+	// case 'depress':
 
 	// Update status object with the new data
 	update.status('mfl.last.action', unmask.action);
