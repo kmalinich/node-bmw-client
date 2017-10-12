@@ -686,13 +686,11 @@ function decode_temperature_values(data) {
 	}
 
 	if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
-		// If updated, trigger a HUD refresh
-		// This should be event-based
 		update.status('temperature.coolant.c', Math.round(parseFloat(data.msg[2])));
 		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
 
-	IKE.hud_refresh();
+	hud_refresh();
 
 	return data;
 }
@@ -704,8 +702,8 @@ function ok2hud() {
 	// Bounce if override is active
 	if (IKE.hud_override === true) return false;
 
-	// Bounce if the last update was less than 4000ms ago
-	if (now() - IKE.last_hud_refresh <= 4000) return false;
+	// Bounce if the last update was less than 500ms ago
+	if (now() - IKE.last_hud_refresh <= 500) return false;
 
 	return true;
 }
@@ -1020,29 +1018,29 @@ function text(message, cb = null) {
 	message_hex = message_hex.concat(0x04);
 
 	bus.data.send({
-		src : 'RAD',
+		src : 'RADi',
 		msg : message_hex,
 	});
 
 	// Exec callback function if present
-	typeof cb === 'function' && process.nextTick(cb);
+	typeof cb === 'function' && cb();
 }
 
 // IKE cluster text send message - without space padding
 function text_nopad(message, cb = null) {
 	let message_hex;
 
-	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+	message_hex = [ 0x23, 0x42, 0x30 ];
 	message_hex = message_hex.concat(text_prepare(message, false));
-	message_hex = message_hex.concat(0x04);
+	message_hex = message_hex.concat(0x66);
 
 	bus.data.send({
-		src : 'RAD',
+		src : 'TEL',
 		msg : message_hex,
 	});
 
 	// Exec callback function if present
-	typeof cb === 'function' && process.nextTick(cb);
+	typeof cb === 'function' && cb();
 }
 
 // IKE cluster text send message, override other messages
@@ -1135,7 +1133,7 @@ function text_urgent_off() {
 		msg : [ 0x1A, 0x30, 0x00 ],
 	});
 
-	IKE.hud_refresh();
+	hud_refresh();
 }
 
 // Check control warnings

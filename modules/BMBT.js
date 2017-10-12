@@ -52,7 +52,7 @@ function refresh_status() {
 		bus.cmds.request_device_status(module_name, 'RAD');
 		bus.cmds.request_device_status('RAD',  'DSP');
 
-		BMBT.timeouts.status_loop = setTimeout(refresh_status, 10000);
+		BMBT.timeouts.status_loop = setTimeout(refresh_status, 8500);
 
 		return;
 	}
@@ -65,33 +65,32 @@ function toggle_power_if_ready() {
 	if (config.emulate.bmbt !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
-	if (BMBT.timeouts.power_on === null) {
-		BMBT.timeouts.power_on = setTimeout(() => {
-			// Debug logging
-			// log.module({ msg : 'dsp.ready: '+status.dsp.ready });
-			// log.module({ msg : 'rad.source_name: '+status.rad.source_name });
+	if (BMBT.timeouts.power_on !== null) return;
 
-			if (status.rad.source_name == 'off' && status.vehicle.ignition_level > 0) {
-				kodi.notify(module_name, 'power on');
-				IKE.text_override(module_name + ' power');
+	BMBT.timeouts.power_on = setTimeout(() => {
+		// Debug logging
+		// log.module({ msg : 'dsp.ready: '+status.dsp.ready });
+		// log.module({ msg : 'rad.source_name: '+status.rad.source_name });
 
-				log.module({
-					src : module_name,
-					msg : 'Sending power!',
-				});
+		if (status.rad.source_name == 'off' && status.vehicle.ignition_level > 0) {
+			kodi.notify(module_name, 'power on');
+			IKE.text_override(module_name + ' power');
 
-				send_button('power');
-				// DSP.request('memory'); // Get the DSP memory
-			}
+			log.module({
+				src : module_name,
+				msg : 'Sending power!',
+			});
 
-			BMBT.timeouts.power_on = null;
-		}, 2000);
-	}
+			send_button('power');
+			// DSP.request('memory'); // Get the DSP memory
+		}
+
+		BMBT.timeouts.power_on = null;
+	}, 1000);
 }
 
 // Parse data sent to BMBT module
 function parse_in(data) {
-	// Init variables
 	switch (data.msg[0]) {
 		case 0x4A: // Cassette control
 			send_cassette_status();
@@ -164,7 +163,7 @@ function send_button(button) {
 
 			// Generate hold and up values
 			// button_hold = bitmask.set(button_down, bitmask.bit[6]);
-			button_up   = bitmask.set(button_down, bitmask.bit[7]);
+			button_up = bitmask.set(button_down, bitmask.bit[7]);
 			break;
 	}
 

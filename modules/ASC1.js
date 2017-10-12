@@ -1,5 +1,31 @@
 const convert = require('node-unit-conversion');
 
+function parse_153(data) {
+	// DSC off (DSC light on) (b0/b1)
+	// 04 61 01 FF 00 FE FF 0
+	// DSC on (DSC light off) (b0/b1)
+	// 00 60 01 FF 00 FE FF 0C
+	// ~5 sec on initial key in run
+	// A4 61 01 FF 00 FE FF 0B
+	//
+	// B3 and B6 change during torque reduction
+	let parse = {
+		vehicle : {
+			brake : bitmask.test(data.msg[1], 0x10),
+			dsc   : {
+				active             : !bitmask.test(data.msg[1], 0x01),
+				torque_reduction_1 : parseFloat((data.msg[3] / 2.54).toFixed(2)),
+				torque_reduction_2 : parseFloat((data.msg[6] / 2.54).toFixed(2)),
+			},
+		},
+	};
+
+	update.status('vehicle.brake',                  parse.vehicle.brake);
+	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active);
+	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);
+	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
+}
+
 function parse_1f0(data) {
 	let wheel_speed = {
 		front : {
@@ -40,7 +66,7 @@ function parse_1f0(data) {
 
 	// Trigger IKE speedometer refresh on value change
 	// This should really be event based, but fuck it, you write this shit
-	if (update.status('vehicle.speed.mph', vehicle_speed_mph)) IKE.hud_refresh();
+	if (update.status('vehicle.speed.mph', vehicle_speed_mph)) IKE.hud_refresh_speed();
 
 	update.status('vehicle.speed.kmh', vehicle_speed_kmh);
 }
@@ -71,21 +97,13 @@ function parse_1f5(data) {
 	update.status('vehicle.steering.velocity', steering.velocity, false);
 }
 
-
 // Parse data sent from module
 function parse_out(data) {
 	data.command = 'bro';
 
 	switch (data.src.id) {
 		case 0x153:
-			// DSC off (DSC light on) (b0/b1)
-			// 04 61 01 FF 00 FE FF 0
-			// DSC on (DSC light off) (b0/b1)
-			// 00 60 01 FF 00 FE FF 0C
-			// Brake pedal depressed, also when key off (b0)
-			// 10 60 01 FF 00 FE FF 09
-			// ~5 sec on initial key in run
-			// A4 61 01 FF 00 FE FF 0B
+			parse_153(data);
 			data.value = 'Speed/DSC light';
 			break;
 

@@ -11,16 +11,21 @@ function parse_316(data) {
 			run   : bitmask.test(data.msg[0], 0x04),
 			start : bitmask.test(data.msg[0], 0x10),
 		},
-		throttle : {
-			current : parseFloat((data.msg[1] / 2.54).toFixed(1)),
-			target  : parseFloat((data.msg[4] / 2.54).toFixed(1)),
+		torque : {
+			after_interventions  : parseFloat((data.msg[1] / 2.54).toFixed(1)),
+			before_interventions : parseFloat((data.msg[4] / 2.54).toFixed(1)),
+			loss                 : parseFloat((data.msg[5] / 2.54).toFixed(1)),
+			output               : parseFloat((data.msg[7] / 2.54).toFixed(1)),
 		},
 	};
 
-	update.status('engine.speed',            parse.rpm, false);
-	update.status('engine.ac_clutch',        parse.ac_clutch);
-	update.status('engine.throttle.current', parse.throttle.current, false);
-	update.status('engine.throttle.target',  parse.throttle.target, false);
+	update.status('engine.speed',     parse.rpm, false);
+	update.status('engine.ac_clutch', parse.ac_clutch);
+
+	update.status('engine.torque.after_interventions',  parse.torque.after_interventions,  false);
+	update.status('engine.torque.before_interventions', parse.torque.before_interventions, false);
+	update.status('engine.torque.loss',                 parse.torque.loss,                 false);
+	update.status('engine.torque.output',               parse.torque.output,               false);
 }
 
 function parse_329(data) {
@@ -30,6 +35,11 @@ function parse_329(data) {
 			throttle : {
 				cruise : parseFloat((data.msg[4] / 2.54).toFixed(2)),
 				pedal  : parseFloat((data.msg[5] / 2.54).toFixed(2)),
+			},
+			atmospheric_pressure : {
+				mbar : (data.msg[2] * 2) + 597,
+				mmhg : null,
+				psi  : null,
 			},
 		},
 		temperature : {
@@ -59,6 +69,10 @@ function parse_329(data) {
 			},
 		},
 	};
+
+	// Calculate mmhg and psi atmospheric pressure values
+	parse.engine.atmospheric_pressure.mmhg = parseFloat((parse.engine.atmospheric_pressure.mbar * 0.75006157818041).toFixed(2));
+	parse.engine.atmospheric_pressure.psi  = parseFloat((parse.engine.atmospheric_pressure.mbar * 0.01450377380072).toFixed(2));
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
@@ -138,6 +152,9 @@ function parse_615(data) {
 				f : null,
 			},
 		},
+		vehicle : {
+			handbrake : bitmask.test(data.msg[4], 0x02),
+		},
 	};
 
 	// Calculate fahrenheit temperature values
@@ -157,6 +174,8 @@ function parse_615(data) {
 	update.status('temperature.exterior.c', parse.temperature.exterior.c);
 	update.status('temperature.exterior.f', parse.temperature.exterior.f);
 
+	update.status('vehicle.handbrake', parse.vehicle.handbrake);
+
 	// update.status('temperature.intake.c', parse.temperature.intake.c);
 	// update.status('temperature.intake.f', parse.temperature.intake.f);
 }
@@ -168,7 +187,7 @@ function parse_out(data) {
 
 	switch (data.src.id) {
 		case 0x316:
-			data.value = 'RPM';
+			data.value = 'AC clutch/Throttle/RPM';
 			parse_316(data);
 			break;
 
