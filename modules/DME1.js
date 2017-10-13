@@ -107,6 +107,8 @@ function parse_329(data) {
 function parse_545(data) {
 	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
 
+	if (consumption_current === DME1.consumption_last) return;
+
 	let parse = {
 		msg  : '0x545',
 		fuel : {
@@ -116,7 +118,7 @@ function parse_545(data) {
 
 	DME1.consumption_last = consumption_current;
 
-	update.status('fuel.consumption', parse.fuel.consumption);
+	// update.status('fuel.consumption', parse.fuel.consumption);
 }
 
 

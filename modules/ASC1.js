@@ -20,7 +20,7 @@ function parse_153(data) {
 		},
 	};
 
-	update.status('vehicle.brake',                  parse.vehicle.brake);
+	// update.status('vehicle.brake',                  parse.vehicle.brake);
 	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active);
 	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);
 	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
@@ -66,7 +66,7 @@ function parse_1f0(data) {
 
 	// Trigger IKE speedometer refresh on value change
 	// This should really be event based, but fuck it, you write this shit
-	if (update.status('vehicle.speed.mph', vehicle_speed_mph)) IKE.hud_refresh_speed();
+	if (update.status('vehicle.speed.mph', vehicle_speed_mph)) IKE.hud_refresh();
 
 	update.status('vehicle.speed.kmh', vehicle_speed_kmh);
 }

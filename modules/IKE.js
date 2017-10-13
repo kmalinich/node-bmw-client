@@ -722,6 +722,8 @@ function hud_refresh_speed() {
 function hud_refresh() {
 	if (!ok2hud()) return;
 
+	log.msg({ msg : 'Refreshing HUD' });
+
 	let string_load;
 	let string_cons  = '';
 	let string_speed = '';
@@ -752,7 +754,7 @@ function hud_refresh() {
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
-	text(hud_string, () => { IKE.last_hud_refresh = now(); });
+	text_nopad(hud_string, () => { IKE.last_hud_refresh = now(); });
 
 	// socket.lcd_text_tx({
 	// 	upper : 'kdm-e39-01',
@@ -1013,12 +1015,13 @@ function text_prepare(message, pad = false) {
 function text(message, cb = null) {
 	let message_hex;
 
-	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+	// message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+	message_hex = [ 0x23, 0x42, 0x30 ];
 	message_hex = message_hex.concat(text_prepare(message));
-	message_hex = message_hex.concat(0x04);
+	// message_hex = message_hex.concat(0x04);
 
 	bus.data.send({
-		src : 'RADi',
+		src : 'RAD',
 		msg : message_hex,
 	});
 
@@ -1032,7 +1035,7 @@ function text_nopad(message, cb = null) {
 
 	message_hex = [ 0x23, 0x42, 0x30 ];
 	message_hex = message_hex.concat(text_prepare(message, false));
-	message_hex = message_hex.concat(0x66);
+	// message_hex = message_hex.concat(0x66);
 
 	bus.data.send({
 		src : 'TEL',
