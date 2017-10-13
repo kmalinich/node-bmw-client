@@ -20,6 +20,16 @@ function parse_153(data) {
 		},
 	};
 
+	// Clean up torque reduction figures a bit
+	if (parse.vehicle.dsc.torque_reduction_1 > 100) parse.vehicle.dsc.torque_reduction_1 = 100;
+	if (parse.vehicle.dsc.torque_reduction_2 > 100) parse.vehicle.dsc.torque_reduction_2 = 100;
+	if (parse.vehicle.dsc.torque_reduction_1 < 0)   parse.vehicle.dsc.torque_reduction_1 = 0;
+	if (parse.vehicle.dsc.torque_reduction_2 < 0)   parse.vehicle.dsc.torque_reduction_2 = 0;
+
+	// Apply maths
+	parse.vehicle.dsc.torque_reduction_1 = 100 - parse.vehicle.dsc.torque_reduction_1;
+	parse.vehicle.dsc.torque_reduction_2 = 100 - parse.vehicle.dsc.torque_reduction_2;
+
 	// update.status('vehicle.brake',                  parse.vehicle.brake);
 	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active);
 	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);

@@ -135,7 +135,9 @@ function parse_613(data) {
 		},
 	};
 
-	parse.fuel.level = parseFloat((parse.fuel.liters / config.fuel.liters_max).toFixed(2));
+	parse.fuel.level = Math.round((parse.fuel.liters / config.fuel.liters_max) * 100);
+	if (parse.fuel.level < 0)   parse.fuel.level = 0;
+	if (parse.fuel.level > 100) parse.fuel.level = 100;
 
 	update.status('fuel.level',  parse.fuel.level);
 	update.status('fuel.liters', parse.fuel.liters);
