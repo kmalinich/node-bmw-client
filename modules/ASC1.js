@@ -14,8 +14,8 @@ function parse_153(data) {
 			brake : bitmask.test(data.msg[1], 0x10),
 			dsc   : {
 				active             : !bitmask.test(data.msg[1], 0x01),
-				torque_reduction_1 : parseFloat((data.msg[3] / 2.54).toFixed(2)),
-				torque_reduction_2 : parseFloat((data.msg[6] / 2.54).toFixed(2)),
+				torque_reduction_1 : data.msg[3] / 2.54,
+				torque_reduction_2 : data.msg[6] / 2.54,
 			},
 		},
 	};
@@ -27,8 +27,8 @@ function parse_153(data) {
 	if (parse.vehicle.dsc.torque_reduction_2 < 0)   parse.vehicle.dsc.torque_reduction_2 = 0;
 
 	// Apply maths
-	parse.vehicle.dsc.torque_reduction_1 = 100 - parse.vehicle.dsc.torque_reduction_1;
-	parse.vehicle.dsc.torque_reduction_2 = 100 - parse.vehicle.dsc.torque_reduction_2;
+	parse.vehicle.dsc.torque_reduction_1 = parseFloat((100 - parse.vehicle.dsc.torque_reduction_1).toFixed(1));
+	parse.vehicle.dsc.torque_reduction_2 = parseFloat((100 - parse.vehicle.dsc.torque_reduction_2).toFixed(1));
 
 	// update.status('vehicle.brake',                  parse.vehicle.brake);
 	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active);
@@ -98,9 +98,12 @@ function parse_1f5(data) {
 		velocity = (data.msg[3] * 256) + data.msg[2];
 	}
 
+	// 0.043393 : 3.75 turns, lock to lock (1350 degrees of total rotation)
+	let steering_multiplier = 0.043393;
+
 	let steering = {
-		angle    : parseInt((angle * 0.045).toFixed(4)),
-		velocity : parseInt((velocity * 0.045).toFixed(4)),
+		angle    : Math.round(angle    * steering_multiplier),
+		velocity : Math.round(velocity * steering_multiplier),
 	};
 
 	update.status('vehicle.steering.angle',    steering.angle);

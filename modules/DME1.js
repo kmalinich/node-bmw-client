@@ -35,8 +35,8 @@ function parse_329(data) {
 		msg    : '0x329',
 		engine : {
 			throttle : {
-				cruise : parseFloat((data.msg[4] / 2.54).toFixed(2)),
-				pedal  : parseFloat((data.msg[5] / 2.54).toFixed(2)),
+				cruise : parseFloat((data.msg[4] / 2.54).toFixed(1)),
+				pedal  : parseFloat((data.msg[5] / 2.54).toFixed(1)),
 			},
 			atmospheric_pressure : {
 				mbar : (data.msg[2] * 2) + 597,
