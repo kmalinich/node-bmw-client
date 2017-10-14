@@ -19,7 +19,9 @@ function parse_316(data) {
 		},
 	};
 
-	update.status('engine.speed',     parse.rpm, false);
+	// Occasionally the RPM is parses as something less than 50.. no idea why
+	if (parse.rpm > 300) update.status('engine.speed', parse.rpm, false);
+
 	update.status('engine.ac_clutch', parse.ac_clutch);
 
 	update.status('engine.torque.after_interventions',  parse.torque.after_interventions,  false);
