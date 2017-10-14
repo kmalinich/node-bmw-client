@@ -102,8 +102,8 @@ function parse_1f5(data) {
 	let steering_multiplier = 0.043393;
 
 	let steering = {
-		angle    : Math.round(angle    * steering_multiplier),
-		velocity : Math.round(velocity * steering_multiplier),
+		angle    : Math.round(angle    * steering_multiplier) * -1,
+		velocity : Math.round(velocity * steering_multiplier) * -1,
 	};
 
 	update.status('vehicle.steering.angle',    steering.angle);
