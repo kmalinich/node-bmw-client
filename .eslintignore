@@ -2,4 +2,5 @@
 /bitmasks
 /candump
 /node_modules
-/ref
+/protocol/test*
+/test/*

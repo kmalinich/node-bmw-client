@@ -1,4 +1,4 @@
-// Decode button action message from MFL
+// Decode media button action message
 function decode_button_media(data) {
 	data.command = 'con';
 	data.value   = 'media button - ';
@@ -17,12 +17,12 @@ function decode_button_media(data) {
 	let mask   = bitmask.check(data.msg[1]).mask;
 	let unmask = {
 		actions : {
-			press   : !mask.bit4 && !mask.bit5 && !mask.bit8,
-			hold    : mask.bit4 && !mask.bit5 && !mask.bit8,
+			depress : !mask.bit4 && !mask.bit5 && !mask.bit8,
+			hold    : mask.bit4  && !mask.bit5 && !mask.bit8,
 			release : !mask.bit4 &&  mask.bit5 && !mask.bit8,
 		},
 		buttons : {
-			right : mask.bit0 && !mask.bit3 && !mask.bit7 && !mask.bit8,
+			right : mask.bit0  && !mask.bit3 && !mask.bit7 && !mask.bit8,
 			left  : !mask.bit0 &&  mask.bit3 && !mask.bit7 && !mask.bit8,
 			voice : !mask.bit0 && !mask.bit3 &&  mask.bit7 && !mask.bit8,
 			none  : !mask.bit0 && !mask.bit3 && !mask.bit7 &&  mask.bit8,
@@ -45,51 +45,74 @@ function decode_button_media(data) {
 		}
 	}
 
-	// Assemble log string
+	// Assemble log string and output message
 	data.value += unmask.action + ' ' + unmask.button;
-	log.bus(data);
 
-	// Create bitmask for switch statement to use below
-	data.media_mask  = 0x00;
-	data.media_mask |= config.media.bluetooth   && bitmask.bit[0] || 0x00;
-	data.media_mask |= config.media.kodi.enable && bitmask.bit[1] || 0x00;
+	// If media control is disabled, return here
+	if (config.mfl.media === false) return data;
 
-	switch (data.media_mask) {
-		case 0x00: return; // No media services enabled
-		case 0x03: return; // Both media services enabled
-
-		case bitmask.bit[0]: // Bluetooth version
-			switch (unmask.action + unmask.button) {
-				case 'pressleft'  : BT.command('previous'); break;
-				case 'pressright' : BT.command('next');     break;
-				case 'pressvoice' : BT.command('pause');    break; // Think about it...
-
-				case 'holdleft'  : break;
-				case 'holdright' : break;
-				case 'holdvoice' : BT.command('play'); break; // Think about it...
-
-				case 'releaseleft'  : break;
-				case 'releaseright' : break;
-				case 'releasevoice' : break;
+	switch (unmask.action) {
+		case 'hold': {
+			switch (config.mfl.media) {
+				case 'kodi': // Kodi version
+					switch (unmask.button) {
+						case 'left'  : kodi.command('seek-rewind'); break;
+						case 'right' : kodi.command('seek-forward'); break;
+						case 'voice' : break;
+					}
 			}
 			break;
+		}
 
-		case bitmask.bit[1]: // Kodi version
-			switch (unmask.action + unmask.button) {
-				case 'pressleft'  : kodi.command('previous'); break;
-				case 'pressright' : kodi.command('next');     break;
-				case 'pressvoice' : kodi.command('toggle');   break;
+		case 'release': {
+			switch (config.mfl.media) {
+				case 'bluetooth': // Bluetooth version
+					switch (status.mfl.last.action + status.mfl.last.button) {
+						case 'depressleft'  : BT.command('previous'); break;
+						case 'depressright' : BT.command('next');     break;
+						case 'depressvoice' : BT.command('pause');    break; // Think about it
 
-				case 'holdleft'  : break;
-				case 'holdright' : break;
-				case 'holdvoice' : break;
+						case 'holdleft'  : break;
+						case 'holdright' : break;
+						case 'holdvoice' : BT.command('play'); break; // Think about it
+					}
+					break;
 
-				case 'releaseleft'  : break;
-				case 'releaseright' : break;
-				case 'releasevoice' : break;
+				case 'kodi': // Kodi version
+					switch (status.mfl.last.action + status.mfl.last.button) {
+						case 'depressleft'  : kodi.command('previous'); break;
+						case 'depressright' : kodi.command('next');     break;
+						case 'depressvoice' : kodi.command('toggle');   break;
+
+						case 'holdleft'  : kodi.command('toggle'); break;
+						case 'holdright' : kodi.command('toggle'); break;
+						case 'holdvoice' : break;
+					}
 			}
 			break;
+		}
 	}
+
+	// case 'depress':
+
+	// Update status object with the new data
+	update.status('mfl.last.action', unmask.action);
+	update.status('mfl.last.button', unmask.button);
+
+	return data;
+}
+
+// Decode recirculation button action message
+function decode_button_recirc(data) {
+	data.command = 'con';
+	data.value   = 'recirculation button - ';
+
+	switch (data.msg[1]) {
+		case 0x00 : data.value += 'release'; break;
+		case 0x08 : data.value += 'depress';
+	}
+
+	return data;
 }
 
 // Parse data sent from MFL module
@@ -99,19 +122,12 @@ function parse_out(data) {
 
 	switch (data.msg[0]) {
 		case 0x3A: // Button: Recirculation
-			data.command = 'con';
-			data.value   = 'recirculation button - ';
-
-			switch (data.msg[1]) {
-				case 0x00 : data.value += 'release'; break;
-				case 0x08 : data.value += 'press';   break;
-			}
-
+			data = decode_button_recirc(data);
 			break;
 
 		case 0x3B: // Button: Media
-			decode_button_media(data);
-			return;
+			data = decode_button_media(data);
+			break;
 
 		default:
 			data.command = 'unk';
@@ -122,5 +138,5 @@ function parse_out(data) {
 }
 
 module.exports = {
-	parse_out : (data) => { parse_out(data); },
+	parse_out : parse_out,
 };
