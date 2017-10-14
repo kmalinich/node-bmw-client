@@ -1,5 +1,41 @@
 const convert = require('node-unit-conversion');
 
+function parse_153(data) {
+	// DSC off (DSC light on) (b0/b1)
+	// 04 61 01 FF 00 FE FF 0
+	// DSC on (DSC light off) (b0/b1)
+	// 00 60 01 FF 00 FE FF 0C
+	// ~5 sec on initial key in run
+	// A4 61 01 FF 00 FE FF 0B
+	//
+	// B3 and B6 change during torque reduction
+	let parse = {
+		vehicle : {
+			brake : bitmask.test(data.msg[1], 0x10),
+			dsc   : {
+				active             : !bitmask.test(data.msg[1], 0x01),
+				torque_reduction_1 : parseFloat((data.msg[3] / 2.54).toFixed(2)),
+				torque_reduction_2 : parseFloat((data.msg[6] / 2.54).toFixed(2)),
+			},
+		},
+	};
+
+	// Clean up torque reduction figures a bit
+	if (parse.vehicle.dsc.torque_reduction_1 > 100) parse.vehicle.dsc.torque_reduction_1 = 100;
+	if (parse.vehicle.dsc.torque_reduction_2 > 100) parse.vehicle.dsc.torque_reduction_2 = 100;
+	if (parse.vehicle.dsc.torque_reduction_1 < 0)   parse.vehicle.dsc.torque_reduction_1 = 0;
+	if (parse.vehicle.dsc.torque_reduction_2 < 0)   parse.vehicle.dsc.torque_reduction_2 = 0;
+
+	// Apply maths
+	parse.vehicle.dsc.torque_reduction_1 = 100 - parse.vehicle.dsc.torque_reduction_1;
+	parse.vehicle.dsc.torque_reduction_2 = 100 - parse.vehicle.dsc.torque_reduction_2;
+
+	// update.status('vehicle.brake',                  parse.vehicle.brake);
+	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active);
+	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);
+	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
+}
+
 function parse_1f0(data) {
 	let wheel_speed = {
 		front : {
@@ -19,24 +55,30 @@ function parse_1f0(data) {
 	if (wheel_speed.rear.left   <= 3) wheel_speed.rear.left   = 0;
 	if (wheel_speed.rear.right  <= 3) wheel_speed.rear.right  = 0;
 
-	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
-	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
-	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
-	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right);
+	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left,  false);
+	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right, false);
+	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left,   false);
+	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right,  false);
 
 	// Calculate vehicle speed from rear left wheel speed sensor
 	// This is identical to the actual speedometer signal on E39
-	// update.status('vehicle.speed.kmh',               wheel_speed.rear.left);
+	// update.status('vehicle.speed.kmh', wheel_speed.rear.left, false);
 	// let vehicle_speed_mph = Math.round(convert(status.vehicle.wheel_speed.rear.left).from('kilometre').to('us mile'));
 
 	// Calculate vehicle speed from average of all 4 sensors
-	let vehicle_speed_kmh = Math.round((wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right) / 4);
+	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
+
+	// Average all wheel speeds together and include accuracy offset multiplier
+	let vehicle_speed_kmh = Math.round((vehicle_speed_total / 4) * config.speedometer.offset);
+
+	// Calculate vehicle speed value in MPH
 	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
-	update.status('vehicle.speed.kmh', vehicle_speed_kmh);
 
 	// Trigger IKE speedometer refresh on value change
 	// This should really be event based, but fuck it, you write this shit
 	if (update.status('vehicle.speed.mph', vehicle_speed_mph)) IKE.hud_refresh();
+
+	update.status('vehicle.speed.kmh', vehicle_speed_kmh);
 }
 
 function parse_1f5(data) {
@@ -61,10 +103,9 @@ function parse_1f5(data) {
 		velocity : parseInt((velocity * 0.045).toFixed(4)),
 	};
 
-	update.status('vehicle.steering.angle', steering.angle);
-	update.status('vehicle.steering.velocity', steering.velocity);
+	update.status('vehicle.steering.angle',    steering.angle);
+	update.status('vehicle.steering.velocity', steering.velocity, false);
 }
-
 
 // Parse data sent from module
 function parse_out(data) {
@@ -72,14 +113,7 @@ function parse_out(data) {
 
 	switch (data.src.id) {
 		case 0x153:
-			// DSC off (DSC light on) (b0/b1)
-			// 04 61 01 FF 00 FE FF 0
-			// DSC on (DSC light off) (b0/b1)
-			// 00 60 01 FF 00 FE FF 0C
-			// Brake pedal depressed, also when key off (b0)
-			// 10 60 01 FF 00 FE FF 09
-			// ~5 sec on initial key in run
-			// A4 61 01 FF 00 FE FF 0B
+			parse_153(data);
 			data.value = 'Speed/DSC light';
 			break;
 

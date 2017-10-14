@@ -4,13 +4,13 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x83: // Broadcast: AC compressor status
-			status.ihka.ac = bitmask.test(data.msg[1], 0x80);
+			update.status('ihka.ac', bitmask.test(data.msg[1], 0x80));
 			data.command = 'bro';
 			data.value   = 'AC compressor status ' + data.msg;
 			break;
 
 		case 0x86: // Broadcast: Rear defroster status
-			status.ihka.defroster = bitmask.test(data.msg[1], 0x01);
+			update.status('ihka.defroster', bitmask.test(data.msg[1], 0x01));
 			data.command = 'bro';
 			data.value   = 'defroster status ' + status.ihka.defroster;
 			break;
@@ -55,6 +55,33 @@ function aux(type, action) {
 	});
 }
 
+// Toggle air recirculation
+function recirc() {
+	// Init variables
+	let src = 'MFL';
+
+	let cmds = {
+		depress : [ 0x3A, 0x01, 0x34 ], // Recirc depressed
+		release : [ 0x3A, 0x01, 0x35 ], // Recirc released
+	};
+
+	// Send depress command
+	bus.data.send({
+		src : src,
+		dst : module_name,
+		msg : cmds.depress,
+	});
+
+	// Send release command after 200ms delay
+	setTimeout(() => {
+		bus.data.send({
+			src : src,
+			dst : module_name,
+			msg : cmds.release,
+		}, 200);
+	});
+}
+
 // Request various things from IHKA
 function request(value) {
 	// Init variables
@@ -78,7 +105,8 @@ function request(value) {
 }
 
 module.exports = {
-	aux       : (type, action) => { aux(type, action); },
-	parse_out : (data)         => { parse_out(data);   },
-	request   : (value)        => { request(value);    },
+	aux       : aux,
+	parse_out : parse_out,
+	recirc    : recirc,
+	request   : request,
 };

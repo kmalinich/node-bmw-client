@@ -89,12 +89,13 @@ function decode_message_keyfob(data) {
 
 	// Actuate welcome lights on lock/unlock
 	switch (keyfob.button) {
-		case 'lock' :
+		case 'lock':
 			LCM.welcome_lights(false); // Disable welcome lights
 			// gpio.set(2, 1);            // Disable fan relay
 			break;
 
-		case 'unlock' :
+		case 'unlock':
+			IKE.data_refresh();       // Refresh some data
 			LCM.welcome_lights(true); // Enable welcome lights
 			gpio.set(2, 0);           // Enable fan relay
 
@@ -109,25 +110,28 @@ function decode_message_keyfob(data) {
 }
 
 // [0x7A] Decode a door status message from the GM and act upon the results
-function decode_status_open(message) {
+function decode_status_open(data) {
+	data.command = 'bro';
+	data.value   = 'door status';
+
 	// Set status from message by decoding bitmask
-	status.doors.front_left  = bitmask.test(message[1], 0x01);
-	status.doors.front_right = bitmask.test(message[1], 0x02);
-	status.doors.hood        = bitmask.test(message[2], 0x40);
-	status.doors.rear_left   = bitmask.test(message[1], 0x04);
-	status.doors.rear_right  = bitmask.test(message[1], 0x08);
-	status.doors.trunk       = bitmask.test(message[2], 0x20);
+	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x01));
+	update.status('doors.front_right', bitmask.test(data.msg[1], 0x02));
+	update.status('doors.hood',        bitmask.test(data.msg[2], 0x40));
+	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x04));
+	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x08));
+	update.status('doors.trunk',       bitmask.test(data.msg[2], 0x20));
 
-	status.lights.interior = bitmask.test(message[1], 0x40);
+	update.status('lights.interior', bitmask.test(data.msg[1], 0x40));
 
-	status.windows.front_left  = bitmask.test(message[2], 0x01);
-	status.windows.front_right = bitmask.test(message[2], 0x02);
-	status.windows.rear_left   = bitmask.test(message[2], 0x04);
-	status.windows.rear_right  = bitmask.test(message[2], 0x08);
-	status.windows.roof        = bitmask.test(message[2], 0x10);
+	update.status('windows.front_left',  bitmask.test(data.msg[2], 0x01));
+	update.status('windows.front_right', bitmask.test(data.msg[2], 0x02));
+	update.status('windows.rear_left',   bitmask.test(data.msg[2], 0x04));
+	update.status('windows.rear_right',  bitmask.test(data.msg[2], 0x08));
+	update.status('windows.roof',        bitmask.test(data.msg[2], 0x10));
 
 	// This is correct, in a sense... Not a good sense, but in a sense
-	status.vehicle.locked = bitmask.test(message[1], 0x20);
+	update.status('vehicle.locked', bitmask.test(data.msg[1], 0x20));
 
 	// Set status.doors.sealed var if all doors are closed
 	let update_sealed_doors;
@@ -164,6 +168,8 @@ function decode_status_open(message) {
 
 	// Set status.vehicle.sealed var if all doors and windows are closed
 	update.status('vehicle.sealed', status.doors.sealed && status.windows.sealed);
+
+	return data;
 }
 
 // Send message to GM
@@ -192,20 +198,14 @@ function parse_out(data) {
 			decode_message_keyfob(data);
 			return;
 
-		case 0x76: // Broadcast: 'Crash alarm' ..
+		case 0x76: // Broadcast: 'Crash alarm'
 			data.command = 'bro';
 			data.value   = 'crash alarm - ';
 
 			switch (data.msg[1]) {
-				case 0x00:
-					data.value += 'no crash';
-					break;
-				case 0x02: // A guess
-					data.value += 'armed';
-					break;
-				default:
-					data.value += Buffer.from(data.msg[1]);
-					break;
+				case 0x00 : data.value += 'no crash'; break;
+				case 0x02 : data.value += 'armed';    break; // A guess
+				default   : data.value += Buffer.from(data.msg[1]);
 			}
 			break;
 
@@ -254,9 +254,7 @@ function parse_out(data) {
 			break;
 
 		case 0x7A: // Broadcast: Door status
-			data.command = 'bro';
-			data.value   = 'door status';
-			decode_status_open(data.msg);
+			data = decode_status_open(data);
 			break;
 
 		case 0xA0: // Reply: Diagnostic command acknowledged
@@ -279,12 +277,13 @@ function api_command(data) {
 		GM.interior_light(data['interior-light']);
 	}
 
-	// Sort-of.. future-mode.. JSON command.. object? maybe..
+	// Sort-of.. future-mode.. JSON command.. object? maybe
 	else if (typeof data['command'] !== 'undefined') {
 		switch (data['command']) {
 			case 'io-status'   : GM.request('io-status');   break; // Get IO status
 			case 'door-status' : GM.request('door-status'); break; // Get IO status
 			case 'locks'       : GM.locks();                break; // Toggle central locking
+
 			default: // Dunno what I sent
 				log.module({ msg : 'API call ' + data['command'] + ' unknown' });
 				break;
@@ -316,24 +315,28 @@ function windows(window, action) {
 				case 'tt' : msg = [ 0x03, 0x00, 0x01 ]; break;
 			}
 			break;
+
 		case 'lf' : // Left front
 			switch (action) {
 				case 'dn' : msg = [ 0x01, 0x36, 0x01 ]; break;
 				case 'up' : msg = [ 0x01, 0x1A, 0x01 ]; break;
 			}
 			break;
+
 		case 'rf' : // Right front
 			switch (action) {
 				case 'dn' : msg = [ 0x02, 0x20, 0x01 ]; break;
 				case 'up' : msg = [ 0x02, 0x22, 0x01 ]; break;
 			}
 			break;
+
 		case 'lr' : // Left rear
 			switch (action) {
 				case 'dn' : msg = [ 0x00, 0x00, 0x01 ]; break;
 				case 'up' : msg = [ 0x42, 0x01 ];       break;
 			}
 			break;
+
 		case 'rr' : // Right rear
 			switch (action) {
 				case 'dn' : msg = [ 0x00, 0x03, 0x01 ]; break;
@@ -346,11 +349,13 @@ function windows(window, action) {
 
 module.exports = {
 	// Parse data sent from GM module
-	parse_out   : (data) => { parse_out(data); },
+	parse_out : (data) => { parse_out(data); },
+
 	// Handle incoming commands from API
 	api_command : (data) => { api_command(data); },
+
 	// GM window control
-	windows     : (window, action) => { windows(window, action); },
+	windows : (window, action) => { windows(window, action); },
 
 	// Cluster/interior backlight
 	interior_light : (value) => {
@@ -389,6 +394,7 @@ module.exports = {
 				src = 'DIA';
 				cmd = [ 0x0B, 0x00 ]; // Get IO status
 				break;
+
 			case 'door-status':
 				src = 'BMBT';
 				cmd = [ 0x79 ];

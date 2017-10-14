@@ -118,14 +118,14 @@ function status_loop(action) {
 			// Set status variables
 			MID.status_status_loop = false;
 
-			status.rad.source_name = 'off';
+			update.status('rad.source_name', 'off');
 
-			status.dsp.reset  = true;
-			status.dsp.ready  = false;
-			status.dspc.reset = true;
-			status.dspc.ready = false;
-			status.rad.reset  = true;
-			status.rad.ready  = false;
+			update.status('dsp.reset',  true);
+			update.status('dsp.ready',  false);
+			update.status('dspc.reset', true);
+			update.status('dspc.ready', false);
+			update.status('rad.reset',  true);
+			update.status('rad.ready',  false);
 
 			break;
 		case true:

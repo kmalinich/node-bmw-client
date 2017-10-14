@@ -10,28 +10,22 @@ const pad     = require('pad');
 // This is pure garbage and COMPLETELY needs to be done way differently
 function api_command(data) {
 	switch (data.command) {
-		case 'ike-ignition': // Send fake ignition status (but don't tho - you've been warned)
-			ignition(data.value);
-			break;
-		case 'ike-text': // Display text string in cluster
-			text(data.value);
-			break;
-		case 'obc-clock': // Set OBC clock
-			obc_clock();
-			break;
-		case 'obc-get-all': // Refresh all OBC data value
-			obc_refresh();
-			break;
-		case 'obc-get': // Refresh specific OBC data value
-			obc_data('get', data.value);
-			break;
-		case 'obc-reset': // Reset specific OBC data value
-			obc_data('reset', data.value);
-			break;
-		default: // Dunno
-			log.module({ msg : 'Unknown API command: ' + data.command });
+		case 'ike-ignition' : ignition(data.value);          break;
+		case 'ike-text'     : text(data.value);              break;
+		case 'obc-clock'    : obc_clock();                   break;
+		case 'obc-get'      : obc_data('get', data.value);   break;
+		case 'obc-get-all'  : obc_refresh();                 break;
+		case 'obc-reset'    : obc_data('reset', data.value); break;
+		default             : log.module({ msg : 'Unknown API command : ' + data.command });
 	}
 }
+// Send fake ignition status (but don't tho - you've been warned)
+// Display text string in cluster
+// Set OBC clock
+// Refresh all OBC data values
+// Refresh specific OBC data value
+// Reset specific OBC data value
+// Dunno
 
 // Refresh various values every 5 seconds
 function data_refresh() {
@@ -50,41 +44,55 @@ function data_refresh() {
 	GM.request('door-status');
 	IKE.request('ignition');
 	IKE.request('temperature');
-	LCM.request('dimmer');
-	LCM.request('io-status');
-	LCM.request('light-status');
-	obc_data('get', 'consumption-1');
+	// LCM.request('dimmer');
+	// LCM.request('io-status');
+	// LCM.request('light-status');
+	// obc_data('get', 'consumption-1');
 
 	// DME.request('motor-values');
 	// RLS.request('rain-sensor-status');
 
-	if (IKE.timeout_data_refresh === null) {
-		log.module({ msg : 'Set data refresh timeout' });
+	if (status.vehicle.ignition_level !== 0) {
+		if (IKE.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
+		// setTimeout for next update
+		IKE.timeout_data_refresh = setTimeout(data_refresh, 10000);
 	}
-
-	// setTimeout for next update
-	IKE.timeout_data_refresh = setTimeout(data_refresh, 10000);
 }
 
 // This actually is a bitmask but.. this is also a freetime project
 function decode_aux_heat_led(data) {
+	data.command = 'bro';
+	data.value   = 'aux heat LED: ' + status.obc.aux_heat_led;
+
 	switch (data.msg[2]) {
-		case 0x00:
-			status.obc.aux_heat_led = 'off';
-			break;
-		case 0x04:
-			status.obc.aux_heat_led = 'on';
-			break;
-		case 0x08:
-			status.obc.aux_heat_led = 'blink';
-			break;
-		default:
-			status.obc.aux_heat_led = Buffer.from(data.msg);
+		case 0x00 : update.status('obc.aux_heat_led', 'off');   break;
+		case 0x04 : update.status('obc.aux_heat_led', 'on');    break;
+		case 0x08 : update.status('obc.aux_heat_led', 'blink'); break;
+		default   :	update.status('obc.aux_heat_led', Buffer.from(data.msg));
 	}
+
+	return data;
+}
+
+function decode_country_coding_data(data) {
+	data.command = 'bro';
+	data.value   = 'country coding data';
+
+	return data;
+}
+
+function decode_gong_status(data) {
+	data.command = 'bro';
+	data.value   = 'gong status ' + data.msg;
+
+	return data;
 }
 
 // Below is a s**t hack workaround while I contemplate firing actual events
 function decode_ignition_status(data) {
+	data.command = 'bro';
+	data.value   = 'ignition: ' + status.vehicle.ignition;
+
 	// Init power-state vars
 	IKE.state_powerdown   = false;
 	IKE.state_poweroff    = false;
@@ -197,7 +205,7 @@ function decode_ignition_status(data) {
 
 		// Turn off HDMI display after configured delay
 		setTimeout(() => {
-			HDMI.command('poweroff');
+			HDMI.command('poweroff', true);
 		}, config.media.hdmi.poweroff_delay);
 
 		// Write JSON config and status files
@@ -275,18 +283,353 @@ function decode_ignition_status(data) {
 		// Refresh OBC data
 		if (config.options.obc_refresh_on_start === true) IKE.obc_refresh();
 	}
+
+	return data;
+}
+
+
+function decode_obc_text(data) {
+	data.command = 'upd';
+
+	// data.msg[1] - Layout
+	var layout = obc_values.h2n(data.msg[1]);
+
+	switch (layout) {
+		case 'time': {
+			let string_time_unit;
+			let string_time;
+
+			// Parse unit
+			string_time_unit = Buffer.from([ data.msg[8], data.msg[9] ]);
+			string_time_unit = string_time_unit.toString().trim().toLowerCase();
+
+			// Detect 12h or 24h time and parse value
+			if (string_time_unit === 'am' || string_time_unit === 'pm') {
+				update.status('coding.unit.time', '12h');
+				string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
+			}
+			else {
+				update.status('coding.unit.time', '24h');
+				string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
+			}
+
+			string_time = string_time.toString().trim().toLowerCase();
+
+			// Update status variables
+			update.status('obc.time', string_time);
+			break;
+		}
+
+		case 'date': {
+			let string_date;
+
+			// Parse value
+			string_date = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9], data.msg[10], data.msg[11], data.msg[12] ]);
+			string_date = string_date.toString().trim();
+
+			// Update status variables
+			update.status('obc.date', string_date);
+			break;
+		}
+
+		case 'outside-temp': {
+			let string_outside_temp_unit;
+			let string_outside_temp_negative;
+			let string_outside_temp_value;
+
+			// Parse unit
+			string_outside_temp_unit = Buffer.from([ data.msg[9] ]);
+			string_outside_temp_unit = string_outside_temp_unit.toString().trim().toLowerCase();
+
+			// Parse if it is +/-
+			string_outside_temp_negative = Buffer.from([ data.msg[9] ]);
+			string_outside_temp_negative = string_outside_temp_negative.toString().trim().toLowerCase();
+
+			// Parse value
+			if (string_outside_temp_negative === '-') {
+				string_outside_temp_value = Buffer.from(data.msg[3], [ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
+				string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
+			}
+			else {
+				string_outside_temp_value = Buffer.from([ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
+				string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
+			}
+
+			// Update status variables
+			switch (string_outside_temp_unit) {
+				case 'c': {
+					update.status('coding.unit.temp',           'c');
+					update.status('temperature.exterior.obc.c', Math.round(parseFloat(string_outside_temp_value)));
+					update.status('temperature.exterior.obc.f', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))));
+					break;
+				}
+
+				case 'f': {
+					update.status('coding.unit.temp',           'f');
+					update.status('temperature.exterior.obc.c', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))));
+					update.status('temperature.exterior.obc.f', Math.round(parseFloat(string_outside_temp_value)));
+					break;
+				}
+			}
+			break;
+		}
+
+		case 'consumption-1': {
+			let consumption_l100;
+			let consumption_mpg;
+			let string_consumption_1;
+			let string_consumption_1_unit;
+
+			// Parse unit
+			string_consumption_1_unit = Buffer.from([ data.msg[8] ]);
+			string_consumption_1_unit = string_consumption_1_unit.toString().trim().toLowerCase();
+
+			// Parse value
+			string_consumption_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_consumption_1 = parseFloat(string_consumption_1.toString().trim().toLowerCase());
+
+			// Perform appropriate conversions between units
+			switch (string_consumption_1_unit) {
+				case 'm': {
+					update.status('coding.unit.cons', 'mpg');
+					consumption_mpg  = string_consumption_1;
+					consumption_l100 = 235.21 / string_consumption_1;
+					break;
+				}
+
+				default: {
+					update.status('coding.unit.cons', 'l100');
+					consumption_mpg  = 235.21 / string_consumption_1;
+					consumption_l100 = string_consumption_1;
+					break;
+				}
+			}
+
+			// Update status variables
+			update.status('obc.consumption.c1.mpg',  parseFloat(consumption_mpg.toFixed(2)));
+			update.status('obc.consumption.c1.l100', parseFloat(consumption_l100.toFixed(2)));
+			break;
+		}
+
+		case 'consumption-2': {
+			let consumption_l100;
+			let consumption_mpg;
+			let string_consumption_2;
+			let string_consumption_2_unit;
+
+			// Parse unit
+			string_consumption_2_unit = Buffer.from([ data.msg[8] ]);
+			string_consumption_2_unit = string_consumption_2_unit.toString().trim().toLowerCase();
+
+			// Parse value
+			string_consumption_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_consumption_2 = parseFloat(string_consumption_2.toString().trim().toLowerCase());
+
+			// Perform appropriate conversions between units and round to 2 decimals
+			switch (string_consumption_2_unit) {
+				case 'm': {
+					consumption_mpg  = string_consumption_2;
+					consumption_l100 = 235.215 / string_consumption_2;
+					break;
+				}
+
+				default: {
+					consumption_mpg  = 235.215 / string_consumption_2;
+					consumption_l100 = string_consumption_2;
+				}
+			}
+
+			// Update status variables
+			update.status('obc.consumption.c2.mpg',  parseFloat(consumption_mpg.toFixed(2)));
+			update.status('obc.consumption.c2.l100', parseFloat(consumption_l100.toFixed(2)));
+			break;
+		}
+
+		case 'range': {
+			let string_range;
+			let string_range_unit;
+
+			// Parse value
+			string_range = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_range = string_range.toString().trim();
+
+			string_range_unit = Buffer.from([ data.msg[7], data.msg[8] ]);
+			string_range_unit = string_range_unit.toString().trim().toLowerCase();
+
+			// Update status variables
+			switch (string_range_unit) {
+				case 'ml': {
+					update.status('coding.unit.distance', 'mi');
+					update.status('obc.range.mi', parseFloat(string_range));
+					update.status('obc.range.km', parseFloat(convert(parseFloat(string_range)).from('kilometre').to('us mile').toFixed(2)));
+					break;
+				}
+
+				case 'km': {
+					update.status('coding.unit.distance', 'km');
+					update.status('obc.range.mi', parseFloat(convert(parseFloat(string_range)).from('us mile').to('kilometre').toFixed(2)));
+					update.status('obc.range.km', parseFloat(string_range));
+					break;
+				}
+			}
+			break;
+		}
+
+		case 'distance': {
+			let string_distance;
+
+			// Parse value
+			string_distance = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_distance = string_distance.toString().trim().toLowerCase();
+
+			// Update status variables
+			update.status('obc.distance', parseFloat(string_distance));
+			break;
+		}
+
+		case 'arrival': {
+			let string_arrival;
+
+			// Parse value
+			string_arrival = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
+			string_arrival = string_arrival.toString().trim().toLowerCase();
+
+			// Update status variables
+			update.status('obc.arrival', string_arrival);
+			break;
+		}
+
+		case 'limit': {
+			let string_limit;
+
+			// Parse value
+			string_limit = Buffer.from([ data.msg[3], data.msg[4], data.msg[5] ]);
+			string_limit = parseFloat(string_limit.toString().trim().toLowerCase());
+
+			// Update status variables
+			update.status('obc.limit', parseFloat(string_limit.toFixed(2)));
+			break;
+		}
+
+		case 'average-speed': {
+			let string_average_speed;
+			let string_average_speed_unit;
+
+			// Parse unit
+			string_average_speed_unit = Buffer.from([ data.msg[8] ]);
+			string_average_speed_unit = string_average_speed_unit.toString().trim().toLowerCase();
+
+			// Parse value
+			string_average_speed = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_average_speed = parseFloat(string_average_speed.toString().trim().toLowerCase());
+
+			// Convert values appropriately based on coding valueunits
+			switch (string_average_speed_unit) {
+				case 'k': {
+					update.status('obc.coding.unit.speed', 'kmh');
+
+					// Update status variables
+					update.status('obc.average_speed.kmh', parseFloat(string_average_speed.toFixed(2)));
+					update.status('obc.average_speed.mph', parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2)));
+					break;
+				}
+
+				case 'm': {
+					update.status('obc.coding.unit.speed', 'mph');
+
+					// Update status variables
+					update.status('obc.average_speed.kmh', parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2)));
+					update.status('obc.average_speed.mph', parseFloat(string_average_speed.toFixed(2)));
+					break;
+				}
+			}
+			break;
+		}
+
+		case 'code': {
+			let string_code;
+
+			// Parse value
+			string_code = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_code = string_code.toString().trim().toLowerCase();
+
+			// Update status variable
+			update.status('obc.code', string_code);
+			break;
+		}
+
+		case 'stopwatch': {
+			let string_stopwatch;
+
+			// Parse value
+			string_stopwatch = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_stopwatch = parseFloat(string_stopwatch.toString().trim().toLowerCase()).toFixed(2);
+
+			// Update status variables
+			update.status('obc.stopwatch', string_stopwatch);
+			break;
+		}
+
+		case 'timer-1': {
+			let string_aux_heat_timer_1;
+
+			// Parse value
+			string_aux_heat_timer_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
+			string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
+
+			// Update status variables
+			update.status('obc.aux_heat_timer.t1', string_aux_heat_timer_1);
+			break;
+		}
+
+		case 'timer-2': {
+			let string_aux_heat_timer_2;
+
+			// Parse value
+			string_aux_heat_timer_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
+			string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
+
+			// Update status variables
+			update.status('obc.aux_heat_timer.t2', string_aux_heat_timer_2);
+			break;
+		}
+
+		case 'interim': {
+			let string_interim;
+
+			// Parse value
+			string_interim = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
+			string_interim = parseFloat(string_interim.toString().trim().toLowerCase()).toFixed(2);
+
+			// Update status variables
+			update.status('obc.interim', parseFloat(string_interim));
+			break;
+		}
+	}
+
+	data.value = 'OBC ' + layout.replace(/-/, ' ') + ': \'' + hex.h2s(data.msg) + '\'';
+
+	return data;
 }
 
 function decode_odometer(data) {
+	data.command = 'bro';
+	data.value   = 'odometer';
+
 	var odometer_value1 = data.msg[3] << 16;
 	var odometer_value2 = data.msg[2] << 8;
 	var odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
-	status.vehicle.odometer.km = odometer_value;
-	status.vehicle.odometer.mi = Math.round(convert(odometer_value).from('kilometre').to('us mile'));
+	update.status('vehicle.odometer.km', odometer_value);
+	update.status('vehicle.odometer.mi', Math.round(convert(odometer_value).from('kilometre').to('us mile')));
+
+	return data;
 }
 
 function decode_sensor_status(data) {
+	data.command = 'bro';
+	data.value   = 'sensor status';
+
 	// data.msg[2]:
 	//   1 = Engine running
 	//  16 = R (4)
@@ -301,7 +644,7 @@ function decode_sensor_status(data) {
 
 	// If the engine is newly running, power up HDMI display
 	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
-		if (status.hdmi.power_status === 'STANDBY') HDMI.command('poweron');
+		HDMI.command('poweron');
 	}
 
 	// If the vehicle is newly in reverse, show IKE message if configured to do so
@@ -310,9 +653,14 @@ function decode_sensor_status(data) {
 			if (status.vehicle.reverse === true) IKE.text_override('you\'re in reverse..');
 		}
 	}
+
+	return data;
 }
 
 function decode_speed_values(data) {
+	data.command = 'bro';
+	data.value   = 'speed values';
+
 	// Update vehicle and engine speed variables
 	// Also allow update from IBUS/KBUS even if CANBUS is enabled when the ignition
 	if (config.canbus.speed === false || status.vehicle.ignition_level < 3) {
@@ -323,23 +671,28 @@ function decode_speed_values(data) {
 	if (config.canbus.rpm === false || status.vehicle.ignition_level < 3) {
 		update.status('engine.speed', parseFloat(data.msg[2] * 100));
 	}
+
+	return data;
 }
 
 function decode_temperature_values(data) {
+	data.command = 'bro';
+	data.value   = 'temperature values';
+
 	// Update external and engine coolant temp variables
 	if (config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
-		update.status('temperature.exterior.c', parseFloat(data.msg[1]));
+		update.status('temperature.exterior.c', Math.round(parseFloat(data.msg[1])));
 		update.status('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
 	}
 
 	if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
-		// If updated, trigger a HUD refresh
-		// This should be event-based
-		update.status('temperature.coolant.c', parseFloat(data.msg[2]));
+		update.status('temperature.coolant.c', Math.round(parseFloat(data.msg[2])));
 		update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
 	}
 
-	IKE.hud_refresh();
+	hud_refresh();
+
+	return data;
 }
 
 function ok2hud() {
@@ -350,7 +703,7 @@ function ok2hud() {
 	if (IKE.hud_override === true) return false;
 
 	// Bounce if the last update was less than 500ms ago
-	if (now() - IKE.last_hud_refresh <= 250) return false;
+	if (now() - IKE.last_hud_refresh <= 500) return false;
 
 	return true;
 }
@@ -369,69 +722,43 @@ function hud_refresh_speed() {
 function hud_refresh() {
 	if (!ok2hud()) return;
 
-	let load_1m;
-	let string_cons;
-	let string_speed;
-	let string_temp;
-	let string_time = moment().format('HH:mm');
+	log.msg({ msg : 'Refreshing HUD' });
+
+	let string_load;
+	let string_cons  = '';
+	let string_speed = '';
+	let string_temp  = '';
+	let string_time  = moment().format('HH:mm');
 
 	// Only add data to strings if it is populated
-	string_cons = '     ';
-	if (status.obc.consumption.c1.mpg !== null) {
-		string_cons = parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm';
-	}
-	string_cons = pad(string_cons, 8);
-
-	// 0-pad string_cons
-	if (string_cons.length === 4) string_cons = '0' + string_cons;
-
-
-	string_speed = '     ';
-	if (status.vehicle.speed.mph !== null) {
-		string_speed = status.vehicle.speed.mph + 'mph';
-	}
-	string_speed = pad(string_speed, 8);
-
-	string_temp = '  ';
-	if (status.temperature.coolant.c !== null) {
-		string_temp = Math.round(status.temperature.coolant.c) + '¨';
-	}
-
-
-	// Format the output (ghetto-ly)
-	switch (string_temp.length) {
-		case 4 : string_temp = ' ' + string_temp + '  ';  break;
-		case 3 : string_temp = ' ' + string_temp + '   '; break;
-		case 2 : string_temp = ' ' + string_temp + '    ';
-	}
-
-
-	// HUD strings object
-	let hud_strings = {
-		left   : string_speed,
-		center : string_temp,
-		right  : string_time,
-	};
+	if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
+	if (status.temperature.coolant.c  !== null) string_temp  = status.temperature.coolant.c + '¨';
+	if (status.vehicle.speed.mph      !== null) string_speed = status.vehicle.speed.mph + 'mph';
 
 	// 1m sysload to percentage
-	load_1m = (parseFloat((os.loadavg()[0] / os.cpus().length).toFixed(2)) * 100).toFixed(0);
-	load_1m = status.system.temperature + '¨|' + load_1m + '%';
-	load_1m = pad(load_1m, 8);
+	string_load = Math.round(status.system.cpu.load_pct);
+	string_load = status.system.temperature + '¨|' + string_load + '%';
+
+	// Space-pad strings
+	let hud_strings = {
+		cons   : pad(string_cons,  9),
+		left   : pad(string_speed, 9),
+		center : pad(string_temp,  6),
+		right  : pad(string_time,  9),
+	};
 
 	// Change left string to be load/CPU temp if over threshold
-	if (status.system.temperature > 65) hud_strings.left = load_1m;
+	if (status.system.temperature > 65) hud_strings.left = pad(string_load, 9);
 
 	// Assemble text string
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
-	text(hud_string, () => {
-		IKE.last_hud_refresh = now();
-	});
+	text_nopad(hud_string, () => { IKE.last_hud_refresh = now(); });
 
 	// socket.lcd_text_tx({
-	//   upper : 'kdm-e39-01',
-	//   lower : status.system.temperature+'C|'+status.system.cpu.load_pct+'%',
+	// 	upper : 'kdm-e39-01',
+	// 	lower : status.system.temperature + 'C|' + status.system.cpu.load_pct + '%',
 	// });
 }
 
@@ -442,29 +769,15 @@ function ignition(value) {
 
 	var status;
 	switch (value) {
-		case 'off':
-			status = 0x00;
-			break;
-		case 'pos1':
-			status = 0x01;
-			break;
-		case 'pos2':
-			status = 0x03;
-			break;
-		case 'pos3':
-			status = 0x07;
+		case 'off'  : status = 0x00; break;
+		case 'pos1' : status = 0x01; break;
+		case 'pos2' : status = 0x03; break;
+		case 'pos3' : status = 0x07;
 	}
 
 	bus.data.send({
 		dst : 'GLO',
 		msg : [ 0x11, status ],
-	});
-}
-
-// Logging shortcut
-function logmod(msg) {
-	log.module({
-		msg : msg,
 	});
 }
 
@@ -585,365 +898,39 @@ function parse_out(data) {
 	// Init variables
 	switch (data.msg[0]) {
 		case 0x07: // Gong status
-			data.command = 'bro';
-			data.value   = 'gong status ' + data.msg;
+			data = decode_gong_status(data);
 			break;
 
 		case 0x11: // Broadcast: Ignition status
-			decode_ignition_status(data);
-			data.command = 'bro';
-			data.value   = 'ignition: ' + status.vehicle.ignition;
+			data = decode_ignition_status(data);
 			break;
 
 		case 0x13: // IKE sensor status
-			decode_sensor_status(data);
-			data.command = 'bro';
-			data.value   = 'sensor status';
+			data = decode_sensor_status(data);
 			break;
 
 		case 0x15: // country coding data
-			data.command = 'bro';
-			data.value   = 'country coding data';
+			data = decode_country_coding_data(data);
 			break;
 
 		case 0x17: // Odometer
-			decode_odometer(data);
-			data.command = 'bro';
-			data.value   = 'odometer';
+			data = decode_odometer(data);
 			break;
 
 		case 0x18: // Vehicle speed and RPM
-			decode_speed_values(data);
-			data.command = 'bro';
-			data.value   = 'speed values';
+			data = decode_speed_values(data);
 			break;
 
 		case 0x19: // Coolant temp and external temp
-			decode_temperature_values(data);
-			data.command = 'bro';
-			data.value   = 'temperature values';
+			data = decode_temperature_values(data);
 			break;
 
 		case 0x24: // Update: OBC text
-			data.command = 'upd';
-
-			// data.msg[1] - Layout
-			var layout = obc_values.h2n(data.msg[1]);
-
-			switch (layout) {
-				case 'time': {
-					let string_time_unit;
-					let string_time;
-
-					// Parse unit
-					string_time_unit = Buffer.from([ data.msg[8], data.msg[9] ]);
-					string_time_unit = string_time_unit.toString().trim().toLowerCase();
-
-					// Detect 12h or 24h time and parse value
-					if (string_time_unit === 'am' || string_time_unit === 'pm') {
-						update.status('coding.unit.time', '12h');
-						string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
-					}
-					else {
-						update.status('coding.unit.time', '24h');
-						string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
-					}
-
-					string_time = string_time.toString().trim().toLowerCase();
-
-					// Update status variables
-					update.status('obc.time', string_time);
-					break;
-				}
-
-				case 'date': {
-					let string_date;
-
-					// Parse value
-					string_date = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9], data.msg[10], data.msg[11], data.msg[12] ]);
-					string_date = string_date.toString().trim();
-
-					// Update status variables
-					update.status('obc.date', string_date);
-					break;
-				}
-
-				case 'outside-temp': {
-					let string_outside_temp_unit;
-					let string_outside_temp_negative;
-					let string_outside_temp_value;
-
-					// Parse unit
-					string_outside_temp_unit = Buffer.from([ data.msg[9] ]);
-					string_outside_temp_unit = string_outside_temp_unit.toString().trim().toLowerCase();
-
-					// Parse if it is +/-
-					string_outside_temp_negative = Buffer.from([ data.msg[9] ]);
-					string_outside_temp_negative = string_outside_temp_negative.toString().trim().toLowerCase();
-
-					// Parse value
-					if (string_outside_temp_negative === '-') {
-						string_outside_temp_value = Buffer.from(data.msg[3], [ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
-						string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
-					}
-					else {
-						string_outside_temp_value = Buffer.from([ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
-						string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
-					}
-
-					// Update status variables
-					switch (string_outside_temp_unit) {
-						case 'c': {
-							status.coding.unit.temp           = 'c';
-							status.temperature.exterior.obc.c = parseFloat(string_outside_temp_value);
-							status.temperature.exterior.obc.f = parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'));
-							break;
-						}
-
-						case 'f': {
-							status.coding.unit.temp           = 'f';
-							status.temperature.exterior.obc.c = parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'));
-							status.temperature.exterior.obc.f = parseFloat(string_outside_temp_value);
-							break;
-						}
-					}
-					break;
-				}
-
-				case 'consumption-1': {
-					let consumption_l100;
-					let consumption_mpg;
-					let string_consumption_1;
-					let string_consumption_1_unit;
-
-					// Parse unit
-					string_consumption_1_unit = Buffer.from([ data.msg[8] ]);
-					string_consumption_1_unit = string_consumption_1_unit.toString().trim().toLowerCase();
-
-					// Parse value
-					string_consumption_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_consumption_1 = parseFloat(string_consumption_1.toString().trim().toLowerCase());
-
-					// Perform appropriate conversions between units
-					switch (string_consumption_1_unit) {
-						case 'm': {
-							status.coding.unit.cons = 'mpg';
-							consumption_mpg         = string_consumption_1;
-							consumption_l100        = 235.21 / string_consumption_1;
-							break;
-						}
-
-						default: {
-							status.coding.unit.cons = 'l100';
-							consumption_mpg         = 235.21 / string_consumption_1;
-							consumption_l100        = string_consumption_1;
-							break;
-						}
-					}
-
-					// Update status variables
-					status.obc.consumption.c1.mpg  = parseFloat(consumption_mpg.toFixed(2));
-					status.obc.consumption.c1.l100 = parseFloat(consumption_l100.toFixed(2));
-					break;
-				}
-
-				case 'consumption-2': {
-					let consumption_l100;
-					let consumption_mpg;
-					let string_consumption_2;
-					let string_consumption_2_unit;
-
-					// Parse unit
-					string_consumption_2_unit = Buffer.from([ data.msg[8] ]);
-					string_consumption_2_unit = string_consumption_2_unit.toString().trim().toLowerCase();
-
-					// Parse value
-					string_consumption_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_consumption_2 = parseFloat(string_consumption_2.toString().trim().toLowerCase());
-
-					// Perform appropriate conversions between units and round to 2 decimals
-					if (string_consumption_2_unit === 'm') {
-						consumption_mpg  = string_consumption_2;
-						consumption_l100 = 235.215 / string_consumption_2;
-					}
-					else {
-						consumption_mpg  = 235.215 / string_consumption_2;
-						consumption_l100 = string_consumption_2;
-					}
-
-					// Update status variables
-					status.obc.consumption.c2.mpg  = parseFloat(consumption_mpg.toFixed(2));
-					status.obc.consumption.c2.l100 = parseFloat(consumption_l100.toFixed(2));
-					break;
-				}
-
-				case 'range': {
-					let string_range;
-					let string_range_unit;
-
-					// Parse value
-					string_range = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_range = string_range.toString().trim();
-
-					string_range_unit = Buffer.from([ data.msg[7], data.msg[8] ]);
-					string_range_unit = string_range_unit.toString().trim().toLowerCase();
-
-					// Update status variables
-					switch (string_range_unit) {
-						case 'ml': {
-							status.coding.unit.distance = 'mi';
-							status.obc.range.mi = parseFloat(string_range);
-							status.obc.range.km = parseFloat(convert(parseFloat(string_range)).from('kilometre').to('us mile').toFixed(2));
-							break;
-						}
-
-						case 'km': {
-							status.coding.unit.distance = 'km';
-							status.obc.range.mi = parseFloat(convert(parseFloat(string_range)).from('us mile').to('kilometre').toFixed(2));
-							status.obc.range.km = parseFloat(string_range);
-							break;
-						}
-					}
-					break;
-				}
-
-				case 'distance': {
-					let string_distance;
-
-					// Parse value
-					string_distance = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_distance = string_distance.toString().trim().toLowerCase();
-
-					// Update status variables
-					status.obc.distance = parseFloat(string_distance);
-					break;
-				}
-
-				case 'arrival': {
-					let string_arrival;
-
-					// Parse value
-					string_arrival = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
-					string_arrival = string_arrival.toString().trim().toLowerCase();
-
-					// Update status variables
-					status.obc.arrival = string_arrival;
-					break;
-				}
-
-				case 'limit': {
-					let string_limit;
-
-					// Parse value
-					string_limit = Buffer.from([ data.msg[3], data.msg[4], data.msg[5] ]);
-					string_limit = parseFloat(string_limit.toString().trim().toLowerCase());
-
-					// Update status variables
-					status.obc.limit = parseFloat(string_limit.toFixed(2));
-					break;
-				}
-
-				case 'average-speed': {
-					let string_average_speed;
-					let string_average_speed_unit;
-
-					// Parse unit
-					string_average_speed_unit = Buffer.from([ data.msg[8] ]);
-					string_average_speed_unit = string_average_speed_unit.toString().trim().toLowerCase();
-
-					// Parse value
-					string_average_speed = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_average_speed = parseFloat(string_average_speed.toString().trim().toLowerCase());
-
-					// Convert values appropriately based on coding valueunits
-					switch (string_average_speed_unit) {
-						case 'k': {
-							status.coding.unit.speed = 'kmh';
-							// Update status variables
-							status.obc.average_speed.kmh = parseFloat(string_average_speed.toFixed(2));
-							status.obc.average_speed.mph = parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2));
-							break;
-						}
-
-						case 'm': {
-							status.coding.unit.speed = 'mph';
-							// Update status variables
-							status.obc.average_speed.kmh = parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2));
-							status.obc.average_speed.mph = parseFloat(string_average_speed.toFixed(2));
-							break;
-						}
-					}
-					break;
-				}
-
-				case 'code': {
-					let string_code;
-
-					// Parse value
-					string_code = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_code = string_code.toString().trim().toLowerCase();
-
-					// Update status variable
-					status.obc.code = string_code;
-					break;
-				}
-
-				case 'stopwatch': {
-					let string_stopwatch;
-
-					// Parse value
-					string_stopwatch = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_stopwatch = parseFloat(string_stopwatch.toString().trim().toLowerCase()).toFixed(2);
-
-					// Update status variables
-					status.obc.stopwatch = string_stopwatch;
-					break;
-				}
-
-				case 'timer-1': {
-					let string_aux_heat_timer_1;
-
-					// Parse value
-					string_aux_heat_timer_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
-					string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
-
-					// Update status variables
-					status.obc.aux_heat_timer.t1 = string_aux_heat_timer_1;
-					break;
-				}
-
-				case 'timer-2': {
-					let string_aux_heat_timer_2;
-
-					// Parse value
-					string_aux_heat_timer_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
-					string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
-
-					// Update status variables
-					status.obc.aux_heat_timer.t2 = string_aux_heat_timer_2;
-					break;
-				}
-
-				case 'interim': {
-					let string_interim;
-
-					// Parse value
-					string_interim = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-					string_interim = parseFloat(string_interim.toString().trim().toLowerCase()).toFixed(2);
-
-					// Update status variables
-					status.obc.interim = parseFloat(string_interim);
-					break;
-				}
-			}
-
-			data.value = 'OBC ' + layout.replace(/-/, ' ') + ': \'' + hex.h2s(data.msg) + '\'';
+			data = decode_obc_text(data);
 			break;
 
 		case 0x2A: // Broadcast: Aux heat LED status
-			decode_aux_heat_led(data);
-			data.command = 'bro';
-			data.value   = 'aux heat LED: ' + status.obc.aux_heat_led;
+			data = decode_aux_heat_led(data);
 			break;
 
 		case 0x57: // Broadcast: BC button press (MFL BC stalk button)
@@ -969,28 +956,13 @@ function request(value) {
 	let loop_dst;
 
 	switch (value) {
-		case 'ignition':
-			cmd = [ 0x10 ];
-			break;
-		case 'sensor':
-			cmd = [ 0x12 ];
-			break;
-		case 'coding':
-			src = 'RAD';
-			cmd = [ 0x14 ];
-			break;
-		case 'odometer':
-			src = 'EWS';
-			cmd = [ 0x16 ];
-			break;
-		case 'dimmer':
-			src = 'IHKA';
-			cmd = [ 0x1D, 0xC5 ];
-			break;
-		case 'temperature':
-			src = 'LCM';
-			cmd = [ 0x1D, 0xC5 ];
-			break;
+		case 'ignition'    : cmd = [ 0x10 ];                     break;
+		case 'sensor'      : cmd = [ 0x12 ];                     break;
+		case 'coding'      : cmd = [ 0x14 ];       src = 'RAD';  break;
+		case 'odometer'    : cmd = [ 0x16 ];       src = 'EWS';  break;
+		case 'dimmer'      : cmd = [ 0x1D, 0xC5 ]; src = 'IHKA'; break;
+		case 'temperature' : cmd = [ 0x1D, 0xC5 ]; src = 'LCM';  break;
+
 		case 'status-glo': {
 			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
@@ -1002,6 +974,7 @@ function request(value) {
 		case 'status-short':
 			bus.modules.modules_check.forEach((loop_dst) => {
 				src = module_name;
+
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
 					bus.cmds.request_device_status('IKE', loop_dst);
 				}
@@ -1015,58 +988,67 @@ function request(value) {
 			break;
 	}
 
+	if (cmd === null) return;
+
 	log.module({ msg : 'Requesting \'' + value + '\'' });
 
-	if (cmd !== null) {
-		bus.data.send({
-			src : src,
-			dst : dst,
-			msg : cmd,
-		});
-	}
+	bus.data.send({
+		src : src,
+		dst : dst,
+		msg : cmd,
+	});
+}
+
+// Trim IKE text string and potentially space-pad
+function text_prepare(message, pad = false) {
+	// Trim string to max length
+	message = message.substring(0, IKE.max_len_text);
+
+	// Space-pad if pad === true
+	if (pad === true) message = pad(message, IKE.max_len_text);
+
+	// Convert ASCII to hex and return
+	return hex.a2h(message);
+}
+
+// IKE cluster text send message
+function text(message, cb = null) {
+	let message_hex;
+
+	// message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+	message_hex = [ 0x23, 0x42, 0x30 ];
+	message_hex = message_hex.concat(text_prepare(message));
+	// message_hex = message_hex.concat(0x04);
+
+	bus.data.send({
+		src : 'RAD',
+		msg : message_hex,
+	});
+
+	// Exec callback function if present
+	typeof cb === 'function' && cb();
 }
 
 // IKE cluster text send message - without space padding
 function text_nopad(message, cb = null) {
 	let message_hex;
 
-	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
-	message_hex = message_hex.concat(hex.a2h(message));
-	message_hex = message_hex.concat(0x04);
+	message_hex = [ 0x23, 0x42, 0x30 ];
+	message_hex = message_hex.concat(text_prepare(message, false));
+	// message_hex = message_hex.concat(0x66);
 
 	bus.data.send({
-		src : 'RAD',
+		src : 'TEL',
 		msg : message_hex,
 	});
 
 	// Exec callback function if present
-	if (typeof cb === 'function') process.nextTick(cb);
-}
-
-// IKE cluster text send message
-function text(message, cb = null) {
-	let message_hex;
-	let max_length = 20;
-
-	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
-	// Trim string to max length
-	message_hex = message_hex.concat(hex.a2h(pad(message.substring(0, max_length), 20)));
-	message_hex = message_hex.concat(0x04);
-
-	bus.data.send({
-		src : 'RAD',
-		msg : message_hex,
-	});
-
-	// Exec callback function if present
-	if (typeof cb === 'function') process.nextTick(cb);
+	typeof cb === 'function' && cb();
 }
 
 // IKE cluster text send message, override other messages
 function text_override(message, timeout = 2500, direction = 'left', turn = false) {
 	// kodi.notify(module_name, message);
-	let max_length = 20;
-
 	let scroll_delay         = 300;
 	let scroll_delay_timeout = scroll_delay * 5;
 
@@ -1082,14 +1064,12 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 	IKE.hud_override_text = message;
 
 	// Equal to or less than 20 char
-	if (message.length - max_length <= 0) {
-		if (IKE.hud_override_text == message) {
-			IKE.text(message);
-		}
+	if (message.length - IKE.max_len_text <= 0) {
+		if (IKE.hud_override_text == message) IKE.text(message);
 	}
 	else {
 		// Adjust timeout since we will be scrolling
-		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - max_length));
+		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - IKE.max_len_text));
 
 		// Send initial string if we're currently the first up
 		if (IKE.hud_override_text == message) {
@@ -1097,21 +1077,21 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 				IKE.text(message);
 			}
 			else {
-				IKE.text(message.substring(message.length - max_length, message.length));
+				IKE.text(message.substring(message.length - IKE.max_len_text, message.length));
 			}
 		}
 
 		// Add a time buffer before scrolling starts (if this isn't a turn signal message)
 		setTimeout(() => {
-			for (var scroll = 0; scroll <= message.length - max_length; scroll++) {
+			for (var scroll = 0; scroll <= message.length - IKE.max_len_text; scroll++) {
 				setTimeout((current_scroll, message_full, direction) => {
 					// Only send the message if we're currently the first up
 					if (IKE.hud_override_text == message_full) {
 						if (direction == 'left') {
-							IKE.text(message.substring(current_scroll, current_scroll + max_length));
+							IKE.text(message.substring(current_scroll, current_scroll + IKE.max_len_text));
 						}
 						else {
-							IKE.text(message.substring(message.length - max_length - current_scroll, message.length - current_scroll));
+							IKE.text(message.substring(message.length - IKE.max_len_text - current_scroll, message.length - current_scroll));
 						}
 					}
 				}, scroll_delay * scroll, scroll, message, direction);
@@ -1136,7 +1116,7 @@ function text_urgent(message, timeout = 5000) {
 	kodi.notify(module_name, message);
 
 	message_hex = [ 0x1A, 0x35, 0x00 ];
-	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
+	message_hex = message_hex.concat(text_prepare(message));
 
 	bus.data.send({
 		src : 'CCM',
@@ -1156,7 +1136,7 @@ function text_urgent_off() {
 		msg : [ 0x1A, 0x30, 0x00 ],
 	});
 
-	IKE.hud_refresh();
+	hud_refresh();
 }
 
 // Check control warnings
@@ -1164,18 +1144,18 @@ function text_warning(message, timeout = 10000) {
 	let message_hex;
 
 	// 3rd byte:
-	// 0x00 : no gong,   no arrow
-	// 0x01 : no gong,   solid arrow
-	// 0x02 : no gong,   no arrow
-	// 0x03 : no gong,   flash arrow
-	// 0x04 : 1 hi gong, no arrow
-	// 0x08 : 2 hi gong, no arrow
-	// 0x0C : 3 hi gong, no arrow
-	// 0x10 : 1 lo gong, no arrow
-	// 0x18 : 3 beep,    no arrow
+	// 0x00 : arrow: none,  sound: none
+	// 0x01 : arrow: solid, sound: none
+	// 0x02 : arrow: none,  sound: none
+	// 0x03 : arrow: flash, sound: none
+	// 0x04 : arrow: none,  sound: 1 gong,  high
+	// 0x08 : arrow: none,  sound: 2 gongs, high
+	// 0x0C : arrow: none,  sound: 3 gongs, high
+	// 0x10 : arrow: none,  sound: 1 gong,  low
+	// 0x18 : arrow: none,  sound: 3 beeps
 
 	message_hex = [ 0x1A, 0x37, 0x03 ]; // no gong, flash arrow
-	message_hex = message_hex.concat(hex.a2h(pad(message, 20)));
+	message_hex = message_hex.concat(text_prepare(message));
 
 	bus.data.send({
 		src : 'CCM',
@@ -1191,12 +1171,14 @@ function text_warning(message, timeout = 10000) {
 
 // Exported data
 module.exports = {
+	// Max length of cluster text
+	max_len_text : 20,
+
 	// HUD refresh vars
 	timeout_data_refresh : null,
 	last_hud_refresh     : now(),
 	hud_override         : false,
 	hud_override_text    : null,
-
 
 	// Ignition state change vars
 	state_powerdown   : null,
@@ -1206,30 +1188,22 @@ module.exports = {
 	state_start_begin : null,
 	state_start_end   : null,
 
-
 	// Functions
-	api_command               : api_command,
-	data_refresh              : data_refresh,
-	decode_aux_heat_led       : decode_aux_heat_led,
-	decode_ignition_status    : decode_ignition_status,
-	decode_odometer           : decode_odometer,
-	decode_sensor_status      : decode_sensor_status,
-	decode_speed_values       : decode_speed_values,
-	decode_temperature_values : decode_temperature_values,
-	hud_refresh               : hud_refresh,
-	hud_refresh_speed         : hud_refresh_speed,
-	ignition                  : ignition,
-	logmod                    : logmod,
-	obc_clock                 : obc_clock,
-	obc_data                  : obc_data,
-	obc_refresh               : obc_refresh,
-	parse_out                 : parse_out,
-	text                      : text,
-	text_nopad                : text_nopad,
-	text_override             : text_override,
-	text_urgent               : text_urgent,
-	text_urgent_off           : text_urgent_off,
-	text_warning              : text_warning,
+	api_command       : api_command,
+	data_refresh      : data_refresh,
+	hud_refresh       : hud_refresh,
+	hud_refresh_speed : hud_refresh_speed,
+	ignition          : ignition,
+	obc_clock         : obc_clock,
+	obc_data          : obc_data,
+	obc_refresh       : obc_refresh,
+	parse_out         : parse_out,
+	text              : text,
+	text_nopad        : text_nopad,
+	text_override     : text_override,
+	text_urgent       : text_urgent,
+	text_urgent_off   : text_urgent_off,
+	text_warning      : text_warning,
 
 	request : request,
 };

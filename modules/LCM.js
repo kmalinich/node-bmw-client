@@ -42,8 +42,6 @@ function auto_lights() {
 			// Set status variable
 			update.status('lights.auto.active', true);
 
-			// Process/send LCM data on 6 second timeout (for safety)
-			// LCM diag command timeout is 15 seconds
 			auto_lights_process();
 	}
 }
@@ -53,13 +51,30 @@ function auto_lights_process() {
 	// Init variables
 	let new_reason;
 	let new_lowbeam;
-	let current_time = Date.now();
-	let sun_times    = suncalc.getTimes(current_time, config.location.latitude, config.location.longitude);
-	let lights_on    = sun_times.sunsetStart;
-	let lights_off   = sun_times.sunriseEnd;
+
+	let now_time  = Date.now();
+	let now_epoch = Math.floor(now_time / 1000);
+
+	let now_offset  = 0;
+	let now_weather = false;
+
+	// Factor in cloud cover to lights on/off time
+	status.weather.daily.data.forEach((value) => {
+		if (now_weather === true) return;
+
+		if ((now_epoch - value.time) <= 0) {
+			// Add 3 hours * current cloudCover value
+			now_offset = value.cloudCover * 3 * 60 * 60 * 1000;
+			now_weather = true;
+		}
+	});
+
+	let sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
+	let lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
+	let lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
 
 	// Debug logging
-	// log.module({ msg : '   current : \''+current_time+'\'' });
+	// log.module({ msg : '   current : \''+now_time+'\'' });
 	// log.module({ msg : ' lights_on : \''+lights_on+'\''    });
 	// log.module({ msg : 'lights_off : \''+lights_off+'\''   });
 
@@ -78,15 +93,15 @@ function auto_lights_process() {
 		new_lowbeam = true;
 	}
 	// Check time of day
-	else if (current_time < lights_off) {
+	else if (now_time < lights_off) {
 		new_reason  = 'before dawn';
 		new_lowbeam = true;
 	}
-	else if (current_time > lights_off && current_time < lights_on) {
+	else if (now_time > lights_off && now_time < lights_on) {
 		new_reason  = 'after dawn, before dusk';
 		new_lowbeam = false;
 	}
-	else if (current_time > lights_on) {
+	else if (now_time > lights_on) {
 		new_reason  = 'after dusk';
 		new_lowbeam = true;
 	}
@@ -104,8 +119,9 @@ function auto_lights_process() {
 
 	reset();
 
-	// Fire 6sec timeout
-	LCM.timeouts.lights_auto = setTimeout(auto_lights_process, 6000);
+	// Process/send LCM data on 10 second timeout (for safety)
+	// LCM diag command timeout is 15 seconds
+	LCM.timeouts.lights_auto = setTimeout(auto_lights_process, 10000);
 }
 
 // Cluster/interior backlight
@@ -620,27 +636,31 @@ function parse_out(data) {
 			break;
 
 		case 0x5C: // Broadcast: light dimmer status
-			status.lights.dimmer_value_3 = data.msg[1];
 			data.command = 'bro';
 			data.value   = 'dimmer 3 : ' + status.lights.dimmer_value_3;
+			update.status('lights.dimmer_value_3', data.msg[1]);
 			break;
 
 		case 0xA0: // Reply to DIA: success
 			data.command = 'rep';
+
 			switch (data.msg.length) {
 				case 33:
 					data.command = 'bro';
 					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
+
 				case 13:
 					data.command = 'bro';
 					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
+
 				case 1:
 					data.value = 'ACK';
 					break;
+
 				default:
 					data.value = Buffer.from(data.msg);
 			}
