@@ -20,7 +20,7 @@ function parse_316(data) {
 	};
 
 	// Occasionally the RPM is parses as something less than 50.. no idea why
-	if (parse.rpm > 100 && parse.rpm !== 0) update.status('engine.speed', parse.rpm, false);
+	if (parse.rpm > 200 || parse.rpm === 0) update.status('engine.speed', parse.rpm, false);
 
 	update.status('engine.ac_clutch', parse.ac_clutch);
 
