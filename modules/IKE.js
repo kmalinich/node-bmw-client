@@ -41,11 +41,11 @@ function data_refresh() {
 	}
 
 	// Request fresh data
-	GM.request('door-status');
+	// GM.request('door-status');
 	IKE.request('ignition');
 	IKE.request('temperature');
 	// LCM.request('dimmer');
-	// LCM.request('io-status');
+	LCM.request('io-status');
 	// LCM.request('light-status');
 	// obc_data('get', 'consumption-1');
 
