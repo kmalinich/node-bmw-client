@@ -41,7 +41,7 @@
 	"optionalDependencies": {
 		"dbus-native": "^0.2.3",
 		"node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
-		"onoff": "^1.1.7",
+		"onoff": "^1.1.8",
 		"pi-temperature": "^2.0.0",
 		"smc": "^2.0.0"
 	},
