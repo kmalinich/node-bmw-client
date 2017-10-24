@@ -19,6 +19,8 @@ function parse_316(data) {
 		},
 	};
 
+	// horsepower = (torque * RPM)/5252
+
 	// Occasionally the RPM is parses as something less than 50.. no idea why
 	if (status.engine.speed - parse.rpm < 500 || parse.rpm === 0) update.status('engine.speed', parse.rpm, false);
 
@@ -31,6 +33,12 @@ function parse_316(data) {
 }
 
 function parse_329(data) {
+	// Byte 3
+	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
+	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
+	// bit 4 - Possibly Motor Status (0 = on, 1 = off)
+	// bits 5, 6, 7 - Tank Evap duty cycle
+
 	let parse = {
 		msg    : '0x329',
 		engine : {
@@ -110,21 +118,67 @@ function parse_329(data) {
 	update.status('vehicle.clutch', parse.vehicle.clutch);
 }
 
+function parse_338(data) {
+	// B2
+	// 0 = Sport on (request by SMG transmission)
+	// 1 = Sport off
+	// 2 = Sport on
+	// 3 = Sport error
+	return data;
+}
+
 function parse_545(data) {
+	// Byte 3
+	// bit 0 - Oil level error if motortype = S62
+	// bit 1 - Oil Level Warning
+	// bit 2 - Oil Level Error
+	// bit 3 - Overheat Light
+	// bit 4, 5, 6 - M3/M5 RPM Warning Field (refer to tables below)
+	// Byte 4 - Oil Temperature (ºC = X - 48)
+	// Byte 5 - Charge Light (0 = off, 1 = on; only used on some DMEs)
+	// Byte 6 - CSL Oil Level (format unclear)
+	// Byte 7 - Possibly MSS54 TPM Trigger
+
 	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
 
-	if (consumption_current === DME1.consumption_last) return;
+	// Need at least one value first
+	if (DME1.consumption_last === 0) {
+		DME1.consumption_last = consumption_current;
+		return;
+	}
+
+	// if (consumption_current === DME1.consumption_last) return;
 
 	let parse = {
-		msg  : '0x545',
+		msg : '0x545',
+
+		// Byte0, Bit1 : Check engine
+		// Byte0, Bit3 : Cruise
+		// Byte0, Bit4 : EML
+		// Byte0, Bit7 : Check gas cap
+		status : {
+			check_engine  : false,
+			check_gas_cap : false,
+			cruise        : false,
+			eml           : false,
+		},
 		fuel : {
 			consumption : consumption_current - DME1.consumption_last,
+		},
+		temperature : {
+			oil : {
+				c : parseFloat(((data.msg[4] * 0.75) - 48.373).toFixed(2)),
+				f : null,
+			},
 		},
 	};
 
 	DME1.consumption_last = consumption_current;
 
-	// update.status('fuel.consumption', parse.fuel.consumption);
+	update.status('fuel.consumption', parse.fuel.consumption, false);
+
+	// Calculate fahrenheit temperature values
+	parse.temperature.oil.f = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
 }
 
 
@@ -137,6 +191,12 @@ function parse_613(data) {
 		},
 	};
 
+	// -B0 Odometer LSB
+	// -B1 Odometer MSB [Convert from Hex to Decimal. Multiply by 10 and that is Odometer in Km]
+	// -B2 is fuel level. Full being hex 39 Fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
+	// -B3 Running Clock LSB
+	// -B4 Running Clock MSB minutes since last time battery power was lost
+
 	parse.fuel.level = Math.round((parse.fuel.liters / config.fuel.liters_max) * 100);
 	if (parse.fuel.level < 0)   parse.fuel.level = 0;
 	if (parse.fuel.level > 100) parse.fuel.level = 100;
@@ -146,6 +206,14 @@ function parse_613(data) {
 }
 
 function parse_615(data) {
+	// ARBID: 0x615 sent from the instrument cluster
+	// -B0 AC signal. Hex 80 when on (10000000) Other bits say something else (Load, Aux fan speed request? system pressure?)
+	// -B1 4 when headlights/parking lights on
+	// -B2
+	// -B3 Outside Air Temperature: x being temperature in Deg C, (x>=0 deg C,DEC2HEX(x),DEC2HEX(-x)+128) x range min -40 C max 50 C
+	// -B4 1 = Driver door open; 2 = handbrake up
+	// -B5 2 = Left turn signal, 4 = Right turn signal, 6 = hazards
+
 	let parse = {
 		msg    : '0x615',
 		engine : {
@@ -207,9 +275,14 @@ function parse_out(data) {
 			parse_329(data);
 			break;
 
+		case 0x338:
+			data.value = 'Sport mode status';
+			parse_338(data);
+			break;
+
 		case 0x545:
-			parse_545(data);
 			data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
+			parse_545(data);
 			break;
 
 		case 0x610:
@@ -234,7 +307,9 @@ function parse_out(data) {
 }
 
 module.exports = {
+	// Variables
 	consumption_last : 0,
 
-	parse_out : (data) => { parse_out(data); },
+	// Functions
+	parse_out : parse_out,
 };

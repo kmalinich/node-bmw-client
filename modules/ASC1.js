@@ -102,7 +102,7 @@ function parse_1f5(data) {
 	let steering_multiplier = 0.043393;
 
 	let steering = {
-		angle    : Math.round(angle    * steering_multiplier) * -1,
+		angle    : Math.round(angle    * steering_multiplier) * -1, // Thanks babe
 		velocity : Math.round(velocity * steering_multiplier) * -1,
 	};
 
@@ -135,6 +135,38 @@ function parse_out(data) {
 			break;
 
 		case 0x1F8:
+			// Status sensors (21 06):
+			// Positive pressure:
+			// B8 29 F1 02 21 06 45
+			// B8 F1 29 0F 61 06 00 00 C3 DC 14 8F 14 A4 00 00 00 00 11 06
+			//
+			// BrakeLinePressureFront = hex2dec('148F')/100 = 52.63 [bar]
+			// BrakeLinePressureRear = hex2dec('14A4')/100 = 52.84 [bar]
+			//
+			//
+			// BrakeLinePressureFront = hex2dec('1D31')/100 = 74.73 [bar]
+			// BrakeLinePressureRear = hex2dec('1D1C')/100 = 74.52 [bar]
+			//
+			// Neg. pressure by twos complement:
+			// B8 29 F1 02 21 06 45
+			// B8 F1 29 0F 61 06 00 00 C3 DC F7ED F783 00 00 00 00 11 06
+			//
+			// BrakeLinePressureFront = (hex2dec('F7ED')-65536)/100 = -20.67 [bar]
+			// BrakeLinePressureRear = (hex2dec('F783')-65536)/100 = -21.73 [bar]
+			// BrakeLinePressureFront = (hex2dec('FFA5')-65536)/100 = -0.91 [bar]
+			//
+			//
+			// Status sensor offset (21 02):
+			// B8 29 F1 02 21 02 41
+			// B8 F1 29 0C 61 02 FA89 FF18 1E81 FE5D 0000 A7
+			//
+			// B8 F1 29 0C 61 02 xxxx yyyy 1E81 FE5D 0000 A7
+			// xxxx = hex value in telegram of Offset Front
+			// yyyy = hex value in telegram of Offset Rear
+			// BrakeLinePressureFrontOffset = 0.000625*x + 2.3315e-15
+			// BrakeLinePressureRearOffset = 0.000625*y + 2.3315e-15
+			// where x is twos complement of xxxx (or yyyy) if neg value in xxxx (or yyyy) (msb set), otherwise pos value of xxxx (or yyyy)
+			// Example: 0xFA89 => neg value since msb=1. Twos complement of 0xFA89 = -1399 => -0.87438 [bar]
 			data.value = 'Brake pressure';
 			break;
 
