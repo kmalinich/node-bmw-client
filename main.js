@@ -156,8 +156,7 @@ function init() {
 
 
 									// notify.notify('Started');
-
-									IKE.text_warning('     bmwcd restart', 3000);
+									// IKE.text_warning('     bmwcd restart', 3000);
 
 									setTimeout(() => {
 										socket.lcd_text_tx({
