@@ -188,7 +188,7 @@ function decode_ignition_status(data) {
 		gpio.set(1, 1);
 		// Run fan for additional 60s after poweroff
 		setTimeout(() => {
-			gpio.set(2, 1);
+			if (status.vehicle.ignition_level === 0) gpio.set(2, 1);
 		}, 60000);
 
 		// Overhead LCD commands
