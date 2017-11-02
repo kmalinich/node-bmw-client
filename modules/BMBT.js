@@ -76,13 +76,19 @@ function toggle_power_if_ready() {
 			kodi.notify(module_name, 'power on');
 			IKE.text_override(module_name + ' power');
 
-			log.module({
-				src : module_name,
-				msg : 'Sending power!',
-			});
+			log.module({ msg : 'Sending power!' });
 
 			send_button('power');
-			// DSP.request('memory'); // Get the DSP memory
+			DSP.request('memory'); // Get the DSP memory
+
+			// Increase volume after power on
+			setTimeout(() => {
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+			}, 500);
 		}
 
 		BMBT.timeouts.power_on = null;

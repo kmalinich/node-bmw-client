@@ -298,6 +298,33 @@ function parse_out(data) {
 	log.bus(data);
 }
 
+function volume_control(value) {
+	let msg_value;
+	switch (value) {
+		case 5 : msg_value = 0x51; break;
+		case 4 : msg_value = 0x41; break;
+		case 3 : msg_value = 0x31; break;
+		case 2 : msg_value = 0x21; break;
+		case 1 : msg_value = 0x11; break;
+
+		case -5 : msg_value = 0x50; break;
+		case -4 : msg_value = 0x40; break;
+		case -3 : msg_value = 0x30; break;
+		case -2 : msg_value = 0x20; break;
+		case -1 : msg_value = 0x10; break;
+
+		default : return;
+	}
+
+	log.module({ msg : 'Sending volume control: ' + value });
+
+	bus.data.send({
+		src : 'MID',
+		dst : module_name,
+		msg : [ 0x32, msg_value ],
+	});
+}
+
 function send_audio_control(source) {
 	let msg_tunertape = [ 0x36, 0xA1 ];
 	let msg_cd        = [ 0x36, 0xA0 ];
@@ -318,6 +345,7 @@ function send_audio_control(source) {
 }
 
 module.exports = {
-	parse_out          : (data)   => { parse_out(data);            },
-	send_audio_control : (source) => { send_audio_control(source); },
+	parse_out          : parse_out,
+	send_audio_control : send_audio_control,
+	volume_control     : volume_control,
 };
