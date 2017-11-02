@@ -4,8 +4,8 @@ const now     = require('performance-now');
 
 // Handle incoming commands from API
 function api_command(data) {
-	if (typeof data['lcm-get'] !== 'undefined') { LCM.request('io-status'); }
-	else { io_encode(data); } // Very dirty assumption
+	// More functions to be added later
+	io_encode(data);
 }
 
 // Automatic lights handling
@@ -535,7 +535,7 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
-	// log.module({ msg : 'Setting IO status' });
+	log.module({ msg : 'Setting IO status' });
 
 	packet.unshift(0x0C);
 	bus.data.send({
