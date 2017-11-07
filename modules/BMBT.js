@@ -86,9 +86,17 @@ function toggle_power_if_ready() {
 				RAD.volume_control(5);
 				RAD.volume_control(5);
 				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
 			}, 500);
+			setTimeout(() => {
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+			}, 750);
+			setTimeout(() => {
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+			}, 1000);
 		}
 
 		BMBT.timeouts.power_on = null;
