@@ -19,7 +19,7 @@
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.4",
 		"os": "^0.1.1",
-		"pad": "^2.0.1",
+		"pad": "^2.0.3",
 		"performance-now": "^2.1.0",
 		"socket.io": "^2.0.4",
 		"suncalc": "^1.8.0",
