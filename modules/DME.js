@@ -44,5 +44,5 @@ function request(value) {
 
 module.exports = {
 	request   : (data) => { request(data);   },
-	parse_out : (data) => { parse_out(data); },
+	parse_out : parse_out,
 };

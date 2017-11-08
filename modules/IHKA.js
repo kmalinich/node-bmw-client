@@ -1,5 +1,3 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Parse data sent from IHKA module
 function parse_out(data) {
 	switch (data.msg[0]) {
@@ -34,17 +32,17 @@ function parse_out(data) {
 }
 
 // Enable/disable aux heat/vent
-function aux(type, action) {
+function aux(data) {
 	let cmd;
 
 	// Set command base value based on type argument
-	switch (type) {
+	switch (data.type) {
 		case 'heat' : cmd = [ 0x11 ]; break;
 		case 'vent' : cmd = [ 0x13 ]; break;
 	}
 
 	// Add 1 if we're turning it on
-	switch (action) {
+	switch (data.action) {
 		case true : cmd++; break;
 	}
 
@@ -68,7 +66,6 @@ function recirc() {
 	// Send depress command
 	bus.data.send({
 		src : src,
-		dst : module_name,
 		msg : cmds.depress,
 	});
 
@@ -76,7 +73,6 @@ function recirc() {
 	setTimeout(() => {
 		bus.data.send({
 			src : src,
-			dst : module_name,
 			msg : cmds.release,
 		}, 200);
 	});
@@ -99,7 +95,6 @@ function request(value) {
 
 	bus.data.send({
 		src : src,
-		dst : module_name,
 		msg : cmd,
 	});
 }

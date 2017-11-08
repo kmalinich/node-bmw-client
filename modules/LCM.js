@@ -2,12 +2,6 @@ const suncalc = require('suncalc');
 const now     = require('performance-now');
 
 
-// Handle incoming commands from API
-function api_command(data) {
-	// More functions to be added later
-	io_encode(data);
-}
-
 // Automatic lights handling
 function auto_lights() {
 	// Default action is true (enable/process auto lights)
@@ -148,22 +142,14 @@ function coding_get() {
 
 // Comfort turn signal handling
 function comfort_turn(data) {
-	// Init variables
-	let cluster_msg_outer;
-	let action;
-
 	// If comfort turn is not enabled
 	if (config.lights.comfort_turn.enable !== true) return;
 
 	// If comfort turn is not currently engaged
-	if (status.lights.turn.left.comfort === true || status.lights.turn.right.comfort === true) {
-		return;
-	}
+	if (status.lights.turn.left.comfort === true || status.lights.turn.right.comfort === true) return;
 
 	// If we haven't passed the cooldown yet
-	if (status.lights.turn.comfort_cool === false) {
-		return;
-	}
+	if (status.lights.turn.comfort_cool === false) return;
 
 	if (data.before.left.active === false) { // left turn was previously off
 		if (data.after.left.active && !data.after.right.active) { // left turn is now on, and right turn is now off
@@ -177,7 +163,8 @@ function comfort_turn(data) {
 			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.left.depress);
 			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
-				action = 'left';
+				comfort_turn_flash('left');
+				return;
 			}
 		}
 	}
@@ -185,7 +172,6 @@ function comfort_turn(data) {
 	if (data.before.right.active === false) { // right turn was previously off
 		if (!data.after.left.active && data.after.right.active) { // left turn is now off, and right turn is now on
 			update.status('lights.turn.right.depress', now());
-			return;
 		}
 	}
 	else { // right turn was previously on
@@ -194,53 +180,59 @@ function comfort_turn(data) {
 			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.right.depress);
 			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
 			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
-				action = 'right';
+				comfort_turn_flash('right');
 			}
 		}
 	}
+}
 
-	if (action === 'left' || action === 'right') {
-		log.module({ msg : 'Comfort turn: ' + action });
+function comfort_turn_flash(action) {
+	// Double-check the given action
+	if (action !== 'left' || action !== 'right') return;
 
-		switch (action) {
-			case 'left':
-				// Set status variables
-				update.status('lights.turn.left.comfort',  true);
-				update.status('lights.turn.right.comfort', false);
-				cluster_msg_outer = '< < < < < < <';
-				break;
+	// Init variables
+	let cluster_msg_outer;
 
-			case 'right':
-				// Set status variables
-				update.status('lights.turn.left.comfort',  false);
-				update.status('lights.turn.right.comfort', true);
-				cluster_msg_outer = '> > > > > > >';
-		}
+	log.module({ msg : 'Comfort turn: ' + action });
 
-		// Send cluster message if configured to do so
-		if (config.lights.comfort_turn.cluster_msg === true) {
-			// Concat message string
-			let cluster_msg = cluster_msg_outer + ' ' + action.charAt(0).toUpperCase() + ' ' + cluster_msg_outer;
-			IKE.text_override(cluster_msg, 2000 + status.lights.turn.depress_elapsed, action, true);
-		}
+	switch (action) {
+		case 'left':
+			// Set status variables
+			update.status('lights.turn.left.comfort',  true);
+			update.status('lights.turn.right.comfort', false);
+			cluster_msg_outer = '< < < < < < <';
+			break;
+
+		case 'right':
+			// Set status variables
+			update.status('lights.turn.left.comfort',  false);
+			update.status('lights.turn.right.comfort', true);
+			cluster_msg_outer = '> > > > > > >';
+	}
+
+	// Send cluster message if configured to do so
+	if (config.lights.comfort_turn.cluster_msg === true) {
+		// Concat message string
+		let cluster_msg = cluster_msg_outer + ' ' + action.charAt(0).toUpperCase() + ' ' + cluster_msg_outer;
+		IKE.text_override(cluster_msg, 2000 + status.lights.turn.depress_elapsed, action, true);
+	}
+
+	reset();
+	update.status('lights.turn.comfort_cool', false);
+
+	// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
+	setTimeout(() => {
+		// Update status variables
+		update.status('lights.turn.left.comfort',  false);
+		update.status('lights.turn.right.comfort', false);
 
 		reset();
-		update.status('lights.turn.comfort_cool', false);
+	}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
 
-		// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
-		setTimeout(() => {
-			// Update status variables
-			update.status('lights.turn.left.comfort',  false);
-			update.status('lights.turn.right.comfort', false);
-
-			reset();
-		}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
-
-		// Timeout for cooldown period
-		setTimeout(() => {
-			update.status('lights.turn.comfort_cool', true);
-		}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed + 1500); // Subtract the time from the initial blink
-	}
+	// Timeout for cooldown period
+	setTimeout(() => {
+		update.status('lights.turn.comfort_cool', true);
+	}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed + 1500); // Subtract the time from the initial blink
 }
 
 // Decode various bits of data into usable information
@@ -724,11 +716,12 @@ module.exports = {
 	counter_welcome_lights : 0,
 
 	// Functions
-	api_command         : (data) => { api_command(data);         },
-	auto_lights         : ()     => { auto_lights();             },
-	auto_lights_process : (data) => { auto_lights_process(data); },
-	parse_out           : (data) => { parse_out(data);           },
-	request             : (data) => { request(data);             },
-	set_backlight       : (data) => { set_backlight(data);       },
-	welcome_lights      : (data) => { welcome_lights(data);      },
+	auto_lights         : auto_lights,
+	auto_lights_process : auto_lights_process,
+	comfort_turn_flash  : comfort_turn_flash,
+	io_encode           : io_encode,
+	parse_out           : parse_out,
+	request             : request,
+	set_backlight       : set_backlight,
+	welcome_lights      : welcome_lights,
 };

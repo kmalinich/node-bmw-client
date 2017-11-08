@@ -83,7 +83,7 @@ function send_cd_status(value) {
 }
 
 module.exports = {
-	parse_in       : (data)   => { parse_in(data);        },
-	parse_out      : (data)   => { parse_out(data);       },
-	send_cd_status : (status) => { send_cd_status(status); },
+	parse_in       : parse_in,
+	parse_out      : parse_out,
+	send_cd_status : send_cd_status,
 };

@@ -360,11 +360,11 @@ module.exports = {
 	status_status_loop   : false,
 	status_text_loop     : false,
 
-	parse_in              : (data)   => { parse_in(data);          },
-	parse_out             : (data)   => { parse_out(data);         },
-	refresh_text          : ()       => { refresh_text();          },
-	send_button           : (button) => { send_button(button);     },
-	status_loop           : (action) => { status_loop(action);     },
-	text_loop             : (action) => { text_loop(action);       },
-	toggle_power_if_ready : ()       => { toggle_power_if_ready(); },
+	parse_in              : parse_in,
+	parse_out             : parse_out,
+	refresh_text          : refresh_text,
+	send_button           : send_button,
+	status_loop           : status_loop,
+	text_loop             : text_loop,
+	toggle_power_if_ready : toggle_power_if_ready,
 };

@@ -119,18 +119,12 @@ function parse_out(data) {
 		case 0x4B: // Cassette status
 			data.command = 'sta';
 			data.value   = 'cassette: ';
+
 			switch (data.msg[1]) {
-				case 0x00:
-					data.value += 'off';
-					break;
-				case 0x05:
-					data.value += 'no tape';
-					break;
-				case 0xFF:
-					data.value += 'on';
-					break;
-				default:
-					data.value += 'unknown 0x' + data.msg[1].toString(16);
+				case 0x00 : data.value += 'off';     break;
+				case 0x05 : data.value += 'no tape'; break;
+				case 0xFF : data.value += 'on';      break;
+				default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
 			}
 			break;
 
@@ -215,10 +209,10 @@ module.exports = {
 		status_loop : null,
 	},
 
-	parse_in              : (data)   => { parse_in(data);              },
-	parse_out             : (data)   => { parse_out(data);             },
-	toggle_power_if_ready : ()       => { toggle_power_if_ready();         },
-	send_button           : (button) => { send_button(button);         },
-	send_cassette_status  : (value)  => { send_cassette_status(value); },
-	status_loop           : (action) => { status_loop(action);         },
+	parse_in              : parse_in,
+	parse_out             : parse_out,
+	send_button           : send_button,
+	send_cassette_status  : send_cassette_status,
+	status_loop           : status_loop,
+	toggle_power_if_ready : toggle_power_if_ready,
 };
