@@ -38,7 +38,7 @@ const now = require('performance-now');
 // iDrive knob rotation
 // ARBID 0x264: <Buffer e1 fd b5 fb 7f 1e>
 function decode_con_rotation(data) {
-	// data.msg[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn.
+	// data.msg[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn
 	// data.msg[3] : Counts up and down between 0x00-0xFE : depending on the direction of rotation
 
 	// so do the math .. i've had several beers
@@ -83,13 +83,10 @@ function decode_con_rotation(data) {
 
 	// Not gonna finish this now - but later, I want to do
 	// a dynamic timeout for the 'alternate' and 'volume' rotation modes -
-	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds.
+	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds
 	update.status('con1.rotation.last_msg', now());
 
-	log.msg({
-		src : module_name,
-		msg : 'Rotation: ' + status.con1.rotation.direction,
-	});
+	log.module({ msg : 'Rotation: ' + status.con1.rotation.direction });
 
 	// If volume rotation is currently active
 	if (status.con1.rotation.volume === true) {
@@ -274,10 +271,7 @@ function button_check(button) {
 	// Store buttonpress data in 'last' object
 	update.status('con1.last.button', button);
 
-	log.msg({
-		src : module_name,
-		msg : 'Button: ' + button.action + ' ' + button.button,
-	});
+	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
 
 	switch (button.action) {
 		case 'press':
@@ -331,27 +325,18 @@ function decode_backlight(data) {
 function decode_status_con(data) {
 	// console.log('[%s] status', log.chalk.boldyellow('CON1'));
 	if (data.msg[4] == 0x06) { // CON1 needs init
-		log.msg({
-			src : module_name,
-			msg : 'Init triggered',
-		});
+		log.module({ msg : 'Init triggered' });
 
 		send_status_cic();
 	}
 }
 
 function decode_ignition_new(data) {
-	log.msg({
-		src : module_name,
-		msg : 'Ignition message ' + data.msg[0],
-	});
+	log.module({ msg : 'Ignition message ' + data.msg[0] });
 }
 
 function decode_status_cic(data) {
-	log.msg({
-		src : module_name,
-		msg : 'CIC1 status message ' + data.msg[0],
-	});
+	log.module({ msg : 'CIC1 status message ' + data.msg[0] });
 }
 
 // function send_heartbeat() {
@@ -392,18 +377,12 @@ function send_backlight(value) {
 		data : Buffer.from([ value, 0x00 ]),
 	});
 
-	log.module({
-		src : module_name,
-		msg : 'Set backlight value to: ' + status.con1.backlight,
-	});
+	log.module({ msg : 'Set backlight value to: ' + status.con1.backlight });
 }
 
 // E90 CIC1 status
 function send_status_cic() {
-	log.module({
-		src : module_name,
-		msg : 'Sending CIC1 status',
-	});
+	log.module({ msg : 'Sending CIC1 status' });
 
 	let msg = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
 	bus.data.send({
@@ -417,10 +396,7 @@ function send_status_cic() {
 
 // E90 Ignition status
 function send_status_ignition_new() {
-	log.module({
-		src : module_name,
-		msg : 'Sending ignition status',
-	});
+	log.module({ msg : 'Sending ignition status' });
 
 	bus.data.send({
 		bus  : 'can1',
@@ -433,20 +409,14 @@ function send_status_ignition_new() {
 			clearTimeout(CON1.timeouts.status_ignition_new);
 			CON1.timeouts.status_ignition_new = null;
 
-			log.module({
-				src : module_name,
-				msg : 'Unset ignition status timeout',
-			});
+			log.module({ msg : 'Unset ignition status timeout' });
 
 			return;
 		}
 	}
 
 	if (CON1.timeouts.status_ignition_new === null) {
-		log.module({
-			src : module_name,
-			msg : 'Set ignition status timeout',
-		});
+		log.module({ msg : 'Set ignition status timeout' });
 	}
 
 	CON1.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
@@ -518,8 +488,7 @@ module.exports = {
 	},
 
 	// Functions
-	parse_out : (data) => { parse_out(data); },
-
-	send_backlight           : (value) => { send_backlight(value);      },
-	send_status_ignition_new : ()      => { send_status_ignition_new(); },
+	parse_out                : parse_out,
+	send_backlight           : send_backlight,
+	send_status_ignition_new : send_status_ignition_new,
 };

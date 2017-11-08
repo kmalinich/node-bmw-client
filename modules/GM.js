@@ -1,9 +1,5 @@
-/* global GM IKE bus bitmask LCM log status */
-
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // All the possible values to send to the GM
-// var array_of_possible_values = {
+// let array_of_possible_values = {
 //   light_alarm                   : true,
 //   light_alarm_blink             : true,
 //   light_interior                : true,
@@ -133,7 +129,7 @@ function decode_status_open(data) {
 	// This is correct, in a sense... Not a good sense, but in a sense
 	update.status('vehicle.locked', bitmask.test(data.msg[1], 0x20));
 
-	// Set status.doors.sealed var if all doors are closed
+	// Set status.doors.sealed if all doors are closed
 	let update_sealed_doors;
 	if (
 		!status.doors.front_left  &&
@@ -150,7 +146,7 @@ function decode_status_open(data) {
 	}
 	update.status('doors.sealed', update_sealed_doors);
 
-	// Set status.windows.sealed var if all windows are closed
+	// Set status.windows.sealed if all windows are closed
 	let update_sealed_windows;
 	if (
 		!status.windows.front_left  &&
@@ -166,10 +162,48 @@ function decode_status_open(data) {
 	}
 	update.status('windows.sealed', update_sealed_windows);
 
-	// Set status.vehicle.sealed var if all doors and windows are closed
+	// Set status.vehicle.sealed if all doors and windows are closed
 	update.status('vehicle.sealed', status.doors.sealed && status.windows.sealed);
 
 	return data;
+}
+
+// This is just a dumb placeholder
+// Decode the GM bitmask string and output an array of true/false values
+function io_decode(data) {
+	return {
+		seat_driver_backrest_backward : bitmask.test(data[0], bitmask.bit[0]),
+	};
+}
+
+// Encode the GM bitmask string from an input of true/false values
+// This is just a dumb placeholder
+function io_encode(object) {
+	// Initialize bitmask variables
+	let bitmask_0  = 0x00;
+	let bitmask_1  = 0x00;
+	let bitmask_2  = 0x00;
+	let bitmask_3  = 0x00;
+
+	// Set the various bitmask values according to the input object
+	if (object.clamp_30a) { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]); }
+
+	// Assemble the output object
+	let output = [
+		bitmask_0,
+		bitmask_1,
+		bitmask_2,
+		bitmask_3,
+	];
+
+	log.module({ msg : 'Encoding IO status' });
+	io_set(output);
+}
+
+// Control interior lighting PWM brightness
+function interior_light(value) {
+	log.module({ msg : 'Setting interior light to ' + value });
+	io_set([ 0x10, 0x05, value.toString(16) ]);
 }
 
 // Send message to GM
@@ -180,18 +214,31 @@ function io_set(packet) {
 	// Set IO status
 	bus.data.send({
 		src : 'DIA',
-		dst : module_name,
 		msg : packet,
 	});
 }
 
-// This is just a dumb placeholder
-function io_decode(data) {
-	return {
-		seat_driver_backrest_backward : bitmask.test(data[0], bitmask.bit[0]),
-	};
+// Central locking
+function locks() {
+	// Send the notification to the log and the cluster
+	let notify_message = 'Toggling door locks';
+	log.module({ msg : notify_message });
+	IKE.text_override(notify_message);
+
+	// Hex:
+	// 01 3A 01 : LF unlock (CL)
+	// 01 39 01 : LF lock   (CL)
+	// 02 3A 01 : RF unlock (CL)
+	// 02 39 01 : RF lock   (CL)
+
+	// 01 41 01 : Rear lock
+	// 01 42 02 : Rear unlock
+
+	// Init message variable
+	io_set([ 0x00, 0x0B ]);
 }
 
+// Parse data sent from GM module
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x72: // Broadcast: Key fob status
@@ -271,45 +318,43 @@ function parse_out(data) {
 	log.bus(data);
 }
 
-// This is a horrible trainwreck
-function api_command(data) {
-	if (typeof data['interior-light'] !== 'undefined') {
-		GM.interior_light(data['interior-light']);
+// Request various things from GM
+function request(value) {
+	// Init variables
+	let src;
+	let cmd;
+
+	switch (value) {
+		case 'io-status':
+			src = 'DIA';
+			cmd = [ 0x0B, 0x00 ]; // Get IO status
+			break;
+
+		case 'door-status':
+			src = 'BMBT';
+			cmd = [ 0x79 ];
+			break;
 	}
 
-	// Sort-of.. future-mode.. JSON command.. object? maybe
-	else if (typeof data['command'] !== 'undefined') {
-		switch (data['command']) {
-			case 'io-status'   : GM.request('io-status');   break; // Get IO status
-			case 'door-status' : GM.request('door-status'); break; // Get IO status
-			case 'locks'       : GM.locks();                break; // Toggle central locking
+	log.module({ msg : 'Requesting \'' + value + '\'' });
 
-			default: // Dunno what I sent
-				log.module({ msg : 'API call ' + data['command'] + ' unknown' });
-				break;
-		}
-	}
-
-	// Window control
-	else if (typeof data['window'] !== 'undefined') {
-		GM.windows(data['window'], data['window-action']);
-	}
-
-	else {
-		log.module({ msg : 'Unknown data: ' + data });
-	}
+	bus.data.send({
+		src : src,
+		msg : cmd,
+	});
 }
 
-function windows(window, action) {
-	log.module({ msg : 'Window control: ' + window + ', ' + action });
+// GM window control
+function windows(request) {
+	log.module({ msg : 'Window control: ' + request.window + ', ' + request.action });
 
 	// Init message variable
-	var msg;
+	let msg;
 
 	// Switch for window and action
-	switch (window) {
+	switch (request.window) {
 		case 'roof': // Moonroof
-			switch (action) {
+			switch (request.action) {
 				case 'dn' : msg = [ 0x03, 0x01, 0x01 ]; break;
 				case 'up' : msg = [ 0x03, 0x02, 0x01 ]; break;
 				case 'tt' : msg = [ 0x03, 0x00, 0x01 ]; break;
@@ -317,28 +362,28 @@ function windows(window, action) {
 			break;
 
 		case 'lf' : // Left front
-			switch (action) {
+			switch (request.action) {
 				case 'dn' : msg = [ 0x01, 0x36, 0x01 ]; break;
 				case 'up' : msg = [ 0x01, 0x1A, 0x01 ]; break;
 			}
 			break;
 
 		case 'rf' : // Right front
-			switch (action) {
+			switch (request.action) {
 				case 'dn' : msg = [ 0x02, 0x20, 0x01 ]; break;
 				case 'up' : msg = [ 0x02, 0x22, 0x01 ]; break;
 			}
 			break;
 
 		case 'lr' : // Left rear
-			switch (action) {
+			switch (request.action) {
 				case 'dn' : msg = [ 0x00, 0x00, 0x01 ]; break;
 				case 'up' : msg = [ 0x42, 0x01 ];       break;
 			}
 			break;
 
 		case 'rr' : // Right rear
-			switch (action) {
+			switch (request.action) {
 				case 'dn' : msg = [ 0x00, 0x03, 0x01 ]; break;
 				case 'up' : msg = [ 0x43, 0x01 ];       break;
 			}
@@ -347,93 +392,14 @@ function windows(window, action) {
 	io_set(msg);
 }
 
+
 module.exports = {
-	// Parse data sent from GM module
-	parse_out : (data) => { parse_out(data); },
-
-	// Handle incoming commands from API
-	api_command : (data) => { api_command(data); },
-
-	// GM window control
-	windows : (window, action) => { windows(window, action); },
-
-	// Cluster/interior backlight
-	interior_light : (value) => {
-		log.module({ msg : 'Setting interior light to ' + value });
-		io_set([ 0x10, 0x05, value.toString(16) ]);
-	},
-
-	// Central locking
-	locks : () => {
-		// Send the notification to the log and the cluster
-		var notify_message = 'Toggling door locks';
-		log.module({ msg : notify_message });
-		IKE.text_override(notify_message);
-
-		// Hex:
-		// 01 3A 01 : LF unlock (CL)
-		// 01 39 01 : LF lock   (CL)
-		// 02 3A 01 : RF unlock (CL)
-		// 02 39 01 : RF lock   (CL)
-
-		// 01 41 01 : Rear lock
-		// 01 42 02 : Rear unlock
-
-		// Init message variable
-		io_set([ 0x00, 0x0B ]);
-	},
-
-	// Request various things from GM
-	request : (value) => {
-		// Init variables
-		var src;
-		var cmd;
-
-		switch (value) {
-			case 'io-status':
-				src = 'DIA';
-				cmd = [ 0x0B, 0x00 ]; // Get IO status
-				break;
-
-			case 'door-status':
-				src = 'BMBT';
-				cmd = [ 0x79 ];
-				break;
-		}
-
-		log.module({ msg : 'Requesting \'' + value + '\'' });
-
-		bus.data.send({
-			src : src,
-			dst : module_name,
-			msg : cmd,
-		});
-	},
-
-	// Encode the GM bitmask string from an input of true/false values
-	// This is just a dumb placeholder
-	io_encode : (object) => {
-		// Initialize bitmask variables
-		var bitmask_0  = 0x00;
-		var bitmask_1  = 0x00;
-		var bitmask_2  = 0x00;
-		var bitmask_3  = 0x00;
-
-		// Set the various bitmask values according to the input object
-		if (object.clamp_30a) { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]); }
-
-		// Assemble the output object
-		var output = [
-			bitmask_0,
-			bitmask_1,
-			bitmask_2,
-			bitmask_3,
-		];
-
-		log.module({ msg : 'Encoding IO status' });
-		io_set(output);
-	},
-
-	// Decode the GM bitmask string and output an array of true/false values
-	io_decode : (array) => { io_decode(array); },
+	// Functions
+	interior_light : interior_light,
+	io_decode      : io_decode,
+	io_encode      : io_encode,
+	locks          : locks,
+	parse_out      : parse_out,
+	request        : request,
+	windows        : windows,
 };

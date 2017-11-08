@@ -12,19 +12,12 @@ function parse_out(data) {
 			// 0x04 : NAVJ
 			// 0x10 : on
 			switch (data.msg[1]) {
-				case 0x00:
-					data.value = 'LCD off';
-					break;
-				case 0x11:
-					data.value = 'LCD on TV';
-					break;
-				case 0x12:
-					data.value = 'LCD on GT';
-					break;
-				case 0x14:
-					data.value = 'LCD on NAVJ';
-					break;
-				default:
+				case 0x00 : data.value = 'LCD off';     break;
+				case 0x11 : data.value = 'LCD on TV';   break;
+				case 0x12 : data.value = 'LCD on GT';   break;
+				case 0x14 : data.value = 'LCD on NAVJ'; break;
+
+				default :
 					data.value = 'LCD on unknown \'' + Buffer.from([ data.msg[1] ]) + '\'';
 					break;
 			}
@@ -44,5 +37,5 @@ function parse_out(data) {
 }
 
 module.exports = {
-	parse_out : (data) => { parse_out(data); },
+	parse_out : parse_out,
 };

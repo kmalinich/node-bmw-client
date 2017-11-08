@@ -6,26 +6,6 @@ const now     = require('performance-now');
 const os      = require('os');
 const pad     = require('pad');
 
-// Handle incoming commands from API
-// This is pure garbage and COMPLETELY needs to be done way differently
-function api_command(data) {
-	switch (data.command) {
-		case 'ike-ignition' : ignition(data.value);          break;
-		case 'ike-text'     : text(data.value);              break;
-		case 'obc-clock'    : obc_clock();                   break;
-		case 'obc-get'      : obc_data('get', data.value);   break;
-		case 'obc-get-all'  : obc_refresh();                 break;
-		case 'obc-reset'    : obc_data('reset', data.value); break;
-		default             : log.module({ msg : 'Unknown API command : ' + data.command });
-	}
-}
-// Send fake ignition status (but don't tho - you've been warned)
-// Display text string in cluster
-// Set OBC clock
-// Refresh all OBC data values
-// Refresh specific OBC data value
-// Reset specific OBC data value
-// Dunno
 
 // Refresh various values every 5 seconds
 function data_refresh() {
@@ -722,7 +702,7 @@ function hud_refresh_speed() {
 function hud_refresh() {
 	if (!ok2hud()) return;
 
-	log.msg({ msg : 'Refreshing HUD' });
+	log.module({ msg : 'Refreshing HUD' });
 
 	let string_load;
 	let string_cons  = '';
@@ -963,15 +943,23 @@ function request(value) {
 		case 'dimmer'      : cmd = [ 0x1D, 0xC5 ]; src = 'IHKA'; break;
 		case 'temperature' : cmd = [ 0x1D, 0xC5 ]; src = 'LCM';  break;
 
-		case 'status-glo': {
+		case 'vin' : {
+			src = module_name;
+			dst = 'LCM';
+			cmd = [ 0x53 ];
+			break;
+		}
+
+		case 'status-glo' : {
 			for (loop_dst in bus.modules.modules) {
 				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
 					bus.cmds.request_device_status('IKE', loop_dst);
 				}
 			}
-			break;
+			return;
 		}
-		case 'status-short':
+
+		case 'status-short' : {
 			bus.modules.modules_check.forEach((loop_dst) => {
 				src = module_name;
 
@@ -979,16 +967,11 @@ function request(value) {
 					bus.cmds.request_device_status('IKE', loop_dst);
 				}
 			});
-			break;
+			return;
+		}
 
-		case 'vin':
-			src = module_name;
-			dst = 'LCM';
-			cmd = [ 0x53 ];
-			break;
+		default : return;
 	}
-
-	if (cmd === null) return;
 
 	log.module({ msg : 'Requesting \'' + value + '\'' });
 
@@ -1189,7 +1172,6 @@ module.exports = {
 	state_start_end   : null,
 
 	// Functions
-	api_command       : api_command,
 	data_refresh      : data_refresh,
 	hud_refresh       : hud_refresh,
 	hud_refresh_speed : hud_refresh_speed,

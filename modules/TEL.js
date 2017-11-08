@@ -46,7 +46,7 @@ function led(object) {
 	// 0x20 = flash green
 
 	// Initialize output byte
-	var byte = 0x00;
+	let byte = 0x00;
 	if (object.solid_red)    byte = bitmask.set(byte, bitmask.bit[0]);
 	if (object.flash_red)    byte = bitmask.set(byte, bitmask.bit[1]);
 	if (object.solid_yellow) byte = bitmask.set(byte, bitmask.bit[2]);
@@ -64,6 +64,6 @@ function led(object) {
 }
 
 module.exports = {
-	led       : (object) => { led(object);     },
-	parse_out : (data)   => { parse_out(data); },
+	led       : led,
+	parse_out : parse_out,
 };
