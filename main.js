@@ -15,7 +15,7 @@ json       = require('json');
 log        = require('log-output');
 obc_values = require('obc-values');
 os         = require('os');
-socket     = require('socket');
+socket     = new (require('socket'))();
 update     = require('update');
 weather    = require('weather');
 
