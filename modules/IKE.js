@@ -964,7 +964,6 @@ IKE.prototype.parse_out = function (data) {
 	log.bus(data);
 };
 
-
 // IKE cluster text send message, override other messages
 IKE.prototype.text_override = function (message, timeout = 2500, direction = 'left', turn = false) {
 	// kodi.notify(module_name, message);
@@ -1028,39 +1027,6 @@ IKE.prototype.text_override = function (message, timeout = 2500, direction = 'le
 	}, timeout, message);
 };
 
-// Refresh various values every 5 seconds
-IKE.prototype.data_refresh = function () {
-	if (status.vehicle.ignition_level === 0) {
-		if (this.timeout_data_refresh !== null) {
-			clearTimeout(this.timeout_data_refresh);
-			this.timeout_data_refresh = null;
-
-			log.module({ msg : 'Unset data refresh timeout' });
-
-			return;
-		}
-	}
-
-	// Request fresh data
-	// GM.request('door-status');
-	IKE.request('ignition');
-	IKE.request('temperature');
-	// LCM.request('dimmer');
-	LCM.request('io-status');
-	// LCM.request('light-status');
-	// obc_data('get', 'consumption-1');
-
-	// DME.request('motor-values');
-	// RLS.request('rain-sensor-status');
-
-	if (status.vehicle.ignition_level !== 0) {
-		if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
-		// setTimeout for next update
-		this.timeout_data_refresh = setTimeout(this.data_refresh, 10000);
-	}
-};
-
-
 // Request various things from IKE
 IKE.prototype.request = function (value) {
 	let cmd = null;
@@ -1115,5 +1081,38 @@ IKE.prototype.request = function (value) {
 		msg : cmd,
 	});
 };
+
+// Refresh various values every 5 seconds
+IKE.prototype.data_refresh = function () {
+	if (status.vehicle.ignition_level === 0) {
+		if (this.timeout_data_refresh !== null) {
+			clearTimeout(this.timeout_data_refresh);
+			this.timeout_data_refresh = null;
+
+			log.module({ msg : 'Unset data refresh timeout' });
+
+			return;
+		}
+	}
+
+	// Request fresh data
+	// GM.request('door-status');
+	this.request('ignition');
+	this.request('temperature');
+	// LCM.request('dimmer');
+	LCM.request('io-status');
+	// LCM.request('light-status');
+	// obc_data('get', 'consumption-1');
+
+	// DME.request('motor-values');
+	// RLS.request('rain-sensor-status');
+
+	if (status.vehicle.ignition_level !== 0) {
+		if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
+		// setTimeout for next update
+		this.timeout_data_refresh = setTimeout(this.data_refresh, 10000);
+	}
+};
+
 
 module.exports = IKE;
