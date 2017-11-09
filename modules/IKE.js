@@ -1043,8 +1043,8 @@ IKE.prototype.data_refresh = function () {
 
 	// Request fresh data
 	// GM.request('door-status');
-	this.request('ignition');
-	this.request('temperature');
+	IKE.request('ignition');
+	IKE.request('temperature');
 	// LCM.request('dimmer');
 	LCM.request('io-status');
 	// LCM.request('light-status');
