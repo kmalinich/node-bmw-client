@@ -7,38 +7,6 @@ const os      = require('os');
 const pad     = require('pad');
 
 
-// Refresh various values every 5 seconds
-function data_refresh() {
-	if (status.vehicle.ignition_level === 0) {
-		if (IKE.timeout_data_refresh !== null) {
-			clearTimeout(IKE.timeout_data_refresh);
-			IKE.timeout_data_refresh = null;
-
-			log.module({ msg : 'Unset data refresh timeout' });
-
-			return;
-		}
-	}
-
-	// Request fresh data
-	// GM.request('door-status');
-	IKE.request('ignition');
-	IKE.request('temperature');
-	// LCM.request('dimmer');
-	LCM.request('io-status');
-	// LCM.request('light-status');
-	// obc_data('get', 'consumption-1');
-
-	// DME.request('motor-values');
-	// RLS.request('rain-sensor-status');
-
-	if (status.vehicle.ignition_level !== 0) {
-		if (IKE.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
-		// setTimeout for next update
-		IKE.timeout_data_refresh = setTimeout(data_refresh, 10000);
-	}
-}
-
 // This actually is a bitmask but.. this is also a freetime project
 function decode_aux_heat_led(data) {
 	data.command = 'bro';
@@ -720,69 +688,6 @@ function text_nopad(message, cb = null) {
 	typeof cb === 'function' && cb();
 }
 
-// IKE cluster text send message, override other messages
-function text_override(message, timeout = 2500, direction = 'left', turn = false) {
-	// kodi.notify(module_name, message);
-	let scroll_delay         = 300;
-	let scroll_delay_timeout = scroll_delay * 5;
-
-	// Override scroll_delay_timeout if we're showing a turn signal message
-	if (turn === true) {
-		scroll_delay         = 200;
-		scroll_delay_timeout = 250;
-		timeout              = 0;
-	}
-
-	// Delare that we're currently first up
-	IKE.hud_override      = true;
-	IKE.hud_override_text = message;
-
-	// Equal to or less than 20 char
-	if (message.length - IKE.max_len_text <= 0) {
-		if (IKE.hud_override_text == message) IKE.text(message);
-	}
-	else {
-		// Adjust timeout since we will be scrolling
-		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - IKE.max_len_text));
-
-		// Send initial string if we're currently the first up
-		if (IKE.hud_override_text == message) {
-			if (direction == 'left') {
-				IKE.text(message);
-			}
-			else {
-				IKE.text(message.substring(message.length - IKE.max_len_text, message.length));
-			}
-		}
-
-		// Add a time buffer before scrolling starts (if this isn't a turn signal message)
-		setTimeout(() => {
-			for (var scroll = 0; scroll <= message.length - IKE.max_len_text; scroll++) {
-				setTimeout((current_scroll, message_full, direction) => {
-					// Only send the message if we're currently the first up
-					if (IKE.hud_override_text == message_full) {
-						if (direction == 'left') {
-							IKE.text(message.substring(current_scroll, current_scroll + IKE.max_len_text));
-						}
-						else {
-							IKE.text(message.substring(message.length - IKE.max_len_text - current_scroll, message.length - current_scroll));
-						}
-					}
-				}, scroll_delay * scroll, scroll, message, direction);
-			}
-		}, scroll_delay_timeout);
-	}
-
-	// Clear the override flag
-	setTimeout((message_full) => {
-		// Only deactivate the override if we're currently first up
-		if (IKE.hud_override_text == message_full) {
-			IKE.hud_override = false;
-			IKE.hud_refresh();
-		}
-	}, timeout, message);
-}
-
 // Check control messages
 function text_urgent(message, timeout = 5000) {
 	let message_hex;
@@ -861,8 +766,6 @@ class IKE extends EventEmitter {
 		this.timeout_accept_refresh = null;
 
 		// Functions
-		this.data_refresh = data_refresh;
-
 		this.hud_refresh       = hud_refresh;
 		this.hud_refresh_speed = hud_refresh_speed;
 
@@ -873,7 +776,6 @@ class IKE extends EventEmitter {
 
 		this.text            = text;
 		this.text_nopad      = text_nopad;
-		this.text_override   = text_override;
 		this.text_urgent     = text_urgent;
 		this.text_urgent_off = text_urgent_off;
 		this.text_warning    = text_warning;
@@ -954,7 +856,7 @@ IKE.prototype.init_listeners = function () {
 	// Refresh data on GM keyfob unlock event
 	GM.on('keyfob', (keyfob) => {
 		switch (keyfob.button) {
-			case 'unlock' : IKE.data_refresh();
+			case 'unlock' : this.data_refresh();
 		}
 	});
 };
@@ -1044,7 +946,7 @@ IKE.prototype.decode_ignition_status = function (data) {
 		// Activate autolights if we got 'em
 		LCM.auto_lights_process();
 		// Disable/enable HUD refresh
-		data_refresh();
+		this.data_refresh();
 	}
 
 	switch (data.msg[1]) {
@@ -1117,6 +1019,102 @@ IKE.prototype.parse_out = function (data) {
 	}
 
 	log.bus(data);
+};
+
+
+// IKE cluster text send message, override other messages
+IKE.prototype.text_override = function (message, timeout = 2500, direction = 'left', turn = false) {
+	// kodi.notify(module_name, message);
+	let scroll_delay         = 300;
+	let scroll_delay_timeout = scroll_delay * 5;
+
+	// Override scroll_delay_timeout if we're showing a turn signal message
+	if (turn === true) {
+		scroll_delay         = 200;
+		scroll_delay_timeout = 250;
+		timeout              = 0;
+	}
+
+	// Delare that we're currently first up
+	this.hud_override      = true;
+	this.hud_override_text = message;
+
+	// Equal to or less than 20 char
+	if (message.length - this.max_len_text <= 0) {
+		if (this.hud_override_text == message) this.text(message);
+	}
+	else {
+		// Adjust timeout since we will be scrolling
+		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - this.max_len_text));
+
+		// Send initial string if we're currently the first up
+		if (this.hud_override_text == message) {
+			if (direction == 'left') {
+				this.text(message);
+			}
+			else {
+				this.text(message.substring(message.length - this.max_len_text, message.length));
+			}
+		}
+
+		// Add a time buffer before scrolling starts (if this isn't a turn signal message)
+		setTimeout(() => {
+			for (var scroll = 0; scroll <= message.length - this.max_len_text; scroll++) {
+				setTimeout((current_scroll, message_full, direction) => {
+					// Only send the message if we're currently the first up
+					if (this.hud_override_text == message_full) {
+						if (direction == 'left') {
+							this.text(message.substring(current_scroll, current_scroll + this.max_len_text));
+						}
+						else {
+							this.text(message.substring(message.length - this.max_len_text - current_scroll, message.length - current_scroll));
+						}
+					}
+				}, scroll_delay * scroll, scroll, message, direction);
+			}
+		}, scroll_delay_timeout);
+	}
+
+	// Clear the override flag
+	setTimeout((message_full) => {
+		// Only deactivate the override if we're currently first up
+		if (this.hud_override_text == message_full) {
+			this.hud_override = false;
+			this.hud_refresh();
+		}
+	}, timeout, message);
+};
+
+// Refresh various values every 5 seconds
+IKE.prototype.data_refresh = function () {
+	if (status.vehicle.ignition_level === 0) {
+		if (this.timeout_data_refresh !== null) {
+			clearTimeout(this.timeout_data_refresh);
+			this.timeout_data_refresh = null;
+
+			log.module({ msg : 'Unset data refresh timeout' });
+
+			return;
+		}
+	}
+
+	// Request fresh data
+	// GM.request('door-status');
+	this.request('ignition');
+	this.request('temperature');
+	// LCM.request('dimmer');
+	LCM.request('io-status');
+	// LCM.request('light-status');
+	// obc_data('get', 'consumption-1');
+
+	// DME.request('motor-values');
+	// RLS.request('rain-sensor-status');
+
+	if (status.vehicle.ignition_level !== 0) {
+		if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
+		// setTimeout for next update
+		this.timeout_data_refresh = setTimeout(this.data_refresh, 10000);
+	}
 };
 
 module.exports = IKE;

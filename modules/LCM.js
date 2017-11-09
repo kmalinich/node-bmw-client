@@ -188,7 +188,7 @@ function comfort_turn(data) {
 
 function comfort_turn_flash(action) {
 	// Double-check the given action
-	if (action !== 'left' || action !== 'right') return;
+	if (action !== 'left' && action !== 'right') return;
 
 	// Init variables
 	let cluster_msg_outer;
@@ -671,10 +671,15 @@ function welcome_lights(action) {
 	// Disable welcome lights if ignition is not fully off
 	if (status.vehicle.ignition_level !== 0) action = false;
 
+	// Cast action var as Boolean
+	action = (action == 'true');
+
+	log.module({ msg : 'Welcome lights: ' + action });
+
 	switch (action) {
 		case true :
 			// Set status var to true
-			update.status('lights.welcome_lights', true);
+			update.status('lights.welcome_lights', action);
 
 			// Send configured welcome lights
 			io_encode(config.lights.welcome_lights);
@@ -698,7 +703,7 @@ function welcome_lights(action) {
 			LCM.counter_welcome_lights = 0;
 
 			// Set status var back to false
-			update.status('lights.welcome_lights', false);
+			update.status('lights.welcome_lights', action);
 
 			// Send empty object to turn off all LCM outputs (if vehicle is off)
 			if (status.vehicle.ignition_level === 0) io_encode({});
