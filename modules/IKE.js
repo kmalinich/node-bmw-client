@@ -41,7 +41,7 @@ function decode_obc_text(data) {
 	data.command = 'upd';
 
 	// data.msg[1] - Layout
-	var layout = obc_values.h2n(data.msg[1]);
+	let layout = obc_values.h2n(data.msg[1]);
 
 	switch (layout) {
 		case 'time': {
@@ -365,9 +365,9 @@ function decode_odometer(data) {
 	data.command = 'bro';
 	data.value   = 'odometer';
 
-	var odometer_value1 = data.msg[3] << 16;
-	var odometer_value2 = data.msg[2] << 8;
-	var odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
+	let odometer_value1 = data.msg[3] << 16;
+	let odometer_value2 = data.msg[2] << 8;
+	let odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
 	update.status('vehicle.odometer.km', odometer_value);
 	update.status('vehicle.odometer.mi', Math.round(convert(odometer_value).from('kilometre').to('us mile')));
@@ -516,7 +516,7 @@ function hud_refresh() {
 function ignition(value) {
 	log.module({ msg : 'Sending ignition status: ' + value });
 
-	var status;
+	let status;
 	switch (value) {
 		case 'off'  : status = 0x00; break;
 		case 'pos1' : status = 0x01; break;
@@ -534,7 +534,7 @@ function ignition(value) {
 function obc_clock() {
 	log.module({ msg : 'Setting OBC clock to current time' });
 
-	var time = moment();
+	let time = moment();
 
 	// Time
 	bus.data.send({
@@ -571,7 +571,7 @@ function obc_data(action, value, target) {
 	}
 
 	// Assemble message string, with OBC value from value argument
-	var msg = [ cmd, obc_values.n2h(value), action_id ];
+	let msg = [ cmd, obc_values.n2h(value), action_id ];
 
 	// If we're setting, insert the data
 	if (typeof target !== 'undefined' && target) {
@@ -583,61 +583,6 @@ function obc_data(action, value, target) {
 	bus.data.send({
 		src : 'GT',
 		msg : msg,
-	});
-}
-
-// Request various things from IKE
-function request(value) {
-	var cmd = null;
-	var src = 'VID';
-	var dst = module_name;
-
-	let loop_dst;
-
-	switch (value) {
-		case 'ignition'    : cmd = [ 0x10 ];                     break;
-		case 'sensor'      : cmd = [ 0x12 ];                     break;
-		case 'coding'      : cmd = [ 0x14 ];       src = 'RAD';  break;
-		case 'odometer'    : cmd = [ 0x16 ];       src = 'EWS';  break;
-		case 'dimmer'      : cmd = [ 0x1D, 0xC5 ]; src = 'IHKA'; break;
-		case 'temperature' : cmd = [ 0x1D, 0xC5 ]; src = 'LCM';  break;
-
-		case 'vin' : {
-			src = module_name;
-			dst = 'LCM';
-			cmd = [ 0x53 ];
-			break;
-		}
-
-		case 'status-glo' : {
-			for (loop_dst in bus.modules.modules) {
-				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus.cmds.request_device_status('IKE', loop_dst);
-				}
-			}
-			return;
-		}
-
-		case 'status-short' : {
-			bus.modules.modules_check.forEach((loop_dst) => {
-				src = module_name;
-
-				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-					bus.cmds.request_device_status('IKE', loop_dst);
-				}
-			});
-			return;
-		}
-
-		default : return;
-	}
-
-	log.module({ msg : 'Requesting \'' + value + '\'' });
-
-	bus.data.send({
-		src : src,
-		dst : dst,
-		msg : cmd,
 	});
 }
 
@@ -779,8 +724,6 @@ class IKE extends EventEmitter {
 		this.text_urgent     = text_urgent;
 		this.text_urgent_off = text_urgent_off;
 		this.text_warning    = text_warning;
-
-		this.request = request;
 	}
 }
 
@@ -802,12 +745,12 @@ IKE.prototype.obc_refresh = function () {
 	// DME.request('motor-values');
 
 	// IKE data
-	request('coding');
-	request('ignition');
-	request('odometer');
-	request('sensor');
-	request('temperature');
-	request('vin');
+	this.request('coding');
+	this.request('ignition');
+	this.request('odometer');
+	this.request('sensor');
+	this.request('temperature');
+	this.request('vin');
 
 	// OBC data
 	obc_data('get', 'arrival');
@@ -829,10 +772,10 @@ IKE.prototype.obc_refresh = function () {
 
 	// Blow it out
 	if (config.options.modules_refresh_on_start === true) {
-		request('status-glo');
+		this.request('status-glo');
 	}
 	else {
-		request('status-short');
+		this.request('status-short');
 	}
 };
 
@@ -848,7 +791,7 @@ IKE.prototype.init_listeners = function () {
 		this.timeout_accept_refresh = setTimeout(() => {
 			switch (config.options.obc_refresh_on_start) {
 				case true : this.obc_refresh(); break;
-				default   : request('ignition');
+				default   : this.request('ignition');
 			}
 		}, 2500);
 	});
@@ -1059,7 +1002,7 @@ IKE.prototype.text_override = function (message, timeout = 2500, direction = 'le
 
 		// Add a time buffer before scrolling starts (if this isn't a turn signal message)
 		setTimeout(() => {
-			for (var scroll = 0; scroll <= message.length - this.max_len_text; scroll++) {
+			for (let scroll = 0; scroll <= message.length - this.max_len_text; scroll++) {
 				setTimeout((current_scroll, message_full, direction) => {
 					// Only send the message if we're currently the first up
 					if (this.hud_override_text == message_full) {
@@ -1115,6 +1058,62 @@ IKE.prototype.data_refresh = function () {
 		// setTimeout for next update
 		this.timeout_data_refresh = setTimeout(this.data_refresh, 10000);
 	}
+};
+
+
+// Request various things from IKE
+IKE.prototype.request = function (value) {
+	let cmd = null;
+	let src = 'VID';
+	let dst = module_name;
+
+	let loop_dst;
+
+	switch (value) {
+		case 'ignition'    : cmd = [ 0x10 ];                     break;
+		case 'sensor'      : cmd = [ 0x12 ];                     break;
+		case 'coding'      : cmd = [ 0x14 ];       src = 'RAD';  break;
+		case 'odometer'    : cmd = [ 0x16 ];       src = 'EWS';  break;
+		case 'dimmer'      : cmd = [ 0x1D, 0xC5 ]; src = 'IHKA'; break;
+		case 'temperature' : cmd = [ 0x1D, 0xC5 ]; src = 'LCM';  break;
+
+		case 'vin' : {
+			src = module_name;
+			dst = 'LCM';
+			cmd = [ 0x53 ];
+			break;
+		}
+
+		case 'status-glo' : {
+			for (loop_dst in bus.modules.modules) {
+				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
+					bus.cmds.request_device_status('IKE', loop_dst);
+				}
+			}
+			return;
+		}
+
+		case 'status-short' : {
+			bus.modules.modules_check.forEach((loop_dst) => {
+				src = module_name;
+
+				if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
+					bus.cmds.request_device_status('IKE', loop_dst);
+				}
+			});
+			return;
+		}
+
+		default : return;
+	}
+
+	log.module({ msg : 'Requesting \'' + value + '\'' });
+
+	bus.data.send({
+		src : src,
+		dst : dst,
+		msg : cmd,
+	});
 };
 
 module.exports = IKE;
