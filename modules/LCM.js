@@ -706,6 +706,33 @@ function welcome_lights(action) {
 	}
 }
 
+function init_listeners() {
+	// Refresh data on IKE event
+	IKE.on('obc-refresh', () => {
+		request('vehicledata');
+		request('light-status');
+		request('dimmer');
+		request('io-status');
+	});
+
+	// Enable/disable welcome lights on GM keyfob event
+	GM.on('keyfob', (keyfob) => {
+		switch (keyfob.button) {
+			case 'lock' : {
+				// Disable welcome lights
+				LCM.welcome_lights(false);
+				break;
+			}
+
+			case 'unlock' : {
+				// Enable welcome lights
+				LCM.welcome_lights(true);
+			}
+		}
+	});
+}
+
+
 module.exports = {
 	// Timeout variables
 	timeouts : {
@@ -719,6 +746,7 @@ module.exports = {
 	auto_lights         : auto_lights,
 	auto_lights_process : auto_lights_process,
 	comfort_turn_flash  : comfort_turn_flash,
+	init_listeners      : init_listeners,
 	io_encode           : io_encode,
 	parse_out           : parse_out,
 	request             : request,

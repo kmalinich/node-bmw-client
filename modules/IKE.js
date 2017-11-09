@@ -68,205 +68,6 @@ function decode_gong_status(data) {
 	return data;
 }
 
-// Below is a s**t hack workaround while I contemplate firing actual events
-function decode_ignition_status(data) {
-	data.command = 'bro';
-	data.value   = 'ignition: ' + status.vehicle.ignition;
-
-	// Init power-state vars
-	IKE.state_powerdown   = false;
-	IKE.state_poweroff    = false;
-	IKE.state_powerup     = false;
-	IKE.state_run         = false;
-	IKE.state_start_begin = false;
-	IKE.state_start_end   = false;
-
-	// Ignition going up
-	if (data.msg[1] > status.vehicle.ignition_level) {
-		switch (data.msg[1]) { // Evaluate new ignition state
-			case 1: // Accessory
-				log.module({ msg : 'Powerup state' });
-				IKE.state_powerup = true;
-				break;
-
-			case 3: // Run
-				// If the accessory (1) ignition message wasn't caught
-				if (status.vehicle.ignition_level === 0) {
-					log.module({ msg : 'Powerup state' });
-					IKE.state_powerup = true;
-				}
-
-				log.module({ msg : 'Run state' });
-				IKE.state_run = true;
-				break;
-
-			case 7: // Start
-				// If the accessory (1) or run (3) ignition message(s) weren't caught
-				if (status.vehicle.ignition_level === 0 || status.vehicle.ignition_level === 3) {
-					log.module({ msg : 'Powerup state' });
-					IKE.state_powerup = true;
-				}
-
-				log.module({ msg : 'Start-begin state' });
-				IKE.state_start_begin = true;
-		}
-	}
-
-	// Ignition going down
-	else if (data.msg[1] < status.vehicle.ignition_level) {
-		switch (data.msg[1]) { // Evaluate new ignition state
-			case 0: // Off
-				// If the accessory (1) ignition message wasn't caught
-				if (status.vehicle.ignition_level === 3) {
-					log.module({ msg : 'Powerdown state' });
-					IKE.state_powerdown = true;
-				}
-
-				log.module({ msg : 'Poweroff state' });
-				IKE.state_poweroff = true;
-				break;
-
-			case 1: // Accessory
-				log.module({ msg : 'Powerdown state' });
-				IKE.state_powerdown = true;
-				break;
-
-			case 3: // Run
-				log.module({ msg : 'Start-end state' });
-				IKE.state_start_end = true;
-		}
-	}
-
-	// Set ignition status value
-	if (update.status('vehicle.ignition_level', data.msg[1])) {
-		// Activate autolights if we got 'em
-		LCM.auto_lights_process();
-	}
-
-	switch (data.msg[1]) {
-		case 0  : update.status('vehicle.ignition', 'off');       break;
-		case 1  : update.status('vehicle.ignition', 'accessory'); break;
-		case 3  : update.status('vehicle.ignition', 'run');       break;
-		case 7  : update.status('vehicle.ignition', 'start');     break;
-		default : update.status('vehicle.ignition', 'unknown');   break;
-	}
-
-	// Ignition changed to off
-	if (IKE.state_poweroff === true) {
-		// Disable HUD refresh
-		data_refresh();
-
-		// Disable BMBT/MID keepalive
-		BMBT.status_loop(false);
-		MID.status_loop(false);
-		MID.text_loop(false);
-
-		// iDrive knob init
-		CON1.send_status_ignition_new();
-
-		// GPIO relays
-		gpio.set(1, 1);
-		// Run fan for additional 60s after poweroff
-		setTimeout(() => {
-			if (status.vehicle.ignition_level === 0) gpio.set(2, 1);
-		}, 60000);
-
-		// Overhead LCD commands
-		socket.lcd_command_tx('clear');
-		socket.lcd_command_tx('off');
-
-		// Toggle media playback
-		if (status.kodi.player.status == 'playing') kodi.command('toggle');
-		kodi.volume(config.media.kodi.default_volume);
-		BT.command('disconnect');
-
-		// Set modules as not ready
-		if (config.json.reset_on_poweroff) json.modules_reset();
-
-		// Turn off HDMI display after configured delay
-		setTimeout(() => {
-			HDMI.command('poweroff', true);
-		}, config.media.hdmi.poweroff_delay);
-
-		// Write JSON config and status files
-		if (config.json.write_on_poweroff) json.write();
-	}
-
-	// Ignition changed to accessory, from off
-	if (IKE.state_powerup === true) {
-		// Enable HUD refresh
-		data_refresh();
-
-		IKE.state_powerup = false;
-
-		// Enable BMBT/MID keepalive
-		BMBT.status_loop(true);
-		MID.status_loop(true);
-		MID.text_loop(true);
-		bus.cmds.request_device_status(module_name, 'RAD');
-
-		// iDrive knob
-		CON1.send_status_ignition_new();
-
-		// Overhead LCD commands
-		socket.lcd_command_tx('on');
-		socket.lcd_text_tx({
-			upper : 'State:',
-			lower : 'powerup',
-		});
-
-		// GPIO relays
-		gpio.set(1, 0);
-		gpio.set(2, 0);
-
-		// Connect Bluetooth
-		BT.command('connect');
-
-		// Toggle media playback
-		kodi.volume(config.media.kodi.default_volume);
-		setTimeout(() => {
-			if (status.kodi.player.status != 'playing') kodi.command('toggle');
-		}, 6000);
-
-		// Welcome message
-		if (config.options.message_welcome === true) {
-			IKE.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.round((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
-		}
-	}
-
-	// Ignition changed to accessory, from run
-	if (IKE.state_powerdown === true) {
-		IKE.state_powerdown = false;
-		if (status.vehicle.locked && status.doors.sealed) { // If the doors are closed and locked
-			GM.locks(); // Send message to GM to toggle door locks
-		}
-	}
-
-	// Ignition changed to run, from off/accessory
-	if (IKE.state_run === true) {
-		IKE.state_run = false;
-
-		// If the HDMI display is currently on, power it off
-		//
-		// This helps prepare for engine start during scenarios
-		// like at the fuel pump, when the ignition is switched
-		// from run to accessory, which ordinarily would leave the screen on
-		//
-		// That causes an issue if you go back to run from accessory,
-		// with the screen still on, since it may damage the screen
-		// if it experiences a low-voltage event caused by the starter motor
-		HDMI.command('poweroff_powered_on_once');
-
-		// Write JSON config and status files
-		if (config.json.write_on_run) json.write();
-
-		// Refresh OBC data
-		if (config.options.obc_refresh_on_start === true) IKE.obc_refresh();
-	}
-
-	return data;
-}
-
 
 function decode_obc_text(data) {
 	data.command = 'upd';
@@ -817,116 +618,6 @@ function obc_data(action, value, target) {
 	});
 }
 
-// Refresh OBC data
-function obc_refresh() {
-	log.module({ msg : 'Refreshing all OBC data' });
-
-	// LCM data
-	LCM.request('vehicledata');
-	LCM.request('light-status');
-	LCM.request('dimmer');
-	LCM.request('io-status');
-
-	// Immo+GM data
-	EWS.request('immobiliserstatus');
-	GM.request('io-status');
-	GM.request('door-status');
-
-	// IHKA IO status
-	// IHKA.request('io-status');
-
-	// DME engine data
-	// DME.request('motor-values');
-
-	// IKE data
-	IKE.request('coding');
-	IKE.request('ignition');
-	IKE.request('odometer');
-	IKE.request('sensor');
-	IKE.request('temperature');
-	IKE.request('vin');
-
-	// OBC data
-	obc_data('get', 'arrival');
-	obc_data('get', 'timer-1');
-	obc_data('get', 'timer-2');
-	obc_data('get', 'auxheatvent');
-	obc_data('get', 'code');
-	obc_data('get', 'consumption-1');
-	obc_data('get', 'consumption-2');
-	obc_data('get', 'date');
-	obc_data('get', 'distance');
-	obc_data('get', 'range');
-	obc_data('get', 'average-speed');
-	obc_data('get', 'limit');
-	obc_data('get', 'stopwatch');
-	obc_data('get', 'outside-temp');
-	obc_data('get', 'time');
-	obc_data('get', 'timer');
-
-	// Blow it out
-	if (config.options.modules_refresh_on_start === true) {
-		IKE.request('status-glo');
-	}
-	else {
-		IKE.request('status-short');
-	}
-}
-
-// Parse data sent from IKE module
-function parse_out(data) {
-	// Init variables
-	switch (data.msg[0]) {
-		case 0x07: // Gong status
-			data = decode_gong_status(data);
-			break;
-
-		case 0x11: // Broadcast: Ignition status
-			data = decode_ignition_status(data);
-			break;
-
-		case 0x13: // IKE sensor status
-			data = decode_sensor_status(data);
-			break;
-
-		case 0x15: // country coding data
-			data = decode_country_coding_data(data);
-			break;
-
-		case 0x17: // Odometer
-			data = decode_odometer(data);
-			break;
-
-		case 0x18: // Vehicle speed and RPM
-			data = decode_speed_values(data);
-			break;
-
-		case 0x19: // Coolant temp and external temp
-			data = decode_temperature_values(data);
-			break;
-
-		case 0x24: // Update: OBC text
-			data = decode_obc_text(data);
-			break;
-
-		case 0x2A: // Broadcast: Aux heat LED status
-			data = decode_aux_heat_led(data);
-			break;
-
-		case 0x57: // Broadcast: BC button press (MFL BC stalk button)
-			data.command = 'bro';
-			data.value   = 'BC button';
-			break;
-
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-			break;
-	}
-
-	log.bus(data);
-}
-
 // Request various things from IKE
 function request(value) {
 	var cmd = null;
@@ -1152,40 +843,280 @@ function text_warning(message, timeout = 10000) {
 }
 
 
-// Exported data
-module.exports = {
-	// Max length of cluster text
-	max_len_text : 20,
+const EventEmitter = require('events');
 
-	// HUD refresh vars
-	timeout_data_refresh : null,
-	last_hud_refresh     : now(),
-	hud_override         : false,
-	hud_override_text    : null,
+class IKE extends EventEmitter {
+	constructor() {
+		super();
 
-	// Ignition state change vars
-	state_powerdown   : null,
-	state_poweroff    : null,
-	state_powerup     : null,
-	state_run         : null,
-	state_start_begin : null,
-	state_start_end   : null,
+		// Max length of cluster text
+		this.max_len_text = 20;
 
-	// Functions
-	data_refresh      : data_refresh,
-	hud_refresh       : hud_refresh,
-	hud_refresh_speed : hud_refresh_speed,
-	ignition          : ignition,
-	obc_clock         : obc_clock,
-	obc_data          : obc_data,
-	obc_refresh       : obc_refresh,
-	parse_out         : parse_out,
-	text              : text,
-	text_nopad        : text_nopad,
-	text_override     : text_override,
-	text_urgent       : text_urgent,
-	text_urgent_off   : text_urgent_off,
-	text_warning      : text_warning,
+		// HUD refresh vars
+		this.timeout_data_refresh = null;
+		this.last_hud_refresh     = now();
+		this.hud_override         = false;
+		this.hud_override_text    = null;
 
-	request : request,
+		this.timeout_accept_refresh = null;
+
+		// Functions
+		this.data_refresh = data_refresh;
+
+		this.hud_refresh       = hud_refresh;
+		this.hud_refresh_speed = hud_refresh_speed;
+
+		this.ignition = ignition;
+
+		this.obc_clock = obc_clock;
+		this.obc_data  = obc_data;
+
+		this.text            = text;
+		this.text_nopad      = text_nopad;
+		this.text_override   = text_override;
+		this.text_urgent     = text_urgent;
+		this.text_urgent_off = text_urgent_off;
+		this.text_warning    = text_warning;
+
+		this.request = request;
+	}
+}
+
+// Refresh OBC data
+IKE.prototype.obc_refresh = function () {
+	this.emit('obc-refresh');
+
+	log.module({ msg : 'Refreshing all OBC data' });
+
+	// Immo+GM data
+	EWS.request('immobiliserstatus');
+	GM.request('io-status');
+	GM.request('door-status');
+
+	// IHKA IO status
+	// IHKA.request('io-status');
+
+	// DME engine data
+	// DME.request('motor-values');
+
+	// IKE data
+	request('coding');
+	request('ignition');
+	request('odometer');
+	request('sensor');
+	request('temperature');
+	request('vin');
+
+	// OBC data
+	obc_data('get', 'arrival');
+	obc_data('get', 'timer-1');
+	obc_data('get', 'timer-2');
+	obc_data('get', 'auxheatvent');
+	obc_data('get', 'code');
+	obc_data('get', 'consumption-1');
+	obc_data('get', 'consumption-2');
+	obc_data('get', 'date');
+	obc_data('get', 'distance');
+	obc_data('get', 'range');
+	obc_data('get', 'average-speed');
+	obc_data('get', 'limit');
+	obc_data('get', 'stopwatch');
+	obc_data('get', 'outside-temp');
+	obc_data('get', 'time');
+	obc_data('get', 'timer');
+
+	// Blow it out
+	if (config.options.modules_refresh_on_start === true) {
+		request('status-glo');
+	}
+	else {
+		request('status-short');
+	}
 };
+
+IKE.prototype.init_listeners = function () {
+	// Refresh data on interface connection
+	socket.on('accept', () => {
+		// Clear existing timeout if exists
+		if (this.timeout_accept_refresh !== null) {
+			clearTimeout(this.timeout_accept_refresh);
+			this.timeout_accept_refresh = null;
+		}
+
+		this.timeout_accept_refresh = setTimeout(() => {
+			switch (config.options.obc_refresh_on_start) {
+				case true : this.obc_refresh(); break;
+				default   : request('ignition');
+			}
+		}, 2500);
+	});
+
+	// Refresh data on GM keyfob unlock event
+	GM.on('keyfob', (keyfob) => {
+		switch (keyfob.button) {
+			case 'unlock' : IKE.data_refresh();
+		}
+	});
+};
+
+// Below is a s**t hack workaround while I contemplate firing more proper events
+IKE.prototype.decode_ignition_status = function (data) {
+	data.command = 'bro';
+	data.value   = 'ignition: ' + status.vehicle.ignition;
+
+	// Ignition going up
+	if (data.msg[1] > status.vehicle.ignition_level) {
+		switch (data.msg[1]) { // Evaluate new ignition state
+			case 1: // Accessory
+				log.module({ msg : 'Powerup state' });
+				this.emit('ignition-powerup');
+				bus.cmds.request_device_status(module_name, 'RAD');
+				break;
+
+			case 3: // Run
+				// If the accessory (1) ignition message wasn't caught
+				if (status.vehicle.ignition_level === 0) {
+					log.module({ msg : 'Powerup state' });
+					this.emit('ignition-powerup');
+					bus.cmds.request_device_status(module_name, 'RAD');
+				}
+
+				log.module({ msg : 'Run state' });
+				this.emit('ignition-run');
+
+				// Refresh OBC data
+				if (config.options.obc_refresh_on_start === true) this.obc_refresh();
+				break;
+
+			case 7 : { // Start
+				switch (status.vehicle.ignition_level) {
+					case 0 : { // If the accessory (1) ignition message wasn't caught
+						log.module({ msg : 'Powerup state' });
+						this.emit('ignition-powerup');
+						bus.cmds.request_device_status(module_name, 'RAD');
+						break;
+					}
+
+					case 3 : { // If the run (3) ignition message wasn't caught
+						log.module({ msg : 'Run state' });
+						this.emit('ignition-run');
+
+						// Refresh OBC data
+						if (config.options.obc_refresh_on_start === true) this.obc_refresh();
+						break;
+					}
+
+					default : {
+						log.module({ msg : 'Start-begin state' });
+						this.emit('ignition-start-begin');
+					}
+				}
+			}
+		}
+	}
+
+	// Ignition going down
+	else if (data.msg[1] < status.vehicle.ignition_level) {
+		switch (data.msg[1]) { // Evaluate new ignition state
+			case 0: // Off
+				// If the accessory (1) ignition message wasn't caught
+				if (status.vehicle.ignition_level === 3) {
+					log.module({ msg : 'Powerdown state' });
+				}
+
+				log.module({ msg : 'Poweroff state' });
+				this.emit('ignition-poweroff');
+				break;
+
+			case 1: // Accessory
+				log.module({ msg : 'Powerdown state' });
+				this.emit('ignition-powerdown');
+				break;
+
+			case 3: // Run
+				log.module({ msg : 'Start-end state' });
+				this.emit('ignition-start-end');
+		}
+	}
+
+	// Set ignition status value
+	if (update.status('vehicle.ignition_level', data.msg[1])) {
+		// Activate autolights if we got 'em
+		LCM.auto_lights_process();
+		// Disable/enable HUD refresh
+		data_refresh();
+	}
+
+	switch (data.msg[1]) {
+		case 0  : update.status('vehicle.ignition', 'off');       break;
+		case 1  : update.status('vehicle.ignition', 'accessory'); break;
+		case 3  : update.status('vehicle.ignition', 'run');       break;
+		case 7  : update.status('vehicle.ignition', 'start');     break;
+		default : update.status('vehicle.ignition', 'unknown');
+	}
+
+	return data;
+};
+
+// Welcome text message in cluster
+IKE.prototype.welcome_message = function () {
+	if (config.options.message_welcome !== true) return;
+
+	this.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.round((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
+};
+
+// Parse data sent from IKE module
+IKE.prototype.parse_out = function (data) {
+	// Init variables
+	switch (data.msg[0]) {
+		case 0x07: // Gong status
+			data = decode_gong_status(data);
+			break;
+
+		case 0x11: // Broadcast: Ignition status
+			data = this.decode_ignition_status(data);
+			break;
+
+		case 0x13: // IKE sensor status
+			data = decode_sensor_status(data);
+			break;
+
+		case 0x15: // country coding data
+			data = decode_country_coding_data(data);
+			break;
+
+		case 0x17: // Odometer
+			data = decode_odometer(data);
+			break;
+
+		case 0x18: // Vehicle speed and RPM
+			data = decode_speed_values(data);
+			break;
+
+		case 0x19: // Coolant temp and external temp
+			data = decode_temperature_values(data);
+			break;
+
+		case 0x24: // Update: OBC text
+			data = decode_obc_text(data);
+			break;
+
+		case 0x2A: // Broadcast: Aux heat LED status
+			data = decode_aux_heat_led(data);
+			break;
+
+		case 0x57: // Broadcast: BC button press (MFL BC stalk button)
+			data.command = 'bro';
+			data.value   = 'BC button';
+			break;
+
+		default:
+			data.command = 'unk';
+			data.value   = Buffer.from(data.msg);
+			break;
+	}
+
+	log.bus(data);
+};
+
+module.exports = IKE;

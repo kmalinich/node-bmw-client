@@ -80,27 +80,11 @@ function decode_message_keyfob(data) {
 		}
 	}
 
+	// Emit keyfob event
+	this.emit('keyfob', keyfob);
+
 	// Assemble log string
 	data.value += keyfob.key_str + ', ' + keyfob.button_str + ', ' + keyfob.low_batt_str;
-
-	// Actuate welcome lights on lock/unlock
-	switch (keyfob.button) {
-		case 'lock':
-			LCM.welcome_lights(false); // Disable welcome lights
-			// gpio.set(2, 1);            // Disable fan relay
-			break;
-
-		case 'unlock':
-			IKE.data_refresh();       // Refresh some data
-			LCM.welcome_lights(true); // Enable welcome lights
-			gpio.set(2, 0);           // Enable fan relay
-
-			// 5 minutes after fan enable,
-			// turn fan back off if ignition is off
-			setTimeout(() => {
-				if (status.vehicle.ignition_level === 0) gpio.set(2, 1);
-			}, 300000);
-	}
 
 	log.bus(data);
 }
@@ -392,14 +376,28 @@ function windows(request) {
 	io_set(msg);
 }
 
+const EventEmitter = require('events');
 
-module.exports = {
-	// Functions
-	interior_light : interior_light,
-	io_decode      : io_decode,
-	io_encode      : io_encode,
-	locks          : locks,
-	parse_out      : parse_out,
-	request        : request,
-	windows        : windows,
+class GM extends EventEmitter {
+	constructor() {
+		super();
+
+		this.interior_light = interior_light;
+		this.io_decode      = io_decode;
+		this.io_encode      = io_encode;
+		this.locks          = locks;
+		this.parse_out      = parse_out;
+		this.request        = request;
+		this.windows        = windows;
+	}
+}
+
+GM.prototype.init_listeners = function () {
+	IKE.on('ignition-powerdown', () => {
+		if (status.vehicle.locked && status.doors.sealed) { // If the doors are closed and locked
+			this.locks(); // Send message to GM to toggle door locks
+		}
+	});
 };
+
+module.exports = GM;
