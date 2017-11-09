@@ -7,15 +7,16 @@ app_intf = 'client';
 
 process.title = app_name;
 
+
 // node-bmw libraries
 api        = require('api');
 bitmask    = require('bitmask');
 hex        = require('hex');
+socket     = new (require('socket'))();
 json       = require('json');
 log        = require('log-output');
 obc_values = require('obc-values');
 os         = require('os');
-socket     = new (require('socket'))();
 update     = require('update');
 weather    = require('weather');
 
@@ -71,14 +72,14 @@ function load_modules(pass) {
 	FHK  = require('FHK');
 	FID  = require('FID');
 	FMBT = require('FMBT');
-	GM   = require('GM');
+	GM   = new (require('GM'))();
 	GR   = require('GR');
 	GT   = require('GT');
 	GTF  = require('GTF');
 	HAC  = require('HAC');
 	HKM  = require('HKM');
 	IHKA = require('IHKA');
-	IKE  = require('IKE');
+	IKE  = new (require('IKE'))();
 	IRIS = require('IRIS');
 	LCM  = require('LCM');
 	LWS  = require('LWS');
@@ -142,7 +143,16 @@ function init() {
 	log.msg({ msg : 'Initializing' });
 
 	json.read(() => { // Read JSON config and status files
-		load_modules(() => { // Load IBUS module node modules
+		load_modules(() => { // Load IBUS/KBUS module node modules
+			// Initialize event listeners for GM and IKE
+			BMBT.init_listeners();
+			CON1.init_listeners();
+			GM.init_listeners();
+			IKE.init_listeners();
+			LCM.init_listeners();
+			MID.init_listeners();
+			json.init_listeners();
+
 			host_data.init(() => { // Initialize host data object
 				weather.init(() => { // Initialize weather object
 					kodi.init(); // Start Kodi WebSocket client

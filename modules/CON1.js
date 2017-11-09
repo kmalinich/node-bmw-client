@@ -480,6 +480,18 @@ function parse_out(data) {
 	// log.bus(data);
 }
 
+function init_listeners() {
+	// Enable keepalive on IKE ignition event
+	IKE.on('ignition-powerup', () => {
+		send_status_ignition_new();
+	});
+
+	// Enable keepalive on IKE ignition event
+	IKE.on('ignition-poweroff', () => {
+		send_status_ignition_new();
+	});
+}
+
 
 module.exports = {
 	timeouts : {
@@ -488,6 +500,7 @@ module.exports = {
 	},
 
 	// Functions
+	init_listeners           : init_listeners,
 	parse_out                : parse_out,
 	send_backlight           : send_backlight,
 	send_status_ignition_new : send_status_ignition_new,

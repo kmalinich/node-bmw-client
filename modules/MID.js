@@ -354,12 +354,28 @@ function send_button(button) {
 	}, 150);
 }
 
+function init_listeners() {
+	// Enable keepalive on IKE ignition event
+	IKE.on('ignition-powerup', () => {
+		status_loop(true);
+		text_loop(true);
+	});
+
+	// Disable keepalive on IKE ignition event
+	IKE.on('ignition-poweroff', () => {
+		status_loop(false);
+		text_loop(false);
+	});
+}
+
+
 module.exports = {
 	interval_status_loop : null,
 	interval_text_loop   : null,
 	status_status_loop   : false,
 	status_text_loop     : false,
 
+	init_listeners        : init_listeners,
 	parse_in              : parse_in,
 	parse_out             : parse_out,
 	refresh_text          : refresh_text,
