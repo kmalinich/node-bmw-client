@@ -39,56 +39,6 @@
 //   wipers_spray                  : true,
 // };
 
-// [0x72] Decode a key fob bitmask message, and act upon the results
-function decode_message_keyfob(data) {
-	data.command = 'bro';
-	data.value   = 'key fob status - ';
-
-	let mask   = bitmask.check(data.msg[1]).mask;
-	let keyfob = {
-		low_batt     : mask.bit0,
-		low_batt_str : 'battery low: ' + mask.bit0,
-		keys         : {
-			key0 : !mask.bit1 && !mask.bit2,
-			key1 : mask.bit1  && !mask.bit2,
-			key2 : !mask.bit1 &&  mask.bit2,
-			key3 : mask.bit1  &&  mask.bit2,
-		},
-		buttons : {
-			lock   : mask.bit4  && !mask.bit5 && !mask.bit6 && !mask.bit8,
-			unlock : !mask.bit4 &&  mask.bit5 && !mask.bit6 && !mask.bit8,
-			trunk  : !mask.bit4 && !mask.bit5 &&  mask.bit6 && !mask.bit8,
-			none   : !mask.bit4 && !mask.bit5 && !mask.bit6 &&  mask.bit8,
-		},
-	};
-
-	// Loop key object to populate log string
-	for (let key in keyfob.keys) {
-		if (keyfob.keys[key] === true) {
-			keyfob.key     = key;
-			keyfob.key_str = 'key: ' + key;
-			break;
-		}
-	}
-
-	// Loop button object to populate log string
-	for (let button in keyfob.buttons) {
-		if (keyfob.buttons[button] === true) {
-			keyfob.button     = button;
-			keyfob.button_str = 'button: ' + button;
-			break;
-		}
-	}
-
-	// Emit keyfob event
-	this.emit('keyfob', keyfob);
-
-	// Assemble log string
-	data.value += keyfob.key_str + ', ' + keyfob.button_str + ', ' + keyfob.low_batt_str;
-
-	log.bus(data);
-}
-
 // [0x7A] Decode a door status message from the GM and act upon the results
 function decode_status_open(data) {
 	data.command = 'bro';
@@ -222,86 +172,6 @@ function locks() {
 	io_set([ 0x00, 0x0B ]);
 }
 
-// Parse data sent from GM module
-function parse_out(data) {
-	switch (data.msg[0]) {
-		case 0x72: // Broadcast: Key fob status
-			decode_message_keyfob(data);
-			return;
-
-		case 0x76: // Broadcast: 'Crash alarm'
-			data.command = 'bro';
-			data.value   = 'crash alarm - ';
-
-			switch (data.msg[1]) {
-				case 0x00 : data.value += 'no crash'; break;
-				case 0x02 : data.value += 'armed';    break; // A guess
-				default   : data.value += Buffer.from(data.msg[1]);
-			}
-			break;
-
-		case 0x77: // Broadcast: Wiper status
-			data.command = 'bro';
-			data.value   = 'wiper status';
-
-			// data.msg[1] bitmask
-			// 0x00 : sens 0+level 0
-			// 0x01 : speed 1
-			// 0x02 : speed 2
-			// 1+2  : speed 3
-			// 0x04 : sens 1
-			// 0x08 : sens 2
-			// 4+8  : sens 3
-			// 0x20 : spray
-
-			// This is wasteful because they all get evaluated
-			data.speed = 'off';
-			if (bitmask.test(data.msg[1], 0x20)) data.speed = 'spray';
-			if (bitmask.test(data.msg[1], 0x02)) data.speed = 'medium';
-			if (bitmask.test(data.msg[1], 0x01)) data.speed = 'low/auto';
-			if (bitmask.test(data.msg[1], 0x02) && bitmask.test(data.msg[1], 0x01)) data.speed = 'high';
-
-			data.sensitivity = 0;
-			if (bitmask.test(data.msg[1], 0x08)) data.sensitivity = 2;
-			if (bitmask.test(data.msg[1], 0x04)) data.sensitivity = 1;
-			if (bitmask.test(data.msg[1], 0x08) && bitmask.test(data.msg[1], 0x04)) data.sensitivity = 3;
-
-			// Set status var
-			update.status('gm.wipers.sensitivity', data.sensitivity);
-
-			// Set status var
-			// Trigger auto lights processing, trigger auto light processing if changed
-			if (update.status('gm.wipers.speed', data.speed)) {
-				// Call LCM.auto_lights_process() after 1.5s, else just tapping mist/spray turns on the lights
-				setTimeout(() => {
-					LCM.auto_lights_process();
-				}, 1500);
-			}
-			break;
-
-		case 0x78: // Broadcast: Seat memory data
-			data.command = 'bro';
-			data.value   = 'seat memory data';
-			break;
-
-		case 0x7A: // Broadcast: Door status
-			data = decode_status_open(data);
-			break;
-
-		case 0xA0: // Reply: Diagnostic command acknowledged
-			data.command = 'rep';
-			data.value   = 'TODO diagnostic command ack';
-			break;
-
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-			break;
-	}
-
-	log.bus(data);
-}
-
 // Request various things from GM
 function request(value) {
 	// Init variables
@@ -386,7 +256,6 @@ class GM extends EventEmitter {
 		this.io_decode      = io_decode;
 		this.io_encode      = io_encode;
 		this.locks          = locks;
-		this.parse_out      = parse_out;
 		this.request        = request;
 		this.windows        = windows;
 	}
@@ -398,6 +267,137 @@ GM.prototype.init_listeners = function () {
 			this.locks(); // Send message to GM to toggle door locks
 		}
 	});
+};
+
+// [0x72] Decode a key fob bitmask message, and act upon the results
+GM.prototype.decode_message_keyfob = function (data) {
+	data.command = 'bro';
+	data.value   = 'key fob status - ';
+
+	let mask   = bitmask.check(data.msg[1]).mask;
+	let keyfob = {
+		low_batt     : mask.bit0,
+		low_batt_str : 'battery low: ' + mask.bit0,
+		keys         : {
+			key0 : !mask.bit1 && !mask.bit2,
+			key1 : mask.bit1  && !mask.bit2,
+			key2 : !mask.bit1 &&  mask.bit2,
+			key3 : mask.bit1  &&  mask.bit2,
+		},
+		buttons : {
+			lock   : mask.bit4  && !mask.bit5 && !mask.bit6 && !mask.bit8,
+			unlock : !mask.bit4 &&  mask.bit5 && !mask.bit6 && !mask.bit8,
+			trunk  : !mask.bit4 && !mask.bit5 &&  mask.bit6 && !mask.bit8,
+			none   : !mask.bit4 && !mask.bit5 && !mask.bit6 &&  mask.bit8,
+		},
+	};
+
+	// Loop key object to populate log string
+	for (let key in keyfob.keys) {
+		if (keyfob.keys[key] === true) {
+			keyfob.key     = key;
+			keyfob.key_str = 'key: ' + key;
+			break;
+		}
+	}
+
+	// Loop button object to populate log string
+	for (let button in keyfob.buttons) {
+		if (keyfob.buttons[button] === true) {
+			keyfob.button     = button;
+			keyfob.button_str = 'button: ' + button;
+			break;
+		}
+	}
+
+	// Emit keyfob event
+	this.emit('keyfob', keyfob);
+
+	// Assemble log string
+	data.value += keyfob.key_str + ', ' + keyfob.button_str + ', ' + keyfob.low_batt_str;
+
+	log.bus(data);
+};
+
+
+// Parse data sent from GM module
+GM.prototype.parse_out = function (data) {
+	switch (data.msg[0]) {
+		case 0x72: // Broadcast: Key fob status
+			this.decode_message_keyfob(data);
+			return;
+
+		case 0x76: // Broadcast: 'Crash alarm'
+			data.command = 'bro';
+			data.value   = 'crash alarm - ';
+
+			switch (data.msg[1]) {
+				case 0x00 : data.value += 'no crash'; break;
+				case 0x02 : data.value += 'armed';    break; // A guess
+				default   : data.value += Buffer.from(data.msg[1]);
+			}
+			break;
+
+		case 0x77: // Broadcast: Wiper status
+			data.command = 'bro';
+			data.value   = 'wiper status';
+
+			// data.msg[1] bitmask
+			// 0x00 : sens 0+level 0
+			// 0x01 : speed 1
+			// 0x02 : speed 2
+			// 1+2  : speed 3
+			// 0x04 : sens 1
+			// 0x08 : sens 2
+			// 4+8  : sens 3
+			// 0x20 : spray
+
+			// This is wasteful because they all get evaluated
+			data.speed = 'off';
+			if (bitmask.test(data.msg[1], 0x20)) data.speed = 'spray';
+			if (bitmask.test(data.msg[1], 0x02)) data.speed = 'medium';
+			if (bitmask.test(data.msg[1], 0x01)) data.speed = 'low/auto';
+			if (bitmask.test(data.msg[1], 0x02) && bitmask.test(data.msg[1], 0x01)) data.speed = 'high';
+
+			data.sensitivity = 0;
+			if (bitmask.test(data.msg[1], 0x08)) data.sensitivity = 2;
+			if (bitmask.test(data.msg[1], 0x04)) data.sensitivity = 1;
+			if (bitmask.test(data.msg[1], 0x08) && bitmask.test(data.msg[1], 0x04)) data.sensitivity = 3;
+
+			// Set status var
+			update.status('gm.wipers.sensitivity', data.sensitivity);
+
+			// Set status var
+			// Trigger auto lights processing, trigger auto light processing if changed
+			if (update.status('gm.wipers.speed', data.speed)) {
+				// Call LCM.auto_lights_process() after 1.5s, else just tapping mist/spray turns on the lights
+				setTimeout(() => {
+					LCM.auto_lights_process();
+				}, 1500);
+			}
+			break;
+
+		case 0x78: // Broadcast: Seat memory data
+			data.command = 'bro';
+			data.value   = 'seat memory data';
+			break;
+
+		case 0x7A: // Broadcast: Door status
+			data = decode_status_open(data);
+			break;
+
+		case 0xA0: // Reply: Diagnostic command acknowledged
+			data.command = 'rep';
+			data.value   = 'TODO diagnostic command ack';
+			break;
+
+		default:
+			data.command = 'unk';
+			data.value   = Buffer.from(data.msg);
+			break;
+	}
+
+	log.bus(data);
 };
 
 module.exports = GM;
