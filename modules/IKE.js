@@ -1110,7 +1110,10 @@ IKE.prototype.data_refresh = function () {
 	if (status.vehicle.ignition_level !== 0) {
 		if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
 		// setTimeout for next update
-		this.timeout_data_refresh = setTimeout(this.data_refresh, 10000);
+		let self = this;
+		this.timeout_data_refresh = setTimeout(() => {
+			self.data_refresh();
+		}, 10000);
 	}
 };
 
