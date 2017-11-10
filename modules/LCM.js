@@ -742,7 +742,8 @@ function init_listeners() {
 	// Enable/disable welcome lights on GM keyfob event
 	GM.on('keyfob', (keyfob) => {
 		log.module({ msg : 'Received GM keyfob event' });
-		welcome_lights((keyfob.button === 'unlock'));
+		console.log(keyfob);
+		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 }
 
