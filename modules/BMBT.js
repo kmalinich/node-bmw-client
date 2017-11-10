@@ -4,13 +4,13 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Set or unset the status timeout
 function status_loop(action) {
-	log.module({ msg : 'status_loop(' + action + ')' });
-
 	if (config.emulate.bmbt !== true) return;
 
 	if (status.vehicle.ignition_level < 1) action = false;
 
 	if (BMBT.status_status_loop === action) return;
+
+	log.module({ msg : 'status_loop(' + action + ')' });
 
 	switch (action) {
 		case false:
