@@ -38,6 +38,9 @@ const now = require('performance-now');
 // iDrive knob rotation
 // ARBID 0x264: <Buffer e1 fd b5 fb 7f 1e>
 function decode_con_rotation(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	// data.msg[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn
 	// data.msg[3] : Counts up and down between 0x00-0xFE : depending on the direction of rotation
 
@@ -113,6 +116,9 @@ function decode_con_rotation(data) {
 
 // CON1 button press, length 6
 function decode_con_button(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	// Action bitmask data.msg[3]:
 	// bit0 : Press
 	// bit1 : Hold
@@ -259,6 +265,9 @@ function decode_con_button(data) {
 }
 
 function button_check(button) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	// Workaround for the last of a proper 'release' message when in 'joystick mode'
 	let joystick_release = button.mode == 'joystick' && button.action == 'release' && button.button == 'none';
 	if (joystick_release === true) button.button = status.con1.last.button.button;
@@ -313,6 +322,9 @@ function button_check(button) {
 
 
 function decode_backlight(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	// data.msg[0]: Backlight intensity
 	// 0xFF      : 50%
 	// 0xFE      :  0%
@@ -323,6 +335,9 @@ function decode_backlight(data) {
 }
 
 function decode_status_con(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	// console.log('[%s] status', log.chalk.boldyellow('CON1'));
 	if (data.msg[4] == 0x06) { // CON1 needs init
 		log.module({ msg : 'Init triggered' });
@@ -332,10 +347,16 @@ function decode_status_con(data) {
 }
 
 function decode_ignition_new(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	log.module({ msg : 'Ignition message ' + data.msg[0] });
 }
 
 function decode_status_cic(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	log.module({ msg : 'CIC1 status message ' + data.msg[0] });
 }
 
@@ -351,6 +372,9 @@ function decode_status_cic(data) {
 
 
 function send_backlight(value) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	// data.msg[0]: Backlight intensity
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
@@ -382,6 +406,9 @@ function send_backlight(value) {
 
 // E90 CIC1 status
 function send_status_cic() {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	log.module({ msg : 'Sending CIC1 status' });
 
 	let msg = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
@@ -396,6 +423,9 @@ function send_status_cic() {
 
 // E90 Ignition status
 function send_status_ignition_new() {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	log.module({ msg : 'Sending ignition status' });
 
 	bus.data.send({
@@ -424,6 +454,9 @@ function send_status_ignition_new() {
 
 // Parse data sent from module
 function parse_out(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	switch (data.src.id) {
 		case 0x202:
 			data.command = 'bro';
@@ -483,11 +516,17 @@ function parse_out(data) {
 function init_listeners() {
 	// Enable keepalive on IKE ignition event
 	IKE.on('ignition-powerup', () => {
+		// Bounce if not enabled
+		if (config.media.con1 !== true) return;
+
 		send_status_ignition_new();
 	});
 
 	// Enable keepalive on IKE ignition event
 	IKE.on('ignition-poweroff', () => {
+		// Bounce if not enabled
+		if (config.media.con1 !== true) return;
+
 		send_status_ignition_new();
 	});
 }
