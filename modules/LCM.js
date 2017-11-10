@@ -140,6 +140,14 @@ function coding_get() {
 	}
 }
 
+// Get LCM identity data
+function identity_get() {
+	bus.data.send({
+		src : 'DIA',
+		msg : [ 0x00 ],
+	});
+}
+
 // Comfort turn signal handling
 function comfort_turn(data) {
 	// If comfort turn is not enabled
@@ -604,18 +612,26 @@ function request(value) {
 		case 'coding':
 			coding_get();
 			break;
+
 		case 'dimmer':
 			src = 'BMBT';
 			msg = [ 0x5D ];
 			break;
+
+		case 'identity':
+			identity_get();
+			break;
+
 		case 'io-status':
 			src = 'DIA';
 			msg = [ 0x0B, 0x00 ]; // Get IO status
 			break;
+
 		case 'light-status':
 			src = 'GT';
 			msg = [ 0x5A ];
 			break;
+
 		case 'vehicledata':
 			src = 'IKE';
 			msg = [ 0x53 ];
