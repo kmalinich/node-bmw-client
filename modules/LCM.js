@@ -564,11 +564,8 @@ function reset() {
 	// Determine dimmer value from config, depending if lowbeams are on
 	let reset_dimmer_val;
 	switch (status.lights.auto.lowbeam) {
-		case true:
-			reset_dimmer_val = config.lights.dimmer.lights_on;
-			break;
-		case false:
-			reset_dimmer_val = config.lights.dimmer.lights_off;
+		case true  : reset_dimmer_val = config.lights.dimmer.lights_on; break;
+		case false : reset_dimmer_val = config.lights.dimmer.lights_off;
 	}
 
 	// Object of autolights related values
@@ -739,7 +736,6 @@ function init_listeners() {
 	// Enable/disable welcome lights on GM keyfob event
 	GM.on('keyfob', (keyfob) => {
 		log.module({ msg : 'Received GM keyfob event' });
-		if (keyfob.button === 'unlock') console.log(keyfob);
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 }
