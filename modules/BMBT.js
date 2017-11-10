@@ -4,6 +4,8 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Set or unset the status timeout
 function status_loop(action) {
+	log.module({ msg : 'status_loop(' + action + ')' });
+
 	if (config.emulate.bmbt !== true) return;
 
 	if (status.vehicle.ignition_level < 1) action = false;
@@ -45,6 +47,8 @@ function status_loop(action) {
 // Send BMBT status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
+		log.module({ msg : 'Refreshing status' });
+
 		bus.cmds.send_device_status('CDC');
 		bus.cmds.send_device_status('BMBT');
 		bus.cmds.send_device_status('DSPC');
@@ -52,7 +56,7 @@ function refresh_status() {
 		bus.cmds.request_device_status(module_name, 'RAD');
 		bus.cmds.request_device_status('RAD',  'DSP');
 
-		BMBT.timeouts.status_loop = setTimeout(refresh_status, 8500);
+		BMBT.timeouts.status_loop = setTimeout(refresh_status, 10000);
 
 		return;
 	}
@@ -72,34 +76,38 @@ function toggle_power_if_ready() {
 		// log.module({ msg : 'dsp.ready: '+status.dsp.ready });
 		// log.module({ msg : 'rad.source_name: '+status.rad.source_name });
 
-		if (status.rad.source_name == 'off' && status.vehicle.ignition_level > 0) {
-			kodi.notify(module_name, 'power on');
-			IKE.text_override(module_name + ' power');
+		BMBT.timeouts.power_on = null;
 
-			log.module({ msg : 'Sending power!' });
-
-			send_button('power');
-			DSP.request('memory'); // Get the DSP memory
-
-			// Increase volume after power on
-			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-			}, 500);
-			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-			}, 750);
-			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-			}, 1000);
+		if (status.rad.source_name !== 'off' || status.vehicle.ignition_level === 0) {
+			return;
 		}
 
-		BMBT.timeouts.power_on = null;
+		kodi.notify(      module_name,   'power [BMBT]');
+		IKE.text_override(module_name + ' power [BMBT]');
+
+		log.module({ msg : 'Sending power!' });
+
+		send_button('power');
+		// DSP.request('memory'); // Get the DSP memory
+
+		status_loop(true);
+
+		// Increase volume after power on
+		setTimeout(() => {
+			RAD.volume_control(5);
+			RAD.volume_control(5);
+			RAD.volume_control(5);
+		}, 500);
+		setTimeout(() => {
+			RAD.volume_control(5);
+			RAD.volume_control(5);
+			RAD.volume_control(5);
+		}, 750);
+		setTimeout(() => {
+			RAD.volume_control(5);
+			RAD.volume_control(5);
+			RAD.volume_control(5);
+		}, 1000);
 	}, 1000);
 }
 
