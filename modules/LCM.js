@@ -53,15 +53,17 @@ function auto_lights_process() {
 	let now_weather = false;
 
 	// Factor in cloud cover to lights on/off time
-	status.weather.daily.data.forEach((value) => {
-		if (now_weather === true) return;
+	if (config.weather.apikey !== null) {
+		status.weather.daily.data.forEach((value) => {
+			if (now_weather === true) return;
 
-		if ((now_epoch - value.time) <= 0) {
-			// Add 3 hours * current cloudCover value
-			now_offset = value.cloudCover * 3 * 60 * 60 * 1000;
-			now_weather = true;
-		}
-	});
+			if ((now_epoch - value.time) <= 0) {
+				// Add 3 hours * current cloudCover value
+				now_offset = value.cloudCover * 3 * 60 * 60 * 1000;
+				now_weather = true;
+			}
+		});
+	}
 
 	let sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 	let lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
