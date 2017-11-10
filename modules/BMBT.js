@@ -82,8 +82,8 @@ function toggle_power_if_ready() {
 			return;
 		}
 
-		kodi.notify(module_name,        'power [BMBT]');
-		IKE.text_override(module_name + 'power [BMBT]');
+		kodi.notify(module_name,         'power [BMBT]');
+		IKE.text_override(module_name + ' power [BMBT]');
 
 		log.module({ msg : 'Sending power!' });
 
