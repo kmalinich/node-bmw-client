@@ -375,37 +375,6 @@ function decode_odometer(data) {
 	return data;
 }
 
-function decode_sensor_status(data) {
-	data.command = 'bro';
-	data.value   = 'sensor status';
-
-	// data.msg[2]:
-	//   1 = Engine running
-	//  16 = R (4)
-	//  64 = 2 (6)
-	// 112 = N (4+5+6)
-	// 128 = D (7)
-	// 176 = P (4+5+7)
-	// 192 = 4 (6+7)
-	// 208 = 3 (4+6+7)
-
-	update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]));
-
-	// If the engine is newly running, power up HDMI display
-	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
-		HDMI.command('poweron');
-	}
-
-	// If the vehicle is newly in reverse, show IKE message if configured to do so
-	if (config.options.message_reverse === true) {
-		if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
-			if (status.vehicle.reverse === true) IKE.text_override('you\'re in reverse..');
-		}
-	}
-
-	return data;
-}
-
 function decode_speed_values(data) {
 	data.command = 'bro';
 	data.value   = 'speed values';
@@ -930,7 +899,7 @@ IKE.prototype.parse_out = function (data) {
 			break;
 
 		case 0x13: // IKE sensor status
-			data = decode_sensor_status(data);
+			data = this.decode_sensor_status(data);
 			break;
 
 		case 0x15: // country coding data
@@ -1124,5 +1093,35 @@ IKE.prototype.data_refresh = function () {
 	}
 };
 
+IKE.prototype.decode_sensor_status = function (data) {
+	data.command = 'bro';
+	data.value   = 'sensor status';
+
+	// data.msg[2]:
+	//   1 = Engine running
+	//  16 = R (4)
+	//  64 = 2 (6)
+	// 112 = N (4+5+6)
+	// 128 = D (7)
+	// 176 = P (4+5+7)
+	// 192 = 4 (6+7)
+	// 208 = 3 (4+6+7)
+
+	update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]));
+
+	// If the engine is newly running, power up HDMI display
+	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
+		HDMI.command('poweron');
+	}
+
+	// If the vehicle is newly in reverse, show IKE message if configured to do so
+	if (config.options.message_reverse === true) {
+		if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
+			if (status.vehicle.reverse === true) this.text_override('you\'re in reverse..');
+		}
+	}
+
+	return data;
+};
 
 module.exports = IKE;
