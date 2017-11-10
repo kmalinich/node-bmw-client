@@ -61,26 +61,26 @@ function decode_light_control_status(data) {
 		},
 	};
 
-	// Loop intensity object to populate log string
+	// Loop intensity object to obtain intensity level
 	for (let intensity in parse.intensities) {
 		if (parse.intensities[intensity] === true) {
 			// Convert hacky object key name back to integer
-			intensity = parseInt(intensity.replace(/\D/g, ''));
-
-			parse.intensity     = intensity;
-			parse.intensity_str = 'intensity: ' + intensity;
+			parse.intensity = parseInt(intensity.replace(/\D/g, ''));
 			break;
 		}
 	}
 
-	// Loop reason object to populate log string
+	// Loop reason object to obtain reason name
 	for (let reason in parse.reasons) {
 		if (parse.reasons[reason] === true) {
-			parse.reason     = reason;
-			parse.reason_str = 'reason: ' + reason;
+			parse.reason = reason;
 			break;
 		}
 	}
+
+	// Append prefixes to log strings
+	parse.intensity_str = 'intensity: ' + parse.intensity;
+	parse.reason_str    = 'reason: '    + parse.reason;
 
 	update.status('rls.light.intensity', parse.intensity);
 	update.status('rls.light.lights',    parse.lights);
@@ -133,7 +133,7 @@ function send_light_control_status(data) {
 
 	let cmd = [ 0x59, byte1, byte2 ];
 
-	log.module({ msg : 'Sending light control status, intensity: ' + data.intensity + ', lights: ' + data.lights + ', reason: ' + data.reason });
+	log.module({ msg : 'Sending light control status, intensity: ' + data.intensity + ', lights on: ' + data.lights + ', reason: ' + data.reason });
 
 	bus.data.send({
 		src : 'RLS',
