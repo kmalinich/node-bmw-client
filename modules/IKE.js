@@ -806,23 +806,41 @@ IKE.prototype.init_listeners = function () {
 
 // Below is a s**t hack workaround while I contemplate firing more proper events
 IKE.prototype.decode_ignition_status = function (data) {
-	data.command = 'bro';
-	data.value   = 'ignition: ' + status.vehicle.ignition;
+	// Save previous ignition status
+	let previous_level = status.vehicle.ignition_level;
+
+	// Set ignition status value
+	if (update.status('vehicle.ignition_level', data.msg[1])) {
+		// Activate autolights if we got 'em
+		LCM.auto_lights_process();
+		// Disable/enable HUD refresh
+		this.data_refresh();
+	}
+
+	switch (data.msg[1]) {
+		case 0  : update.status('vehicle.ignition', 'off');       break;
+		case 1  : update.status('vehicle.ignition', 'accessory'); break;
+		case 3  : update.status('vehicle.ignition', 'run');       break;
+		case 7  : update.status('vehicle.ignition', 'start');     break;
+		default : update.status('vehicle.ignition', 'unknown');
+	}
 
 	// Ignition going up
-	if (data.msg[1] > status.vehicle.ignition_level) {
+	if (data.msg[1] > previous_level) {
 		switch (data.msg[1]) { // Evaluate new ignition state
 			case 1: // Accessory
 				log.module({ msg : 'Powerup state' });
 				this.emit('ignition-powerup');
+
 				bus.cmds.request_device_status(module_name, 'RAD');
 				break;
 
 			case 3: // Run
 				// If the accessory (1) ignition message wasn't caught
-				if (status.vehicle.ignition_level === 0) {
+				if (previous_level === 0) {
 					log.module({ msg : 'Powerup state' });
 					this.emit('ignition-powerup');
+
 					bus.cmds.request_device_status(module_name, 'RAD');
 				}
 
@@ -834,10 +852,11 @@ IKE.prototype.decode_ignition_status = function (data) {
 				break;
 
 			case 7 : { // Start
-				switch (status.vehicle.ignition_level) {
+				switch (previous_level) {
 					case 0 : { // If the accessory (1) ignition message wasn't caught
 						log.module({ msg : 'Powerup state' });
 						this.emit('ignition-powerup');
+
 						bus.cmds.request_device_status(module_name, 'RAD');
 						break;
 					}
@@ -861,12 +880,13 @@ IKE.prototype.decode_ignition_status = function (data) {
 	}
 
 	// Ignition going down
-	else if (data.msg[1] < status.vehicle.ignition_level) {
+	else if (data.msg[1] < previous_level) {
 		switch (data.msg[1]) { // Evaluate new ignition state
 			case 0: // Off
 				// If the accessory (1) ignition message wasn't caught
-				if (status.vehicle.ignition_level === 3) {
+				if (previous_level === 3) {
 					log.module({ msg : 'Powerdown state' });
+					this.emit('ignition-powerdown');
 				}
 
 				log.module({ msg : 'Poweroff state' });
@@ -884,21 +904,8 @@ IKE.prototype.decode_ignition_status = function (data) {
 		}
 	}
 
-	// Set ignition status value
-	if (update.status('vehicle.ignition_level', data.msg[1])) {
-		// Activate autolights if we got 'em
-		LCM.auto_lights_process();
-		// Disable/enable HUD refresh
-		this.data_refresh();
-	}
-
-	switch (data.msg[1]) {
-		case 0  : update.status('vehicle.ignition', 'off');       break;
-		case 1  : update.status('vehicle.ignition', 'accessory'); break;
-		case 3  : update.status('vehicle.ignition', 'run');       break;
-		case 7  : update.status('vehicle.ignition', 'start');     break;
-		default : update.status('vehicle.ignition', 'unknown');
-	}
+	data.command = 'bro';
+	data.value   = 'ignition: ' + status.vehicle.ignition;
 
 	return data;
 };
