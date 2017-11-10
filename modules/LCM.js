@@ -151,50 +151,73 @@ function comfort_turn(data) {
 	// If we haven't passed the cooldown yet
 	if (status.lights.turn.comfort_cool === false) return;
 
-	if (data.before.left.active === false) { // left turn was previously off
-		if (data.after.left.active && !data.after.right.active) { // left turn is now on, and right turn is now off
-			update.status('lights.turn.left.depress', now());
-			return;
+	// Determine the direction of the previously active turn signal
+	let before;
+	switch (data.before.left.active) {
+		case true : {
+			switch (data.before.right.active) {
+				case true  : break; // They can't both be active
+				case false : before = 'left';
+			}
+			break;
 		}
-	}
-	else { // left turn was previously on
-		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
-			// If the time difference is less than 1000ms, fire comfort turn signal
-			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.left.depress);
-			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
-			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
-				comfort_turn_flash('left');
-				return;
+
+		case false : {
+			switch (data.before.right.active) {
+				case false : before = null; break; // Neither are active
+				case true  : before = 'right';
 			}
 		}
 	}
 
-	if (data.before.right.active === false) { // right turn was previously off
-		if (!data.after.left.active && data.after.right.active) { // left turn is now off, and right turn is now on
-			update.status('lights.turn.right.depress', now());
+	// Determine the direction of the currently active turn signal
+	let mask = bitmask.check(data.after).mask;
+	let after;
+	switch (mask.bit5) {
+		case true : {
+			switch (mask.bit6) {
+				case true  : break; // They can't both be active
+				case false : after = 'left';
+			}
+			break;
 		}
-	}
-	else { // right turn was previously on
-		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
-			// If the time difference is less than 1000ms, fire comfort turn signal
-			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.right.depress);
-			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
-			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
-				comfort_turn_flash('right');
+
+		case false : {
+			switch (mask.bit6) {
+				case false : after = null; break; // Neither are active
+				case true  : after = 'right';
 			}
 		}
 	}
+
+	// If the currently active signal is the same as the previously active signal, bounce
+	if (before === after) return;
+
+	// Mark the currently active signal's depress timestamp
+	update.status('lights.turn.' + after + '.depress', now());
+
+	// If NEITHER signal WAS active, or EITHER signal IS active, bounce
+	// That way we only continue if we're going from ON to OFF
+	if (before === null || after !== null) return;
+
+	// Update the previously active signal's elapsed time
+	update.status('lights.turn.depress_elapsed', now() - status.lights.turn[before].depress);
+
+	// Attempt to fire comfort turn signal
+	comfort_turn_flash(before);
 }
 
 function comfort_turn_flash(action) {
-	// Double-check the given action
+	// If the time difference is more than 1000ms, bounce
+	if (status.lights.turn.depress_elapsed >= 1000) return;
+
+	// Double-check the requested action
 	if (action !== 'left' && action !== 'right') return;
 
-	// Init variables
+	log.module({ msg : 'Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed });
+
+	// Update status variables, and prepare cluster message
 	let cluster_msg_outer;
-
-	log.module({ msg : 'Comfort turn: ' + action });
-
 	switch (action) {
 		case 'left':
 			// Set status variables
@@ -217,22 +240,27 @@ function comfort_turn_flash(action) {
 		IKE.text_override(cluster_msg, 2000 + status.lights.turn.depress_elapsed, action, true);
 	}
 
+	// Fire!
 	reset();
+
+	// Begin comfort turn cooldown period
 	update.status('lights.turn.comfort_cool', false);
 
-	// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
+	// Calculate timeout length, accounting for the time from the initial flash
+	// 1 flash ~ 500ms, so 5x flash ~ 2500ms
+	let timer_off  = (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed;
+	let timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
+
+	// Timeout for turning off the comfort turn signal
 	setTimeout(() => {
 		// Update status variables
 		update.status('lights.turn.left.comfort',  false);
 		update.status('lights.turn.right.comfort', false);
-
 		reset();
-	}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
+	}, timer_off);
 
-	// Timeout for cooldown period
-	setTimeout(() => {
-		update.status('lights.turn.comfort_cool', true);
-	}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed + 1500); // Subtract the time from the initial blink
+	// Timeout for comfort turn cooldown period
+	setTimeout(() => { update.status('lights.turn.comfort_cool', true); }, timer_cool);
 }
 
 // Decode various bits of data into usable information
@@ -247,17 +275,7 @@ function decode(data) {
 
 		case 0x5B: { // Decode a light status message from the LCM and act upon the results
 			// Send data to comfort turn function
-			comfort_turn({
-				before : status.lights.turn,
-				after  : {
-					left : {
-						active : bitmask.test(data.msg[1], bitmask.bit[5]),
-					},
-					right : {
-						active : bitmask.test(data.msg[1], bitmask.bit[6]),
-					},
-				},
-			});
+			comfort_turn({ before : status.lights.turn, after : data.msg[1] });
 
 			// On
 			update.status('lights.all_off', !data.msg[1]);
