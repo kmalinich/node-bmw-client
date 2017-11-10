@@ -256,7 +256,7 @@ function comfort_turn_flash(action) {
 
 	// Calculate timeout length, accounting for the time from the initial flash
 	// 1 flash ~ 500ms, so 5x flash ~ 2500ms
-	let timer_off  = config.lights.comfort_turn.flashes * 500;
+	let timer_off  = (config.lights.comfort_turn.flashes - 1) * 500;
 	let timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
 
 	log.module({ msg : 'Comfort turn timer: ' + timer_off + 'ms' });
