@@ -124,11 +124,11 @@ function send_light_control_status(data) {
 	}
 
 	switch (data.reason) {
-		case 'twilight' : byte1 = bitmask.set(byte1, bitmask.bit[0]); break;
-		case 'darkness' : byte1 = bitmask.set(byte1, bitmask.bit[1]); break;
-		case 'rain'     : byte1 = bitmask.set(byte1, bitmask.bit[2]); break;
-		case 'tunnel'   : byte1 = bitmask.set(byte1, bitmask.bit[3]); break;
-		case 'garage'   : byte1 = bitmask.set(byte1, bitmask.bit[4]);
+		case 'twilight' : byte2 = bitmask.set(byte2, bitmask.bit[0]); break;
+		case 'darkness' : byte2 = bitmask.set(byte2, bitmask.bit[1]); break;
+		case 'rain'     : byte2 = bitmask.set(byte2, bitmask.bit[2]); break;
+		case 'tunnel'   : byte2 = bitmask.set(byte2, bitmask.bit[3]); break;
+		case 'garage'   : byte2 = bitmask.set(byte2, bitmask.bit[4]);
 	}
 
 	let cmd = [ 0x59, byte1, byte2 ];
