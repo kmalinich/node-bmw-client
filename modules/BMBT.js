@@ -123,6 +123,7 @@ function parse_out(data) {
 			switch (data.msg[1]) {
 				case 0x00 : data.value += 'off';     break;
 				case 0x05 : data.value += 'no tape'; break;
+				case 0x06 : data.value += 'tape in'; break;
 				case 0xFF : data.value += 'on';      break;
 				default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
 			}
