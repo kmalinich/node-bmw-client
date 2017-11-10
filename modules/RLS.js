@@ -1,9 +1,9 @@
 // This module.. can get confused with the AIC module
 // (AIC module is the rain-only sensor)
 
-function parse_light_control_status(data) {
+function decode_light_control_status(data) {
 	data.command = 'bro';
-	data.value   = 'light control status';
+	data.value   = 'light control status - ';
 
 	// Examples
 	//
@@ -29,20 +29,120 @@ function parse_light_control_status(data) {
 	// 0x02 : Bit1 : Darkness
 	// 0x04 : Bit2 : Rain
 	// 0x08 : Bit3 : Tunnel
-	// 0x10 : Bit4 : Basement/garage
+	// 0x10 : Bit4 : Garage
+
+	let mask1 = bitmask.check(data.msg[1]).mask;
+	let mask2 = bitmask.check(data.msg[2]).mask;
 
 	let parse = {
-		intensity : null,
-		reason    : null,
+		intensity     : null,
+		intensity_str : null,
+		intensities   : {
+			l1 : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			l2 : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			l3 : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			l4 : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			l5 : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			l0 : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 &&  mask2.bit8,
+		},
+
+		lights     : mask1.bit0,
+		lights_str : 'lights on: ' + mask1.bit0,
+
+		reason     : null,
+		reason_str : null,
+		reasons    : {
+			twilight : mask2.bit0  && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			darkness : !mask2.bit0 &&  mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			rain     : !mask2.bit0 && !mask2.bit1 &&  mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			tunnel   : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 &&  mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			garage   : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 &&  mask2.bit4 && !mask2.bit8,
+			none     : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 &&  mask2.bit8,
+		},
 	};
 
+	// Loop intensity object to populate log string
+	for (let intensity in parse.intensities) {
+		if (parse.intensities[intensity] === true) {
+			// Convert hacky object key name back to integer
+			intensity = parseInt(intensity.replace(/\D/g, ''));
+
+			parse.intensity     = intensity;
+			parse.intensity_str = 'intensity: ' + intensity;
+			break;
+		}
+	}
+
+	// Loop reason object to populate log string
+	for (let reason in parse.reasons) {
+		if (parse.reasons[reason] === true) {
+			parse.reason     = reason;
+			parse.reason_str = 'reason: ' + reason;
+			break;
+		}
+	}
+
 	update.status('rls.light.intensity', parse.intensity);
+	update.status('rls.light.lights',    parse.lights);
 	update.status('rls.light.reason',    parse.reason);
+
+	// Assemble log string
+	data.value += parse.intensity_str + ', ' + parse.lights_str + ', ' + parse.reason_str;
 
 	return data;
 }
 
-function parse_headlight_wipe_interval(data) {
+function send_light_control_status(data) {
+	// Init variables
+	let byte1 = 0x00;
+	let byte2 = 0x00;
+
+	switch (data.intensity) {
+		case 1 : byte1 = bitmask.set(byte1, bitmask.bit[4]); break;
+		case 2 : byte1 = bitmask.set(byte1, bitmask.bit[5]); break;
+
+		case 3 :
+			byte1 = bitmask.set(byte1, bitmask.bit[4]);
+			byte1 = bitmask.set(byte1, bitmask.bit[5]);
+			break;
+
+		case 4 : byte1 = bitmask.set(byte1, bitmask.bit[6]); break;
+
+		case 5 :
+			byte1 = bitmask.set(byte1, bitmask.bit[4]);
+			byte1 = bitmask.set(byte1, bitmask.bit[6]);
+			break;
+
+		case 6 :
+			byte1 = bitmask.set(byte1, bitmask.bit[5]);
+			byte1 = bitmask.set(byte1, bitmask.bit[6]);
+			break;
+	}
+
+	switch (data.lights) {
+		case true : byte1 = bitmask.set(byte1, bitmask.bit[0]);
+	}
+
+	switch (data.reason) {
+		case 'twilight' : byte1 = bitmask.set(byte1, bitmask.bit[0]); break;
+		case 'darkness' : byte1 = bitmask.set(byte1, bitmask.bit[1]); break;
+		case 'rain'     : byte1 = bitmask.set(byte1, bitmask.bit[2]); break;
+		case 'tunnel'   : byte1 = bitmask.set(byte1, bitmask.bit[3]); break;
+		case 'garage'   : byte1 = bitmask.set(byte1, bitmask.bit[4]);
+	}
+
+	let cmd = [ 0x59, byte1, byte2 ];
+
+	log.module({ msg : 'Sending light control status, intensity: ' + data.intensity + ', lights: ' + data.lights + ', reason: ' + data.reason });
+
+	bus.data.send({
+		src : 'RLS',
+		dst : 'LCM',
+		msg : cmd,
+	});
+}
+
+function decode_headlight_wipe_interval(data) {
 	data.command = 'bro';
 	data.value   = 'headlight wipe interval';
 
@@ -60,12 +160,12 @@ function parse_headlight_wipe_interval(data) {
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x58: { // Broadcast: Headlight wipe interval
-			data = parse_headlight_wipe_interval(data);
+			data = decode_headlight_wipe_interval(data);
 			break;
 		}
 
 		case 0x59: { // Broadcast: Light control status
-			data = parse_light_control_status(data);
+			data = decode_light_control_status(data);
 			break;
 		}
 
@@ -99,6 +199,8 @@ function request(value) {
 }
 
 module.exports = {
-	request   : (data) => { request(data);   },
+	send_light_control_status : send_light_control_status,
+
+	request   : request,
 	parse_out : parse_out,
 };
