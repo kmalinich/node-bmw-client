@@ -13,7 +13,7 @@ function parse_out(data) {
 			data.value   = 'defroster status ' + status.ihka.defroster;
 			break;
 
-		case 0xA0: // Reply: Diagnostic command
+		case 0xA0: // Reply to DIA: success
 			data.command = 'rep';
 			data.value   = data.msg;
 			break;
