@@ -259,6 +259,8 @@ function comfort_turn_flash(action) {
 	let timer_off  = (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed;
 	let timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
 
+	log.module({ msg : 'Comfort turn timer: ' + timer_off + 'ms' });
+
 	// Timeout for turning off the comfort turn signal
 	setTimeout(() => {
 		// Update status variables
