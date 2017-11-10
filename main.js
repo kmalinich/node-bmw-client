@@ -148,6 +148,7 @@ function init() {
 			BMBT.init_listeners();
 			CON1.init_listeners();
 			GM.init_listeners();
+			HDMI.init_listeners();
 			IKE.init_listeners();
 			LCM.init_listeners();
 			MID.init_listeners();
