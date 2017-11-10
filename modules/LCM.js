@@ -689,9 +689,6 @@ function welcome_lights(action) {
 	// Disable welcome lights if ignition is not fully off
 	if (status.vehicle.ignition_level !== 0) action = false;
 
-	// Cast action var as Boolean
-	action = (action == 'true');
-
 	log.module({ msg : 'Welcome lights: ' + action });
 
 	switch (action) {
@@ -742,7 +739,7 @@ function init_listeners() {
 	// Enable/disable welcome lights on GM keyfob event
 	GM.on('keyfob', (keyfob) => {
 		log.module({ msg : 'Received GM keyfob event' });
-		console.log(keyfob);
+		if (keyfob.button === 'unlock') console.log(keyfob);
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 }
