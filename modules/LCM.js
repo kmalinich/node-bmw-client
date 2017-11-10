@@ -729,6 +729,7 @@ function welcome_lights(action) {
 	}
 }
 
+// Configure event listeners
 function init_listeners() {
 	// Refresh data on IKE event
 	IKE.on('obc-refresh', () => {
@@ -740,18 +741,8 @@ function init_listeners() {
 
 	// Enable/disable welcome lights on GM keyfob event
 	GM.on('keyfob', (keyfob) => {
-		switch (keyfob.button) {
-			case 'lock' : {
-				// Disable welcome lights
-				LCM.welcome_lights(false);
-				break;
-			}
-
-			case 'unlock' : {
-				// Enable welcome lights
-				LCM.welcome_lights(true);
-			}
-		}
+		log.module({ msg : 'Received GM keyfob event' });
+		welcome_lights((keyfob.button === 'unlock'));
 	});
 }
 
