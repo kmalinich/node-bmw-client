@@ -31,8 +31,8 @@ function parse_out(data) {
 			data.value   = 'telephone data TODO';
 			break;
 
-			// A9 03 30 30, NAV,TEL, Telephone data Current_network_request Count_0
-			// A9 0A 30 30, NAV,TEL, Telephone data Current_phone_status    Count_0
+			// A9 03 30 30, NAV,TEL, Telephone data Current_network_request     Count_0
+			// A9 0A 30 30, NAV,TEL, Telephone data Current_phone_status        Count_0
 			// A9 31 00 00, TEL,NAV, Telephone data Telematics_settings_request
 
 			// A9 0B 00 00 04,       TEL,NAV, Telephone data Data="0B 00 00 04"
@@ -60,6 +60,8 @@ function led(object) {
 
 	// Initialize output byte
 	let byte = 0x00;
+
+	// If 'flash' and 'solid' for the same color are passed, the LED flashes
 	if (object.solid_red)    byte = bitmask.set(byte, bitmask.bit[0]);
 	if (object.flash_red)    byte = bitmask.set(byte, bitmask.bit[1]);
 	if (object.solid_yellow) byte = bitmask.set(byte, bitmask.bit[2]);
