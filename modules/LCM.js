@@ -202,7 +202,7 @@ function comfort_turn(data) {
 	if (before === after) return;
 
 	// Mark the currently active signal's depress timestamp
-	update.status('lights.turn.' + after + '.depress', now());
+	if (after !== null) update.status('lights.turn.' + after + '.depress', now());
 
 	// If NEITHER signal WAS active, or EITHER signal IS active, bounce
 	// That way we only continue if we're going from ON to OFF
