@@ -56,7 +56,7 @@ function refresh_status() {
 		bus.cmds.request_device_status(module_name, 'RAD');
 		bus.cmds.request_device_status('RAD',  'DSP');
 
-		BMBT.timeouts.status_loop = setTimeout(refresh_status, 10000);
+		BMBT.timeouts.status_loop = setTimeout(refresh_status, 8000);
 
 		return;
 	}
