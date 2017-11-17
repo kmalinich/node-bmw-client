@@ -420,8 +420,8 @@ function ok2hud() {
 	// Bounce if override is active
 	if (IKE.hud_override === true) return false;
 
-	// Bounce if the last update was less than 500ms ago
-	if (now() - IKE.last_hud_refresh <= 500) return false;
+	// Bounce if the last update was less than 4000ms ago
+	if (now() - IKE.last_hud_refresh <= 4000) return false;
 
 	return true;
 }
@@ -459,8 +459,8 @@ function hud_refresh() {
 
 	// Space-pad strings
 	let hud_strings = {
-		cons   : pad(string_cons,  9),
-		left   : pad(string_speed, 9),
+		left   : pad(string_cons,  9),
+		speed  : pad(string_speed, 9),
 		center : pad(string_temp,  6),
 		right  : pad(string_time,  9),
 	};
