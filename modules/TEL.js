@@ -6,12 +6,12 @@ function parse_out(data) {
 			data.value   = 'indicator status TODO';
 			break;
 
-			// Bit0 = red
-			// Bit1 = red + flashing
-			// Bit2 = orange
-			// Bit3 = orange + flashing
-			// Bit4 = green
-			// Bit5 = green + flashing
+			// Bit0 = red, solid
+			// Bit1 = red, flashing
+			// Bit2 = yellow, solid
+			// Bit3 = yellow, flashing
+			// Bit4 = green, solid
+			// Bit5 = green, flashing
 
 		case 0x2C: // Broadcast: Telephone status
 			data.command = 'bro';
@@ -51,12 +51,12 @@ function parse_out(data) {
 function led(object) {
 	// Bitmask
 	// 0x00 = all off
-	// 0x01 = solid red
-	// 0x02 = flash red
-	// 0x04 = solid yellow
-	// 0x08 = flash yellow
-	// 0x10 = solid green
-	// 0x20 = flash green
+	// Bit0 = red, solid
+	// Bit1 = red, flashing
+	// Bit2 = yellow, solid
+	// Bit3 = yellow, flashing
+	// Bit4 = green, solid
+	// Bit5 = green, flashing
 
 	// Initialize output byte
 	let byte = 0x00;
@@ -69,8 +69,9 @@ function led(object) {
 	if (object.solid_green)  byte = bitmask.set(byte, bitmask.bit[4]);
 	if (object.flash_green)  byte = bitmask.set(byte, bitmask.bit[5]);
 
-	// Send message
 	log.module({ msg : 'Setting LED' });
+
+	// Send message
 	bus.data.send({
 		src : 'TEL',
 		dst : 'ANZV',
