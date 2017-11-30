@@ -54,6 +54,14 @@ function decode_button_media(data) {
 	switch (unmask.action) {
 		case 'hold': {
 			switch (config.mfl.media) {
+				case 'bluetooth': // Bluetooth version
+					switch (unmask.button) {
+						case 'left'  : break;
+						case 'right' : break;
+						case 'voice' : BT.command('play'); break; // Think about it
+					}
+					break;
+
 				case 'kodi': // Kodi version
 					switch (unmask.button) {
 						case 'left'  : kodi.command('seek-rewind'); break;
@@ -74,7 +82,7 @@ function decode_button_media(data) {
 
 						case 'holdleft'  : break;
 						case 'holdright' : break;
-						case 'holdvoice' : BT.command('play'); break; // Think about it
+						case 'holdvoice' : break;
 					}
 					break;
 
