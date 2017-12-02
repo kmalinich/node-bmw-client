@@ -1,3 +1,5 @@
+/* eslint key-spacing : 0 */
+
 // Decode media button action message
 function decode_button_media(data) {
 	data.command = 'con';

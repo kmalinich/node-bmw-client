@@ -1,3 +1,5 @@
+/* eslint key-spacing : 0 */
+
 const suncalc = require('suncalc');
 const now     = require('performance-now');
 
