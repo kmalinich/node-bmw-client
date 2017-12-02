@@ -89,6 +89,7 @@ function text_loop(action) {
 			// Set text variables
 			MID.text_text_loop = false;
 			break;
+
 		case true:
 			// Set text variable
 			MID.text_text_loop = true;
@@ -99,7 +100,6 @@ function text_loop(action) {
 			MID.interval_text_loop = setInterval(() => {
 				refresh_text();
 			}, 5000);
-			break;
 	}
 }
 

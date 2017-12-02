@@ -1,3 +1,5 @@
+/* eslint key-spacing : 0 */
+
 // All the possible values to send to the GM
 // let array_of_possible_values = {
 //   light_alarm                   : true,

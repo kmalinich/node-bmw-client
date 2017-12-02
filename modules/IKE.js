@@ -571,10 +571,10 @@ function text_prepare(message, pad = false) {
 function text(message, cb = null) {
 	let message_hex;
 
-	// message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
-	message_hex = [ 0x23, 0x42, 0x30 ];
+	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+	// message_hex = [ 0x23, 0x42, 0x30 ];
 	message_hex = message_hex.concat(text_prepare(message));
-	// message_hex = message_hex.concat(0x04);
+	message_hex = message_hex.concat(0x04);
 
 	bus.data.send({
 		src : 'RAD',
