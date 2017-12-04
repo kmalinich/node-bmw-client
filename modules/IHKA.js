@@ -85,7 +85,7 @@ function request(value) {
 	let cmd;
 
 	switch (value) {
-		case 'io-status':
+		case 'io-status' :
 			src = 'DIA';
 			cmd = [ 0x0B, 0x04, 0x51 ]; // Get IO status
 			// cmd = [0x0B, 0x00]; // Get IO status

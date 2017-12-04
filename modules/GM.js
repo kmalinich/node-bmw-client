@@ -182,12 +182,12 @@ function request(value) {
 	let cmd;
 
 	switch (value) {
-		case 'io-status':
+		case 'io-status' :
 			src = 'DIA';
 			cmd = [ 0x0B, 0x00 ]; // Get IO status
 			break;
 
-		case 'door-status':
+		case 'door-status' :
 			src = 'BMBT';
 			cmd = [ 0x79 ];
 			break;
@@ -210,7 +210,7 @@ function windows(request) {
 
 	// Switch for window and action
 	switch (request.window) {
-		case 'roof': // Moonroof
+		case 'roof' : // Moonroof
 			switch (request.action) {
 				case 'dn' : msg = [ 0x03, 0x01, 0x01 ]; break;
 				case 'up' : msg = [ 0x03, 0x02, 0x01 ]; break;

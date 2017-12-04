@@ -44,7 +44,7 @@ function decode_obc_text(data) {
 	let layout = obc_values.h2n(data.msg[1]);
 
 	switch (layout) {
-		case 'time': {
+		case 'time' : {
 			let string_time_unit;
 			let string_time;
 
@@ -69,7 +69,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'date': {
+		case 'date' : {
 			let string_date;
 
 			// Parse value
@@ -81,7 +81,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'outside-temp': {
+		case 'outside-temp' : {
 			let string_outside_temp_unit;
 			let string_outside_temp_negative;
 			let string_outside_temp_value;
@@ -106,14 +106,14 @@ function decode_obc_text(data) {
 
 			// Update status variables
 			switch (string_outside_temp_unit) {
-				case 'c': {
+				case 'c' : {
 					update.status('coding.unit.temp',           'c');
 					update.status('temperature.exterior.obc.c', Math.round(parseFloat(string_outside_temp_value)));
 					update.status('temperature.exterior.obc.f', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))));
 					break;
 				}
 
-				case 'f': {
+				case 'f' : {
 					update.status('coding.unit.temp',           'f');
 					update.status('temperature.exterior.obc.c', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))));
 					update.status('temperature.exterior.obc.f', Math.round(parseFloat(string_outside_temp_value)));
@@ -123,7 +123,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'consumption-1': {
+		case 'consumption-1' : {
 			let consumption_l100;
 			let consumption_mpg;
 			let string_consumption_1;
@@ -139,7 +139,7 @@ function decode_obc_text(data) {
 
 			// Perform appropriate conversions between units
 			switch (string_consumption_1_unit) {
-				case 'm': {
+				case 'm' : {
 					update.status('coding.unit.cons', 'mpg');
 					consumption_mpg  = string_consumption_1;
 					consumption_l100 = 235.21 / string_consumption_1;
@@ -160,7 +160,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'consumption-2': {
+		case 'consumption-2' : {
 			let consumption_l100;
 			let consumption_mpg;
 			let string_consumption_2;
@@ -176,7 +176,7 @@ function decode_obc_text(data) {
 
 			// Perform appropriate conversions between units and round to 2 decimals
 			switch (string_consumption_2_unit) {
-				case 'm': {
+				case 'm' : {
 					consumption_mpg  = string_consumption_2;
 					consumption_l100 = 235.215 / string_consumption_2;
 					break;
@@ -194,7 +194,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'range': {
+		case 'range' : {
 			let string_range;
 			let string_range_unit;
 
@@ -207,14 +207,14 @@ function decode_obc_text(data) {
 
 			// Update status variables
 			switch (string_range_unit) {
-				case 'ml': {
+				case 'ml' : {
 					update.status('coding.unit.distance', 'mi');
 					update.status('obc.range.mi', parseFloat(string_range));
 					update.status('obc.range.km', parseFloat(convert(parseFloat(string_range)).from('kilometre').to('us mile').toFixed(2)));
 					break;
 				}
 
-				case 'km': {
+				case 'km' : {
 					update.status('coding.unit.distance', 'km');
 					update.status('obc.range.mi', parseFloat(convert(parseFloat(string_range)).from('us mile').to('kilometre').toFixed(2)));
 					update.status('obc.range.km', parseFloat(string_range));
@@ -224,7 +224,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'distance': {
+		case 'distance' : {
 			let string_distance;
 
 			// Parse value
@@ -236,7 +236,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'arrival': {
+		case 'arrival' : {
 			let string_arrival;
 
 			// Parse value
@@ -248,7 +248,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'limit': {
+		case 'limit' : {
 			let string_limit;
 
 			// Parse value
@@ -260,7 +260,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'average-speed': {
+		case 'average-speed' : {
 			let string_average_speed;
 			let string_average_speed_unit;
 
@@ -274,7 +274,7 @@ function decode_obc_text(data) {
 
 			// Convert values appropriately based on coding valueunits
 			switch (string_average_speed_unit) {
-				case 'k': {
+				case 'k' : {
 					update.status('obc.coding.unit.speed', 'kmh');
 
 					// Update status variables
@@ -283,7 +283,7 @@ function decode_obc_text(data) {
 					break;
 				}
 
-				case 'm': {
+				case 'm' : {
 					update.status('obc.coding.unit.speed', 'mph');
 
 					// Update status variables
@@ -295,7 +295,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'code': {
+		case 'code' : {
 			let string_code;
 
 			// Parse value
@@ -307,7 +307,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'stopwatch': {
+		case 'stopwatch' : {
 			let string_stopwatch;
 
 			// Parse value
@@ -319,7 +319,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'timer-1': {
+		case 'timer-1' : {
 			let string_aux_heat_timer_1;
 
 			// Parse value
@@ -331,7 +331,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'timer-2': {
+		case 'timer-2' : {
 			let string_aux_heat_timer_2;
 
 			// Parse value
@@ -343,7 +343,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'interim': {
+		case 'interim' : {
 			let string_interim;
 
 			// Parse value

@@ -321,7 +321,7 @@ function send_button(button) {
 
 	// Switch statement to determine button, then encode bitmask
 	switch (button) {
-		case 'power':
+		case 'power' :
 			// Get down value of button
 			button_down = bitmask.set(button_down, bitmask.bit[1]);
 			button_down = bitmask.set(button_down, bitmask.bit[2]);
