@@ -177,7 +177,7 @@ function decode_audio_control(data) {
 
 	// Further command-type-specific processing
 	switch (cmd_type) {
-		case 'source':
+		case 'source' :
 			switch (cmd_value) {
 				case 0x00 : update.status('rad.source_name', 'cd');         break;
 				case 0x01 : update.status('rad.source_name', 'tuner/tape'); break;

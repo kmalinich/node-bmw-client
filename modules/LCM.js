@@ -231,14 +231,14 @@ function comfort_turn_flash(action) {
 	// Update status variables, and prepare cluster message
 	let cluster_msg_outer;
 	switch (action) {
-		case 'left':
+		case 'left' :
 			// Set status variables
 			update.status('lights.turn.left.comfort',  true);
 			update.status('lights.turn.right.comfort', false);
 			cluster_msg_outer = '< < < < < < <';
 			break;
 
-		case 'right':
+		case 'right' :
 			// Set status variables
 			update.status('lights.turn.left.comfort',  false);
 			update.status('lights.turn.right.comfort', true);
@@ -615,30 +615,30 @@ function request(value) {
 	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	switch (value) {
-		case 'coding':
+		case 'coding' :
 			coding_get();
 			break;
 
-		case 'dimmer':
+		case 'dimmer' :
 			src = 'BMBT';
 			msg = [ 0x5D ];
 			break;
 
-		case 'identity':
+		case 'identity' :
 			identity_get();
 			break;
 
-		case 'io-status':
+		case 'io-status' :
 			src = 'DIA';
 			msg = [ 0x0B, 0x00 ]; // Get IO status
 			break;
 
-		case 'light-status':
+		case 'light-status' :
 			src = 'GT';
 			msg = [ 0x5A ];
 			break;
 
-		case 'vehicledata':
+		case 'vehicledata' :
 			src = 'IKE';
 			msg = [ 0x53 ];
 	}

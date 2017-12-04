@@ -313,9 +313,9 @@ function button_check(button) {
 	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
 
 	switch (button.action) {
-		case 'press':
+		case 'press' :
 			switch (button.button) {
-				case 'tel':
+				case 'tel' :
 					// To use the TEL button as a toggle for rotation = Kodi volume control
 					if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
 						kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
@@ -329,7 +329,7 @@ function button_check(button) {
 					}
 					break;
 
-				case 'nav':
+				case 'nav' :
 					// To use the NAV button as a toggle for left<->right or up<->down rotation
 					if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
 						kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');

@@ -188,7 +188,7 @@ function request(value) {
 	let cmd;
 
 	switch (value) {
-		case 'rain-sensor-status':
+		case 'rain-sensor-status' :
 			src = 'IHKA';
 			cmd = [ 0x71 ]; // Get IO status
 			break;
