@@ -511,7 +511,7 @@ function io_encode(object) {
 			b4 : object.output_brake_rear_right,
 			b5 : object.output_highbeam_front_right,
 			b6 : object.output_highbeam_front_left,
-			b7 : false,
+			b7 : object.output_turn_side_left,
 		}),
 		b5 : bitmask.create({
 			b0 : object.output_standing_front_left,
@@ -534,7 +534,7 @@ function io_encode(object) {
 			b7 : object.output_turn_rear_left,
 		}),
 		b7 : bitmask.create({
-			b0 : false,
+			b0 : object.output_turn_side_right,
 			b1 : object.output_turn_rear_right,
 			b2 : object.output_fog_rear_left,
 			b3 : object.output_standing_inner_rear_right,
