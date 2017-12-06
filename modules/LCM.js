@@ -755,12 +755,12 @@ function welcome_lights(action, override = false) {
 			io_encode(config.lights.welcome_lights);
 
 			// Increment welcome lights counter
-			LCM.counter_welcome_lights++;
+			LCM.counts.welcome_lights++;
 
 			// Clear welcome lights status after configured timeout
 			LCM.timeouts.lights_welcome = setTimeout(() => {
 				// If we're not over the configured welcome lights limit yet
-				if (LCM.counter_welcome_lights <= config.lights.welcome_lights_sec) {
+				if (LCM.counts.welcome_lights <= config.lights.welcome_lights_sec) {
 					LCM.welcome_lights(true, true);
 				}
 				else {
@@ -776,7 +776,7 @@ function welcome_lights(action, override = false) {
 			LCM.timeouts.lights_welcome = null;
 
 			// Reset welcome lights counter
-			LCM.counter_welcome_lights = 0;
+			LCM.counts.welcome_lights = 0;
 
 			// Set status var back to false
 			update.status('lights.welcome_lights', action);
@@ -785,6 +785,131 @@ function welcome_lights(action, override = false) {
 			if (status.vehicle.ignition_level === 0) io_encode({});
 		}
 	}
+}
+
+// Police lights!
+function pl() {
+	if (status.lcm.police_lights.counts.loop >= config.lights.police_lights.limit || status.lcm.police_lights.ok !== true) {
+		update.status('lcm.police_lights.ok', false);
+
+		clearTimeout(LCM.timeouts.lights_police);
+		LCM.timeouts.lights_police = null;
+
+		io_encode({});
+
+		update.status('lcm.police_lights.on', false);
+		return;
+	}
+
+	update.status('lcm.police_lights.on', true);
+
+	let object = {
+		front : {
+			left : {
+				fog      : false,
+				highbeam : false,
+				lowbeam  : false,
+				standing : pl_check([ 2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 ]),
+				turn     : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
+			},
+			right : {
+				fog      : false,
+				highbeam : false,
+				lowbeam  : false,
+				standing : pl_check([ 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 ]),
+				turn     : pl_check([ 0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27 ]),
+			},
+		},
+
+		side : {
+			left : {
+				turn : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+			},
+			right : {
+				turn : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+			},
+		},
+
+		rear : {
+			left : {
+				brake    : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
+				reverse  : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+				standing : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
+				turn     : pl_check([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]),
+			},
+			right : {
+				brake    : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
+				reverse  : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+				standing : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
+				turn     : pl_check([ 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ]),
+			},
+			middle : {
+				brake : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
+			},
+		},
+	};
+
+	// Clean this up later
+	let io_object = {
+		output_standing_front_left  : object.front.left.standing,
+		output_standing_front_right : object.front.right.standing,
+
+		output_standing_inner_rear_left  : object.rear.left.standing,
+		output_standing_inner_rear_right : object.rear.right.standing,
+
+		output_standing_rear_left  : object.rear.left.standing,
+		output_standing_rear_right : object.rear.right.standing,
+
+		output_brake_rear_left   : object.rear.left.brake,
+		output_brake_rear_middle : object.rear.middle.brake,
+		output_brake_rear_right  : object.rear.right.brake,
+
+		output_reverse_rear_left  : object.rear.left.reverse,
+		output_reverse_rear_right : object.rear.right.reverse,
+
+		output_turn_rear_left  : object.rear.left.turn,
+		output_turn_rear_right : object.rear.right.turn,
+
+		output_turn_side_left  : object.side.left.turn,
+		output_turn_side_right : object.side.right.turn,
+
+		output_turn_front_left  : object.front.left.turn,
+		output_turn_front_right : object.front.left.turn,
+	};
+
+	io_encode(io_object);
+
+	update.status('lcm.police_lights.counts.main', (status.lcm.police_lights.counts.main + 1), false);
+
+	if (status.lcm.police_lights.counts.main === 32) {
+		update.status('lcm.police_lights.counts.main', 0, false);
+		update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1));
+	}
+
+	LCM.timeouts.lights_police = setTimeout(pl, config.lights.police_lights.delay);
+}
+
+// Check if the current police lights count is in the provided array
+function pl_check(data) {
+	return data.includes(status.lcm.police_lights.counts.main);
+}
+
+function police(action) {
+	update.status('lcm.police_lights.ok', action);
+
+	if (status.lcm.police_lights.on === action) return;
+
+	switch (action) {
+		case true : {
+			if (status.lcm.police_lights.on !== true) {
+				update.status('lcm.police_lights.counts.loop', 0);
+				update.status('lcm.police_lights.counts.main', 0);
+			}
+			break;
+		}
+	}
+
+	pl();
 }
 
 // Configure event listeners
@@ -806,13 +931,17 @@ function init_listeners() {
 
 
 module.exports = {
+	// Interval/loop/timeout variables
+	counts : {
+		welcome_lights : 0,
+	},
+
 	// Timeout variables
 	timeouts : {
 		lights_auto    : null,
+		lights_police  : null,
 		lights_welcome : null,
 	},
-
-	counter_welcome_lights : 0,
 
 	// Functions
 	auto_lights         : auto_lights,
@@ -821,6 +950,7 @@ module.exports = {
 	init_listeners      : init_listeners,
 	io_encode           : io_encode,
 	parse_out           : parse_out,
+	police              : police,
 	request             : request,
 	set_backlight       : set_backlight,
 	welcome_lights      : welcome_lights,
