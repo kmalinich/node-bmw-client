@@ -279,10 +279,21 @@ function comfort_turn_flash(action) {
 // Decode various bits of data into usable information
 function decode(data) {
 	switch (data.msg[0]) {
-		case 0x54: { // Vehicle data
-			// This message also has days since service and total kms, but, baby steps...
-			let vin_string = hex.h2a(data.msg[1].toString(16)) + hex.h2a(data.msg[2].toString(16)) + data.msg[3].toString(16) + data.msg[4].toString(16) + data.msg[5].toString(16)[0];
-			update.status('vehicle.vin', vin_string);
+		case 0x54: { // Vehicle service data
+			let parse = {
+				vin      : hex.h2a(hex.i2s(data.msg[1], false)) + hex.h2a(hex.i2s(data.msg[2], false)) + hex.i2s(data.msg[3], false) + hex.i2s(data.msg[4], false) + hex.i2s(data.msg[5], false)[0],
+				odometer : ((data.msg[6] << 8) | (data.msg[7])) * 100,
+
+				since_service : {
+					days   : ((data.msg[10] << 8) | (data.msg[11])),
+					liters : (((data.msg[8] << 8) | data.msg[9]) & 0x7FF) * 10,
+				},
+			};
+
+			update.status('vehicle.vin', parse.vin);
+
+			update.status('vehicle.coding.since_service.days',   parse.since_service.days);
+			update.status('vehicle.coding.since_service.liters', parse.since_service.liters);
 			break;
 		}
 

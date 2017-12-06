@@ -157,10 +157,10 @@ function parse_545(data) {
 		// Byte0, Bit4 : EML
 		// Byte0, Bit7 : Check gas cap
 		status : {
-			check_engine  : bitmask.test(data.msg[0], bitmask.b1),
-			check_gas_cap : bitmask.test(data.msg[0], bitmask.b7),
-			cruise        : bitmask.test(data.msg[0], bitmask.b3),
-			eml           : bitmask.test(data.msg[0], bitmask.b4),
+			check_engine  : bitmask.test(data.msg[0], bitmask.b[1]),
+			check_gas_cap : bitmask.test(data.msg[0], bitmask.b[7]),
+			cruise        : bitmask.test(data.msg[0], bitmask.b[3]),
+			eml           : bitmask.test(data.msg[0], bitmask.b[4]),
 		},
 		fuel : {
 			consumption : consumption_current - DME1.consumption_last,
