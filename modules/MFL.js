@@ -66,7 +66,7 @@ function decode_button_media(data) {
 
 				case 'kodi' : // Kodi version
 					switch (unmask.button) {
-						case 'left'  : kodi.command('seek-rewind'); break;
+						case 'left'  : kodi.command('seek-rewind');  break;
 						case 'right' : kodi.command('seek-forward'); break;
 						case 'voice' : break;
 					}

@@ -67,6 +67,65 @@ function decode_button(data) {
 
 	data.value += action + ' ' + button;
 
+	// If media control is disabled, return here
+	if (config.bmbt.media === false) return data;
+
+	switch (action) {
+		case 'hold' : {
+			switch (config.bmbt.media) {
+				case 'bluetooth' : // Bluetooth version
+					switch (button) {
+						case '<'     : break;
+						case '>'     : break;
+						case 'eject' : BT.command('play'); break; // Think about it
+					}
+					break;
+
+				case 'kodi' : // Kodi version
+					switch (button) {
+						case '<'     : kodi.command('seek-rewind');  break;
+						case '>'     : kodi.command('seek-forward'); break;
+						case 'eject' : break;
+					}
+			}
+			break;
+		}
+
+		case 'release' : {
+			switch (config.bmbt.media) {
+				case 'bluetooth' : // Bluetooth version
+					switch (status.bmbt.last.action + status.bmbt.last.button) {
+						case 'depress<'     : BT.command('previous'); break;
+						case 'depress>'     : BT.command('next');     break;
+						case 'depresseject' : BT.command('pause');    break; // Think about it
+
+						case 'hold<'     : break;
+						case 'hold>'     : break;
+						case 'holdeject' : break;
+					}
+					break;
+
+				case 'kodi' : // Kodi version
+					switch (status.bmbt.last.action + status.bmbt.last.button) {
+						case 'depress<'     : kodi.command('previous'); break;
+						case 'depress>'     : kodi.command('next');     break;
+						case 'depresseject' : kodi.command('toggle');   break;
+
+						case 'hold<'     : kodi.command('toggle'); break;
+						case 'hold>'     : kodi.command('toggle'); break;
+						case 'holdeject' : break;
+					}
+			}
+			break;
+		}
+	}
+
+	// case 'depress' :
+
+	// Update status object with the new data
+	update.status('bmbt.last.action', action);
+	update.status('bmbt.last.button', button);
+
 	return data;
 }
 
