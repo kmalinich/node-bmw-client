@@ -58,10 +58,10 @@ function offoff() {
 	var bit_5_test = bit_test(hex, bit_5);
 	var bit_6_test = bit_test(hex, bit_6);
 	var bit_7_test = bit_test(hex, bit_7);
-	var dsc ='superoff';
+	var dsc = 'superoff';
 	var hex = 0x00;
 
-	var string = dsc+'|'+clc.yellow(pad(hex, 3))+'|'+bit_0_test+'|'+bit_1_test+'|'+bit_2_test+'|'+bit_3_test+'|'+bit_4_test+'|'+bit_5_test+'|'+bit_6_test+'|'+bit_7_test;
+	var string = dsc + '|' + clc.yellow(pad(hex, 3)) + '|' + bit_0_test + '|' + bit_1_test + '|' + bit_2_test + '|' + bit_3_test + '|' + bit_4_test + '|' + bit_5_test + '|' + bit_6_test + '|' + bit_7_test;
 	string     = string.replace(/true/g,  clc.green('TRU'));
 	string     = string.replace(/false/g, clc.red('FAL'));
 
@@ -69,7 +69,7 @@ function offoff() {
 
 	var src = 0x00; // GM
 	var dst = 0xBF; // GLO
-	var msg = Buffer.from([0x76, hex]);
+	var msg = Buffer.from([ 0x76, hex ]);
 }
 
 function bit_sample(dsc, hex, callback) {
@@ -83,7 +83,7 @@ function bit_sample(dsc, hex, callback) {
 		var bit_6_test = bit_test(hex, bit_6);
 		var bit_7_test = bit_test(hex, bit_7);
 
-		var string = dsc+'|'+clc.yellow(pad(hex, 3))+'|'+bit_0_test+'|'+bit_1_test+'|'+bit_2_test+'|'+bit_3_test+'|'+bit_4_test+'|'+bit_5_test+'|'+bit_6_test+'|'+bit_7_test;
+		var string = dsc + '|' + clc.yellow(pad(hex, 3)) + '|' + bit_0_test + '|' + bit_1_test + '|' + bit_2_test + '|' + bit_3_test + '|' + bit_4_test + '|' + bit_5_test + '|' + bit_6_test + '|' + bit_7_test;
 		string     = string.replace(/true/g,  clc.green('TRU'));
 		string     = string.replace(/false/g, clc.red('FAL'));
 
@@ -91,12 +91,12 @@ function bit_sample(dsc, hex, callback) {
 
 		var src = 0x00; // GM
 		var dst = 0xBF; // GLO
-		var msg = Buffer.from([0x76, hex]);
+		var msg = Buffer.from([ 0x76, hex ]);
 
 		var ibus_packet = {
-			src: src,
-			dst: dst,
-			msg: msg,
+			src : src,
+			dst : dst,
+			msg : msg,
 		};
 
 		callback(null, 'message sent');
@@ -137,4 +137,4 @@ go();
 // lcm_flash_bitmask_decode(0x72);
 // lcm_flash_bitmask_decode(0xB2);
 
-//shutdown();
+// shutdown();
