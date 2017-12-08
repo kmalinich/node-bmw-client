@@ -37,31 +37,31 @@ function decode_button(data) {
 
 	// Determine button
 	switch (data.msg[1]) {
-		case 0x00 : button = '>';        break;
+		case 0x00 : button = 'right';    break;
 		case 0x01 : button = '2';        break;
 		case 0x02 : button = '4';        break;
 		case 0x03 : button = '6';        break;
-		case 0x04 : button = 'Tone';     break;
-		case 0x05 : button = 'Knob';     break;
-		case 0x06 : button = 'Power';    break;
-		case 0x07 : button = 'Clock';    break;
-		case 0x08 : button = 'Phone';    break;
-		case 0x10 : button = '<';        break;
+		case 0x04 : button = 'tone';     break;
+		case 0x05 : button = 'knob';     break;
+		case 0x06 : button = 'power';    break;
+		case 0x07 : button = 'clock';    break;
+		case 0x08 : button = 'phone';    break;
+		case 0x10 : button = 'left';     break;
 		case 0x11 : button = '1';        break;
 		case 0x12 : button = '3';        break;
 		case 0x13 : button = '5';        break;
 		case 0x14 : button = '<>';       break;
-		case 0x20 : button = 'Select';   break;
-		case 0x21 : button = 'AM';       break;
-		case 0x22 : button = 'RDS';      break;
-		case 0x23 : button = 'Mode';     break;
-		case 0x24 : button = 'Eject';    break;
-		case 0x30 : button = 'RAD menu'; break;
-		case 0x31 : button = 'FM';       break;
-		case 0x32 : button = 'PTY/TP';   break;
-		case 0x33 : button = 'Dolby';    break;
-		case 0x34 : button = 'GT menu';  break;
-		case 0x38 : button = 'Info';     break;
+		case 0x20 : button = 'select';   break;
+		case 0x21 : button = 'am';       break;
+		case 0x22 : button = 'rds';      break;
+		case 0x23 : button = 'mode';     break;
+		case 0x24 : button = 'eject';    break;
+		case 0x30 : button = 'rad menu'; break;
+		case 0x31 : button = 'fm';       break;
+		case 0x32 : button = 'pty/tp';   break;
+		case 0x33 : button = 'dolby';    break;
+		case 0x34 : button = 'gt menu';  break;
+		case 0x38 : button = 'info';     break;
 		default   : button = 'Unknown';
 	}
 
@@ -75,16 +75,16 @@ function decode_button(data) {
 			switch (config.bmbt.media) {
 				case 'bluetooth' : // Bluetooth version
 					switch (button) {
-						case '<'     : break;
-						case '>'     : break;
+						case 'left'  : break;
+						case 'right' : break;
 						case 'eject' : BT.command('play'); break; // Think about it
 					}
 					break;
 
 				case 'kodi' : // Kodi version
 					switch (button) {
-						case '<'     : kodi.command('seek-rewind');  break;
-						case '>'     : kodi.command('seek-forward'); break;
+						case 'left'  : kodi.command('seek-rewind');  break;
+						case 'right' : kodi.command('seek-forward'); break;
 						case 'eject' : break;
 					}
 			}
@@ -95,24 +95,27 @@ function decode_button(data) {
 			switch (config.bmbt.media) {
 				case 'bluetooth' : // Bluetooth version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depress<'     : BT.command('previous'); break;
-						case 'depress>'     : BT.command('next');     break;
+						case 'depressleft'  : BT.command('previous'); break;
+						case 'depressright' : BT.command('next');     break;
 						case 'depresseject' : BT.command('pause');    break; // Think about it
 
-						case 'hold<'     : break;
-						case 'hold>'     : break;
+						case 'depress5' : LCM.police(true);  break;
+						case 'depress6' : LCM.police(false); break;
+
+						case 'holdleft'  : break;
+						case 'holdright' : break;
 						case 'holdeject' : break;
 					}
 					break;
 
 				case 'kodi' : // Kodi version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depress<'     : kodi.command('previous'); break;
-						case 'depress>'     : kodi.command('next');     break;
+						case 'depressleft'  : kodi.command('previous'); break;
+						case 'depressright' : kodi.command('next');     break;
 						case 'depresseject' : kodi.command('toggle');   break;
 
-						case 'hold<'     : kodi.command('toggle'); break;
-						case 'hold>'     : kodi.command('toggle'); break;
+						case 'holdleft'  : kodi.command('toggle'); break;
+						case 'holdright' : kodi.command('toggle'); break;
 						case 'holdeject' : break;
 					}
 			}
