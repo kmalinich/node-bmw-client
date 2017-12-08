@@ -99,7 +99,15 @@ function decode_button(data) {
 						case 'depressright' : BT.command('next');     break;
 						case 'depresseject' : BT.command('pause');    break; // Think about it
 
-						case 'depress5' : LCM.police(true);  break;
+						case 'depress2' : {
+							LCM.police(true);
+							setTimeout(() => {
+								LCM.police(false);
+							}, 500);
+							break;
+						}
+
+						case 'depress3' : LCM.police(true);  break;
 						case 'depress6' : LCM.police(false); break;
 
 						case 'holdleft'  : break;
@@ -121,9 +129,9 @@ function decode_button(data) {
 			}
 			break;
 		}
-	}
 
-	// case 'depress' :
+		// case 'depress' :
+	}
 
 	// Update status object with the new data
 	update.status('bmbt.last.action', action);
