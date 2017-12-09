@@ -699,7 +699,7 @@ function parse_out(data) {
 
 		case 0x5C: // Broadcast: light dimmer status
 			data.command = 'bro';
-			data.value   = 'dimmer 3 : ' + status.lights.dimmer_value_3;
+			data.value   = 'dimmer value 3';
 			update.status('lights.dimmer_value_3', data.msg[1]);
 			break;
 
