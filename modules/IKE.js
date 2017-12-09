@@ -10,28 +10,32 @@ const pad     = require('pad');
 // This actually is a bitmask but.. this is also a freetime project
 function decode_aux_heat_led(data) {
 	data.command = 'bro';
-	data.value   = 'aux heat LED: ' + status.obc.aux_heat_led;
+
+	let aux_heat_led;
 
 	switch (data.msg[2]) {
-		case 0x00 : update.status('obc.aux_heat_led', 'off');   break;
-		case 0x04 : update.status('obc.aux_heat_led', 'on');    break;
-		case 0x08 : update.status('obc.aux_heat_led', 'blink'); break;
-		default   :	update.status('obc.aux_heat_led', Buffer.from(data.msg));
+		case 0x00 : aux_heat_led = 'off';   break;
+		case 0x04 : aux_heat_led = 'on';    break;
+		case 0x08 : aux_heat_led = 'blink'; break;
+		default   :	aux_heat_led = Buffer.from(data.msg);
 	}
+
+	update.status('obc.aux_heat_led', aux_heat_led);
+	data.value = 'aux heat LED: ' + status.obc.aux_heat_led;
 
 	return data;
 }
 
 function decode_country_coding_data(data) {
 	data.command = 'bro';
-	data.value   = 'country coding data';
+	data.value   = 'TODO country coding data';
 
 	return data;
 }
 
 function decode_gong_status(data) {
 	data.command = 'bro';
-	data.value   = 'gong status ' + data.msg;
+	data.value   = 'TODO gong status ' + data.msg;
 
 	return data;
 }
@@ -420,8 +424,8 @@ function ok2hud() {
 	// Bounce if override is active
 	if (IKE.hud_override === true) return false;
 
-	// Bounce if the last update was less than 4000ms ago
-	if (now() - IKE.last_hud_refresh <= 4000) return false;
+	// Bounce if the last update was less than 3000ms ago
+	if (now() - IKE.last_hud_refresh <= 3000) return false;
 
 	return true;
 }
@@ -472,7 +476,7 @@ function hud_refresh() {
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
-	text_nopad(hud_string, () => { IKE.last_hud_refresh = now(); });
+	text_urgent(hud_string, () => { IKE.last_hud_refresh = now(); });
 
 	// socket.lcd_text_tx({
 	// 	upper : 'kdm-e39-01',
@@ -533,10 +537,12 @@ function obc_data(action, value, target) {
 		case 'limit-on'   : action_id = 0x04; break;
 		case 'limit-set'  : action_id = 0x20; break;
 		case 'reset'      : action_id = 0x10; break;
-		case 'set' :
+
+		case 'set' : {
 			cmd       = 0x40; // OBC data set (speed limit/distance)
 			action_id = 0x00;
 			break;
+		}
 	}
 
 	// Assemble message string, with OBC value from value argument
@@ -1072,16 +1078,10 @@ IKE.prototype.data_refresh = function () {
 	}
 
 	// Request fresh data
-	// GM.request('door-status');
 	this.request('ignition');
 	this.request('temperature');
-	// LCM.request('dimmer');
-	LCM.request('io-status');
-	// LCM.request('light-status');
-	// obc_data('get', 'consumption-1');
 
-	// DME.request('motor-values');
-	// RLS.request('rain-sensor-status');
+	LCM.request('io-status');
 
 	if (status.vehicle.ignition_level !== 0) {
 		if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
