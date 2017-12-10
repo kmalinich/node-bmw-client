@@ -60,7 +60,7 @@ function decode_button_media(data) {
 					switch (unmask.button) {
 						case 'left'  : break;
 						case 'right' : break;
-						case 'voice' : BT.command('play'); break; // Think about it
+						case 'voice' : break;
 					}
 					break;
 
@@ -80,7 +80,7 @@ function decode_button_media(data) {
 					switch (status.mfl.last.action + status.mfl.last.button) {
 						case 'depressleft'  : BT.command('previous'); break;
 						case 'depressright' : BT.command('next');     break;
-						case 'depressvoice' : BT.command('pause');    break; // Think about it
+						case 'depressvoice' : BT.command('toggle');   break;
 
 						case 'holdleft'  : break;
 						case 'holdright' : break;
