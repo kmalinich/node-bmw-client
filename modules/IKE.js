@@ -476,7 +476,7 @@ function hud_refresh() {
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update IKE.last_hud_refresh value
-	// text_nopad(hud_string, () => { IKE.last_hud_refresh = now(); });
+	text_nopad(hud_string, () => { IKE.last_hud_refresh = now(); });
 
 	// socket.lcd_text_tx({
 	// 	upper : 'kdm-e39-01',
@@ -1085,6 +1085,7 @@ IKE.prototype.data_refresh = function () {
 
 	if (status.vehicle.ignition_level !== 0) {
 		if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
+
 		// setTimeout for next update
 		let self = this;
 		this.timeout_data_refresh = setTimeout(() => {
