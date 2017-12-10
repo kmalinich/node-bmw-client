@@ -7,14 +7,14 @@ function auto_lights() {
 	// Default action is true (enable/process auto lights)
 	let action = true;
 
-	// Action is false if auto lights are disabled in the config
-	if (config.lights.auto !== true) action = false;
+	// Return if auto lights are disabled in the config
+	if (config.lights.auto !== true) return;
 
 	// Action is false if ignition is not in run
 	if (status.vehicle.ignition_level < 3) action = false;
 
 	switch (action) {
-		case false:
+		case false : {
 			io_encode({});
 
 			if (LCM.timeouts.lights_auto !== null) {
@@ -28,8 +28,9 @@ function auto_lights() {
 			update.status('lights.auto.lowbeam', false);
 			update.status('lights.auto.reason',  null);
 			break;
+		}
 
-		case true:
+		case true : {
 			if (LCM.timeouts.lights_auto === null) {
 				log.module({ msg : 'Set autolights timeout' });
 			}
@@ -38,6 +39,7 @@ function auto_lights() {
 			update.status('lights.auto.active', true);
 
 			auto_lights_process();
+		}
 	}
 }
 
@@ -358,7 +360,38 @@ function decode(data) {
 			data.msg = data.msg.slice(1);
 
 			// Set raw IO status bitmask data
-			status.lcm.io = data.msg;
+			update.status('lcm.io.0',  data.msg[0]);
+			update.status('lcm.io.1',  data.msg[1]);
+			update.status('lcm.io.2',  data.msg[2]);
+			update.status('lcm.io.3',  data.msg[3]);
+			update.status('lcm.io.4',  data.msg[4]);
+			update.status('lcm.io.5',  data.msg[5]);
+			update.status('lcm.io.6',  data.msg[6]);
+			update.status('lcm.io.7',  data.msg[7]);
+			update.status('lcm.io.8',  data.msg[8]);
+			update.status('lcm.io.9',  data.msg[9]);
+			update.status('lcm.io.10', data.msg[10]);
+			update.status('lcm.io.11', data.msg[11]);
+			update.status('lcm.io.12', data.msg[12]);
+			update.status('lcm.io.13', data.msg[13]);
+			update.status('lcm.io.14', data.msg[14]);
+			update.status('lcm.io.15', data.msg[15]);
+			update.status('lcm.io.16', data.msg[16]);
+			update.status('lcm.io.17', data.msg[17]);
+			update.status('lcm.io.18', data.msg[18]);
+			update.status('lcm.io.19', data.msg[19]);
+			update.status('lcm.io.20', data.msg[20]);
+			update.status('lcm.io.21', data.msg[21]);
+			update.status('lcm.io.22', data.msg[22]);
+			update.status('lcm.io.23', data.msg[23]);
+			update.status('lcm.io.24', data.msg[24]);
+			update.status('lcm.io.25', data.msg[25]);
+			update.status('lcm.io.26', data.msg[26]);
+			update.status('lcm.io.27', data.msg[27]);
+			update.status('lcm.io.28', data.msg[28]);
+			update.status('lcm.io.29', data.msg[29]);
+			update.status('lcm.io.30', data.msg[30]);
+			update.status('lcm.io.31', data.msg[31]);
 
 			// Decode bitmasks
 			let masks = {
@@ -553,7 +586,7 @@ function io_encode(object) {
 			b6 : object.mode_sleep,
 			b7 : false,
 		}),
-		b9  : status.lcm.io[9],  // dimmer_value_1
+		b9  : status.lcm.io[9],
 		b10 : status.lcm.io[10],
 		b11 : status.lcm.io[11],
 		b12 : status.lcm.io[12],
@@ -579,7 +612,6 @@ function io_encode(object) {
 	};
 
 	// LCM dimmer
-	if (object.dimmer_value_1) bitmask.b9  = parseInt(object.dimmer_value_1);
 	if (object.dimmer_value_2) bitmask.b15 = parseInt(object.dimmer_value_2);
 
 	// Suspect
@@ -621,7 +653,7 @@ function reset() {
 
 	// Object of autolights related values
 	let io_object_auto_lights = {
-		dimmer_value_1                   : reset_dimmer_val,
+		dimmer_value_2                   : reset_dimmer_val,
 		output_standing_front_left       : true,
 		output_standing_front_right      : true,
 		output_standing_inner_rear_left  : true,
@@ -699,8 +731,9 @@ function parse_out(data) {
 
 		case 0x5C: // Broadcast: light dimmer status
 			data.command = 'bro';
-			data.value   = 'dimmer value 3';
-			update.status('lights.dimmer_value_3', data.msg[1]);
+			data.value   = 'dimmer value 1';
+			update.status('lcm.dimmer.value_1', data.msg[1]);
+			// update.status('lcm.io.15',          data.msg[1]);
 			break;
 
 		case 0xA0: // Reply to DIA: success
