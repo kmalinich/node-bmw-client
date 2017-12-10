@@ -3,7 +3,7 @@
 // Parse data sent from TEL module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x2B: { // Broadcast: Indicator status
+		case 0x2B : { // Broadcast: Indicator status
 			data.command = 'bro';
 			data.value   = 'indicator status';
 
@@ -42,7 +42,7 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x2C: { // Broadcast: Telephone status
+		case 0x2C : { // Broadcast: Telephone status
 			// Bit0 : Handsfree
 			// Bit1 : Active call (false = phone menu displayed)
 			// Bit2 : Incoming call
@@ -56,7 +56,19 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0xA9: { // Broadcast: Telephone data
+		case 0x52 : { // Broadcast: Text display
+			data.command = 'bro';
+			data.value   = 'text display: ' + hex.h2s(data.msg);
+			break;
+		}
+
+		case 0xA6 : { // Request: Special indicators
+			data.command = 'req';
+			data.value   = 'special indicators';
+			break;
+		}
+
+		case 0xA9 : { // Broadcast: Telephone data
 			// A9 03 30 30, NAV,TEL, Telephone data Current_network_request     Count_0
 			// A9 0A 30 30, NAV,TEL, Telephone data Current_phone_status        Count_0
 			// A9 31 00 00, TEL,NAV, Telephone data Telematics_settings_request

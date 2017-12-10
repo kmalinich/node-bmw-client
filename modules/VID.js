@@ -1,7 +1,7 @@
 // Parse data sent from VID module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x4F: { // RGB control (of LCD screen in dash)
+		case 0x4F: { // Control: LCD (screen in dash)
 			data.command = 'con';
 			data.value   = 'LCD ';
 
