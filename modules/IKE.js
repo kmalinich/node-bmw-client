@@ -472,7 +472,7 @@ function hud_refresh() {
 		volt   : pad(string_volt,  9),
 	};
 
-	hud_strings.center = pad(string_temp, (5 + (7 - hud_strings.right.length)));
+	hud_strings.center = pad(string_temp, (5 + (7 - string_time)));
 
 	// Change left string to be load/CPU temp if over threshold
 	if (status.system.temperature > 65) hud_strings.left = hud_strings.load;
