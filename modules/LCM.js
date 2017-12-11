@@ -477,6 +477,7 @@ function decode(data) {
 			update.status('lcm.switch.hazard',         masks.m1.b4);
 			update.status('lcm.switch.highbeam_flash', masks.m1.b2);
 
+			// update.status('lcm.switch.auto', );
 			update.status('lcm.switch.brake',      masks.m2.b0);
 			update.status('lcm.switch.highbeam',   masks.m2.b1);
 			update.status('lcm.switch.fog_front',  masks.m2.b2);
