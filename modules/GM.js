@@ -138,7 +138,7 @@ function io_encode(object) {
 // Control interior lighting PWM brightness
 function interior_light(value) {
 	log.module({ msg : 'Setting interior light to ' + value });
-	io_set([ 0x10, 0x05, value.toString(16) ]);
+	io_set([ 0x10, 0x05, value ]);
 }
 
 // Send message to GM
