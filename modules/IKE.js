@@ -464,7 +464,7 @@ function hud_refresh() {
 
 	// Space-pad strings
 	let hud_strings = {
-		let    : pad(string_volt,  9),
+		left   : pad(string_volt,  9),
 		const  : pad(string_cons,  9),
 		speed  : pad(string_speed, 9),
 		center : pad(string_temp,  6),
