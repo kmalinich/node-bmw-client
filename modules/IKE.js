@@ -450,7 +450,8 @@ function hud_refresh() {
 	let string_cons  = '';
 	let string_speed = '';
 	let string_temp  = '';
-	let string_time  = moment().format('HH:mm');
+	let string_time  = moment().format('h:mm'); // TODO add config option for 12h/24h
+	let string_volt  = status.lcm.voltage.terminal_30 + 'v';
 
 	// Only add data to strings if it is populated
 	if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
@@ -463,7 +464,8 @@ function hud_refresh() {
 
 	// Space-pad strings
 	let hud_strings = {
-		left   : pad(string_cons,  9),
+		let    : pad(string_volt,  9),
+		const  : pad(string_cons,  9),
 		speed  : pad(string_speed, 9),
 		center : pad(string_temp,  6),
 		right  : pad(string_time,  9),
