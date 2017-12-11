@@ -378,10 +378,10 @@ function decode(data) {
 			update.status('lcm.io.15', data.msg[15]);
 			update.status('lcm.io.16', data.msg[16]);
 			update.status('lcm.io.17', data.msg[17]);
-			update.status('lcm.io.18', data.msg[18]); // Changes while running
-			update.status('lcm.io.19', data.msg[19]); // Changes while running
+			update.status('lcm.io.18', data.msg[18]); // Changes while running (autolevel?)
+			update.status('lcm.io.19', data.msg[19]); // Changes while running (autolevel?)
 			update.status('lcm.io.20', data.msg[20]);
-			update.status('lcm.io.21', data.msg[21]); // Changes while running
+			update.status('lcm.io.21', data.msg[21]); // Changes while running (autolevel?)
 			update.status('lcm.io.22', data.msg[22]);
 			update.status('lcm.io.23', data.msg[23]);
 			update.status('lcm.io.24', data.msg[24]);
