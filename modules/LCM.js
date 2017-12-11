@@ -369,7 +369,7 @@ function decode(data) {
 			update.status('lcm.io.6',  data.msg[6]);
 			update.status('lcm.io.7',  data.msg[7]);
 			update.status('lcm.io.8',  data.msg[8]);
-			update.status('lcm.io.9',  data.msg[9]);
+			update.status('lcm.io.9',  data.msg[9]); // Voltage: Terminal 30
 			update.status('lcm.io.10', data.msg[10]);
 			update.status('lcm.io.11', data.msg[11]);
 			update.status('lcm.io.12', data.msg[12]);
@@ -378,10 +378,10 @@ function decode(data) {
 			update.status('lcm.io.15', data.msg[15]);
 			update.status('lcm.io.16', data.msg[16]);
 			update.status('lcm.io.17', data.msg[17]);
-			update.status('lcm.io.18', data.msg[18]);
-			update.status('lcm.io.19', data.msg[19]);
+			update.status('lcm.io.18', data.msg[18]); // Changes while running
+			update.status('lcm.io.19', data.msg[19]); // Changes while running
 			update.status('lcm.io.20', data.msg[20]);
-			update.status('lcm.io.21', data.msg[21]);
+			update.status('lcm.io.21', data.msg[21]); // Changes while running
 			update.status('lcm.io.22', data.msg[22]);
 			update.status('lcm.io.23', data.msg[23]);
 			update.status('lcm.io.24', data.msg[24]);
@@ -389,9 +389,16 @@ function decode(data) {
 			update.status('lcm.io.26', data.msg[26]);
 			update.status('lcm.io.27', data.msg[27]);
 			update.status('lcm.io.28', data.msg[28]);
-			update.status('lcm.io.29', data.msg[29]);
-			update.status('lcm.io.30', data.msg[30]);
+			update.status('lcm.io.29', data.msg[29]); // Voltage: Flash to pass
+			update.status('lcm.io.30', data.msg[30]); // Voltage: Turn signal
 			update.status('lcm.io.31', data.msg[31]);
+
+			// Decode values
+			update.status('lcm.dimmer.value_2', data.msg[15]);
+
+			update.status('lcm.voltage.terminal_30',        parseFloat((data.msg[9] * 0.0708).toFixed(2)));
+			update.status('lcm.voltage.flash_to_pass',      parseFloat(data.msg[29] / 51));
+			update.status('lcm.voltage.turn_signal_switch', parseFloat(data.msg[30] / 51));
 
 			// Decode bitmasks
 			let masks = {
@@ -405,14 +412,6 @@ function decode(data) {
 				m7 : bitmask.check(data.msg[7]).mask,
 				m8 : bitmask.check(data.msg[8]).mask,
 			};
-
-			// let bitmask_18 = array[19]; // Something
-
-			update.status('lcm.dimmer.value_2', data.msg[15]);
-
-			update.status('lcm.voltage.terminal_30',        parseFloat((data.msg[9] * 0.0708).toFixed(2)));
-			update.status('lcm.voltage.flash_to_pass',      parseFloat(data.msg[29] / 51));
-			update.status('lcm.voltage.turn_signal_switch', parseFloat(data.msg[30] / 51));
 
 			// Bitmasks
 			update.status('lcm.clamp.c_30a', masks.m0.b0);
@@ -953,10 +952,10 @@ function police(action) {
 function init_listeners() {
 	// Refresh data on IKE event
 	IKE.on('obc-refresh', () => {
-		request('vehicledata');
-		request('light-status');
 		request('dimmer');
 		request('io-status');
+		request('light-status');
+		request('vehicledata');
 	});
 
 	// Enable/disable welcome lights on GM keyfob event
