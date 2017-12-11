@@ -464,15 +464,21 @@ function hud_refresh() {
 
 	// Space-pad strings
 	let hud_strings = {
-		left   : pad(string_volt,  9),
-		const  : pad(string_cons,  9),
-		speed  : pad(string_speed, 9),
 		center : pad(string_temp,  6),
+		left   : pad(string_cons,  9),
+		load   : pad(string_load,  9),
 		right  : pad(string_time,  9),
+		speed  : pad(string_speed, 9),
+		volt   : pad(string_volt,  9),
 	};
 
+	hud_strings.center = pad(string_temp, (5 + (7 - hud_strings.right.length)));
+
 	// Change left string to be load/CPU temp if over threshold
-	if (status.system.temperature > 65) hud_strings.left = pad(string_load, 9);
+	if (status.system.temperature > 65) hud_strings.left = hud_strings.load;
+
+	// Change right string to be LCM terminal 30 voltage if under threshold
+	if (status.lcm.voltage.terminal_30 > 13) hud_strings.right = hud_strings.volt;
 
 	// Assemble text string
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
