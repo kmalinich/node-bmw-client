@@ -477,8 +477,8 @@ function hud_refresh() {
 	// Change left string to be load/CPU temp if over threshold
 	if (status.system.temperature > 65) hud_strings.left = hud_strings.load;
 
-	// Change right string to be LCM terminal 30 voltage if under threshold
-	if (status.lcm.voltage.terminal_30 > 13) hud_strings.right = hud_strings.volt;
+	// Change left string to be LCM terminal 30 voltage if under threshold
+	if (status.lcm.voltage.terminal_30 < 13) hud_strings.left = hud_strings.volt;
 
 	// Assemble text string
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
