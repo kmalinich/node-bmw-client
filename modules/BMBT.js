@@ -130,7 +130,7 @@ function decode_button(data) {
 			break;
 		}
 
-		// case 'depress' :
+			// case 'depress' :
 	}
 
 	// Update status object with the new data
@@ -254,21 +254,23 @@ function toggle_power_if_ready() {
 		status_loop(true);
 
 		// Increase volume after power on
-		setTimeout(() => {
-			RAD.volume_control(5);
-			RAD.volume_control(5);
-			RAD.volume_control(5);
-		}, 500);
-		setTimeout(() => {
-			RAD.volume_control(5);
-			RAD.volume_control(5);
-			RAD.volume_control(5);
-		}, 750);
-		setTimeout(() => {
-			RAD.volume_control(5);
-			RAD.volume_control(5);
-			RAD.volume_control(5);
-		}, 1000);
+		if (config.bmbt.vol_at_poweron === true) {
+			setTimeout(() => {
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+			}, 500);
+			setTimeout(() => {
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+			}, 750);
+			setTimeout(() => {
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+				RAD.volume_control(5);
+			}, 1000);
+		}
 	}, 1000);
 }
 
