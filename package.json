@@ -14,7 +14,7 @@
 		"json-colorizer": "^1.1.0",
 		"jsonfile": "^4.0.0",
 		"kodi-ws": "^2.4.3",
-		"moment": "^2.19.3",
+		"moment": "^2.19.4",
 		"multipad": "^1.1.1",
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.4",
