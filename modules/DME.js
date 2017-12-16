@@ -29,7 +29,7 @@ function request(value) {
 	let cmd;
 
 	switch (value) {
-		case 'motor-values':
+		case 'motor-values' :
 			src = 'DIA';
 			cmd = [ 0xB8, 0x12, 0xF1, 0x03, 0x22, 0x40, 0x00 ];
 			break;

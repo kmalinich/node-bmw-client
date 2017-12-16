@@ -7,14 +7,14 @@ function auto_lights() {
 	// Default action is true (enable/process auto lights)
 	let action = true;
 
-	// Action is false if auto lights are disabled in the config
-	if (config.lights.auto !== true) action = false;
+	// Return if auto lights are disabled in the config
+	if (config.lights.auto !== true) return;
 
 	// Action is false if ignition is not in run
 	if (status.vehicle.ignition_level < 3) action = false;
 
 	switch (action) {
-		case false:
+		case false : {
 			io_encode({});
 
 			if (LCM.timeouts.lights_auto !== null) {
@@ -28,7 +28,9 @@ function auto_lights() {
 			update.status('lights.auto.lowbeam', false);
 			update.status('lights.auto.reason',  null);
 			break;
-		case true:
+		}
+
+		case true : {
 			if (LCM.timeouts.lights_auto === null) {
 				log.module({ msg : 'Set autolights timeout' });
 			}
@@ -37,6 +39,7 @@ function auto_lights() {
 			update.status('lights.auto.active', true);
 
 			auto_lights_process();
+		}
 	}
 }
 
@@ -53,15 +56,17 @@ function auto_lights_process() {
 	let now_weather = false;
 
 	// Factor in cloud cover to lights on/off time
-	status.weather.daily.data.forEach((value) => {
-		if (now_weather === true) return;
+	if (config.weather.apikey !== null) {
+		status.weather.daily.data.forEach((value) => {
+			if (now_weather === true) return;
 
-		if ((now_epoch - value.time) <= 0) {
-			// Add 3 hours * current cloudCover value
-			now_offset = value.cloudCover * 3 * 60 * 60 * 1000;
-			now_weather = true;
-		}
-	});
+			if ((now_epoch - value.time) <= 0) {
+				// Add 5 hours * current cloudCover value
+				now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
+				now_weather = true;
+			}
+		});
+	}
 
 	let sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 	let lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
@@ -140,6 +145,14 @@ function coding_get() {
 	}
 }
 
+// Get LCM identity data
+function identity_get() {
+	bus.data.send({
+		src : 'DIA',
+		msg : [ 0x00 ],
+	});
+}
+
 // Comfort turn signal handling
 function comfort_turn(data) {
 	// If comfort turn is not enabled
@@ -151,59 +164,82 @@ function comfort_turn(data) {
 	// If we haven't passed the cooldown yet
 	if (status.lights.turn.comfort_cool === false) return;
 
-	if (data.before.left.active === false) { // left turn was previously off
-		if (data.after.left.active && !data.after.right.active) { // left turn is now on, and right turn is now off
-			update.status('lights.turn.left.depress', now());
-			return;
+	// Determine the direction of the previously active turn signal
+	let before;
+	switch (data.before.left.active) {
+		case true : {
+			switch (data.before.right.active) {
+				case true  : break; // They can't both be active
+				case false : before = 'left';
+			}
+			break;
 		}
-	}
-	else { // left turn was previously on
-		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
-			// If the time difference is less than 1000ms, fire comfort turn signal
-			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.left.depress);
-			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
-			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
-				comfort_turn_flash('left');
-				return;
+
+		case false : {
+			switch (data.before.right.active) {
+				case false : before = null; break; // Neither are active
+				case true  : before = 'right';
 			}
 		}
 	}
 
-	if (data.before.right.active === false) { // right turn was previously off
-		if (!data.after.left.active && data.after.right.active) { // left turn is now off, and right turn is now on
-			update.status('lights.turn.right.depress', now());
+	// Determine the direction of the currently active turn signal
+	let mask = bitmask.check(data.after).mask;
+	let after;
+	switch (mask.bit5) {
+		case true : {
+			switch (mask.bit6) {
+				case true  : break; // They can't both be active
+				case false : after = 'left';
+			}
+			break;
 		}
-	}
-	else { // right turn was previously on
-		if (!data.after.left.active && !data.after.right.active) { // If left turn is now off and right turn is now off
-			// If the time difference is less than 1000ms, fire comfort turn signal
-			update.status('lights.turn.depress_elapsed', now() - status.lights.turn.right.depress);
-			// log.module({ msg : 'Evaluating comfort turn after '+status.lights.turn.depress_elapsed+'ms' });
-			if (status.lights.turn.depress_elapsed > 0 && status.lights.turn.depress_elapsed < 1000) {
-				comfort_turn_flash('right');
+
+		case false : {
+			switch (mask.bit6) {
+				case false : after = null; break; // Neither are active
+				case true  : after = 'right';
 			}
 		}
 	}
+
+	// If the currently active signal is the same as the previously active signal, bounce
+	if (before === after) return;
+
+	// Mark the currently active signal's depress timestamp
+	if (after !== null) update.status('lights.turn.' + after + '.depress', now());
+
+	// If NEITHER signal WAS active, or EITHER signal IS active, bounce
+	// That way we only continue if we're going from ON to OFF
+	if (before === null || after !== null) return;
+
+	// Update the previously active signal's elapsed time
+	update.status('lights.turn.depress_elapsed', now() - status.lights.turn[before].depress);
+
+	// Attempt to fire comfort turn signal
+	comfort_turn_flash(before);
 }
 
 function comfort_turn_flash(action) {
-	// Double-check the given action
-	if (action !== 'left' || action !== 'right') return;
+	// If the time difference is more than 1000ms, bounce
+	if (status.lights.turn.depress_elapsed >= 1000) return;
 
-	// Init variables
+	// Double-check the requested action
+	if (action !== 'left' && action !== 'right') return;
+
+	log.module({ msg : 'Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed });
+
+	// Update status variables, and prepare cluster message
 	let cluster_msg_outer;
-
-	log.module({ msg : 'Comfort turn: ' + action });
-
 	switch (action) {
-		case 'left':
+		case 'left' :
 			// Set status variables
 			update.status('lights.turn.left.comfort',  true);
 			update.status('lights.turn.right.comfort', false);
 			cluster_msg_outer = '< < < < < < <';
 			break;
 
-		case 'right':
+		case 'right' :
 			// Set status variables
 			update.status('lights.turn.left.comfort',  false);
 			update.status('lights.turn.right.comfort', true);
@@ -217,311 +253,376 @@ function comfort_turn_flash(action) {
 		IKE.text_override(cluster_msg, 2000 + status.lights.turn.depress_elapsed, action, true);
 	}
 
+	// Fire!
 	reset();
+
+	// Begin comfort turn cooldown period
 	update.status('lights.turn.comfort_cool', false);
 
-	// Turn off comfort turn signal - 1 blink ~ 500ms, so 5x blink ~ 2500ms
+	// Calculate timeout length, accounting for the time from the initial flash
+	// 1 flash ~ 500ms, so 5x flash ~ 2500ms
+	let timer_off  = (config.lights.comfort_turn.flashes - 1) * 500;
+	let timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
+
+	log.module({ msg : 'Comfort turn timer: ' + timer_off + 'ms' });
+
+	// Timeout for turning off the comfort turn signal
 	setTimeout(() => {
 		// Update status variables
 		update.status('lights.turn.left.comfort',  false);
 		update.status('lights.turn.right.comfort', false);
-
 		reset();
-	}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed); // Subtract the time from the initial blink
+	}, timer_off);
 
-	// Timeout for cooldown period
-	setTimeout(() => {
-		update.status('lights.turn.comfort_cool', true);
-	}, (300 * config.lights.comfort_turn.flashes) + status.lights.turn.depress_elapsed + 1500); // Subtract the time from the initial blink
+	// Timeout for comfort turn cooldown period
+	setTimeout(() => { update.status('lights.turn.comfort_cool', true); }, timer_cool);
 }
 
 // Decode various bits of data into usable information
 function decode(data) {
 	switch (data.msg[0]) {
-		case 0x54: { // Vehicle data
-			// This message also has days since service and total kms, but, baby steps...
-			let vin_string = hex.h2a(data.msg[1].toString(16)) + hex.h2a(data.msg[2].toString(16)) + data.msg[3].toString(16) + data.msg[4].toString(16) + data.msg[5].toString(16)[0];
-			update.status('vehicle.vin', vin_string);
+		case 0x54: { // Vehicle service data
+			let parse = {
+				vin      : hex.h2a(hex.i2s(data.msg[1], false)) + hex.h2a(hex.i2s(data.msg[2], false)) + hex.i2s(data.msg[3], false) + hex.i2s(data.msg[4], false) + hex.i2s(data.msg[5], false)[0],
+				odometer : ((data.msg[6] << 8) | (data.msg[7])) * 100,
+
+				since_service : {
+					days   : ((data.msg[10] << 8) | (data.msg[11])),
+					liters : (((data.msg[8] << 8) | data.msg[9]) & 0x7FF) * 10,
+				},
+			};
+
+			update.status('vehicle.vin', parse.vin);
+
+			update.status('vehicle.coding.since_service.days',   parse.since_service.days);
+			update.status('vehicle.coding.since_service.liters', parse.since_service.liters);
 			break;
 		}
 
 		case 0x5B: { // Decode a light status message from the LCM and act upon the results
+			// Remove command byte
+			data.msg = data.msg.slice(1);
+
 			// Send data to comfort turn function
-			comfort_turn({
-				before : status.lights.turn,
-				after  : {
-					left : {
-						active : bitmask.test(data.msg[1], bitmask.bit[5]),
-					},
-					right : {
-						active : bitmask.test(data.msg[1], bitmask.bit[6]),
-					},
-				},
-			});
+			comfort_turn({ before : status.lights.turn, after : data.msg[0] });
+
+			// Decode bitmasks
+			let masks = {
+				m0 : bitmask.check(data.msg[0]).mask,
+				m1 : bitmask.check(data.msg[1]).mask,
+				m2 : bitmask.check(data.msg[2]).mask,
+				m3 : bitmask.check(data.msg[3]).mask,
+			};
 
 			// On
-			update.status('lights.all_off', !data.msg[1]);
+			update.status('lights.all_off', masks.m0.b8);
 
-			update.status('lights.standing.front',    bitmask.test(data.msg[1], bitmask.bit[0]));
-			update.status('lights.lowbeam',           bitmask.test(data.msg[1], bitmask.bit[1]));
-			update.status('lights.highbeam',          bitmask.test(data.msg[1], bitmask.bit[2]));
-			update.status('lights.fog.front',         bitmask.test(data.msg[1], bitmask.bit[3]));
-			update.status('lights.fog.rear',          bitmask.test(data.msg[1], bitmask.bit[4]));
-			update.status('lights.turn.left.active',  bitmask.test(data.msg[1], bitmask.bit[5]));
-			update.status('lights.turn.right.active', bitmask.test(data.msg[1], bitmask.bit[6]));
-			update.status('lights.turn.fast',         bitmask.test(data.msg[1], bitmask.bit[7]));
+			update.status('lights.standing.front',    masks.m0.b0);
+			update.status('lights.lowbeam',           masks.m0.b1);
+			update.status('lights.highbeam',          masks.m0.b2);
+			update.status('lights.fog.front',         masks.m0.b3);
+			update.status('lights.fog.rear',          masks.m0.b4);
+			update.status('lights.turn.left.active',  masks.m0.b5);
+			update.status('lights.turn.right.active', masks.m0.b6);
+			update.status('lights.turn.fast',         masks.m0.b7);
 
-			update.status('lights.brake',            bitmask.test(data.msg[3], bitmask.bit[1]));
-			update.status('lights.turn.sync',        bitmask.test(data.msg[3], bitmask.bit[2]));
-			update.status('lights.standing.rear',    bitmask.test(data.msg[3], bitmask.bit[3]));
-			update.status('lights.trailer.standing', bitmask.test(data.msg[3], bitmask.bit[4]));
-			update.status('lights.reverse',          bitmask.test(data.msg[3], bitmask.bit[5]));
-			update.status('lights.trailer.reverse',  bitmask.test(data.msg[3], bitmask.bit[6]));
-			update.status('lights.hazard',           bitmask.test(data.msg[3], bitmask.bit[7]));
+			update.status('lights.brake',            masks.m2.b1);
+			update.status('lights.turn.sync',        masks.m2.b2);
+			update.status('lights.standing.rear',    masks.m2.b3);
+			update.status('lights.trailer.standing', masks.m2.b4);
+			update.status('lights.reverse',          masks.m2.b5);
+			update.status('lights.trailer.reverse',  masks.m2.b6);
+			update.status('lights.hazard',           masks.m2.b7);
 
 			// Faulty
-			update.status('lights.faulty.all_ok', !data.msg[2]);
+			update.status('lights.faulty.all_ok', masks.m1.b8);
 
-			update.status('lights.faulty.standing.front', bitmask.test(data.msg[2], bitmask.bit[0]));
-			update.status('lights.faulty.lowbeam.both',   bitmask.test(data.msg[2], bitmask.bit[1]));
-			update.status('lights.faulty.highbeam',       bitmask.test(data.msg[2], bitmask.bit[2]));
-			update.status('lights.faulty.fog.front',      bitmask.test(data.msg[2], bitmask.bit[3]));
-			update.status('lights.faulty.fog.rear',       bitmask.test(data.msg[2], bitmask.bit[4]));
-			update.status('lights.faulty.turn.left',      bitmask.test(data.msg[2], bitmask.bit[5]));
-			update.status('lights.faulty.turn.right',     bitmask.test(data.msg[2], bitmask.bit[6]));
-			update.status('lights.faulty.license_plate',  bitmask.test(data.msg[2], bitmask.bit[7]));
+			update.status('lights.faulty.standing.front', masks.m1.b0);
+			update.status('lights.faulty.lowbeam.both',   masks.m1.b1);
+			update.status('lights.faulty.highbeam',       masks.m1.b2);
+			update.status('lights.faulty.fog.front',      masks.m1.b3);
+			update.status('lights.faulty.fog.rear',       masks.m1.b4);
+			update.status('lights.faulty.turn.left',      masks.m1.b5);
+			update.status('lights.faulty.turn.right',     masks.m1.b6);
+			update.status('lights.faulty.license_plate',  masks.m1.b7);
 
-			update.status('lights.faulty.brake.right',         bitmask.test(data.msg[4], bitmask.bit[0]));
-			update.status('lights.faulty.brake.left',          bitmask.test(data.msg[4], bitmask.bit[1]));
-			update.status('lights.faulty.standing.rear.right', bitmask.test(data.msg[4], bitmask.bit[2]));
-			update.status('lights.faulty.standing.rear.left',  bitmask.test(data.msg[4], bitmask.bit[3]));
-			update.status('lights.faulty.lowbeam.right',       bitmask.test(data.msg[4], bitmask.bit[4]));
-			update.status('lights.faulty.lowbeam.left',        bitmask.test(data.msg[4], bitmask.bit[5]));
+			update.status('lights.faulty.brake.right',         masks.m3.b0);
+			update.status('lights.faulty.brake.left',          masks.m3.b1);
+			update.status('lights.faulty.standing.rear.right', masks.m3.b2);
+			update.status('lights.faulty.standing.rear.left',  masks.m3.b3);
+			update.status('lights.faulty.lowbeam.right',       masks.m3.b4);
+			update.status('lights.faulty.lowbeam.left',        masks.m3.b5);
 			break;
 		}
 
-		case 0xA0: // Decode IO status and output true/false values
+		case 0xA0: { // Decode IO status and output true/false values
 			// Remove command byte
 			data.msg = data.msg.slice(1);
 
 			// Set raw IO status bitmask data
-			status.lcm.io = data.msg;
+			update.status('lcm.io.0',  data.msg[0]);
+			update.status('lcm.io.1',  data.msg[1]);
+			update.status('lcm.io.2',  data.msg[2]);
+			update.status('lcm.io.3',  data.msg[3]);
+			update.status('lcm.io.4',  data.msg[4]);
+			update.status('lcm.io.5',  data.msg[5]);
+			update.status('lcm.io.6',  data.msg[6]);
+			update.status('lcm.io.7',  data.msg[7]);
+			update.status('lcm.io.8',  data.msg[8]);
+			update.status('lcm.io.9',  data.msg[9]); // Voltage: Terminal 30
+			update.status('lcm.io.10', data.msg[10]);
+			update.status('lcm.io.11', data.msg[11]);
+			update.status('lcm.io.12', data.msg[12]);
+			update.status('lcm.io.13', data.msg[13]);
+			update.status('lcm.io.14', data.msg[14]);
+			update.status('lcm.io.15', data.msg[15]);
+			update.status('lcm.io.16', data.msg[16]);
+			update.status('lcm.io.17', data.msg[17]);
+			update.status('lcm.io.18', data.msg[18]); // Changes while running (autolevel?)
+			update.status('lcm.io.19', data.msg[19]); // Changes while running (autolevel?)
+			update.status('lcm.io.20', data.msg[20]);
+			update.status('lcm.io.21', data.msg[21]); // Changes while running (autolevel?)
+			update.status('lcm.io.22', data.msg[22]);
+			update.status('lcm.io.23', data.msg[23]);
+			update.status('lcm.io.24', data.msg[24]);
+			update.status('lcm.io.25', data.msg[25]);
+			update.status('lcm.io.26', data.msg[26]);
+			update.status('lcm.io.27', data.msg[27]);
+			update.status('lcm.io.28', data.msg[28]);
+			update.status('lcm.io.29', data.msg[29]); // Voltage: Flash to pass
+			update.status('lcm.io.30', data.msg[30]); // Voltage: Turn signal
+			update.status('lcm.io.31', data.msg[31]);
 
-			// let bitmask_18 = array[19]; // Something
-
+			// Decode values
 			update.status('lcm.dimmer.value_2', data.msg[15]);
 
 			update.status('lcm.voltage.terminal_30',        parseFloat((data.msg[9] * 0.0708).toFixed(2)));
 			update.status('lcm.voltage.flash_to_pass',      parseFloat(data.msg[29] / 51));
 			update.status('lcm.voltage.turn_signal_switch', parseFloat(data.msg[30] / 51));
 
+			// Decode bitmasks
+			let masks = {
+				m0 : bitmask.check(data.msg[0]).mask,
+				m1 : bitmask.check(data.msg[1]).mask,
+				m2 : bitmask.check(data.msg[2]).mask,
+				m3 : bitmask.check(data.msg[3]).mask,
+				m4 : bitmask.check(data.msg[4]).mask,
+				m5 : bitmask.check(data.msg[5]).mask,
+				m6 : bitmask.check(data.msg[6]).mask,
+				m7 : bitmask.check(data.msg[7]).mask,
+				m8 : bitmask.check(data.msg[8]).mask,
+			};
+
 			// Bitmasks
-			update.status('lcm.clamp.c_30a', bitmask.test(data.msg[0], bitmask.bit[0]));
-			update.status('lcm.clamp.c_15',  bitmask.test(data.msg[3], bitmask.bit[5]));
-			update.status('lcm.clamp.c_r',   bitmask.test(data.msg[0], bitmask.bit[6]));
-			update.status('lcm.clamp.c_30b', bitmask.test(data.msg[0], bitmask.bit[7]));
+			update.status('lcm.clamp.c_30a', masks.m0.b0);
+			update.status('lcm.clamp.c_15',  masks.m3.b5);
+			update.status('lcm.clamp.c_r',   masks.m0.b6);
+			update.status('lcm.clamp.c_30b', masks.m0.b7);
 
-			update.status('lcm.input.fire_extinguisher',         bitmask.test(data.msg[0], bitmask.bit[1]));
-			update.status('lcm.input.preheating_fuel_injection', bitmask.test(data.msg[0], bitmask.bit[2]));
-			update.status('lcm.input.carb',                      bitmask.test(data.msg[0], bitmask.bit[4]));
+			update.status('lcm.input.fire_extinguisher',         masks.m0.b1);
+			update.status('lcm.input.preheating_fuel_injection', masks.m0.b2);
+			update.status('lcm.input.carb',                      masks.m0.b4);
 
-			update.status('lcm.input.key_in_ignition',   bitmask.test(data.msg[1], bitmask.bit[0]));
-			update.status('lcm.input.seat_belts_lock',   bitmask.test(data.msg[1], bitmask.bit[1]));
-			update.status('lcm.input.kfn',               bitmask.test(data.msg[1], bitmask.bit[5]));
-			update.status('lcm.input.armoured_door',     bitmask.test(data.msg[1], bitmask.bit[6]));
-			update.status('lcm.input.brake_fluid_level', bitmask.test(data.msg[1], bitmask.bit[7]));
+			update.status('lcm.input.key_in_ignition',   masks.m1.b0);
+			update.status('lcm.input.seat_belts_lock',   masks.m1.b1);
+			update.status('lcm.input.kfn',               masks.m1.b5);
+			update.status('lcm.input.armoured_door',     masks.m1.b6);
+			update.status('lcm.input.brake_fluid_level', masks.m1.b7);
 
-			update.status('lcm.input.air_suspension',     bitmask.test(data.msg[3], bitmask.bit[0]));
-			update.status('lcm.input.hold_up_alarm',      bitmask.test(data.msg[3], bitmask.bit[1]));
-			update.status('lcm.input.washer_fluid_level', bitmask.test(data.msg[3], bitmask.bit[2]));
-			update.status('lcm.input.engine_failsafe',    bitmask.test(data.msg[3], bitmask.bit[6]));
-			update.status('lcm.input.tire_defect',        bitmask.test(data.msg[3], bitmask.bit[7]));
+			update.status('lcm.input.air_suspension',     masks.m3.b0);
+			update.status('lcm.input.hold_up_alarm',      masks.m3.b1);
+			update.status('lcm.input.washer_fluid_level', masks.m3.b2);
+			update.status('lcm.input.engine_failsafe',    masks.m3.b6);
+			update.status('lcm.input.tire_defect',        masks.m3.b7);
 
-			update.status('lcm.input.vertical_aim', bitmask.test(data.msg[6], bitmask.bit[1]));
+			update.status('lcm.input.vertical_aim', masks.m6.b1);
 
-			update.status('lcm.mode.failsafe', bitmask.test(data.msg[8], bitmask.bit[0]));
-			update.status('lcm.mode.sleep',    bitmask.test(data.msg[8], bitmask.bit[6]));
+			update.status('lcm.mode.failsafe', masks.m8.b0);
+			update.status('lcm.mode.sleep',    masks.m8.b6);
 
-			update.status('lcm.output.license.rear_left',    bitmask.test(data.msg[4], bitmask.bit[2]));
-			update.status('lcm.output.brake.rear_left',      bitmask.test(data.msg[4], bitmask.bit[3]));
-			update.status('lcm.output.brake.rear_right',     bitmask.test(data.msg[4], bitmask.bit[4]));
-			update.status('lcm.output.highbeam.front_right', bitmask.test(data.msg[4], bitmask.bit[5]));
-			update.status('lcm.output.highbeam.front_left',  bitmask.test(data.msg[4], bitmask.bit[6]));
+			update.status('lcm.output.license.rear_left',    masks.m4.b2);
+			update.status('lcm.output.brake.rear_left',      masks.m4.b3);
+			update.status('lcm.output.brake.rear_right',     masks.m4.b4);
+			update.status('lcm.output.highbeam.front_right', masks.m4.b5);
+			update.status('lcm.output.highbeam.front_left',  masks.m4.b6);
 
-			update.status('lcm.output.standing.front_left',      bitmask.test(data.msg[5], bitmask.bit[0]));
-			update.status('lcm.output.standing.inner_rear_left', bitmask.test(data.msg[5], bitmask.bit[1]));
-			update.status('lcm.output.fog.front_left',           bitmask.test(data.msg[5], bitmask.bit[2]));
-			update.status('lcm.output.reverse.rear_left',        bitmask.test(data.msg[5], bitmask.bit[3]));
-			update.status('lcm.output.lowbeam.front_left',       bitmask.test(data.msg[5], bitmask.bit[4]));
-			update.status('lcm.output.lowbeam.front_right',      bitmask.test(data.msg[5], bitmask.bit[5]));
-			update.status('lcm.output.fog.front_right',          bitmask.test(data.msg[5], bitmask.bit[6]));
-			update.status('lcm.output.led.rear_fog',             bitmask.test(data.msg[5], bitmask.bit[7]));
+			update.status('lcm.output.standing.front_left',      masks.m5.b0);
+			update.status('lcm.output.standing.inner_rear_left', masks.m5.b1);
+			update.status('lcm.output.fog.front_left',           masks.m5.b2);
+			update.status('lcm.output.reverse.rear_left',        masks.m5.b3);
+			update.status('lcm.output.lowbeam.front_left',       masks.m5.b4);
+			update.status('lcm.output.lowbeam.front_right',      masks.m5.b5);
+			update.status('lcm.output.fog.front_right',          masks.m5.b6);
+			update.status('lcm.output.fog.rear_trailer',         masks.m5.b7);
 
-			update.status('lcm.output.license.rear_right',   bitmask.test(data.msg[6], bitmask.bit[2]));
-			update.status('lcm.output.standing.rear_left',   bitmask.test(data.msg[6], bitmask.bit[3]));
-			update.status('lcm.output.brake.rear_middle',    bitmask.test(data.msg[6], bitmask.bit[4]));
-			update.status('lcm.output.standing.front_right', bitmask.test(data.msg[6], bitmask.bit[5]));
-			update.status('lcm.output.turn.front_right',     bitmask.test(data.msg[6], bitmask.bit[6]));
-			update.status('lcm.output.turn.rear_left',       bitmask.test(data.msg[6], bitmask.bit[7]));
+			update.status('lcm.output.license.rear_right',   masks.m6.b2);
+			update.status('lcm.output.standing.rear_left',   masks.m6.b3);
+			update.status('lcm.output.brake.rear_middle',    masks.m6.b4);
+			update.status('lcm.output.standing.front_right', masks.m6.b5);
+			update.status('lcm.output.turn.front_right',     masks.m6.b6);
+			update.status('lcm.output.turn.rear_left',       masks.m6.b7);
 
-			update.status('lcm.output.turn.rear_right',           bitmask.test(data.msg[7], bitmask.bit[1]));
-			update.status('lcm.output.fog.rear_left',             bitmask.test(data.msg[7], bitmask.bit[2]));
-			update.status('lcm.output.standing.inner_rear_right', bitmask.test(data.msg[7], bitmask.bit[3]));
-			update.status('lcm.output.standing.rear_right',       bitmask.test(data.msg[7], bitmask.bit[4]));
-			update.status('lcm.output.turn.side_left',            bitmask.test(data.msg[7], bitmask.bit[5]));
-			update.status('lcm.output.turn.front_left',           bitmask.test(data.msg[7], bitmask.bit[6]));
-			update.status('lcm.output.reverse.rear_right',        bitmask.test(data.msg[7], bitmask.bit[7]));
+			update.status('lcm.output.turn.rear_right',           masks.m7.b1);
+			update.status('lcm.output.fog.rear_left',             masks.m7.b2);
+			update.status('lcm.output.standing.inner_rear_right', masks.m7.b3);
+			update.status('lcm.output.standing.rear_right',       masks.m7.b4);
+			update.status('lcm.output.turn.side_left',            masks.m7.b5);
+			update.status('lcm.output.turn.front_left',           masks.m7.b6);
+			update.status('lcm.output.reverse.rear_right',        masks.m7.b7);
 
-			update.status('lcm.output.led.switch_hazard',    bitmask.test(data.msg[8], bitmask.bit[2]));
-			update.status('lcm.output.led.switch_light',     bitmask.test(data.msg[8], bitmask.bit[3]));
-			update.status('lcm.output.reverse.rear_trailer', bitmask.test(data.msg[8], bitmask.bit[5]));
+			update.status('lcm.output.led.switch_hazard',    masks.m8.b2);
+			update.status('lcm.output.led.switch_light',     masks.m8.b3);
+			update.status('lcm.output.reverse.rear_trailer', masks.m8.b5);
 
-			update.status('lcm.switch.hazard',         bitmask.test(data.msg[1], bitmask.bit[4]));
-			update.status('lcm.switch.highbeam_flash', bitmask.test(data.msg[1], bitmask.bit[2]));
+			update.status('lcm.switch.hazard',         masks.m1.b4);
+			update.status('lcm.switch.highbeam_flash', masks.m1.b2);
 
-			update.status('lcm.switch.brake',      bitmask.test(data.msg[2], bitmask.bit[0]));
-			update.status('lcm.switch.highbeam',   bitmask.test(data.msg[2], bitmask.bit[1]));
-			update.status('lcm.switch.fog_front',  bitmask.test(data.msg[2], bitmask.bit[2]));
-			update.status('lcm.switch.fog_rear',   bitmask.test(data.msg[2], bitmask.bit[4]));
-			update.status('lcm.switch.standing',   bitmask.test(data.msg[2], bitmask.bit[5]));
-			update.status('lcm.switch.turn_right', bitmask.test(data.msg[2], bitmask.bit[6]));
-			update.status('lcm.switch.turn_left',  bitmask.test(data.msg[2], bitmask.bit[7]));
+			// update.status('lcm.switch.auto', );
+			update.status('lcm.switch.brake',      masks.m2.b0);
+			update.status('lcm.switch.highbeam',   masks.m2.b1);
+			update.status('lcm.switch.fog_front',  masks.m2.b2);
+			update.status('lcm.switch.fog_rear',   masks.m2.b4);
+			update.status('lcm.switch.standing',   masks.m2.b5);
+			update.status('lcm.switch.turn_right', masks.m2.b6);
+			update.status('lcm.switch.turn_left',  masks.m2.b7);
 
-			update.status('lcm.switch.lowbeam_1', bitmask.test(data.msg[3], bitmask.bit[4]));
-			update.status('lcm.switch.lowbeam_2', bitmask.test(data.msg[3], bitmask.bit[3]));
+			update.status('lcm.switch.lowbeam_1', masks.m3.b4);
+			update.status('lcm.switch.lowbeam_2', masks.m3.b3);
+		}
 	}
 }
 
 // Encode the LCM bitmask string from an input of true/false values
 function io_encode(object) {
 	// Initialize bitmask variables
-	let bitmask_0  = 0;
-	let bitmask_1  = 0;
-	let bitmask_2  = 0;
-	let bitmask_3  = 0;
-	let bitmask_4  = 0;
-	let bitmask_5  = 0;
-	let bitmask_6  = 0;
-	let bitmask_7  = 0;
-	let bitmask_8  = 0;
-	let bitmask_9  = 0;
-	let bitmask_10 = 0;
-	let bitmask_11 = 0;
-	let bitmask_12 = 0;
-	let bitmask_13 = 0;
-	let bitmask_14 = 0;
-	let bitmask_15 = 0; // dimmer_value_2
-	let bitmask_16 = 0; // Something to do with autoleveling
-	let bitmask_17 = 0;
-	let bitmask_18 = 0;
-	let bitmask_19 = 0;
-	let bitmask_20 = 0;
-	let bitmask_21 = 0;
-	let bitmask_22 = 0;
-	let bitmask_23 = 0; // Something to do with autoleveling
-	let bitmask_24 = 0; // Something to do with autoleveling
-	let bitmask_25 = 0;
-	let bitmask_26 = 0;
-	let bitmask_27 = 0;
-	let bitmask_28 = 0;
-	let bitmask_29 = 0;
-	let bitmask_30 = 0;
-	let bitmask_31 = 0;
+	let output = {
+		b0 : bitmask.create({
+			b0 : object.clamp_30a,
+			b1 : object.input_fire_extinguisher,
+			b2 : object.input_preheating_fuel_injection,
+			b3 : false,
+			b4 : object.input_carb,
+			b5 : false,
+			b6 : object.clamp_r,
+			b7 : object.clamp_30b,
+		}),
+		b1 : bitmask.create({
+			b0 : object.input_key_in_ignition,
+			b1 : object.input_seat_belts_lock,
+			b2 : object.switch_highbeam_flash,
+			b3 : false,
+			b4 : object.switch_hazard,
+			b5 : object.input_kfn,
+			b6 : object.input_armoured_door,
+			b7 : object.input_brake_fluid_level,
+		}),
+		b2 : bitmask.create({
+			b0 : object.switch_brake,
+			b1 : object.switch_highbeam,
+			b2 : object.switch_fog_front,
+			b3 : false,
+			b4 : object.switch_fog_rear,
+			b5 : object.switch_standing,
+			b6 : object.switch_turn_right,
+			b7 : object.switch_turn_left,
+		}),
+		b3 : bitmask.create({
+			b0 : object.input_air_suspension,
+			b1 : object.input_hold_up_alarm,
+			b2 : object.input_washer_fluid_level,
+			b3 : object.switch_lowbeam_2,
+			b4 : object.switch_lowbeam_1,
+			b5 : object.clamp_15,
+			b6 : object.input_engine_failsafe,
+			b7 : object.input_tire_defect,
+		}),
+		b4 : bitmask.create({
+			b0 : false,
+			b1 : false,
+			b2 : object.output_license_rear_left,
+			b3 : object.output_brake_rear_left,
+			b4 : object.output_brake_rear_right,
+			b5 : object.output_highbeam_front_right,
+			b6 : object.output_highbeam_front_left,
+			b7 : object.output_turn_side_left,
+		}),
+		b5 : bitmask.create({
+			b0 : object.output_standing_front_left,
+			b1 : object.output_standing_inner_rear_left,
+			b2 : object.output_fog_front_left,
+			b3 : object.output_reverse_rear_left,
+			b4 : object.output_lowbeam_front_left,
+			b5 : object.output_lowbeam_front_right,
+			b6 : object.output_fog_front_right,
+			b7 : object.output_fog_rear_trailer,
+		}),
+		b6 : bitmask.create({
+			b0 : false,
+			b1 : object.input_vertical_aim,
+			b2 : object.output_license_rear_right,
+			b3 : object.output_standing_rear_left,
+			b4 : object.output_brake_rear_middle,
+			b5 : object.output_standing_front_right,
+			b6 : object.output_turn_front_right,
+			b7 : object.output_turn_rear_left,
+		}),
+		b7 : bitmask.create({
+			b0 : object.output_turn_side_right,
+			b1 : object.output_turn_rear_right,
+			b2 : object.output_fog_rear_left,
+			b3 : object.output_standing_inner_rear_right,
+			b4 : object.output_standing_rear_right,
+			b5 : object.output_turn_trailer_left,
+			b6 : object.output_turn_front_left,
+			b7 : object.output_reverse_rear_right,
+		}),
+		b8 : bitmask.create({
+			b0 : object.mode_failsafe,
+			b1 : false,
+			b2 : object.output_led_switch_hazard,
+			b3 : object.output_led_switch_light,
+			b4 : false,
+			b5 : object.output_reverse_rear_trailer,
+			b6 : object.mode_sleep,
+			b7 : false,
+		}),
+		b9  : status.lcm.io[9],
+		b10 : status.lcm.io[10],
+		b11 : status.lcm.io[11],
+		b12 : status.lcm.io[12],
+		b13 : status.lcm.io[13],
+		b14 : status.lcm.io[14],
+		b15 : status.lcm.io[15], // dimmer_value_2
+		b16 : status.lcm.io[16], // Something to do with autoleveling
+		b17 : status.lcm.io[17],
+		b18 : status.lcm.io[18],
+		b19 : status.lcm.io[19],
+		b20 : status.lcm.io[20],
+		b21 : status.lcm.io[21],
+		b22 : status.lcm.io[22],
+		b23 : status.lcm.io[23], // Something to do with autoleveling
+		b24 : status.lcm.io[24], // Something to do with autoleveling
+		b25 : status.lcm.io[25],
+		b26 : status.lcm.io[26],
+		b27 : status.lcm.io[27],
+		b28 : status.lcm.io[28],
+		b29 : status.lcm.io[29],
+		b30 : status.lcm.io[30],
+		b31 : status.lcm.io[31],
+	};
 
 	// LCM dimmer
-	if (object.dimmer_value_1) { bitmask_9 = parseInt(object.dimmer_value_1); }
-
-	// Set the various bitmask values according to the input object
-	if (object.clamp_30a)                       { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]); }
-	if (object.input_fire_extinguisher)         { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[1]); }
-	if (object.input_preheating_fuel_injection) { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[2]); }
-	// if (object.)                             { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[3]); }
-	if (object.input_carb)                      { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[4]); }
-	// if (object.)                             { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[5]); }
-	if (object.clamp_r)                         { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[6]); }
-	if (object.clamp_30b)                       { bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[7]); }
-
-	if (object.input_key_in_ignition)   { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[0]); }
-	if (object.input_seat_belts_lock)   { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[1]); }
-	if (object.switch_highbeam_flash)   { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[2]); }
-	// if (object.)                     { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[3]); }
-	if (object.switch_hazard)           { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[4]); }
-	if (object.input_kfn)               { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[5]); }
-	if (object.input_armoured_door)     { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[6]); }
-	if (object.input_brake_fluid_level) { bitmask_1 = bitmask.set(bitmask_1, bitmask.bit[7]); }
-
-	if (object.switch_brake)      { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[0]); }
-	if (object.switch_highbeam)   { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[1]); }
-	if (object.switch_fog_front)  { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[2]); }
-	// if (object.)               { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[3]); }
-	if (object.switch_fog_rear)   { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[4]); }
-	if (object.switch_standing)   { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[5]); }
-	if (object.switch_turn_right) { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[6]); }
-	if (object.switch_turn_left)  { bitmask_2 = bitmask.set(bitmask_2, bitmask.bit[7]); }
-
-	if (object.input_air_suspension)     { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[0]); }
-	if (object.input_hold_up_alarm)      { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[1]); }
-	if (object.input_washer_fluid_level) { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[2]); }
-	if (object.switch_lowbeam_2)         { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[3]); }
-	if (object.switch_lowbeam_1)         { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[4]); }
-	if (object.clamp_15)                 { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[5]); }
-	if (object.input_engine_failsafe)    { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[6]); }
-	if (object.input_tire_defect)        { bitmask_3 = bitmask.set(bitmask_3, bitmask.bit[7]); }
-
-	// if (object.)                         { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[0]); }
-	// if (object.)                         { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[1]); }
-	if (object.output_license_rear_left)    { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[2]); }
-	if (object.output_brake_rear_left)      { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[3]); }
-	if (object.output_brake_rear_right)     { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[4]); }
-	if (object.output_highbeam_front_right) { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[5]); }
-	if (object.output_highbeam_front_left)  { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[6]); }
-	// if (object.)                         { bitmask_4 = bitmask.set(bitmask_4, bitmask.bit[7]); }
-
-	if (object.output_standing_front_left)       { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[0]); }
-	if (object.output_standing_inner_rear_left)  { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[1]); }
-	if (object.output_fog_front_left)            { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[2]); }
-	if (object.output_reverse_rear_left)         { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[3]); }
-	if (object.output_lowbeam_front_left)        { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[4]); }
-	if (object.output_lowbeam_front_right)       { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[5]); }
-	if (object.output_fog_front_right)           { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[6]); }
-	if (object.output_fog_rear_trailer)          { bitmask_5 = bitmask.set(bitmask_5, bitmask.bit[7]); }
-
-	// if (object.)                         { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[0]); }
-	if (object.input_vertical_aim)          { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[1]); }
-	if (object.output_license_rear_right)   { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[2]); }
-	if (object.output_standing_rear_left)   { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[3]); }
-	if (object.output_brake_rear_middle)    { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[4]); }
-	if (object.output_standing_front_right) { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[5]); }
-	if (object.output_turn_front_right)     { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[6]); }
-	if (object.output_turn_rear_left)       { bitmask_6 = bitmask.set(bitmask_6, bitmask.bit[7]); }
-
-	// if (object.)                              { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[0]); }
-	if (object.output_turn_rear_right)           { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[1]); }
-	if (object.output_fog_rear_left)             { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[2]); }
-	if (object.output_standing_inner_rear_right) { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[3]); }
-	if (object.output_standing_rear_right)       { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[4]); }
-	if (object.output_turn_trailer_left)         { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[5]); }
-	if (object.output_turn_front_left)           { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[6]); }
-	if (object.output_reverse_rear_right)        { bitmask_7 = bitmask.set(bitmask_7, bitmask.bit[7]); }
-
-	if (object.mode_failsafe)               { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[0]); }
-	// if (object.)                         { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[1]); }
-	if (object.output_led_switch_hazard)    { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[2]); }
-	if (object.output_led_switch_light)     { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[3]); }
-	// if (object.)                         { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[4]); }
-	if (object.output_reverse_rear_trailer) { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[5]); }
-	if (object.mode_sleep)                  { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[6]); }
-	// if (object.)                         { bitmask_8 = bitmask.set(bitmask_8, bitmask.bit[7]); }
+	if (object.dimmer_value_2) bitmask.b15 = parseInt(object.dimmer_value_2);
 
 	// Suspect
 	// object.clamp_58g
 
 	// Assemble the output array
 	io_set([
-		bitmask_0,  bitmask_1,  bitmask_2,  bitmask_3,  bitmask_4,  bitmask_5,  bitmask_6,  bitmask_7,
-		bitmask_8,  bitmask_9,  bitmask_10, bitmask_11, bitmask_12, bitmask_13, bitmask_14, bitmask_15,
-		bitmask_16, bitmask_17, bitmask_18, bitmask_19, bitmask_20, bitmask_21, bitmask_22, bitmask_23,
-		bitmask_24, bitmask_25, bitmask_26, bitmask_27, bitmask_28, bitmask_29, bitmask_30, bitmask_31,
+		output.b0,  output.b1,  output.b2,  output.b3,  output.b4,  output.b5,  output.b6,  output.b7,
+		output.b8,  output.b9,  output.b10, output.b11, output.b12, output.b13, output.b14, output.b15,
+		output.b16, output.b17, output.b18, output.b19, output.b20, output.b21, output.b22, output.b23,
+		output.b24, output.b25, output.b26, output.b27, output.b28, output.b29, output.b30, output.b31,
 	]);
 }
 
@@ -546,16 +647,13 @@ function reset() {
 	// Determine dimmer value from config, depending if lowbeams are on
 	let reset_dimmer_val;
 	switch (status.lights.auto.lowbeam) {
-		case true:
-			reset_dimmer_val = config.lights.dimmer.lights_on;
-			break;
-		case false:
-			reset_dimmer_val = config.lights.dimmer.lights_off;
+		case true  : reset_dimmer_val = config.lights.dimmer.lights_on; break;
+		case false : reset_dimmer_val = config.lights.dimmer.lights_off;
 	}
 
 	// Object of autolights related values
 	let io_object_auto_lights = {
-		dimmer_value_1                   : reset_dimmer_val,
+		dimmer_value_2                   : reset_dimmer_val,
 		output_standing_front_left       : true,
 		output_standing_front_right      : true,
 		output_standing_inner_rear_left  : true,
@@ -586,22 +684,26 @@ function request(value) {
 	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	switch (value) {
-		case 'coding':
-			coding_get();
-			break;
-		case 'dimmer':
+		case 'coding' : coding_get(); return;
+
+		case 'dimmer' :
 			src = 'BMBT';
 			msg = [ 0x5D ];
 			break;
-		case 'io-status':
+
+		case 'identity' : identity_get(); return;
+
+		case 'io-status' :
 			src = 'DIA';
 			msg = [ 0x0B, 0x00 ]; // Get IO status
 			break;
-		case 'light-status':
+
+		case 'light-status' :
 			src = 'GT';
 			msg = [ 0x5A ];
 			break;
-		case 'vehicledata':
+
+		case 'vehicledata' :
 			src = 'IKE';
 			msg = [ 0x53 ];
 	}
@@ -629,8 +731,9 @@ function parse_out(data) {
 
 		case 0x5C: // Broadcast: light dimmer status
 			data.command = 'bro';
-			data.value   = 'dimmer 3 : ' + status.lights.dimmer_value_3;
-			update.status('lights.dimmer_value_3', data.msg[1]);
+			data.value   = 'dimmer value 1';
+			update.status('lcm.dimmer.value_1', data.msg[1]);
+			// update.status('lcm.io.15',          data.msg[1]);
 			break;
 
 		case 0xA0: // Reply to DIA: success
@@ -667,60 +770,224 @@ function parse_out(data) {
 }
 
 // Welcome lights on unlocking/locking
-function welcome_lights(action) {
+function welcome_lights(action, override = false) {
 	// Disable welcome lights if ignition is not fully off
 	if (status.vehicle.ignition_level !== 0) action = false;
 
+	// Bounce if welcome lights status is equal to request
+	if (status.lights.welcome_lights === action && override === false) return;
+
+	log.module({ msg : 'Welcome lights: ' + action });
+
 	switch (action) {
-		case true :
+		case true : {
 			// Set status var to true
-			update.status('lights.welcome_lights', true);
+			update.status('lights.welcome_lights', action);
 
 			// Send configured welcome lights
 			io_encode(config.lights.welcome_lights);
 
 			// Increment welcome lights counter
-			LCM.counter_welcome_lights++;
+			LCM.counts.welcome_lights++;
 
-			// Clear welcome lights status after 15 seconds
+			// Clear welcome lights status after configured timeout
 			LCM.timeouts.lights_welcome = setTimeout(() => {
 				// If we're not over the configured welcome lights limit yet
-				if (LCM.counter_welcome_lights <= (config.lights.welcome_lights_sec)) { LCM.welcome_lights(true); }
-				else { LCM.welcome_lights(false); }
+				if (LCM.counts.welcome_lights <= config.lights.welcome_lights_sec) {
+					LCM.welcome_lights(true, true);
+				}
+				else {
+					LCM.welcome_lights(false, true);
+				}
 			}, 1000);
 			break;
+		}
 
-		case false:
+		case false : {
 			// Clear any remaining timeout(s)
 			clearTimeout(LCM.timeouts.lights_welcome);
+			LCM.timeouts.lights_welcome = null;
 
 			// Reset welcome lights counter
-			LCM.counter_welcome_lights = 0;
+			LCM.counts.welcome_lights = 0;
 
 			// Set status var back to false
-			update.status('lights.welcome_lights', false);
+			update.status('lights.welcome_lights', action);
 
 			// Send empty object to turn off all LCM outputs (if vehicle is off)
 			if (status.vehicle.ignition_level === 0) io_encode({});
-			break;
+		}
 	}
 }
 
+// Police lights!
+function pl() {
+	if (status.lcm.police_lights.counts.loop >= config.lights.police_lights.limit || status.lcm.police_lights.ok !== true) {
+		update.status('lcm.police_lights.ok', false);
+
+		clearTimeout(LCM.timeouts.lights_police);
+		LCM.timeouts.lights_police = null;
+
+		io_encode({});
+
+		update.status('lcm.police_lights.on', false);
+		return;
+	}
+
+	update.status('lcm.police_lights.on', true);
+
+	let object = {
+		front : {
+			left : {
+				fog      : false,
+				highbeam : false,
+				lowbeam  : false,
+				standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+				turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+				// standing : pl_check([ 2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 ]),
+				// turn     : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
+			},
+			right : {
+				fog      : false,
+				highbeam : false,
+				lowbeam  : false,
+				standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+				turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+				// standing : pl_check([ 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 ]),
+				// turn     : pl_check([ 0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27 ]),
+			},
+		},
+
+		side : {
+			left : {
+				turn : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+			},
+			right : {
+				turn : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+			},
+		},
+
+		rear : {
+			left : {
+				brake    : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
+				reverse  : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+				standing : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
+				turn     : pl_check([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]),
+			},
+			right : {
+				brake    : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
+				reverse  : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+				standing : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
+				turn     : pl_check([ 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ]),
+			},
+			middle : {
+				brake : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
+			},
+		},
+	};
+
+	// Clean this up later
+	let io_object = {
+		output_standing_front_left  : object.front.left.standing,
+		output_standing_front_right : object.front.right.standing,
+
+		output_standing_inner_rear_left  : object.rear.left.standing,
+		output_standing_inner_rear_right : object.rear.right.standing,
+
+		output_standing_rear_left  : object.rear.left.standing,
+		output_standing_rear_right : object.rear.right.standing,
+
+		output_brake_rear_left   : object.rear.left.brake,
+		output_brake_rear_middle : object.rear.middle.brake,
+		output_brake_rear_right  : object.rear.right.brake,
+
+		output_reverse_rear_left  : object.rear.left.reverse,
+		output_reverse_rear_right : object.rear.right.reverse,
+
+		output_turn_rear_left  : object.rear.left.turn,
+		output_turn_rear_right : object.rear.right.turn,
+
+		output_turn_side_left  : object.side.left.turn,
+		output_turn_side_right : object.side.right.turn,
+
+		output_turn_front_left  : object.front.left.turn,
+		output_turn_front_right : object.front.left.turn,
+	};
+
+	io_encode(io_object);
+
+	update.status('lcm.police_lights.counts.main', (status.lcm.police_lights.counts.main + 1), false);
+
+	if (status.lcm.police_lights.counts.main === 32) {
+		update.status('lcm.police_lights.counts.main', 0, false);
+		update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1));
+	}
+
+	LCM.timeouts.lights_police = setTimeout(pl, config.lights.police_lights.delay);
+}
+
+// Check if the current police lights count is in the provided array
+function pl_check(data) {
+	return data.includes(status.lcm.police_lights.counts.main);
+}
+
+function police(action) {
+	update.status('lcm.police_lights.ok', action);
+
+	if (status.lcm.police_lights.on === action) return;
+
+	switch (action) {
+		case true : {
+			if (status.lcm.police_lights.on !== true) {
+				update.status('lcm.police_lights.counts.loop', 0);
+				update.status('lcm.police_lights.counts.main', 0);
+			}
+			break;
+		}
+	}
+
+	pl();
+}
+
+// Configure event listeners
+function init_listeners() {
+	// Refresh data on IKE event
+	IKE.on('obc-refresh', () => {
+		request('dimmer');
+		request('io-status');
+		request('light-status');
+		request('vehicledata');
+	});
+
+	// Enable/disable welcome lights on GM keyfob event
+	GM.on('keyfob', (keyfob) => {
+		log.module({ msg : 'Received GM keyfob event' });
+		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
+	});
+}
+
+
 module.exports = {
+	// Interval/loop/timeout variables
+	counts : {
+		welcome_lights : 0,
+	},
+
 	// Timeout variables
 	timeouts : {
 		lights_auto    : null,
+		lights_police  : null,
 		lights_welcome : null,
 	},
-
-	counter_welcome_lights : 0,
 
 	// Functions
 	auto_lights         : auto_lights,
 	auto_lights_process : auto_lights_process,
 	comfort_turn_flash  : comfort_turn_flash,
+	init_listeners      : init_listeners,
 	io_encode           : io_encode,
 	parse_out           : parse_out,
+	police              : police,
 	request             : request,
 	set_backlight       : set_backlight,
 	welcome_lights      : welcome_lights,

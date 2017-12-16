@@ -1,3 +1,5 @@
+/* eslint key-spacing : 0 */
+
 // Decode media button action message
 function decode_button_media(data) {
 	data.command = 'con';
@@ -52,11 +54,19 @@ function decode_button_media(data) {
 	if (config.mfl.media === false) return data;
 
 	switch (unmask.action) {
-		case 'hold': {
+		case 'hold' : {
 			switch (config.mfl.media) {
-				case 'kodi': // Kodi version
+				case 'bluetooth' : // Bluetooth version
 					switch (unmask.button) {
-						case 'left'  : kodi.command('seek-rewind'); break;
+						case 'left'  : break;
+						case 'right' : break;
+						case 'voice' : break;
+					}
+					break;
+
+				case 'kodi' : // Kodi version
+					switch (unmask.button) {
+						case 'left'  : kodi.command('seek-rewind');  break;
 						case 'right' : kodi.command('seek-forward'); break;
 						case 'voice' : break;
 					}
@@ -64,21 +74,21 @@ function decode_button_media(data) {
 			break;
 		}
 
-		case 'release': {
+		case 'release' : {
 			switch (config.mfl.media) {
-				case 'bluetooth': // Bluetooth version
+				case 'bluetooth' : // Bluetooth version
 					switch (status.mfl.last.action + status.mfl.last.button) {
 						case 'depressleft'  : BT.command('previous'); break;
 						case 'depressright' : BT.command('next');     break;
-						case 'depressvoice' : BT.command('pause');    break; // Think about it
+						case 'depressvoice' : BT.command('toggle');   break;
 
 						case 'holdleft'  : break;
 						case 'holdright' : break;
-						case 'holdvoice' : BT.command('play'); break; // Think about it
+						case 'holdvoice' : break;
 					}
 					break;
 
-				case 'kodi': // Kodi version
+				case 'kodi' : // Kodi version
 					switch (status.mfl.last.action + status.mfl.last.button) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
@@ -93,7 +103,7 @@ function decode_button_media(data) {
 		}
 	}
 
-	// case 'depress':
+	// case 'depress' :
 
 	// Update status object with the new data
 	update.status('mfl.last.action', unmask.action);

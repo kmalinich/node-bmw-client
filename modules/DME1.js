@@ -157,10 +157,10 @@ function parse_545(data) {
 		// Byte0, Bit4 : EML
 		// Byte0, Bit7 : Check gas cap
 		status : {
-			check_engine  : false,
-			check_gas_cap : false,
-			cruise        : false,
-			eml           : false,
+			check_engine  : bitmask.test(data.msg[0], bitmask.b[1]),
+			check_gas_cap : bitmask.test(data.msg[0], bitmask.b[7]),
+			cruise        : bitmask.test(data.msg[0], bitmask.b[3]),
+			eml           : bitmask.test(data.msg[0], bitmask.b[4]),
 		},
 		fuel : {
 			consumption : consumption_current - DME1.consumption_last,
@@ -175,10 +175,21 @@ function parse_545(data) {
 
 	DME1.consumption_last = consumption_current;
 
-	update.status('fuel.consumption', parse.fuel.consumption, false);
-
 	// Calculate fahrenheit temperature values
 	parse.temperature.oil.f = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
+
+	// Update status object
+	update.status('dme1.status.check_engine',  parse.status.check_engine);
+	update.status('dme1.status.check_gas_cap', parse.status.check_gas_cap);
+	update.status('dme1.status.cruise',        parse.status.cruise);
+	update.status('dme1.status.eml',           parse.status.eml);
+
+	update.status('fuel.consumption', parse.fuel.consumption, false);
+
+	update.status('temperature.oil.f', parse.temperature.oil.f);
+
+	// Trigger a HUD refresh if oil temp is updated
+	if (update.status('temperature.oil.c', parse.temperature.oil.c)) IKE.hud_refresh();
 }
 
 
@@ -191,11 +202,11 @@ function parse_613(data) {
 		},
 	};
 
-	// -B0 Odometer LSB
-	// -B1 Odometer MSB [Convert from Hex to Decimal. Multiply by 10 and that is Odometer in Km]
-	// -B2 is fuel level. Full being hex 39 Fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
-	// -B3 Running Clock LSB
-	// -B4 Running Clock MSB minutes since last time battery power was lost
+	// B0 : Odometer LSB
+	// B1 : Odometer MSB [Convert from Hex to Decimal. Multiply by 10 and that is Odometer in Km]
+	// B2 : is fuel level. Full being hex 39 Fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
+	// B3 : Running Clock LSB
+	// B4 : Running Clock MSB minutes since last time battery power was lost
 
 	parse.fuel.level = Math.round((parse.fuel.liters / config.fuel.liters_max) * 100);
 	if (parse.fuel.level < 0)   parse.fuel.level = 0;

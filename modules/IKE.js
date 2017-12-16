@@ -7,262 +7,35 @@ const os      = require('os');
 const pad     = require('pad');
 
 
-// Refresh various values every 5 seconds
-function data_refresh() {
-	if (status.vehicle.ignition_level === 0) {
-		if (IKE.timeout_data_refresh !== null) {
-			clearTimeout(IKE.timeout_data_refresh);
-			IKE.timeout_data_refresh = null;
-
-			log.module({ msg : 'Unset data refresh timeout' });
-
-			return;
-		}
-	}
-
-	// Request fresh data
-	// GM.request('door-status');
-	IKE.request('ignition');
-	IKE.request('temperature');
-	// LCM.request('dimmer');
-	LCM.request('io-status');
-	// LCM.request('light-status');
-	// obc_data('get', 'consumption-1');
-
-	// DME.request('motor-values');
-	// RLS.request('rain-sensor-status');
-
-	if (status.vehicle.ignition_level !== 0) {
-		if (IKE.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
-		// setTimeout for next update
-		IKE.timeout_data_refresh = setTimeout(data_refresh, 10000);
-	}
-}
-
 // This actually is a bitmask but.. this is also a freetime project
 function decode_aux_heat_led(data) {
 	data.command = 'bro';
-	data.value   = 'aux heat LED: ' + status.obc.aux_heat_led;
+
+	let aux_heat_led;
 
 	switch (data.msg[2]) {
-		case 0x00 : update.status('obc.aux_heat_led', 'off');   break;
-		case 0x04 : update.status('obc.aux_heat_led', 'on');    break;
-		case 0x08 : update.status('obc.aux_heat_led', 'blink'); break;
-		default   :	update.status('obc.aux_heat_led', Buffer.from(data.msg));
+		case 0x00 : aux_heat_led = 'off';   break;
+		case 0x04 : aux_heat_led = 'on';    break;
+		case 0x08 : aux_heat_led = 'blink'; break;
+		default   :	aux_heat_led = Buffer.from(data.msg);
 	}
+
+	update.status('obc.aux_heat_led', aux_heat_led);
+	data.value = 'aux heat LED: ' + status.obc.aux_heat_led;
 
 	return data;
 }
 
 function decode_country_coding_data(data) {
 	data.command = 'bro';
-	data.value   = 'country coding data';
+	data.value   = 'TODO country coding data';
 
 	return data;
 }
 
 function decode_gong_status(data) {
 	data.command = 'bro';
-	data.value   = 'gong status ' + data.msg;
-
-	return data;
-}
-
-// Below is a s**t hack workaround while I contemplate firing actual events
-function decode_ignition_status(data) {
-	data.command = 'bro';
-	data.value   = 'ignition: ' + status.vehicle.ignition;
-
-	// Init power-state vars
-	IKE.state_powerdown   = false;
-	IKE.state_poweroff    = false;
-	IKE.state_powerup     = false;
-	IKE.state_run         = false;
-	IKE.state_start_begin = false;
-	IKE.state_start_end   = false;
-
-	// Ignition going up
-	if (data.msg[1] > status.vehicle.ignition_level) {
-		switch (data.msg[1]) { // Evaluate new ignition state
-			case 1: // Accessory
-				log.module({ msg : 'Powerup state' });
-				IKE.state_powerup = true;
-				break;
-
-			case 3: // Run
-				// If the accessory (1) ignition message wasn't caught
-				if (status.vehicle.ignition_level === 0) {
-					log.module({ msg : 'Powerup state' });
-					IKE.state_powerup = true;
-				}
-
-				log.module({ msg : 'Run state' });
-				IKE.state_run = true;
-				break;
-
-			case 7: // Start
-				// If the accessory (1) or run (3) ignition message(s) weren't caught
-				if (status.vehicle.ignition_level === 0 || status.vehicle.ignition_level === 3) {
-					log.module({ msg : 'Powerup state' });
-					IKE.state_powerup = true;
-				}
-
-				log.module({ msg : 'Start-begin state' });
-				IKE.state_start_begin = true;
-		}
-	}
-
-	// Ignition going down
-	else if (data.msg[1] < status.vehicle.ignition_level) {
-		switch (data.msg[1]) { // Evaluate new ignition state
-			case 0: // Off
-				// If the accessory (1) ignition message wasn't caught
-				if (status.vehicle.ignition_level === 3) {
-					log.module({ msg : 'Powerdown state' });
-					IKE.state_powerdown = true;
-				}
-
-				log.module({ msg : 'Poweroff state' });
-				IKE.state_poweroff = true;
-				break;
-
-			case 1: // Accessory
-				log.module({ msg : 'Powerdown state' });
-				IKE.state_powerdown = true;
-				break;
-
-			case 3: // Run
-				log.module({ msg : 'Start-end state' });
-				IKE.state_start_end = true;
-		}
-	}
-
-	// Set ignition status value
-	if (update.status('vehicle.ignition_level', data.msg[1])) {
-		// Activate autolights if we got 'em
-		LCM.auto_lights_process();
-	}
-
-	switch (data.msg[1]) {
-		case 0  : update.status('vehicle.ignition', 'off');       break;
-		case 1  : update.status('vehicle.ignition', 'accessory'); break;
-		case 3  : update.status('vehicle.ignition', 'run');       break;
-		case 7  : update.status('vehicle.ignition', 'start');     break;
-		default : update.status('vehicle.ignition', 'unknown');   break;
-	}
-
-	// Ignition changed to off
-	if (IKE.state_poweroff === true) {
-		// Disable HUD refresh
-		data_refresh();
-
-		// Disable BMBT/MID keepalive
-		BMBT.status_loop(false);
-		MID.status_loop(false);
-		MID.text_loop(false);
-
-		// iDrive knob init
-		CON1.send_status_ignition_new();
-
-		// GPIO relays
-		gpio.set(1, 1);
-		// Run fan for additional 60s after poweroff
-		setTimeout(() => {
-			if (status.vehicle.ignition_level === 0) gpio.set(2, 1);
-		}, 60000);
-
-		// Overhead LCD commands
-		socket.lcd_command_tx('clear');
-		socket.lcd_command_tx('off');
-
-		// Toggle media playback
-		if (status.kodi.player.status == 'playing') kodi.command('toggle');
-		kodi.volume(config.media.kodi.default_volume);
-		BT.command('disconnect');
-
-		// Set modules as not ready
-		if (config.json.reset_on_poweroff) json.modules_reset();
-
-		// Turn off HDMI display after configured delay
-		setTimeout(() => {
-			HDMI.command('poweroff', true);
-		}, config.media.hdmi.poweroff_delay);
-
-		// Write JSON config and status files
-		if (config.json.write_on_poweroff) json.write();
-	}
-
-	// Ignition changed to accessory, from off
-	if (IKE.state_powerup === true) {
-		// Enable HUD refresh
-		data_refresh();
-
-		IKE.state_powerup = false;
-
-		// Enable BMBT/MID keepalive
-		BMBT.status_loop(true);
-		MID.status_loop(true);
-		MID.text_loop(true);
-		bus.cmds.request_device_status(module_name, 'RAD');
-
-		// iDrive knob
-		CON1.send_status_ignition_new();
-
-		// Overhead LCD commands
-		socket.lcd_command_tx('on');
-		socket.lcd_text_tx({
-			upper : 'State:',
-			lower : 'powerup',
-		});
-
-		// GPIO relays
-		gpio.set(1, 0);
-		gpio.set(2, 0);
-
-		// Connect Bluetooth
-		BT.command('connect');
-
-		// Toggle media playback
-		kodi.volume(config.media.kodi.default_volume);
-		setTimeout(() => {
-			if (status.kodi.player.status != 'playing') kodi.command('toggle');
-		}, 6000);
-
-		// Welcome message
-		if (config.options.message_welcome === true) {
-			IKE.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.round((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
-		}
-	}
-
-	// Ignition changed to accessory, from run
-	if (IKE.state_powerdown === true) {
-		IKE.state_powerdown = false;
-		if (status.vehicle.locked && status.doors.sealed) { // If the doors are closed and locked
-			GM.locks(); // Send message to GM to toggle door locks
-		}
-	}
-
-	// Ignition changed to run, from off/accessory
-	if (IKE.state_run === true) {
-		IKE.state_run = false;
-
-		// If the HDMI display is currently on, power it off
-		//
-		// This helps prepare for engine start during scenarios
-		// like at the fuel pump, when the ignition is switched
-		// from run to accessory, which ordinarily would leave the screen on
-		//
-		// That causes an issue if you go back to run from accessory,
-		// with the screen still on, since it may damage the screen
-		// if it experiences a low-voltage event caused by the starter motor
-		HDMI.command('poweroff_powered_on_once');
-
-		// Write JSON config and status files
-		if (config.json.write_on_run) json.write();
-
-		// Refresh OBC data
-		if (config.options.obc_refresh_on_start === true) IKE.obc_refresh();
-	}
+	data.value   = 'TODO gong status ' + data.msg;
 
 	return data;
 }
@@ -272,10 +45,10 @@ function decode_obc_text(data) {
 	data.command = 'upd';
 
 	// data.msg[1] - Layout
-	var layout = obc_values.h2n(data.msg[1]);
+	let layout = obc_values.h2n(data.msg[1]);
 
 	switch (layout) {
-		case 'time': {
+		case 'time' : {
 			let string_time_unit;
 			let string_time;
 
@@ -300,7 +73,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'date': {
+		case 'date' : {
 			let string_date;
 
 			// Parse value
@@ -312,7 +85,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'outside-temp': {
+		case 'outside-temp' : {
 			let string_outside_temp_unit;
 			let string_outside_temp_negative;
 			let string_outside_temp_value;
@@ -337,14 +110,14 @@ function decode_obc_text(data) {
 
 			// Update status variables
 			switch (string_outside_temp_unit) {
-				case 'c': {
+				case 'c' : {
 					update.status('coding.unit.temp',           'c');
 					update.status('temperature.exterior.obc.c', Math.round(parseFloat(string_outside_temp_value)));
 					update.status('temperature.exterior.obc.f', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))));
 					break;
 				}
 
-				case 'f': {
+				case 'f' : {
 					update.status('coding.unit.temp',           'f');
 					update.status('temperature.exterior.obc.c', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))));
 					update.status('temperature.exterior.obc.f', Math.round(parseFloat(string_outside_temp_value)));
@@ -354,7 +127,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'consumption-1': {
+		case 'consumption-1' : {
 			let consumption_l100;
 			let consumption_mpg;
 			let string_consumption_1;
@@ -370,7 +143,7 @@ function decode_obc_text(data) {
 
 			// Perform appropriate conversions between units
 			switch (string_consumption_1_unit) {
-				case 'm': {
+				case 'm' : {
 					update.status('coding.unit.cons', 'mpg');
 					consumption_mpg  = string_consumption_1;
 					consumption_l100 = 235.21 / string_consumption_1;
@@ -391,7 +164,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'consumption-2': {
+		case 'consumption-2' : {
 			let consumption_l100;
 			let consumption_mpg;
 			let string_consumption_2;
@@ -407,7 +180,7 @@ function decode_obc_text(data) {
 
 			// Perform appropriate conversions between units and round to 2 decimals
 			switch (string_consumption_2_unit) {
-				case 'm': {
+				case 'm' : {
 					consumption_mpg  = string_consumption_2;
 					consumption_l100 = 235.215 / string_consumption_2;
 					break;
@@ -425,7 +198,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'range': {
+		case 'range' : {
 			let string_range;
 			let string_range_unit;
 
@@ -438,14 +211,14 @@ function decode_obc_text(data) {
 
 			// Update status variables
 			switch (string_range_unit) {
-				case 'ml': {
+				case 'ml' : {
 					update.status('coding.unit.distance', 'mi');
 					update.status('obc.range.mi', parseFloat(string_range));
 					update.status('obc.range.km', parseFloat(convert(parseFloat(string_range)).from('kilometre').to('us mile').toFixed(2)));
 					break;
 				}
 
-				case 'km': {
+				case 'km' : {
 					update.status('coding.unit.distance', 'km');
 					update.status('obc.range.mi', parseFloat(convert(parseFloat(string_range)).from('us mile').to('kilometre').toFixed(2)));
 					update.status('obc.range.km', parseFloat(string_range));
@@ -455,7 +228,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'distance': {
+		case 'distance' : {
 			let string_distance;
 
 			// Parse value
@@ -467,7 +240,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'arrival': {
+		case 'arrival' : {
 			let string_arrival;
 
 			// Parse value
@@ -479,7 +252,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'limit': {
+		case 'limit' : {
 			let string_limit;
 
 			// Parse value
@@ -491,7 +264,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'average-speed': {
+		case 'average-speed' : {
 			let string_average_speed;
 			let string_average_speed_unit;
 
@@ -505,7 +278,7 @@ function decode_obc_text(data) {
 
 			// Convert values appropriately based on coding valueunits
 			switch (string_average_speed_unit) {
-				case 'k': {
+				case 'k' : {
 					update.status('obc.coding.unit.speed', 'kmh');
 
 					// Update status variables
@@ -514,7 +287,7 @@ function decode_obc_text(data) {
 					break;
 				}
 
-				case 'm': {
+				case 'm' : {
 					update.status('obc.coding.unit.speed', 'mph');
 
 					// Update status variables
@@ -526,7 +299,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'code': {
+		case 'code' : {
 			let string_code;
 
 			// Parse value
@@ -538,7 +311,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'stopwatch': {
+		case 'stopwatch' : {
 			let string_stopwatch;
 
 			// Parse value
@@ -550,7 +323,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'timer-1': {
+		case 'timer-1' : {
 			let string_aux_heat_timer_1;
 
 			// Parse value
@@ -562,7 +335,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'timer-2': {
+		case 'timer-2' : {
 			let string_aux_heat_timer_2;
 
 			// Parse value
@@ -574,7 +347,7 @@ function decode_obc_text(data) {
 			break;
 		}
 
-		case 'interim': {
+		case 'interim' : {
 			let string_interim;
 
 			// Parse value
@@ -596,43 +369,12 @@ function decode_odometer(data) {
 	data.command = 'bro';
 	data.value   = 'odometer';
 
-	var odometer_value1 = data.msg[3] << 16;
-	var odometer_value2 = data.msg[2] << 8;
-	var odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
+	let odometer_value1 = data.msg[3] << 16;
+	let odometer_value2 = data.msg[2] << 8;
+	let odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
 	update.status('vehicle.odometer.km', odometer_value);
 	update.status('vehicle.odometer.mi', Math.round(convert(odometer_value).from('kilometre').to('us mile')));
-
-	return data;
-}
-
-function decode_sensor_status(data) {
-	data.command = 'bro';
-	data.value   = 'sensor status';
-
-	// data.msg[2]:
-	//   1 = Engine running
-	//  16 = R (4)
-	//  64 = 2 (6)
-	// 112 = N (4+5+6)
-	// 128 = D (7)
-	// 176 = P (4+5+7)
-	// 192 = 4 (6+7)
-	// 208 = 3 (4+6+7)
-
-	update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]));
-
-	// If the engine is newly running, power up HDMI display
-	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
-		HDMI.command('poweron');
-	}
-
-	// If the vehicle is newly in reverse, show IKE message if configured to do so
-	if (config.options.message_reverse === true) {
-		if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
-			if (status.vehicle.reverse === true) IKE.text_override('you\'re in reverse..');
-		}
-	}
 
 	return data;
 }
@@ -680,10 +422,10 @@ function ok2hud() {
 	if (status.vehicle.ignition_level < 1) return false;
 
 	// Bounce if override is active
-	if (IKE.hud_override === true) return false;
+	if (this.hud_override === true) return false;
 
-	// Bounce if the last update was less than 500ms ago
-	if (now() - IKE.last_hud_refresh <= 500) return false;
+	// Bounce if the last update was less than 3000ms ago
+	if (now() - this.last_hud_refresh <= 3000) return false;
 
 	return true;
 }
@@ -692,9 +434,9 @@ function ok2hud() {
 function hud_refresh_speed() {
 	if (!ok2hud()) return;
 
-	// Send text to IKE and update IKE.last_hud_refresh value
+	// Send text to IKE and update this.last_hud_refresh value
 	text_nopad(status.vehicle.speed.mph + 'mph', () => {
-		IKE.last_hud_refresh = now();
+		this.last_hud_refresh = now();
 	});
 }
 
@@ -708,7 +450,8 @@ function hud_refresh() {
 	let string_cons  = '';
 	let string_speed = '';
 	let string_temp  = '';
-	let string_time  = moment().format('HH:mm');
+	let string_time  = moment().format('h:mm'); // TODO add config option for 12h/24h
+	let string_volt  = status.lcm.voltage.terminal_30 + 'v';
 
 	// Only add data to strings if it is populated
 	if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
@@ -721,20 +464,27 @@ function hud_refresh() {
 
 	// Space-pad strings
 	let hud_strings = {
-		cons   : pad(string_cons,  9),
-		left   : pad(string_speed, 9),
 		center : pad(string_temp,  6),
+		left   : pad(string_cons,  9),
+		load   : pad(string_load,  9),
 		right  : pad(string_time,  9),
+		speed  : pad(string_speed, 9),
+		volt   : pad(string_volt,  9),
 	};
 
+	hud_strings.center = pad(string_temp, (4 + (7 - string_time.length)));
+
 	// Change left string to be load/CPU temp if over threshold
-	if (status.system.temperature > 65) hud_strings.left = pad(string_load, 9);
+	if (status.system.temperature > 65) hud_strings.left = hud_strings.load;
+
+	// Change left string to be LCM terminal 30 voltage if under threshold
+	if (status.lcm.voltage.terminal_30 < 13) hud_strings.left = hud_strings.volt;
 
 	// Assemble text string
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
-	// Send text to IKE and update IKE.last_hud_refresh value
-	text_nopad(hud_string, () => { IKE.last_hud_refresh = now(); });
+	// Send text to IKE and update this.last_hud_refresh value
+	text_nopad(hud_string, () => { this.last_hud_refresh = now(); });
 
 	// socket.lcd_text_tx({
 	// 	upper : 'kdm-e39-01',
@@ -747,7 +497,7 @@ function hud_refresh() {
 function ignition(value) {
 	log.module({ msg : 'Sending ignition status: ' + value });
 
-	var status;
+	let status;
 	switch (value) {
 		case 'off'  : status = 0x00; break;
 		case 'pos1' : status = 0x01; break;
@@ -765,7 +515,7 @@ function ignition(value) {
 function obc_clock() {
 	log.module({ msg : 'Setting OBC clock to current time' });
 
-	var time = moment();
+	let time = moment();
 
 	// Time
 	bus.data.send({
@@ -795,14 +545,16 @@ function obc_data(action, value, target) {
 		case 'limit-on'   : action_id = 0x04; break;
 		case 'limit-set'  : action_id = 0x20; break;
 		case 'reset'      : action_id = 0x10; break;
-		case 'set' :
+
+		case 'set' : {
 			cmd       = 0x40; // OBC data set (speed limit/distance)
 			action_id = 0x00;
 			break;
+		}
 	}
 
 	// Assemble message string, with OBC value from value argument
-	var msg = [ cmd, obc_values.n2h(value), action_id ];
+	let msg = [ cmd, obc_values.n2h(value), action_id ];
 
 	// If we're setting, insert the data
 	if (typeof target !== 'undefined' && target) {
@@ -817,15 +569,352 @@ function obc_data(action, value, target) {
 	});
 }
 
-// Refresh OBC data
-function obc_refresh() {
-	log.module({ msg : 'Refreshing all OBC data' });
+// Trim IKE text string and potentially space-pad
+function text_prepare(message, pad = false) {
+	// Trim string to max length
+	message = message.substring(0, this.max_len_text);
 
-	// LCM data
-	LCM.request('vehicledata');
-	LCM.request('light-status');
-	LCM.request('dimmer');
+	// Space-pad if pad === true
+	if (pad === true) message = pad(message, this.max_len_text);
+
+	// Convert ASCII to hex and return
+	return hex.a2h(message);
+}
+
+// IKE cluster text send message
+function text(message, cb = null) {
+	log.msg({ msg : 'Sending space-padded IKE text message: \'' + message + '\'' });
+
+	let message_hex;
+
+	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+	// message_hex = [ 0x23, 0x42, 0x30 ];
+	message_hex = message_hex.concat(text_prepare(message));
+	message_hex = message_hex.concat(0x04);
+
+	bus.data.send({
+		src : 'RAD',
+		msg : message_hex,
+	});
+
+	// Exec callback function if present
+	typeof cb === 'function' && cb();
+}
+
+// IKE cluster text send message - without space padding
+function text_nopad(message, cb = null) {
+	log.msg({ msg : 'Sending non-padded IKE text message: \'' + message + '\'' });
+
+	let message_hex;
+
+	message_hex = [ 0x23, 0x42, 0x30 ];
+	message_hex = message_hex.concat(text_prepare(message, false));
+	// message_hex = message_hex.concat(0x66);
+
+	bus.data.send({
+		src : 'TEL',
+		msg : message_hex,
+	});
+
+	// Exec callback function if present
+	typeof cb === 'function' && cb();
+}
+
+// Check control messages
+function text_urgent(message, timeout = 5000) {
+	log.msg({ msg : 'Sending urgent IKE text message: \'' + message + '\'' });
+
+	let message_hex;
+
+	kodi.notify(module_name, message);
+
+	message_hex = [ 0x1A, 0x35, 0x00 ];
+	message_hex = message_hex.concat(text_prepare(message));
+
+	bus.data.send({
+		src : 'CCM',
+		msg : message_hex,
+	});
+
+	// Clear the message after 5 seconds
+	setTimeout(() => {
+		text_urgent_off();
+	}, timeout);
+}
+
+// Clear check control messages, then refresh HUD
+function text_urgent_off() {
+	bus.data.send({
+		src : 'CCM',
+		msg : [ 0x1A, 0x30, 0x00 ],
+	});
+
+	hud_refresh();
+}
+
+// Check control warnings
+function text_warning(message, timeout = 10000) {
+	log.msg({ msg : 'Sending warning IKE text message: \'' + message + '\'' });
+
+	let message_hex;
+
+	// 3rd byte:
+	// 0x00 : arrow: none,  sound: none
+	// 0x01 : arrow: solid, sound: none
+	// 0x02 : arrow: none,  sound: none
+	// 0x03 : arrow: flash, sound: none
+	// 0x04 : arrow: none,  sound: 1 gong,  high
+	// 0x08 : arrow: none,  sound: 2 gongs, high
+	// 0x0C : arrow: none,  sound: 3 gongs, high
+	// 0x10 : arrow: none,  sound: 1 gong,  low
+	// 0x18 : arrow: none,  sound: 3 beeps
+
+	message_hex = [ 0x1A, 0x37, 0x03 ]; // no gong, flash arrow
+	message_hex = message_hex.concat(text_prepare(message));
+
+	bus.data.send({
+		src : 'CCM',
+		msg : message_hex,
+	});
+
+	// Clear the message after the timeout
+	setTimeout(() => {
+		text_urgent_off();
+	}, timeout);
+}
+
+
+const EventEmitter = require('events');
+
+class IKE extends EventEmitter {
+	constructor() {
+		super();
+
+		// Max length of cluster text
+		this.max_len_text = 20;
+
+		// HUD refresh vars
+		this.timeout_data_refresh = null;
+		this.last_hud_refresh     = now();
+		this.hud_override         = false;
+		this.hud_override_text    = null;
+
+		this.timeout_accept_refresh = null;
+
+		// Functions
+		this.hud_refresh       = hud_refresh;
+		this.hud_refresh_speed = hud_refresh_speed;
+
+		this.ignition = ignition;
+
+		this.obc_clock = obc_clock;
+		this.obc_data  = obc_data;
+
+		this.text            = text;
+		this.text_nopad      = text_nopad;
+		this.text_urgent     = text_urgent;
+		this.text_urgent_off = text_urgent_off;
+		this.text_warning    = text_warning;
+	}
+}
+
+
+// Refresh various values every 5 seconds
+IKE.prototype.data_refresh = function () {
+	if (status.vehicle.ignition_level === 0) {
+		if (this.timeout_data_refresh !== null) {
+			clearTimeout(this.timeout_data_refresh);
+			this.timeout_data_refresh = null;
+
+			log.module({ msg : 'Unset data refresh timeout' });
+
+			return;
+		}
+	}
+
+	// Request fresh data
+	this.request('ignition');
+	this.request('temperature');
+
 	LCM.request('io-status');
+
+	if (status.vehicle.ignition_level !== 0) {
+		if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
+
+		// setTimeout for next update
+		let self = this;
+		this.timeout_data_refresh = setTimeout(() => {
+			self.data_refresh();
+		}, 10000);
+	}
+};
+
+IKE.prototype.decode_ignition_status = function (data) {
+	// Save previous ignition status
+	let previous_level = status.vehicle.ignition_level;
+
+	// Set ignition status value
+	if (update.status('vehicle.ignition_level', data.msg[1])) {
+		// Activate autolights if we got 'em
+		LCM.auto_lights_process();
+		// Disable/enable HUD refresh
+		this.data_refresh();
+	}
+
+	switch (data.msg[1]) {
+		case 0  : update.status('vehicle.ignition', 'off');       break;
+		case 1  : update.status('vehicle.ignition', 'accessory'); break;
+		case 3  : update.status('vehicle.ignition', 'run');       break;
+		case 7  : update.status('vehicle.ignition', 'start');     break;
+		default : update.status('vehicle.ignition', 'unknown');
+	}
+
+	// Ignition going up
+	if (data.msg[1] > previous_level) {
+		switch (data.msg[1]) { // Evaluate new ignition state
+			case 1: // Accessory
+				log.module({ msg : 'Powerup state' });
+				this.emit('ignition-powerup');
+
+				bus.cmds.request_device_status(module_name, 'RAD');
+				break;
+
+			case 3: // Run
+				// If the accessory (1) ignition message wasn't caught
+				if (previous_level === 0) {
+					log.module({ msg : 'Powerup state' });
+					this.emit('ignition-powerup');
+
+					bus.cmds.request_device_status(module_name, 'RAD');
+				}
+
+				log.module({ msg : 'Run state' });
+				this.emit('ignition-run');
+
+				// Refresh OBC data
+				if (config.options.obc_refresh_on_start === true) this.obc_refresh();
+				break;
+
+			case 7 : { // Start
+				switch (previous_level) {
+					case 0 : { // If the accessory (1) ignition message wasn't caught
+						log.module({ msg : 'Powerup state' });
+						this.emit('ignition-powerup');
+
+						bus.cmds.request_device_status(module_name, 'RAD');
+						break;
+					}
+
+					case 3 : { // If the run (3) ignition message wasn't caught
+						log.module({ msg : 'Run state' });
+						this.emit('ignition-run');
+
+						// Refresh OBC data
+						if (config.options.obc_refresh_on_start === true) this.obc_refresh();
+						break;
+					}
+
+					default : {
+						log.module({ msg : 'Start-begin state' });
+						this.emit('ignition-start-begin');
+					}
+				}
+			}
+		}
+	}
+
+	// Ignition going down
+	else if (data.msg[1] < previous_level) {
+		switch (data.msg[1]) { // Evaluate new ignition state
+			case 0: // Off
+				// If the accessory (1) ignition message wasn't caught
+				if (previous_level === 3) {
+					log.module({ msg : 'Powerdown state' });
+					this.emit('ignition-powerdown');
+				}
+
+				log.module({ msg : 'Poweroff state' });
+				this.emit('ignition-poweroff');
+				break;
+
+			case 1: // Accessory
+				log.module({ msg : 'Powerdown state' });
+				this.emit('ignition-powerdown');
+				break;
+
+			case 3: // Run
+				log.module({ msg : 'Start-end state' });
+				this.emit('ignition-start-end');
+		}
+	}
+
+	data.command = 'bro';
+	data.value   = 'ignition: ' + status.vehicle.ignition;
+
+	return data;
+};
+
+IKE.prototype.decode_sensor_status = function (data) {
+	data.command = 'bro';
+	data.value   = 'sensor status';
+
+	// data.msg[2]:
+	//   1 = Engine running
+	//  16 = R (4)
+	//  64 = 2 (6)
+	// 112 = N (4+5+6)
+	// 128 = D (7)
+	// 176 = P (4+5+7)
+	// 192 = 4 (6+7)
+	// 208 = 3 (4+6+7)
+
+	update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]));
+
+	// If the engine is newly running, power up HDMI display
+	if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
+		HDMI.command('poweron');
+	}
+
+	// If the vehicle is newly in reverse, show IKE message if configured to do so
+	if (config.options.message_reverse === true) {
+		if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
+			if (status.vehicle.reverse === true) this.text_override('you\'re in reverse..');
+		}
+	}
+
+	return data;
+};
+
+IKE.prototype.init_listeners = function () {
+	// Refresh data on interface connection
+	socket.on('accept', () => {
+		// Clear existing timeout if exists
+		if (this.timeout_accept_refresh !== null) {
+			clearTimeout(this.timeout_accept_refresh);
+			this.timeout_accept_refresh = null;
+		}
+
+		this.timeout_accept_refresh = setTimeout(() => {
+			switch (config.options.obc_refresh_on_start) {
+				case true : this.obc_refresh(); break;
+				default   : this.request('ignition');
+			}
+		}, 2500);
+	});
+
+	// Refresh data on GM keyfob unlock event
+	GM.on('keyfob', (keyfob) => {
+		switch (keyfob.button) {
+			case 'unlock' : this.data_refresh();
+		}
+	});
+};
+
+// Refresh OBC data
+IKE.prototype.obc_refresh = function () {
+	this.emit('obc-refresh');
+
+	log.module({ msg : 'Refreshing all OBC data' });
 
 	// Immo+GM data
 	EWS.request('immobiliserstatus');
@@ -839,12 +928,12 @@ function obc_refresh() {
 	// DME.request('motor-values');
 
 	// IKE data
-	IKE.request('coding');
-	IKE.request('ignition');
-	IKE.request('odometer');
-	IKE.request('sensor');
-	IKE.request('temperature');
-	IKE.request('vin');
+	this.request('coding');
+	this.request('ignition');
+	this.request('odometer');
+	this.request('sensor');
+	this.request('temperature');
+	this.request('vin');
 
 	// OBC data
 	obc_data('get', 'arrival');
@@ -866,15 +955,15 @@ function obc_refresh() {
 
 	// Blow it out
 	if (config.options.modules_refresh_on_start === true) {
-		IKE.request('status-glo');
+		this.request('status-glo');
 	}
 	else {
-		IKE.request('status-short');
+		this.request('status-short');
 	}
-}
+};
 
 // Parse data sent from IKE module
-function parse_out(data) {
+IKE.prototype.parse_out = function (data) {
 	// Init variables
 	switch (data.msg[0]) {
 		case 0x07: // Gong status
@@ -882,11 +971,11 @@ function parse_out(data) {
 			break;
 
 		case 0x11: // Broadcast: Ignition status
-			data = decode_ignition_status(data);
+			data = this.decode_ignition_status(data);
 			break;
 
 		case 0x13: // IKE sensor status
-			data = decode_sensor_status(data);
+			data = this.decode_sensor_status(data);
 			break;
 
 		case 0x15: // country coding data
@@ -925,13 +1014,13 @@ function parse_out(data) {
 	}
 
 	log.bus(data);
-}
+};
 
 // Request various things from IKE
-function request(value) {
-	var cmd = null;
-	var src = 'VID';
-	var dst = module_name;
+IKE.prototype.request = function (value) {
+	let cmd = null;
+	let src = 'VID';
+	let dst = module_name;
 
 	let loop_dst;
 
@@ -980,57 +1069,10 @@ function request(value) {
 		dst : dst,
 		msg : cmd,
 	});
-}
-
-// Trim IKE text string and potentially space-pad
-function text_prepare(message, pad = false) {
-	// Trim string to max length
-	message = message.substring(0, IKE.max_len_text);
-
-	// Space-pad if pad === true
-	if (pad === true) message = pad(message, IKE.max_len_text);
-
-	// Convert ASCII to hex and return
-	return hex.a2h(message);
-}
-
-// IKE cluster text send message
-function text(message, cb = null) {
-	let message_hex;
-
-	// message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
-	message_hex = [ 0x23, 0x42, 0x30 ];
-	message_hex = message_hex.concat(text_prepare(message));
-	// message_hex = message_hex.concat(0x04);
-
-	bus.data.send({
-		src : 'RAD',
-		msg : message_hex,
-	});
-
-	// Exec callback function if present
-	typeof cb === 'function' && cb();
-}
-
-// IKE cluster text send message - without space padding
-function text_nopad(message, cb = null) {
-	let message_hex;
-
-	message_hex = [ 0x23, 0x42, 0x30 ];
-	message_hex = message_hex.concat(text_prepare(message, false));
-	// message_hex = message_hex.concat(0x66);
-
-	bus.data.send({
-		src : 'TEL',
-		msg : message_hex,
-	});
-
-	// Exec callback function if present
-	typeof cb === 'function' && cb();
-}
+};
 
 // IKE cluster text send message, override other messages
-function text_override(message, timeout = 2500, direction = 'left', turn = false) {
+IKE.prototype.text_override = function (message, timeout = 2500, direction = 'left', turn = false) {
 	// kodi.notify(module_name, message);
 	let scroll_delay         = 300;
 	let scroll_delay_timeout = scroll_delay * 5;
@@ -1043,38 +1085,46 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 	}
 
 	// Delare that we're currently first up
-	IKE.hud_override      = true;
-	IKE.hud_override_text = message;
+	this.hud_override      = true;
+	this.hud_override_text = message;
 
 	// Equal to or less than 20 char
-	if (message.length - IKE.max_len_text <= 0) {
-		if (IKE.hud_override_text == message) IKE.text(message);
+	if (message.length - this.max_len_text <= 0) {
+		if (this.hud_override_text === message) this.text(message);
 	}
 	else {
 		// Adjust timeout since we will be scrolling
-		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - IKE.max_len_text));
+		timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - this.max_len_text));
 
 		// Send initial string if we're currently the first up
-		if (IKE.hud_override_text == message) {
-			if (direction == 'left') {
-				IKE.text(message);
-			}
-			else {
-				IKE.text(message.substring(message.length - IKE.max_len_text, message.length));
+		if (this.hud_override_text == message) {
+			switch (direction) {
+				case 'left' : {
+					this.text(message);
+					break;
+				}
+
+				case 'right' : {
+					this.text(message.substring(message.length - this.max_len_text, message.length));
+				}
 			}
 		}
 
 		// Add a time buffer before scrolling starts (if this isn't a turn signal message)
 		setTimeout(() => {
-			for (var scroll = 0; scroll <= message.length - IKE.max_len_text; scroll++) {
+			for (let scroll = 0; scroll <= message.length - this.max_len_text; scroll++) {
 				setTimeout((current_scroll, message_full, direction) => {
 					// Only send the message if we're currently the first up
-					if (IKE.hud_override_text == message_full) {
-						if (direction == 'left') {
-							IKE.text(message.substring(current_scroll, current_scroll + IKE.max_len_text));
+					if (this.hud_override_text !== message_full) return;
+
+					switch (direction) {
+						case 'left' : {
+							this.text(message.substring(current_scroll, current_scroll + this.max_len_text));
+							break;
 						}
-						else {
-							IKE.text(message.substring(message.length - IKE.max_len_text - current_scroll, message.length - current_scroll));
+
+						case 'right' : {
+							this.text(message.substring(message.length - this.max_len_text - current_scroll, message.length - current_scroll));
 						}
 					}
 				}, scroll_delay * scroll, scroll, message, direction);
@@ -1085,107 +1135,18 @@ function text_override(message, timeout = 2500, direction = 'left', turn = false
 	// Clear the override flag
 	setTimeout((message_full) => {
 		// Only deactivate the override if we're currently first up
-		if (IKE.hud_override_text == message_full) {
-			IKE.hud_override = false;
-			IKE.hud_refresh();
+		if (this.hud_override_text === message_full) {
+			this.hud_override = false;
+			this.hud_refresh();
 		}
 	}, timeout, message);
-}
-
-// Check control messages
-function text_urgent(message, timeout = 5000) {
-	let message_hex;
-
-	kodi.notify(module_name, message);
-
-	message_hex = [ 0x1A, 0x35, 0x00 ];
-	message_hex = message_hex.concat(text_prepare(message));
-
-	bus.data.send({
-		src : 'CCM',
-		msg : message_hex,
-	});
-
-	// Clear the message after 5 seconds
-	setTimeout(() => {
-		text_urgent_off();
-	}, timeout);
-}
-
-// Clear check control messages, then refresh HUD
-function text_urgent_off() {
-	bus.data.send({
-		src : 'CCM',
-		msg : [ 0x1A, 0x30, 0x00 ],
-	});
-
-	hud_refresh();
-}
-
-// Check control warnings
-function text_warning(message, timeout = 10000) {
-	let message_hex;
-
-	// 3rd byte:
-	// 0x00 : arrow: none,  sound: none
-	// 0x01 : arrow: solid, sound: none
-	// 0x02 : arrow: none,  sound: none
-	// 0x03 : arrow: flash, sound: none
-	// 0x04 : arrow: none,  sound: 1 gong,  high
-	// 0x08 : arrow: none,  sound: 2 gongs, high
-	// 0x0C : arrow: none,  sound: 3 gongs, high
-	// 0x10 : arrow: none,  sound: 1 gong,  low
-	// 0x18 : arrow: none,  sound: 3 beeps
-
-	message_hex = [ 0x1A, 0x37, 0x03 ]; // no gong, flash arrow
-	message_hex = message_hex.concat(text_prepare(message));
-
-	bus.data.send({
-		src : 'CCM',
-		msg : message_hex,
-	});
-
-	// Clear the message after the timeout
-	setTimeout(() => {
-		text_urgent_off();
-	}, timeout);
-}
-
-
-// Exported data
-module.exports = {
-	// Max length of cluster text
-	max_len_text : 20,
-
-	// HUD refresh vars
-	timeout_data_refresh : null,
-	last_hud_refresh     : now(),
-	hud_override         : false,
-	hud_override_text    : null,
-
-	// Ignition state change vars
-	state_powerdown   : null,
-	state_poweroff    : null,
-	state_powerup     : null,
-	state_run         : null,
-	state_start_begin : null,
-	state_start_end   : null,
-
-	// Functions
-	data_refresh      : data_refresh,
-	hud_refresh       : hud_refresh,
-	hud_refresh_speed : hud_refresh_speed,
-	ignition          : ignition,
-	obc_clock         : obc_clock,
-	obc_data          : obc_data,
-	obc_refresh       : obc_refresh,
-	parse_out         : parse_out,
-	text              : text,
-	text_nopad        : text_nopad,
-	text_override     : text_override,
-	text_urgent       : text_urgent,
-	text_urgent_off   : text_urgent_off,
-	text_warning      : text_warning,
-
-	request : request,
 };
+
+// Welcome text message in cluster
+IKE.prototype.welcome_message = function () {
+	if (config.options.message_welcome !== true) return;
+
+	this.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.round((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
+};
+
+module.exports = IKE;

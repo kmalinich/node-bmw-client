@@ -57,7 +57,7 @@ function send_cd_status(value) {
 	let bit;
 
 	switch (value) {
-		case 'status':
+		case 'status' :
 			// Send play or stop status based on vehicle ignition
 			bit = (status.vehicle.ignition_level > 0) && 0x02 || 0x00;
 			break;
