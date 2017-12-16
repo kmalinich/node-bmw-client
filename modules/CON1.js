@@ -1,24 +1,11 @@
-/* global status kodi bitmask log update bus CON1 */
+/* eslint key-spacing : 0 */
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
-const now = require('performance-now');
-
-// Allegedly required messages:
-// Message asking the data from the unit
-// message preventing the sleep mode
-// message initializing the rotational knob
-// message controlling intensity of the backlight
-
-
-// iDrive controller button states:
-// Press
-// Release
-// Hold
-
+const time_now = require('performance-now');
 
 // The rotational knob is connected to a 16 bit counter
-// whose value is sent out through the CAN bus
+// whose value is sent via CANBUS
 
 
 // Message examples:
@@ -43,76 +30,103 @@ function decode_con_rotation(data) {
 
 	// so do the math .. i've had several beers
 
-	if (data.msg[3] < status.con1.rotation.relative) update.status('con1.rotation.direction', 'up');
-
-	// In the ghettoooooo
-	if (data.msg[3] > status.con1.rotation.relative) update.status('con1.rotation.direction', 'down');
-
-	let subtract = data.msg[3] - status.con1.rotation.relative;
-
 	// Spin it hard enough and you can get it to jump up to 24 notches!
-
-	// If we over-run and go backwards to go forwards
-	// .... yeah, good luck, homie!
+	// This is set up to handle up to 127 notches in either direction, we should be ok
 
 	// If you're clever, you can actually
 	// use the math vs. the missed packets
 	// to determine how hard the wheel was flicked
-	if (subtract == 0) return;
 
-	if (subtract == 255) {
-		update.status('con1.rotation.direction', 'up');
-	}
-	else {
-		if (subtract < -240) {
-			update.status('con1.rotation.direction', 'down');
-		}
-		else {
-			if (subtract > 0 && subtract < 25) {
-				update.status('con1.rotation.direction', 'down');
-			}
-			else {
-				update.status('con1.rotation.direction', 'up');
-			}
-		}
-	}
-
-	// Replace the data in global status object
+	// Update the data in global status object
 	update.status('con1.rotation.absolute', data.msg[2]);
 	update.status('con1.rotation.relative', data.msg[3]);
 
-	// Not gonna finish this now - but later, I want to do
-	// a dynamic timeout for the 'alternate' and 'volume' rotation modes -
+	let direction;
+
+	let change = data.msg[3] - status.con1.rotation.relative;
+
+	// If it hasn't rotated any notches
+	if (change === 0) return;
+
+	let change_calc = 256 - Math.abs(change);
+
+	// If change_calc is less than 128,
+	// the relative counter has either rolled from 128-255 to 0-127 or 0-127 to 128-255
+	let rollover = (change_calc < 128);
+	if (rollover) {
+		switch (change > 0) {
+			case true  : change = (change - 256); break;
+			case false : change = (change + 256);
+		}
+	}
+
+	// The absolute number of notches travelled
+	let change_abs = Math.abs(change);
+
+	switch (change > 0) {
+		case true  : direction = 'right'; break;
+		case false : direction = 'left';
+	}
+
+	log.module({ msg : 'Rotation: ' + direction + ' ' + change_abs + ' notches' });
+
+	update.status('con1.rotation.direction', direction);
+
+	// Update data in global status object
+	update.status('con1.rotation.absolute', data.msg[2]);
+	update.status('con1.rotation.relative', data.msg[3]);
+
+	// Not gonna finish this now - but later,
+	// I want to do a dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds
-	update.status('con1.rotation.last_msg', now());
+	update.status('con1.rotation.last_msg', time_now(), false);
 
 	log.module({ msg : 'Rotation: ' + status.con1.rotation.direction });
 
-	// If volume rotation is currently active
-	if (status.con1.rotation.volume === true) {
-		switch (status.con1.rotation.direction) {
-			case 'up'   : kodi.volume('down'); break;
-			case 'down' : kodi.volume('up');   break;
+	let mask_mode = bitmask.create({
+		b0 : status.con1.rotation.horizontal,
+		b1 : status.con1.rotation.volume,
+	});
+
+	switch (mask_mode) {
+		case 0x01: { // Rotation mode: horizontal
+			kodi.input(status.con1.rotation.direction);
+			break;
 		}
-		return;
+
+		case 0x02: { // Rotation mode: volume
+			switch (status.con1.rotation.direction) {
+				case 'left'  : kodi.volume('down'); break;
+				case 'right' : kodi.volume('up');   break;
+			}
+			break;
+		}
+
+		case 0x03: { // Horizontal AND volume mode - error
+			log.module({ msg : 'Error: Horizontal and volume rotation modes simultaneously active, resetting' });
+
+			update.status('con1.rotation.horizontal', false);
+			update.status('con1.rotation.volume',     false);
+			break;
+		}
+
+		default: { // Rotation mode: normal
+			switch (status.con1.rotation.direction) {
+				case 'left'  : kodi.input('up');   break;
+				case 'right' : kodi.input('down'); break;
+			}
+		}
 	}
 
-	// If alternate rotation is not currently active
-	if (status.con1.rotation.alternate === false) {
-		kodi.input(status.con1.rotation.direction);
-		return;
-	}
-
-	// If alternate rotation IS currently active
-	switch (status.con1.rotation.direction) {
-		case 'up'   : kodi.input('left');  break;
-		case 'down' : kodi.input('right'); break;
-	}
+	return data;
 }
 
 
 // CON1 button press, length 6
 function decode_con_button(data) {
+	data.command = 'con';
+	data.value   = 'button press';
+
 	// Action bitmask data.msg[3]:
 	// bit0 : Press
 	// bit1 : Hold
@@ -176,32 +190,54 @@ function decode_con_button(data) {
 
 
 	// button  : menu
-	// press   : 01 c0 01
-	// release : 00 c0 01
+	// press   : 01 C0 01
+	// release : 00 C0 01
 
 	// button  : in
-	// press   : 01 de 01
-	// release : 00 de 01
+	// press   : 01 DE 01
+	// release : 00 DE 01
 
 
 	// Decode bitmasks
 	let m = {
-		a : bitmask.check(data.msg[3]).mask, // mask actions
-		m : bitmask.check(data.msg[4]).mask, // mask buttons
-		b : bitmask.check(data.msg[5]).mask, // mask modes
+		a : bitmask.check(data.msg[3]).mask, // Actions bitmask
+		b : bitmask.check(data.msg[5]).mask, // Buttons bitmask
+		m : bitmask.check(data.msg[4]).mask, // Modes bitmask
 	};
 
 	let unmask = {
-		actions : {},
-		buttons : {},
-		modes   : {},
+		actions : {
+			hold    : false,
+			press   : false,
+			release : false,
+		},
+		buttons : {
+			back   : false,
+			cd     : false,
+			down   : false,
+			in     : false,
+			left   : false,
+			menu   : false,
+			nav    : false,
+			none   : false,
+			option : false,
+			radio  : false,
+			right  : false,
+			tel    : false,
+			up     : false,
+		},
+		modes : {
+			button   : false,
+			joystick : false,
+			push     : false,
+		},
 	};
 
 	// Detect 'mode' first, it determines what the button is
 	unmask.modes = {
-		button   : !m.m.bit0 && !m.m.bit1 && !m.m.bit2 && !m.m.bit3 && !m.m.bit4 && !m.m.bit5 &&  m.m.bit6 &&  m.m.bit7 && !m.m.bit8, // bit6+bit7 are true, all others false
-		push     : !m.m.bit0 &&  m.m.bit1 &&  m.m.bit2 &&  m.m.bit3 &&  m.m.bit4 && !m.m.bit5 &&  m.m.bit6 &&  m.m.bit7 && !m.m.bit8, // bit0+bit5+bit8 are false, all others true
-		joystick : m.m.bit0 && !m.m.bit1 &&  m.m.bit2 &&  m.m.bit3 &&  m.m.bit4 && !m.m.bit5 &&  m.m.bit6 &&  m.m.bit7 && !m.m.bit8, // bit1+bit5+bit8 are false, all others true
+		button   : !m.m.b0 && !m.m.b1 && !m.m.b2 && !m.m.b3 && !m.m.b4 && !m.m.b5 &&  m.m.b6 &&  m.m.b7 && !m.m.b8, // b6+b7    are true,  all others false
+		push     : !m.m.b0 &&  m.m.b1 &&  m.m.b2 &&  m.m.b3 &&  m.m.b4 && !m.m.b5 &&  m.m.b6 &&  m.m.b7 && !m.m.b8, // b0+b5+b8 are false, all others true
+		joystick :  m.m.b0 && !m.m.b1 &&  m.m.b2 &&  m.m.b3 &&  m.m.b4 && !m.m.b5 &&  m.m.b6 &&  m.m.b7 && !m.m.b8, // b1+b5+b8 are false, all others true
 	};
 
 	// Loop unmask object to determine action+button combination
@@ -213,27 +249,28 @@ function decode_con_button(data) {
 	}
 
 	unmask.actions = {
-		press   : m.a.bit0 && !m.a.bit1 && !m.a.bit8,
-		hold    : !m.a.bit0 &&  m.a.bit1 && !m.a.bit8,
-		release : !m.a.bit0 && !m.a.bit1 &&  m.a.bit8,
+		press   :  m.a.b0 && !m.a.b1 && !m.a.b8,
+		hold    : !m.a.b0 &&  m.a.b1 && !m.a.b8,
+		release : !m.a.b0 && !m.a.b1 &&  m.a.b8,
 	};
 
-	// Note how the joystick messages have their direction defined in bit3, not bit5
+	// Note how the joystick messages have their direction defined in b3, not b5
 	unmask.buttons = {
-		up    : unmask.modes.joystick &&  m.a.bit4 && !m.a.bit5 && !m.a.bit6 && !m.a.bit7,
-		right : unmask.modes.joystick && !m.a.bit4 &&  m.a.bit5 && !m.a.bit6 && !m.a.bit7,
-		down  : unmask.modes.joystick && !m.a.bit4 && !m.a.bit5 &&  m.a.bit6 && !m.a.bit7,
-		left  : unmask.modes.joystick && !m.a.bit4 && !m.a.bit5 && !m.a.bit6 &&  m.a.bit7,
-		none  : unmask.modes.joystick && !m.a.bit4 && !m.a.bit5 && !m.a.bit6 && !m.a.bit7, // All here are false
+		up    : unmask.modes.joystick &&  m.a.b4 && !m.a.b5 && !m.a.b6 && !m.a.b7 && !m.a.b8,
+		right : unmask.modes.joystick && !m.a.b4 &&  m.a.b5 && !m.a.b6 && !m.a.b7 && !m.a.b8,
+		down  : unmask.modes.joystick && !m.a.b4 && !m.a.b5 &&  m.a.b6 && !m.a.b7 && !m.a.b8,
+		left  : unmask.modes.joystick && !m.a.b4 && !m.a.b5 && !m.a.b6 &&  m.a.b7 && !m.a.b8,
+		none  : unmask.modes.joystick && !m.a.b4 && !m.a.b5 && !m.a.b6 && !m.a.b7 && !m.a.b8, // All here are false
 
-		in     : unmask.modes.push   &&  m.b.bit0 && !m.b.bit1 && !m.b.bit2 && !m.b.bit3 && !m.b.bit4 && !m.b.bit5 && !m.b.bit6,
-		menu   : unmask.modes.button &&  m.b.bit0 && !m.b.bit1 && !m.b.bit2 && !m.b.bit3 && !m.b.bit4 && !m.b.bit5 && !m.b.bit6,
-		back   : unmask.modes.button && !m.b.bit0 &&  m.b.bit1 && !m.b.bit2 && !m.b.bit3 && !m.b.bit4 && !m.b.bit5 && !m.b.bit6,
-		option : unmask.modes.button && !m.b.bit0 && !m.b.bit1 &&  m.b.bit2 && !m.b.bit3 && !m.b.bit4 && !m.b.bit5 && !m.b.bit6,
-		radio  : unmask.modes.button && !m.b.bit0 && !m.b.bit1 && !m.b.bit2 &&  m.b.bit3 && !m.b.bit4 && !m.b.bit5 && !m.b.bit6,
-		cd     : unmask.modes.button && !m.b.bit0 && !m.b.bit1 && !m.b.bit2 && !m.b.bit3 &&  m.b.bit4 && !m.b.bit5 && !m.b.bit6,
-		nav    : unmask.modes.button && !m.b.bit0 && !m.b.bit1 && !m.b.bit2 && !m.b.bit3 && !m.b.bit4 &&  m.b.bit5 && !m.b.bit6,
-		tel    : unmask.modes.button && !m.b.bit0 && !m.b.bit1 && !m.b.bit2 && !m.b.bit3 && !m.b.bit4 && !m.b.bit5 &&  m.b.bit6,
+		in : unmask.modes.push && m.b.b0 && !m.b.b1 && !m.b.b2 && !m.b.b3 && !m.b.b4 && !m.b.b5 && !m.b.b6,
+
+		menu   : unmask.modes.button &&  m.b.b0 && !m.b.b1 && !m.b.b2 && !m.b.b3 && !m.b.b4 && !m.b.b5 && !m.b.b6,
+		back   : unmask.modes.button && !m.b.b0 &&  m.b.b1 && !m.b.b2 && !m.b.b3 && !m.b.b4 && !m.b.b5 && !m.b.b6,
+		option : unmask.modes.button && !m.b.b0 && !m.b.b1 &&  m.b.b2 && !m.b.b3 && !m.b.b4 && !m.b.b5 && !m.b.b6,
+		radio  : unmask.modes.button && !m.b.b0 && !m.b.b1 && !m.b.b2 &&  m.b.b3 && !m.b.b4 && !m.b.b5 && !m.b.b6,
+		cd     : unmask.modes.button && !m.b.b0 && !m.b.b1 && !m.b.b2 && !m.b.b3 &&  m.b.b4 && !m.b.b5 && !m.b.b6,
+		nav    : unmask.modes.button && !m.b.b0 && !m.b.b1 && !m.b.b2 && !m.b.b3 && !m.b.b4 &&  m.b.b5 && !m.b.b6,
+		tel    : unmask.modes.button && !m.b.b0 && !m.b.b1 && !m.b.b2 && !m.b.b3 && !m.b.b4 && !m.b.b5 &&  m.b.b6,
 	};
 
 	// Loop unmask object to determine action+button combination
@@ -256,16 +293,18 @@ function decode_con_button(data) {
 		button : unmask.button,
 		mode   : unmask.mode,
 	});
+
+	return data;
 }
 
 function button_check(button) {
 	// Workaround for the last of a proper 'release' message when in 'joystick mode'
-	let joystick_release = button.mode == 'joystick' && button.action == 'release' && button.button == 'none';
+	let joystick_release = (button.mode === 'joystick' && button.action === 'release' && button.button === 'none');
 	if (joystick_release === true) button.button = status.con1.last.button.button;
 
 	// Detect if there is a change from the last button message, bounce if not
 	// CON1 sends a lot of repeat messages (it's CANBUS)
-	let change = status.con1.last.button.action != button.action || status.con1.last.button.button != button.button || status.con1.last.button.mode != button.mode;
+	let change = (status.con1.last.button.action !== button.action || status.con1.last.button.button !== button.button || status.con1.last.button.mode !== button.mode);
 	if (change === false) return;
 
 	// Store buttonpress data in 'last' object
@@ -274,9 +313,9 @@ function button_check(button) {
 	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
 
 	switch (button.action) {
-		case 'press':
+		case 'press' :
 			switch (button.button) {
-				case 'tel':
+				case 'tel' :
 					// To use the TEL button as a toggle for rotation = Kodi volume control
 					if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
 						kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
@@ -290,15 +329,15 @@ function button_check(button) {
 					}
 					break;
 
-				case 'nav':
+				case 'nav' :
 					// To use the NAV button as a toggle for left<->right or up<->down rotation
-					if (update.status('con1.rotation.alternate', !status.con1.rotation.alternate)) {
-						kodi.notify('CON1 horizontal: ' + status.con1.rotation.alternate, 'Updated via button');
+					if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
+						kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');
 
 						// In 8000ms, set it back
 						setTimeout(() => {
-							if (update.status('con1.rotation.alternate', false)) {
-								kodi.notify('CON1 horizontal: ' + status.con1.rotation.alternate, 'Updated via timeout');
+							if (update.status('con1.rotation.horizontal', false)) {
+								kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via timeout');
 							}
 						}, 8000);
 					}
@@ -311,8 +350,11 @@ function button_check(button) {
 	}
 }
 
+// Backlight message
+function decode_con_backlight(data) {
+	data.command = 'bro';
+	data.value   = 'Dimmer status';
 
-function decode_backlight(data) {
 	// data.msg[0]: Backlight intensity
 	// 0xFF      : 50%
 	// 0xFE      :  0%
@@ -320,23 +362,43 @@ function decode_backlight(data) {
 
 	// console.log('RECV : '+module_name+' backlight \'%s\'', data.msg[0]);
 	update.status('con1.backlight', data.msg[0]);
+
+	return data;
 }
 
+// 0x4E7
+// data.command = 'sta';
+// data.value   = module_name+' status';
+// 0x5E7
+// data.command = 'sta';
+// data.value   = module_name+' counter';
 function decode_status_con(data) {
-	// console.log('[%s] status', log.chalk.boldyellow('CON1'));
-	if (data.msg[4] == 0x06) { // CON1 needs init
+	if (data.msg[4] === 0x06) { // CON1 needs init
 		log.module({ msg : 'Init triggered' });
 
 		send_status_cic();
 	}
+
+	return data;
 }
 
 function decode_ignition_new(data) {
+	data.command = 'bro';
+	data.value   = 'Ignition status';
+
 	log.module({ msg : 'Ignition message ' + data.msg[0] });
+
+	return data;
 }
 
+// Used for iDrive knob rotational initialization
 function decode_status_cic(data) {
+	data.command = 'con';
+	data.value   = 'CIC1 init iDrive knob';
+
 	log.module({ msg : 'CIC1 status message ' + data.msg[0] });
+
+	return data;
 }
 
 // function send_heartbeat() {
@@ -347,10 +409,15 @@ function decode_status_cic(data) {
 // 		case 0x10 : update.status('con1.last.heartbeat', 0x20); break;
 // 		default   : update.status('con1.last.heartbeat', 0x10);
 // 	}
+//
+// 	return data;
 // }
 
 
 function send_backlight(value) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	// data.msg[0]: Backlight intensity
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
@@ -382,6 +449,9 @@ function send_backlight(value) {
 
 // E90 CIC1 status
 function send_status_cic() {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	log.module({ msg : 'Sending CIC1 status' });
 
 	let msg = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
@@ -396,6 +466,9 @@ function send_status_cic() {
 
 // E90 Ignition status
 function send_status_ignition_new() {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	log.module({ msg : 'Sending ignition status' });
 
 	bus.data.send({
@@ -424,53 +497,23 @@ function send_status_ignition_new() {
 
 // Parse data sent from module
 function parse_out(data) {
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
+
 	switch (data.src.id) {
-		case 0x202:
-			data.command = 'bro';
-			data.value   = 'Dimmer status';
-			decode_backlight(data);
-			break; // Backlight message
+		case 0x202 : data = decode_con_backlight(data); break;
+		case 0x264 : data = decode_con_rotation(data);  break;
+		case 0x267 : data = decode_con_button(data);    break;
+		case 0x273 : data = decode_status_cic(data);    break;
 
-		case 0x264:
-			data.command = 'con';
-			data.value   = 'rotation';
-			decode_con_rotation(data);
-			break;
-
-		case 0x267:
-			data.command = 'con';
-			data.value   = 'button press';
-			decode_con_button(data);
-			break;
-
-		case 0x273:
-			data.command = 'con';
-			data.value   = 'CIC1 init iDrive knob';
-			decode_status_cic(data);
-			break; // Used for iDrive knob rotational initialization
-
-		case 0x277:
+		case 0x277: // CON1 ACK to rotational initialization message
 			data.command = 'rep';
 			data.value   = module_name + ' ACK to CIC1 init';
-			break; // CON1 ACK to rotational initialization message
-
-		case 0x4F8:
-			data.command = 'bro';
-			data.value   = 'Ignition status';
-			decode_ignition_new(data);
 			break;
 
-		case 0x4E7:
-			return decode_status_con(data);
-			// data.command = 'sta';
-			// data.value   = module_name+' status';
-			// break;
-
-		case 0x5E7:
-			return decode_status_con(data);
-			// data.command = 'sta';
-			// data.value   = module_name+' counter';
-			// break;
+		case 0x4F8 : data = decode_ignition_new(data); break;
+		case 0x4E7 : data = decode_status_con(data);   break;
+		case 0x5E7 : data = decode_status_con(data);   break;
 
 		default:
 			data.command = 'unk';
@@ -478,6 +521,18 @@ function parse_out(data) {
 	}
 
 	// log.bus(data);
+}
+
+function init_listeners() {
+	// Enable keepalive on IKE ignition event
+	IKE.on('ignition-powerup', () => {
+		send_status_ignition_new();
+	});
+
+	// Enable keepalive on IKE ignition event
+	IKE.on('ignition-poweroff', () => {
+		send_status_ignition_new();
+	});
 }
 
 
@@ -488,6 +543,7 @@ module.exports = {
 	},
 
 	// Functions
+	init_listeners           : init_listeners,
 	parse_out                : parse_out,
 	send_backlight           : send_backlight,
 	send_status_ignition_new : send_status_ignition_new,

@@ -5,7 +5,7 @@
 // Parse GPS time and date message
 function parse_gps_time(data) {
 	data.command = 'bro';
-	data.value   = 'GPS time and date';
+	data.value   = 'GPS date and time';
 
 	data.parse = {
 		day    : parseInt(data.msg[4].toString(16)),
@@ -28,13 +28,15 @@ function parse_gps_time(data) {
 // Parse data sent from NAV module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x1F: // Broadcast: Time and date
+		case 0x1F : { // Broadcast: Time and date
 			data = parse_gps_time(data);
 			break;
+		}
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	log.bus(data);

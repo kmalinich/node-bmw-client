@@ -38,7 +38,7 @@ function bit_sample(dsc, hex, callback) {
 		var bit_6_test = bit_test(hex, bit_6);
 		var bit_7_test = bit_test(hex, bit_7);
 
-		var string = dsc+'|'+clc.yellow(pad(hex, 3))+'|'+bit_0_test+'|'+bit_1_test+'|'+bit_2_test+'|'+bit_3_test+'|'+bit_4_test+'|'+bit_5_test+'|'+bit_6_test+'|'+bit_7_test;
+		var string = dsc + '|' + clc.yellow(pad(hex, 3)) + '|' + bit_0_test + '|' + bit_1_test + '|' + bit_2_test + '|' + bit_3_test + '|' + bit_4_test + '|' + bit_5_test + '|' + bit_6_test + '|' + bit_7_test;
 		string     = string.replace(/true/g,  clc.green('TRU'));
 		string     = string.replace(/false/g, clc.red('FAL'));
 

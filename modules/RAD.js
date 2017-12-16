@@ -1,4 +1,4 @@
-/* eslint no-console: 0 */
+/* eslint key-spacing : 0 */
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
@@ -177,7 +177,7 @@ function decode_audio_control(data) {
 
 	// Further command-type-specific processing
 	switch (cmd_type) {
-		case 'source':
+		case 'source' :
 			switch (cmd_value) {
 				case 0x00 : update.status('rad.source_name', 'cd');         break;
 				case 0x01 : update.status('rad.source_name', 'tuner/tape'); break;
@@ -203,7 +203,7 @@ function decode_audio_control(data) {
 function parse_out(data) {
 	// Device status
 	switch (data.msg[0]) {
-		case 0x34: // DSP control
+		case 0x34 : { // Control: DSP
 			data.command = 'con';
 			data.value   = 'DSP - ';
 
@@ -239,6 +239,7 @@ function parse_out(data) {
 					data.value = Buffer.from(data.msg);
 			}
 			break;
+		}
 
 		case 0x36: // Audio control (i.e. source)
 			data = decode_audio_control(data);
@@ -262,7 +263,7 @@ function parse_out(data) {
 			}
 			break;
 
-		case 0x4A: // Control: Cassette
+		case 0x4A : { // Control: Cassette
 			BMBT.send_cassette_status(data.msg[1]);
 
 			data.command = 'con';
@@ -274,6 +275,7 @@ function parse_out(data) {
 				default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
 			}
 			break;
+		}
 
 		case 0x46: // Control: LCD
 			data.command = 'con';

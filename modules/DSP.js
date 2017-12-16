@@ -160,11 +160,11 @@ function request(value) {
 	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	switch (value) {
-		case 'io-status':
+		case 'io-status' :
 			src = 'DIA';
 			cmd = [ 0x0B, 0x00 ]; // Get IO status
 			break;
-		case 'memory':
+		case 'memory' :
 			src = 'RAD';
 			cmd = [ 0x34, 0x08 ]; // Get DSP memory
 	}

@@ -10,6 +10,7 @@ function parse_out(data) {
 			data.command = 'bro';
 			data.value   = 'check control sensors - ';
 
+			// Le sigh.. this is a bitmask, not done properly
 			switch (data.msg[1]) {
 				case 0x00:
 					data.value += 'none';
@@ -22,7 +23,6 @@ function parse_out(data) {
 					break;
 				default:
 					data.value += data.msg[1];
-					break;
 			}
 			break;
 

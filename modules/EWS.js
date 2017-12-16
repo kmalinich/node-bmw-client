@@ -5,7 +5,7 @@ function request(value) {
 	log.module({ msg : 'Requesting \'' + value + '\'' });
 
 	switch (value) {
-		case 'immobiliserstatus':
+		case 'immobiliserstatus' :
 			// cmd = [0x73, 0x00, 0x00, 0x80];
 			cmd = [ 0x73 ];
 			break;
