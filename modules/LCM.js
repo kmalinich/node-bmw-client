@@ -840,7 +840,7 @@ function pl() {
 		front : {
 			left : {
 				fog      : false,
-				highbeam : false,
+				highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				lowbeam  : false,
 				standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
@@ -849,7 +849,7 @@ function pl() {
 			},
 			right : {
 				fog      : false,
-				highbeam : false,
+				highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				lowbeam  : false,
 				standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
@@ -912,6 +912,9 @@ function pl() {
 
 		output_turn_front_left  : object.front.left.turn,
 		output_turn_front_right : object.front.left.turn,
+
+		output_highbeam_front_left  : object.front.left.highbeam,
+		output_highbeam_front_right : object.front.right.highbeam,
 	};
 
 	io_encode(io_object);
