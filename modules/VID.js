@@ -5,44 +5,48 @@ function parse_out(data) {
 			data.command = 'con';
 			data.value   = 'LCD ';
 
-			let masks = {
-				m1 : bitmask.check(data.msg[1]).mask,
-				m2 : bitmask.check(data.msg[2]).mask,
-			};
-
-			let parse = {
-				aspect_ratio : masks.m2.b4 && '16:9' || '4:3',
-				on           : masks.m1.b4,
-				refresh_rate : masks.m2.b1 && '50Hz' || '60Hz',
-				zoom         : masks.m2.b5,
-				source_name  : null,
-				source       : {
-					gt   : masks.m1.b0,
-					navj : masks.m1.b2,
-					tv   : masks.m1.b1,
+			let mask_m1  = bitmask.check(data.msg[1]).mask;
+			let parse_m1 = {
+				on          : mask_m1.b4,
+				source_name : null,
+				source      : {
+					gt   : mask_m1.b0,
+					navj : mask_m1.b2,
+					tv   : mask_m1.b1,
 				},
 			};
 
-			// Update status object
-			update.status('vid.lcd.aspect_ratio', parse.aspect_ratio);
-			update.status('vid.lcd.refresh_rate', parse.refresh_rate);
-			update.status('vid.lcd.zoom',         parse.zoom);
-			update.status('vid.lcd.source_name',  parse.source_name);
-
-			update.status('vid.lcd.source.gt',          parse.source.gt);
-			update.status('vid.lcd.source.source.navj', parse.source.navj);
-			update.status('vid.lcd.source.tv',          parse.source.tv);
-
 			// A little lazy
 			switch (data.msg[1]) {
-				case 0x00 : parse.source_name = 'off';  break;
-				case 0x11 : parse.source_name = 'TV';   break;
-				case 0x12 : parse.source_name = 'GT';   break;
-				case 0x14 : parse.source_name = 'NAVJ'; break;
-				default   : parse.source_name = 'unknown \'' + Buffer.from([ data.msg[1] ]) + '\'';
+				case 0x00 : parse_m1.source_name = 'off';  break;
+				case 0x11 : parse_m1.source_name = 'TV';   break;
+				case 0x12 : parse_m1.source_name = 'GT';   break;
+				case 0x14 : parse_m1.source_name = 'NAVJ'; break;
+				default   : parse_m1.source_name = 'unknown \'' + Buffer.from([ data.msg[1] ]) + '\'';
 			}
 
-			data.value += 'status: ' + parse.on + ', aspect ratio: ' + parse.aspect_ratio + ', refresh rate: ' + parse.refresh_rate + ', zoom: ' + parse.zoom + ', source: ' + parse.source_name;
+			update.status('vid.lcd.on',                 parse_m1.on);
+			update.status('vid.lcd.source.gt',          parse_m1.source.gt);
+			update.status('vid.lcd.source.source.navj', parse_m1.source.navj);
+			update.status('vid.lcd.source.tv',          parse_m1.source.tv);
+			update.status('vid.lcd.source_name',        parse_m1.source_name);
+
+			// Only if data.msg[2] is populated
+			if (data.msg.length >= 3) {
+				let mask_m2  = bitmask.check(data.msg[2]).mask;
+				let parse_m2 = {
+					aspect_ratio : mask_m2.b4 && '16:9' || '4:3',
+					refresh_rate : mask_m2.b1 && '50Hz' || '60Hz',
+					zoom         : mask_m2.b5,
+				};
+
+				// Update status object
+				update.status('vid.lcd.aspect_ratio', parse_m2.aspect_ratio);
+				update.status('vid.lcd.refresh_rate', parse_m2.refresh_rate);
+				update.status('vid.lcd.zoom',         parse_m2.zoom);
+			}
+
+			data.value += 'status: ' + status.vid.lcd.on + ', aspect ratio: ' + status.vid.lcd.aspect_ratio + ', refresh rate: ' + status.vid.lcd.refresh_rate + ', zoom: ' + status.vid.lcd.zoom + ', source: ' + status.vid.lcd.source_name;
 			break;
 		}
 
