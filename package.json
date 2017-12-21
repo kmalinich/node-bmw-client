@@ -5,6 +5,7 @@
 	},
 	"dependencies": {
 		"amp-message": "^0.1.2",
+		"bluez": "^0.1.0",
 		"body-parser": "^1.18.2",
 		"callers-path": "^1.0.5",
 		"chump": "^1.2.0",
