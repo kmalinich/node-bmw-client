@@ -435,7 +435,7 @@ function hud_refresh_speed() {
 	if (!ok2hud()) return;
 
 	// Send text to IKE and update this.last_hud_refresh value
-	text_nopad(status.vehicle.speed.mph + 'mph', () => {
+	text(status.vehicle.speed.mph + 'mph', () => {
 		this.last_hud_refresh = now();
 	});
 }
@@ -484,7 +484,7 @@ function hud_refresh() {
 	let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
 
 	// Send text to IKE and update this.last_hud_refresh value
-	text_nopad(hud_string, () => { this.last_hud_refresh = now(); });
+	text(hud_string, () => { this.last_hud_refresh = now(); });
 
 	// socket.lcd_text_tx({
 	// 	upper : 'kdm-e39-01',
@@ -587,10 +587,13 @@ function text(message, cb = null) {
 
 	let message_hex;
 
-	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
 	// message_hex = [ 0x23, 0x42, 0x30 ];
+	message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+
 	message_hex = message_hex.concat(text_prepare(message));
+
 	message_hex = message_hex.concat(0x04);
+	// message_hex = message_hex.concat(0x66);
 
 	bus.data.send({
 		src : 'RAD',
@@ -609,7 +612,6 @@ function text_nopad(message, cb = null) {
 
 	message_hex = [ 0x23, 0x42, 0x30 ];
 	message_hex = message_hex.concat(text_prepare(message, false));
-	// message_hex = message_hex.concat(0x66);
 
 	bus.data.send({
 		src : 'TEL',
