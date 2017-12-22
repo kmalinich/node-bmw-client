@@ -100,6 +100,16 @@ function decode_button(data) {
 						case 'depresseject' : BT.command('pause');    break; // Think about it
 
 						case 'depress2' : {
+							IKE.text_warning('   Police lights!   ');
+							LCM.police(true);
+							setTimeout(() => {
+								LCM.police(false);
+							}, 500);
+							break;
+						}
+
+						case 'depress5' : {
+							IKE.text_warning('   Police lights!   ');
 							LCM.police(true);
 							setTimeout(() => {
 								LCM.police(false);
