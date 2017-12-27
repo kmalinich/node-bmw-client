@@ -40,7 +40,7 @@
 	"main": "launch.sh",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
-		"bluez": "git+https://github.com/WaeCo/node-bluez.git",
+		"bluez": "git+https://github.com/kmalinich/node-bluez.git",
 		"dbus-native": "^0.2.3",
 		"node-cec": "git+https://git@github.com/kmalinich/node-cec.git",
 		"onoff": "^1.1.9",
