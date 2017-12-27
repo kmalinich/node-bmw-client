@@ -1,10 +1,10 @@
 {
 	"env": {
-		"browser": true,
+		"browser": false,
 		"es6": true,
-		"jquery": true,
+		"jquery": false,
 		"node": true,
-		"worker": true
+		"worker": false
 	},
 	"extends": [
 		"eslint:recommended"
@@ -100,7 +100,7 @@
 		"weather": false
 	},
 	"parserOptions": {
-		"ecmaVersion": 6,
+		"ecmaVersion": 2017,
 		"sourceType": "module"
 	},
 	"plugins": [
