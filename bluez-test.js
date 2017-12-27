@@ -1,3 +1,7 @@
+/* eslint no-console        : 0 */
+/* eslint no-unreachable    : 0 */
+/* eslint no-useless-return : 0 */
+
 const objfmt = require('object-format');
 
 const Bluez     = require('bluez');
