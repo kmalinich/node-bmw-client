@@ -1,0 +1,35 @@
+Suffix : 0000-1000-8000-00805f9b34fb
+
+00001105 OBEX Object Push
+0000110a Audio Source
+0000110b Audio Sink
+0000110c A/V Remote Control Target
+0000110d Advanced Audio Distribu..
+0000110e A/V Remote Control
+00001112 Headset AG
+00001115 PANU
+00001116 NAP
+0000111f Handsfree Audio Gateway
+0000112d SIM Access
+0000112f Phonebook Access Server
+00001132 Message Access Server
+00001200 PnP Information
+00001800 Generic Access Profile
+00001801 Generic Attribute Profile
+
+
+0x0001 SDP
+0x0003 RFCOMM
+0x0008 OBEX
+0x000c HTTP
+0x000f BNEP
+0x0100 L2CAP
+0x1000 ServiceDiscoveryServerServiceClassID
+0x1001 BrowseGroupDescriptorServiceClassID
+0x1002 PublicBrowseGroup
+0x1101 Serial Port
+0x1105 OBEX Object Push Profile
+0x1106 OBEX File Transfer Profile
+0x1115 Personal Area Networking User
+0x1116 Network Access Point
+0x1117 Group Network
