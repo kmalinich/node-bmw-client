@@ -8,86 +8,29 @@ const Bluez     = require('bluez');
 const bluetooth = new Bluez();
 
 
-bluetooth.on('Adapter', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'added-Adapter');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('Device', async (props) => {
-	console.log('\n=== DEvent: %s ===\n', 'added-Device');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('Filesystem', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'added-Filesystem');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('MediaControl', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'added-MediaControl');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('MediaItem', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'added-MediaItem');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('MediaPlayer', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'added-MediaPlayer');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('MediaTransport', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'added-MediaTransport');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('Network', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'added-Network');
-	console.log(objfmt(props));
-});
+function event_log(action, type, properties) {
+	console.log('\n====== Event : %s (%s) ======\n', type, action);
+	console.log(objfmt(properties));
+}
 
 
-bluetooth.on('changed-Adapter', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'changed-Adapter');
-	console.log(objfmt(props));
-});
+bluetooth.on('Adapter',        async (properties) => { event_log('Added', 'Adapter',        properties); });
+bluetooth.on('Device',         async (properties) => { event_log('Added', 'Device',         properties); });
+bluetooth.on('Filesystem',     async (properties) => { event_log('Added', 'Filesystem',     properties); });
+bluetooth.on('MediaControl',   async (properties) => { event_log('Added', 'MediaControl',   properties); });
+bluetooth.on('MediaItem',      async (properties) => { event_log('Added', 'MediaItem',      properties); });
+bluetooth.on('MediaPlayer',    async (properties) => { event_log('Added', 'MediaPlayer',    properties); });
+bluetooth.on('MediaTransport', async (properties) => { event_log('Added', 'MediaTransport', properties); });
+bluetooth.on('Network',        async (properties) => { event_log('Added', 'Network',        properties); });
 
-bluetooth.on('changed-Device', async (props) => {
-	console.log('\n=== DEvent: %s ===\n', 'changed-Device');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('changed-Filesystem', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'changed-Filesystem');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('changed-MediaControl', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'changed-MediaControl');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('changed-MediaItem', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'changed-MediaItem');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('changed-MediaPlayer', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'changed-MediaPlayer');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('changed-MediaTransport', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'changed-MediaTransport');
-	console.log(objfmt(props));
-});
-
-bluetooth.on('changed-Network', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'changed-Network');
-	console.log(objfmt(props));
-});
+bluetooth.on('changed-Adapter',        async (properties) => { event_log('Changed', 'Adapter',        properties); });
+bluetooth.on('changed-Device',         async (properties) => { event_log('Changed', 'Device',         properties); });
+bluetooth.on('changed-Filesystem',     async (properties) => { event_log('Changed', 'Filesystem',     properties); });
+bluetooth.on('changed-MediaControl',   async (properties) => { event_log('Changed', 'MediaControl',   properties); });
+bluetooth.on('changed-MediaItem',      async (properties) => { event_log('Changed', 'MediaItem',      properties); });
+bluetooth.on('changed-MediaPlayer',    async (properties) => { event_log('Changed', 'MediaPlayer',    properties); });
+bluetooth.on('changed-MediaTransport', async (properties) => { event_log('Changed', 'MediaTransport', properties); });
+bluetooth.on('changed-Network',        async (properties) => { event_log('Changed', 'Network',        properties); });
 
 
 // Initialize bluetooth interface
