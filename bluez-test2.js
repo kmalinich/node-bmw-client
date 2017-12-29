@@ -41,7 +41,6 @@ bluetooth.on('Device', async (properties) => {
 		});
 		await console.log('Connected to device ' + properties.address);
 	}
-
 });
 
 
