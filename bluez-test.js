@@ -2,7 +2,8 @@
 /* eslint no-unreachable    : 0 */
 /* eslint no-useless-return : 0 */
 
-/* global adapter, device */
+/* global adapter : true */
+/* global device  : true */
 
 const objfmt = require('object-format');
 
@@ -123,8 +124,8 @@ bluetooth.init().then(async () => {
 	// });
 	// await console.log('\nAVRCP registered\n');
 
-	// listen on first bluetooth adapter
-	// adapter = await bluetooth.getAdapter('hci0');
+	// Listen on first bluetooth adapter
+	adapter = await bluetooth.getAdapter('hci0');
 
 	// await adapter.StartDiscovery();
 	// console.log('Discovering');

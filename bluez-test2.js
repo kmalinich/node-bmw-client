@@ -1,6 +1,4 @@
-/* eslint no-console        : 0 */
-/* eslint no-unreachable    : 0 */
-/* eslint no-useless-return : 0 */
+/* eslint no-console : 0 */
 
 const objfmt = require('object-format');
 
