@@ -26,7 +26,7 @@ bluetooth.on('changed-Network',        async (data) => { event_log('Changed', 'N
 bluetooth.on('added-Adapter',        async (data) => { event_log('Added', 'Adapter',        data); });
 bluetooth.on('added-Filesystem',     async (data) => { event_log('Added', 'Filesystem',     data); });
 bluetooth.on('added-MediaControl',   async (data) => { event_log('Added', 'MediaControl',   data); });
-bluetooth.on('added-MediaItem',      async (data) => { event_log('Added', 'MediaItem',      data); });
+bluetooth.on('added-MediaItem',      async (data) => { event_log('Added', 'MediaItem',      data); console.dir(bluetooth.items); });
 bluetooth.on('added-MediaPlayer',    async (data) => { event_log('Added', 'MediaPlayer',    data); });
 bluetooth.on('added-MediaTransport', async (data) => { event_log('Added', 'MediaTransport', data); });
 bluetooth.on('added-Network',        async (data) => { event_log('Added', 'Network',        data); });
@@ -44,6 +44,15 @@ bluetooth.on('added-Device', async (data) => {
 			event_log('DeviceConnect', 'Error', 'Error while attempting to connect to device with address ' + data.properties.Address + ': ' + err.message);
 		});
 	}
+
+	setTimeout(async () => {
+		await event_log('Bluetooth', 'adapter', bluetooth.adapter);
+		await event_log('Bluetooth', 'devices', bluetooth.devices);
+
+		await console.dir(bluetooth.controls);
+		await console.dir(bluetooth.players);
+		await console.dir(bluetooth.transports);
+	}, 1500);
 });
 
 
