@@ -23,15 +23,15 @@ bluetooth.on('changed-MediaTransport', async (properties) => { event_log('Change
 bluetooth.on('changed-Network',        async (properties) => { event_log('Changed', 'Network',        properties); });
 
 // Register callbacks for new interfaces
-bluetooth.on('Adapter',        async (properties) => { event_log('Added', 'Adapter',        properties); });
-bluetooth.on('Filesystem',     async (properties) => { event_log('Added', 'Filesystem',     properties); });
-bluetooth.on('MediaControl',   async (properties) => { event_log('Added', 'MediaControl',   properties); });
-bluetooth.on('MediaItem',      async (properties) => { event_log('Added', 'MediaItem',      properties); });
-bluetooth.on('MediaPlayer',    async (properties) => { event_log('Added', 'MediaPlayer',    properties); });
-bluetooth.on('MediaTransport', async (properties) => { event_log('Added', 'MediaTransport', properties); });
-bluetooth.on('Network',        async (properties) => { event_log('Added', 'Network',        properties); });
+bluetooth.on('added-Adapter',        async (properties) => { event_log('Added', 'Adapter',        properties); });
+bluetooth.on('added-Filesystem',     async (properties) => { event_log('Added', 'Filesystem',     properties); });
+bluetooth.on('added-MediaControl',   async (properties) => { event_log('Added', 'MediaControl',   properties); });
+bluetooth.on('added-MediaItem',      async (properties) => { event_log('Added', 'MediaItem',      properties); });
+bluetooth.on('added-MediaPlayer',    async (properties) => { event_log('Added', 'MediaPlayer',    properties); });
+bluetooth.on('added-MediaTransport', async (properties) => { event_log('Added', 'MediaTransport', properties); });
+bluetooth.on('added-Network',        async (properties) => { event_log('Added', 'Network',        properties); });
 
-bluetooth.on('Device', async (properties) => {
+bluetooth.on('added-Device', async (properties) => {
 	event_log('Added', 'Device', properties);
 
 	let device = await bluetooth.getDevice(properties.Address);
