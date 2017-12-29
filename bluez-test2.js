@@ -7,8 +7,9 @@ const bluetooth = new Bluez();
 
 
 function event_log(action, type, properties) {
-	console.log('\n====== Event : %s (%s) ======\n', type, action);
+	console.log('\n\n======== Event : %s (%s) ========', type, action);
 	console.log(objfmt(properties));
+	console.log('======== Event : %s (%s) ========\n\n', type, action);
 }
 
 // Register callbacks for changed properties
