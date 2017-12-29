@@ -2,6 +2,8 @@
 /* eslint no-unreachable    : 0 */
 /* eslint no-useless-return : 0 */
 
+/* global adapter, device */
+
 const objfmt = require('object-format');
 
 const Bluez     = require('bluez');
@@ -10,15 +12,20 @@ const bluetooth = new Bluez();
 
 // console.dir(Bluez);
 
-const BT = {
-	adapter : null,
-	device  : null,
-};
+adapter = null;
+device  = null;
 
-bluetooth.userService.bus.on('InterfacesAdded', () =>   { console.log('\n=== BEvent: %s ===\n', 'InterfacesAdded'); });
+
+function event_log(action, type, properties) {
+	console.log('\n====== Event : %s (%s) ======\n', type, action);
+	console.log(objfmt(properties));
+}
+
+
+bluetooth.userService.bus.on('InterfacesAdded',   () => { console.log('\n=== BEvent: %s ===\n', 'InterfacesAdded'); });
 bluetooth.userService.bus.on('InterfacesRemoved', () => { console.log('\n=== BEvent: %s ===\n', 'InterfacesRemoved'); });
 bluetooth.userService.bus.on('PropertiesChanged', () => { console.log('\n=== BEvent: %s ===\n', 'PropertiesChanged'); });
-bluetooth.userService.bus.on('request', () =>           { console.log('\n=== BEvent: %s ===\n', 'request'); });
+bluetooth.userService.bus.on('request',           () => { console.log('\n=== BEvent: %s ===\n', 'request'); });
 
 // bluetooth.userService.bus.on('signal', (data1, data2, data3, data4, data5, data6, data7) => {
 // 	console.log('\n=== BEvent: %s ===', 'signal');
@@ -32,78 +39,70 @@ bluetooth.userService.bus.on('request', () =>           { console.log('\n=== BEv
 // });
 
 
-// Register callback for new players
-bluetooth.on('Filesystem', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'Filesystem');
-	console.log(objfmt(props));
-});
-bluetooth.on('MediaPlayer', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'MediaPlayer');
-	console.log(objfmt(props));
-});
-bluetooth.on('MediaTransport', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'MediaTransport');
-	console.log(objfmt(props));
-});
-bluetooth.on('MediaControl', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'MediaControl');
-	console.log(objfmt(props));
-});
-bluetooth.on('MediaItem', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'MediaItem');
-	console.log(objfmt(props));
-});
-bluetooth.on('Network', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'Network');
-	console.log(objfmt(props));
-});
-bluetooth.on('Adapter', async (props) => {
-	console.log('\n=== Event: %s ===\n', 'Adapter');
-	console.log(objfmt(props));
-});
+// Register callbacks for changed properties
+bluetooth.on('changed-Adapter',        async (properties) => { event_log('Changed', 'Adapter',        properties); });
+bluetooth.on('changed-Device',         async (properties) => { event_log('Changed', 'Device',         properties); });
+bluetooth.on('changed-Filesystem',     async (properties) => { event_log('Changed', 'Filesystem',     properties); });
+bluetooth.on('changed-MediaControl',   async (properties) => { event_log('Changed', 'MediaControl',   properties); });
+bluetooth.on('changed-MediaItem',      async (properties) => { event_log('Changed', 'MediaItem',      properties); });
+bluetooth.on('changed-MediaPlayer',    async (properties) => { event_log('Changed', 'MediaPlayer',    properties); });
+bluetooth.on('changed-MediaTransport', async (properties) => { event_log('Changed', 'MediaTransport', properties); });
+bluetooth.on('changed-Network',        async (properties) => { event_log('Changed', 'Network',        properties); });
 
-// Register callback for new devices
-bluetooth.on('Device', async (props) => {
+
+// Register callbacks for new interfaces
+bluetooth.on('Adapter',        async (properties) => { event_log('Added', 'Adapter',        properties); });
+bluetooth.on('Device',         async (properties) => { event_log('Added', 'Device',         properties); });
+bluetooth.on('Filesystem',     async (properties) => { event_log('Added', 'Filesystem',     properties); });
+bluetooth.on('MediaControl',   async (properties) => { event_log('Added', 'MediaControl',   properties); });
+bluetooth.on('MediaItem',      async (properties) => { event_log('Added', 'MediaItem',      properties); });
+bluetooth.on('MediaPlayer',    async (properties) => { event_log('Added', 'MediaPlayer',    properties); });
+bluetooth.on('MediaTransport', async (properties) => { event_log('Added', 'MediaTransport', properties); });
+bluetooth.on('Network',        async (properties) => { event_log('Added', 'Network',        properties); });
+
+bluetooth.on('Device', async (properties) => {
 	console.log('\n=== DEvent: %s ===\n', 'Device');
-	console.log(objfmt(props));
+	console.log(objfmt(properties));
 
 	return;
-	if (props.Name !== 'kdm-cell') return;
+	if (properties.Name !== 'kdm-cell') return;
 
-	// BT.adapter.StopDiscovery();
+	// adapter.StopDiscovery();
 
-	// console.log('Found device \'%s\', MAC %s\n', props.Name, props.address);
-	// console.log(objfmt(props));
+	// console.log('Found device \'%s\', MAC %s\n', properties.Name, properties.address);
+	// console.log(objfmt(properties));
 
-	BT.device = await bluetooth.getDevice(props.address);
+	device = await bluetooth.getDevice(properties.address);
 
-	// await console.dir(BT.device, {colors:true,depth:null,showHidden:false});
+	// await console.dir(device, {colors:true,depth:null,showHidden:false});
 
-	if (props.Connected === false) {
-		await BT.device.Connect().catch((err) => {
-			console.error('Error while connecting to device ' + props.address + ': ' + err.message);
+	if (properties.Connected === false) {
+		await device.Connect().catch((err) => {
+			console.error('Error while connecting to device ' + properties.address + ': ' + err.message);
 		});
-		await console.log('Connected to device ' + props.address);
+		await console.log('Connected to device ' + properties.address);
 	}
 
 	// Connect to AVRCP
 	// console.log('AVRCP UUID : %s\n', Bluez.AVRCProfile.uuid);
-	// await BT.device._interface.ConnectProfile(Bluez.AVRCProfile.uuid)
+	// await device._interface.ConnectProfile(Bluez.AVRCProfile.uuid)
 	// 	.then(() => {
-	// 		console.log('\nConnected AVRCP on device %s\n', props.address);
+	// 		console.log('\nConnected AVRCP on device %s\n', properties.address);
 	// 	})
 	// 	.catch((err) => {
-	// 		console.error('Error while connecting AVRCP to device ' + props.address + ': ' + err.message);
+	// 		console.error('Error while connecting AVRCP to device ' + properties.address + ': ' + err.message);
 	// 	});
 
-	// await console.log('\nConnected AVRCP on device %s\n', props.address);
+	// await console.log('\nConnected AVRCP on device %s\n', properties.address);
 
-	// await console.log('      RSSI : %s\n', BT.device.RSSI());
-	// await BT.device.on('InterfacesAdded', () =>   { console.log('\n=== DEvent: %s ===\n', 'InterfacesAdded'); });
+	// await console.log('      RSSI : %s\n', device.RSSI());
+	// await device.on('InterfacesAdded', () =>   { console.log('\n=== DEvent: %s ===\n', 'InterfacesAdded'); });
 });
 
 // Initialize bluetooth interface
 bluetooth.init().then(async () => {
+	console.log('init()');
+
 	// Register Agent that accepts everything and uses key 1234
 	// await bluetooth.registerDefaultAgent();
 	// console.log('\nAgent registered\n');
@@ -125,9 +124,9 @@ bluetooth.init().then(async () => {
 	// await console.log('\nAVRCP registered\n');
 
 	// listen on first bluetooth adapter
-	// BT.adapter = await bluetooth.getAdapter('hci0');
+	// adapter = await bluetooth.getAdapter('hci0');
 
-	// await BT.adapter.StartDiscovery();
+	// await adapter.StartDiscovery();
 	// console.log('Discovering');
 	// console.log('');
 });
