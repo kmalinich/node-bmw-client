@@ -37,7 +37,7 @@ bluetooth.on('added-Device', async (data) => {
 	event_log('DeviceInterface', 'Log', 'Attempting to get interface of device with address ' + data.properties.Address);
 	let device = await bluetooth.getDevice(data.properties.Address);
 
-	if (data.Connected === false) {
+	if (data.properties.Connected === false) {
 		event_log('DeviceConnect', 'Log', 'Attempting to connect to device with address ' + data.properties.Address);
 
 		await device.Connect().catch((err) => {
