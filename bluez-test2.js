@@ -34,13 +34,14 @@ bluetooth.on('added-Network',        async (properties) => { event_log('Added', 
 bluetooth.on('added-Device', async (properties) => {
 	event_log('Added', 'Device', properties);
 
+	event_log('DeviceInterface', 'Log', 'Attempting to get interface of device with address ' + properties.Address);
 	let device = await bluetooth.getDevice(properties.Address);
 
 	if (properties.Connected === false) {
-		console.log('Attempting to connect to device ' + properties.Address);
+		event_log('DeviceConnect', 'Log', 'Attempting to connect to device with address ' + properties.Address);
 
 		await device.Connect().catch((err) => {
-			console.error('Error while connecting to device ' + properties.Address + ': ' + err.message);
+			event_log('DeviceConnect', 'Error', 'Error while attempting to connect to device with address ' + properties.Address + ': ' + err.message);
 		});
 	}
 });
@@ -48,5 +49,5 @@ bluetooth.on('added-Device', async (properties) => {
 
 // Initialize bluetooth interface
 bluetooth.init().then(async () => {
-	console.log('init()');
+	event_log('Init', 'Log', 'bluetooth.init()');
 });
