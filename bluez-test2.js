@@ -34,13 +34,14 @@ bluetooth.on('Network',        async (properties) => { event_log('Added', 'Netwo
 bluetooth.on('Device', async (properties) => {
 	event_log('Added', 'Device', properties);
 
-	let device = await bluetooth.getDevice(properties.address);
+	let device = await bluetooth.getDevice(properties.Address);
 
 	if (properties.Connected === false) {
+		console.log('Attempting to connect to device ' + properties.Address);
+
 		await device.Connect().catch((err) => {
-			console.error('Error while connecting to device ' + properties.address + ': ' + err.message);
+			console.error('Error while connecting to device ' + properties.Address + ': ' + err.message);
 		});
-		await console.log('Connected to device ' + properties.address);
 	}
 });
 
