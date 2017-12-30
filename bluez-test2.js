@@ -29,6 +29,7 @@ bluetooth.on('added-MediaItem',      async (data) => { event_log('Added', 'Media
 bluetooth.on('added-MediaTransport', async (data) => { event_log('Added', 'MediaTransport', data); });
 bluetooth.on('added-Network',        async (data) => { event_log('Added', 'Network',        data); });
 
+
 bluetooth.on('added-Adapter', async (data) => {
 	event_log('Added', 'Adapter', data);
 
@@ -56,6 +57,13 @@ bluetooth.on('added-Device', async (data) => {
 	event_log('DeviceInterface', 'Log', 'Attempting to get interface of device with address ' + data.properties.Address);
 	let device = await bluetooth.getDevice(data.properties.Address);
 
+	if (data.properties.Trusted === false) {
+		await device.Trusted(true);
+	}
+
+	let device_properties = await device.getProperties();
+	await event_log('DeviceProperties', 'Log', device_properties);
+
 	if (data.properties.Connected === false) {
 		event_log('DeviceConnect', 'Log', 'Attempting to connect to device with address ' + data.properties.Address);
 
@@ -64,6 +72,7 @@ bluetooth.on('added-Device', async (data) => {
 		});
 	}
 });
+
 
 bluetooth.on('added-MediaPlayer', async (data) => {
 	event_log('Added', 'MediaPlayer', data);
