@@ -33,7 +33,20 @@ bluetooth.on('added-Adapter', async (data) => {
 	event_log('Added', 'Adapter', data);
 
 	event_log('AdapterInterface', 'Log', 'Attempting to get interface of adapter with path ' + data.object);
-	let adapter = await bluetooth.getAdapter('hci0');
+	let adapter = await bluetooth.getAdapter(data.object);
+
+	let adapter_properties = await adapter.getProperties();
+	await event_log('AdapterProperties', 'Log', adapter_properties);
+
+	await adapter.Pairable(true);
+	await adapter.Discoverable(true);
+
+	// Register Agent that accepts everything and uses key 1234
+	await bluetooth.registerDefaultAgent();
+	await event_log('Agent', 'Log', 'Registered default agent');
+
+	adapter_properties = await adapter.getProperties();
+	await event_log('AdapterProperties', 'Log', adapter_properties);
 });
 
 
