@@ -23,12 +23,19 @@ bluetooth.on('changed-MediaTransport', async (data) => { event_log('Changed', 'M
 bluetooth.on('changed-Network',        async (data) => { event_log('Changed', 'Network',        data); });
 
 // Register callbacks for new interfaces
-bluetooth.on('added-Adapter',        async (data) => { event_log('Added', 'Adapter',        data); });
 bluetooth.on('added-Filesystem',     async (data) => { event_log('Added', 'Filesystem',     data); });
 bluetooth.on('added-MediaControl',   async (data) => { event_log('Added', 'MediaControl',   data); });
 bluetooth.on('added-MediaItem',      async (data) => { event_log('Added', 'MediaItem',      data); console.dir(bluetooth.items); });
 bluetooth.on('added-MediaTransport', async (data) => { event_log('Added', 'MediaTransport', data); });
 bluetooth.on('added-Network',        async (data) => { event_log('Added', 'Network',        data); });
+
+bluetooth.on('added-Adapter', async (data) => {
+	event_log('Added', 'Adapter', data);
+
+	event_log('AdapterInterface', 'Log', 'Attempting to get interface of adapter with path ' + data.object);
+	let adapter = await bluetooth.getAdapter('hci0');
+});
+
 
 bluetooth.on('added-Device', async (data) => {
 	event_log('Added', 'Device', data);
@@ -57,10 +64,6 @@ bluetooth.on('added-MediaPlayer', async (data) => {
 	setTimeout(async () => {
 		await media_player.Play();
 	}, 1500);
-
-	setTimeout(async () => {
-		await media_player.Pause();
-	}, 3000);
 });
 
 
