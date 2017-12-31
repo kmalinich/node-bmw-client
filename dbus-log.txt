@@ -1,0 +1,160 @@
+
+method call time=1514703232.944354 sender=:1.752 -> destination=org.freedesktop.DBus serial=51 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path_namespace='/org/bluez'"
+method return time=1514703232.944466 sender=org.freedesktop.DBus -> destination=:1.752 serial=39 reply_serial=51
+method call time=1514703232.944512 sender=:1.752 -> destination=org.freedesktop.DBus serial=52 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.AgentManager1'"
+method return time=1514703232.944579 sender=org.freedesktop.DBus -> destination=:1.752 serial=40 reply_serial=52
+method call time=1514703232.945690 sender=:1.752 -> destination=org.freedesktop.DBus serial=53 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.ProfileManager1'"
+method return time=1514703232.945788 sender=org.freedesktop.DBus -> destination=:1.752 serial=41 reply_serial=53
+method call time=1514703232.946980 sender=:1.752 -> destination=org.freedesktop.DBus serial=54 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.HealthManager1'"
+method return time=1514703232.947066 sender=org.freedesktop.DBus -> destination=:1.752 serial=42 reply_serial=54
+method call time=1514703232.948420 sender=:1.752 -> destination=org.freedesktop.DBus serial=55 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Adapter1'"
+method return time=1514703232.948710 sender=org.freedesktop.DBus -> destination=:1.752 serial=43 reply_serial=55
+method call time=1514703232.949780 sender=:1.752 -> destination=org.freedesktop.DBus serial=56 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.GattManager1'"
+method return time=1514703232.950044 sender=org.freedesktop.DBus -> destination=:1.752 serial=44 reply_serial=56
+method call time=1514703232.951054 sender=:1.752 -> destination=org.freedesktop.DBus serial=57 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Media1'"
+method return time=1514703232.951299 sender=org.freedesktop.DBus -> destination=:1.752 serial=45 reply_serial=57
+method call time=1514703232.952409 sender=:1.752 -> destination=org.freedesktop.DBus serial=58 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.NetworkServer1'"
+method return time=1514703232.952659 sender=org.freedesktop.DBus -> destination=:1.752 serial=46 reply_serial=58
+method call time=1514703232.953677 sender=:1.752 -> destination=org.freedesktop.DBus serial=59 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.LEAdvertisingManager1'"
+method return time=1514703232.953938 sender=org.freedesktop.DBus -> destination=:1.752 serial=47 reply_serial=59
+method call time=1514703232.954845 sender=:1.752 -> destination=org.freedesktop.DBus serial=60 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Device1'"
+method return time=1514703232.955169 sender=org.freedesktop.DBus -> destination=:1.752 serial=48 reply_serial=60
+method call time=1514703232.956094 sender=:1.752 -> destination=org.freedesktop.DBus serial=61 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Network1'"
+method return time=1514703232.956338 sender=org.freedesktop.DBus -> destination=:1.752 serial=49 reply_serial=61
+method call time=1514703232.957236 sender=:1.752 -> destination=org.freedesktop.DBus serial=62 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaControl1'"
+method return time=1514703232.957475 sender=org.freedesktop.DBus -> destination=:1.752 serial=50 reply_serial=62
+method call time=1514703232.958379 sender=:1.752 -> destination=org.freedesktop.DBus serial=63 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaPlayer1'"
+method return time=1514703232.958601 sender=org.freedesktop.DBus -> destination=:1.752 serial=51 reply_serial=63
+method call time=1514703232.959511 sender=:1.752 -> destination=org.freedesktop.DBus serial=64 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaFolder1'"
+method return time=1514703232.959720 sender=org.freedesktop.DBus -> destination=:1.752 serial=52 reply_serial=64
+method call time=1514703232.960640 sender=:1.752 -> destination=org.freedesktop.DBus serial=65 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.960879 sender=org.freedesktop.DBus -> destination=:1.752 serial=53 reply_serial=65
+method call time=1514703232.961894 sender=:1.752 -> destination=org.freedesktop.DBus serial=66 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7638',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.962157 sender=org.freedesktop.DBus -> destination=:1.752 serial=54 reply_serial=66
+method call time=1514703232.963306 sender=:1.752 -> destination=org.freedesktop.DBus serial=67 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7630',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.963520 sender=org.freedesktop.DBus -> destination=:1.752 serial=55 reply_serial=67
+method call time=1514703232.964973 sender=:1.752 -> destination=org.freedesktop.DBus serial=68 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7629',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.965492 sender=org.freedesktop.DBus -> destination=:1.752 serial=56 reply_serial=68
+method call time=1514703232.966830 sender=:1.752 -> destination=org.freedesktop.DBus serial=69 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/Filesystem',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.967058 sender=org.freedesktop.DBus -> destination=:1.752 serial=57 reply_serial=69
+method call time=1514703232.969154 sender=:1.752 -> destination=org.freedesktop.DBus serial=70 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/fd4',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaTransport1'"
+method return time=1514703232.969778 sender=org.freedesktop.DBus -> destination=:1.752 serial=58 reply_serial=70
+method call time=1514703232.971422 sender=:1.752 -> destination=org.freedesktop.DBus serial=71 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7616',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.971865 sender=org.freedesktop.DBus -> destination=:1.752 serial=59 reply_serial=71
+method call time=1514703232.973650 sender=:1.752 -> destination=org.freedesktop.DBus serial=72 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7614',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.974398 sender=org.freedesktop.DBus -> destination=:1.752 serial=60 reply_serial=72
+method call time=1514703232.976303 sender=:1.752 -> destination=org.freedesktop.DBus serial=73 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7484',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.976999 sender=org.freedesktop.DBus -> destination=:1.752 serial=61 reply_serial=73
+method call time=1514703232.980031 sender=:1.752 -> destination=org.freedesktop.DBus serial=74 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7485',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703232.980535 sender=org.freedesktop.DBus -> destination=:1.752 serial=62 reply_serial=74
+method call time=1514703232.982173 sender=:1.752 -> destination=org.freedesktop.DBus serial=75 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/',interface='org.freedesktop.DBus.ObjectManager',member='InterfacesAdded'"
+method return time=1514703232.982739 sender=org.freedesktop.DBus -> destination=:1.752 serial=63 reply_serial=75
+method call time=1514703232.984433 sender=:1.752 -> destination=org.freedesktop.DBus serial=76 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.bluez',path='/',interface='org.freedesktop.DBus.ObjectManager',member='InterfacesRemoved'"
+method return time=1514703232.984999 sender=org.freedesktop.DBus -> destination=:1.752 serial=64 reply_serial=76
+method call time=1514703232.993251 sender=:1.752 -> destination=org.freedesktop.DBus serial=77 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=RemoveMatch
+   string "type='signal',sender='org.freedesktop.DBus',path='/org/freedesktop/DBus',interface='org.freedesktop.DBus',member='NameOwnerChanged',arg0='org.bluez'"
+method return time=1514703232.993586 sender=org.freedesktop.DBus -> destination=:1.752 serial=65 reply_serial=77
+signal time=1514703232.995368 sender=org.freedesktop.DBus -> destination=:1.752 serial=5 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameLost
+   string ":1.752"
+signal time=1514703232.995764 sender=org.freedesktop.DBus -> destination=(null destination) serial=1511 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=NameOwnerChanged
+   string ":1.752"
+   string ":1.752"
+   string ""
+
+
+	    ]
+method call time=1514703272.198455 sender=:1.761 -> destination=org.freedesktop.DBus serial=8 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.AgentManager1'"
+method return time=1514703272.198593 sender=org.freedesktop.DBus -> destination=:1.761 serial=8 reply_serial=8
+method call time=1514703272.198640 sender=:1.761 -> destination=org.freedesktop.DBus serial=9 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.ProfileManager1'"
+method return time=1514703272.198748 sender=org.freedesktop.DBus -> destination=:1.761 serial=9 reply_serial=9
+method call time=1514703272.198792 sender=:1.761 -> destination=org.freedesktop.DBus serial=10 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.HealthManager1'"
+method return time=1514703272.198865 sender=org.freedesktop.DBus -> destination=:1.761 serial=10 reply_serial=10
+method call time=1514703272.198912 sender=:1.761 -> destination=org.freedesktop.DBus serial=11 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Adapter1'"
+method return time=1514703272.198986 sender=org.freedesktop.DBus -> destination=:1.761 serial=11 reply_serial=11
+method call time=1514703272.199031 sender=:1.761 -> destination=org.freedesktop.DBus serial=12 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.GattManager1'"
+method return time=1514703272.199104 sender=org.freedesktop.DBus -> destination=:1.761 serial=12 reply_serial=12
+method call time=1514703272.199149 sender=:1.761 -> destination=org.freedesktop.DBus serial=13 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Media1'"
+method return time=1514703272.199250 sender=org.freedesktop.DBus -> destination=:1.761 serial=13 reply_serial=13
+method call time=1514703272.199296 sender=:1.761 -> destination=org.freedesktop.DBus serial=14 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.NetworkServer1'"
+method return time=1514703272.199389 sender=org.freedesktop.DBus -> destination=:1.761 serial=14 reply_serial=14
+method call time=1514703272.199467 sender=:1.761 -> destination=org.freedesktop.DBus serial=15 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.LEAdvertisingManager1'"
+method return time=1514703272.199593 sender=org.freedesktop.DBus -> destination=:1.761 serial=15 reply_serial=15
+method call time=1514703272.199678 sender=:1.761 -> destination=org.freedesktop.DBus serial=16 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Device1'"
+method return time=1514703272.199772 sender=org.freedesktop.DBus -> destination=:1.761 serial=16 reply_serial=16
+method call time=1514703272.199837 sender=:1.761 -> destination=org.freedesktop.DBus serial=17 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.Network1'"
+method return time=1514703272.199932 sender=org.freedesktop.DBus -> destination=:1.761 serial=17 reply_serial=17
+method call time=1514703272.201558 sender=:1.761 -> destination=org.freedesktop.DBus serial=18 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaControl1'"
+method return time=1514703272.201659 sender=org.freedesktop.DBus -> destination=:1.761 serial=18 reply_serial=18
+method call time=1514703272.201701 sender=:1.761 -> destination=org.freedesktop.DBus serial=19 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaPlayer1'"
+method return time=1514703272.201768 sender=org.freedesktop.DBus -> destination=:1.761 serial=19 reply_serial=19
+method call time=1514703272.201819 sender=:1.761 -> destination=org.freedesktop.DBus serial=20 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaFolder1'"
+method return time=1514703272.201888 sender=org.freedesktop.DBus -> destination=:1.761 serial=20 reply_serial=20
+method call time=1514703272.201947 sender=:1.761 -> destination=org.freedesktop.DBus serial=21 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.202018 sender=org.freedesktop.DBus -> destination=:1.761 serial=21 reply_serial=21
+method call time=1514703272.202059 sender=:1.761 -> destination=org.freedesktop.DBus serial=22 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7485',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.202145 sender=org.freedesktop.DBus -> destination=:1.761 serial=22 reply_serial=22
+method call time=1514703272.202205 sender=:1.761 -> destination=org.freedesktop.DBus serial=23 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7484',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.202340 sender=org.freedesktop.DBus -> destination=:1.761 serial=23 reply_serial=23
+method call time=1514703272.202388 sender=:1.761 -> destination=org.freedesktop.DBus serial=24 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7614',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.202464 sender=org.freedesktop.DBus -> destination=:1.761 serial=24 reply_serial=24
+method call time=1514703272.202509 sender=:1.761 -> destination=org.freedesktop.DBus serial=25 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7616',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.202585 sender=org.freedesktop.DBus -> destination=:1.761 serial=25 reply_serial=25
+method call time=1514703272.202630 sender=:1.761 -> destination=org.freedesktop.DBus serial=26 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7638',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.202705 sender=org.freedesktop.DBus -> destination=:1.761 serial=26 reply_serial=26
+method call time=1514703272.203385 sender=:1.761 -> destination=org.freedesktop.DBus serial=27 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7630',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.203522 sender=org.freedesktop.DBus -> destination=:1.761 serial=27 reply_serial=27
+method call time=1514703272.203596 sender=:1.761 -> destination=org.freedesktop.DBus serial=28 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/NowPlaying/item7629',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.203731 sender=org.freedesktop.DBus -> destination=:1.761 serial=28 reply_serial=28
+method call time=1514703272.203805 sender=:1.761 -> destination=org.freedesktop.DBus serial=29 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/player0/Filesystem',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaItem1'"
+method return time=1514703272.203911 sender=org.freedesktop.DBus -> destination=:1.761 serial=29 reply_serial=29
+method call time=1514703272.204406 sender=:1.761 -> destination=org.freedesktop.DBus serial=30 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
+   string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/fd4',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaTransport1'"
+method return time=1514703272.204553 sender=org.freedesktop.DBus -> destination=:1.761 serial=30 reply_serial=30
