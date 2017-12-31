@@ -90,8 +90,12 @@ bluetooth.on('added-MediaPlayer', async (data) => {
 	await event_log('MediaPlayerProperties', 'Log', MediaPlayer_properties);
 
 	setTimeout(async () => {
-		await MediaPlayer.Play();
+		await MediaPlayer.Pause();
 	}, 1500);
+
+	setTimeout(async () => {
+		await MediaPlayer.Play();
+	}, 3000);
 });
 
 
@@ -106,7 +110,7 @@ bluetooth.on('added-MediaTransport', async (data) => {
 
 	setTimeout(async () => {
 		await MediaTransport.Volume(127);
-	}, 1500);
+	}, 4500);
 });
 
 
