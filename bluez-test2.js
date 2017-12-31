@@ -64,13 +64,13 @@ bluetooth.on('added-Device', async (data) => {
 	let device_properties = await device.getProperties();
 	await event_log('DeviceProperties', 'Log', device_properties);
 
-	if (data.properties.Connected === false) {
-		event_log('DeviceConnect', 'Log', 'Attempting to connect to device with address ' + data.properties.Address);
+	// if (data.properties.Connected === false) {
+	// 	event_log('DeviceConnect', 'Log', 'Attempting to connect to device with address ' + data.properties.Address);
 
-		await device.Connect().catch((err) => {
-			event_log('DeviceConnect', 'Error', 'Error while attempting to connect to device with address ' + data.properties.Address + ': ' + err.message);
-		});
-	}
+	// 	await device.Connect().catch((err) => {
+	// 		event_log('DeviceConnect', 'Error', 'Error while attempting to connect to device with address ' + data.properties.Address + ': ' + err.message);
+	// 	});
+	// }
 });
 
 
