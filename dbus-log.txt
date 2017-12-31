@@ -158,3 +158,26 @@ method return time=1514703272.203911 sender=org.freedesktop.DBus -> destination=
 method call time=1514703272.204406 sender=:1.761 -> destination=org.freedesktop.DBus serial=30 path=/org/freedesktop/DBus; interface=org.freedesktop.DBus; member=AddMatch
    string "type='signal',sender='org.bluez',path='/org/bluez/hci0/dev_AC_37_43_8B_74_48/fd4',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',arg0='org.bluez.MediaTransport1'"
 method return time=1514703272.204553 sender=org.freedesktop.DBus -> destination=:1.761 serial=30 reply_serial=30
+
+
+
+
+signal time=1514709556.419359 sender=:1.21 -> destination=(null destination) serial=76 path=/hfp/org/bluez/hci0/dev_AC_37_43_8B_74_48; interface=org.ofono.NetworkRegistration; member=PropertyChanged
+   string "Strength"
+   variant       byte 80
+signal time=1514709562.505694 sender=:1.21 -> destination=(null destination) serial=77 path=/hfp/org/bluez/hci0/dev_AC_37_43_8B_74_48; interface=org.ofono.NetworkRegistration; member=PropertyChanged
+   string "Strength"
+   variant       byte 60
+
+
+
+signal time=1514709609.846357 sender=:1.21 -> destination=(null destination) serial=78 path=/hfp/org/bluez/hci0/dev_AC_37_43_8B_74_48; interface=org.ofono.NetworkRegistration; member=PropertyChanged
+   string "Strength"
+   variant       byte 80
+signal time=1514709617.253215 sender=:1.21 -> destination=(null destination) serial=79 path=/hfp/org/bluez/hci0/dev_AC_37_43_8B_74_48; interface=org.ofono.NetworkRegistration; member=PropertyChanged
+   string "Strength"
+   variant       byte 60
+
+
+
+
