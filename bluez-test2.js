@@ -23,11 +23,10 @@ bluetooth.on('changed-MediaTransport', async (data) => { event_log('Changed', 'M
 bluetooth.on('changed-Network',        async (data) => { event_log('Changed', 'Network',        data); });
 
 // Register callbacks for new interfaces
-bluetooth.on('added-Filesystem',     async (data) => { event_log('Added', 'Filesystem',     data); });
-bluetooth.on('added-MediaControl',   async (data) => { event_log('Added', 'MediaControl',   data); });
-bluetooth.on('added-MediaItem',      async (data) => { event_log('Added', 'MediaItem',      data); console.dir(bluetooth.items); });
-bluetooth.on('added-MediaTransport', async (data) => { event_log('Added', 'MediaTransport', data); });
-bluetooth.on('added-Network',        async (data) => { event_log('Added', 'Network',        data); });
+bluetooth.on('added-Filesystem',   async (data) => { event_log('Added', 'Filesystem',   data); });
+bluetooth.on('added-MediaControl', async (data) => { event_log('Added', 'MediaControl', data); });
+bluetooth.on('added-MediaItem',    async (data) => { event_log('Added', 'MediaItem',    data); console.dir(bluetooth.items); });
+bluetooth.on('added-Network',      async (data) => { event_log('Added', 'Network',      data); });
 
 
 bluetooth.on('added-Adapter', async (data) => {
@@ -54,7 +53,7 @@ bluetooth.on('added-Adapter', async (data) => {
 bluetooth.on('added-Device', async (data) => {
 	event_log('Added', 'Device', data);
 
-	event_log('DeviceInterface', 'Log', 'Attempting to get interface of device with address ' + data.properties.Address);
+	event_log('DeviceInterface', 'Log', 'Attempting to get Device interface with address ' + data.properties.Address);
 	let device = await bluetooth.getDevice(data.properties.Address);
 
 	if (data.properties.Trusted === false) {
@@ -71,20 +70,42 @@ bluetooth.on('added-Device', async (data) => {
 	// 		event_log('DeviceConnect', 'Error', 'Error while attempting to connect to device with address ' + data.properties.Address + ': ' + err.message);
 	// 	});
 	// }
+
+	if (data.properties.Connected === true) {
+		event_log('DeviceConnectProfile', 'Log', 'Attempting to connect MAS profile on device with address ' + data.properties.Address);
+		await device.ConnectProfile('00001132-0000-1000-8000-00805f9b34fb').catch((err) => {
+			event_log('DeviceConnectProfile', 'Error', 'Error while attempting to connect MAS profile on device with address ' + data.properties.Address + ': ' + err.message);
+		});
+	}
 });
 
 
 bluetooth.on('added-MediaPlayer', async (data) => {
 	event_log('Added', 'MediaPlayer', data);
 
-	event_log('MediaPlayerInterface', 'Log', 'Attempting to get interface of media player with path ' + data.object);
-	let media_player = await bluetooth.getMediaPlayer(data.object);
+	event_log('MediaPlayerInterface', 'Log', 'Attempting to get MediaPlayer interface with path ' + data.object);
+	let MediaPlayer = await bluetooth.getMediaPlayer(data.object);
 
-	let media_player_properties = await media_player.getProperties();
-	await event_log('MediaPlayerProperties', 'Log', media_player_properties);
+	let MediaPlayer_properties = await MediaPlayer.getProperties();
+	await event_log('MediaPlayerProperties', 'Log', MediaPlayer_properties);
 
 	setTimeout(async () => {
-		await media_player.Play();
+		await MediaPlayer.Play();
+	}, 1500);
+});
+
+
+bluetooth.on('added-MediaTransport', async (data) => {
+	event_log('Added', 'MediaTransport', data);
+
+	event_log('MediaTransportInterface', 'Log', 'Attempting to get MediaTransport interface with path ' + data.object);
+	let MediaTransport = await bluetooth.getMediaTransport(data.object);
+
+	let MediaTransport_properties = await MediaTransport.getProperties();
+	await event_log('MediaTransportProperties', 'Log', MediaTransport_properties);
+
+	setTimeout(async () => {
+		await MediaTransport.Volume(127);
 	}, 1500);
 });
 
