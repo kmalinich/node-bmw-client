@@ -77,7 +77,7 @@ function decode_button(data) {
 					switch (button) {
 						case 'left'  : break;
 						case 'right' : break;
-						case 'eject' : BT.command('play'); break; // Think about it
+						case 'phone' : BT.command('play'); break; // Think about it
 					}
 					break;
 
@@ -85,7 +85,7 @@ function decode_button(data) {
 					switch (button) {
 						case 'left'  : kodi.command('seek-rewind');  break;
 						case 'right' : kodi.command('seek-forward'); break;
-						case 'eject' : break;
+						case 'phone' : break;
 					}
 			}
 			break;
@@ -97,32 +97,19 @@ function decode_button(data) {
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
 						case 'depressleft'  : BT.command('previous'); break;
 						case 'depressright' : BT.command('next');     break;
-						case 'depresseject' : BT.command('pause');    break; // Think about it
+						case 'depressphone' : BT.command('pause');    break; // Think about it
 
-						case 'depress2' : {
-							IKE.text_warning('   Police lights!   ');
-							LCM.police(true);
-							setTimeout(() => {
-								LCM.police(false);
-							}, 500);
-							break;
-						}
+						case 'depress1' : LCM.police(true); setTimeout(LCM.police, 150); break;
+						case 'depress2' : LCM.police(true); setTimeout(LCM.police, 250); break;
+						case 'depress4' : LCM.police(true); setTimeout(LCM.police, 450); break;
+						case 'depress5' : LCM.police(true); setTimeout(LCM.police, 550); break;
 
-						case 'depress5' : {
-							IKE.text_warning('   Police lights!   ');
-							LCM.police(true);
-							setTimeout(() => {
-								LCM.police(false);
-							}, 500);
-							break;
-						}
-
-						case 'depress3' : LCM.police(true);  break;
-						case 'depress6' : LCM.police(false); break;
+						case 'depress3' : LCM.police(false); break;
+						case 'depress6' : LCM.police(true);  break;
 
 						case 'holdleft'  : break;
 						case 'holdright' : break;
-						case 'holdeject' : break;
+						case 'holdphone' : break;
 					}
 					break;
 
@@ -130,11 +117,11 @@ function decode_button(data) {
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
-						case 'depresseject' : kodi.command('toggle');   break;
+						case 'depressphone' : kodi.command('toggle');   break;
 
 						case 'holdleft'  : kodi.command('toggle'); break;
 						case 'holdright' : kodi.command('toggle'); break;
-						case 'holdeject' : break;
+						case 'holdphone' : break;
 					}
 			}
 			break;

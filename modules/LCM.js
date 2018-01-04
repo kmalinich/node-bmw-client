@@ -830,11 +830,15 @@ function pl() {
 
 		io_encode({});
 
-		update.status('lcm.police_lights.on', false);
+		if (update.status('lcm.police_lights.on', false)) {
+			setTimeout(IKE.text_urgent_off, 1000);
+		}
 		return;
 	}
 
-	update.status('lcm.police_lights.on', true);
+	if (update.status('lcm.police_lights.on', true)) {
+		IKE.text_warning('   Police lights!   ', 0);
+	}
 
 	let object = {
 		front : {
@@ -934,7 +938,7 @@ function pl_check(data) {
 	return data.includes(status.lcm.police_lights.counts.main);
 }
 
-function police(action) {
+function police(action = false) {
 	update.status('lcm.police_lights.ok', action);
 
 	if (status.lcm.police_lights.on === action) return;

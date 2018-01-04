@@ -20,6 +20,8 @@ os         = require('os');
 update     = require('update');
 weather    = require('weather');
 
+objfmt = require('object-format');
+
 
 // Configure term event listeners
 function term_config(pass) {
@@ -36,6 +38,7 @@ function term_config(pass) {
 	});
 
 	process.on('exit', () => {
+		bail();
 		log.msg({ msg : 'Terminated' });
 	});
 
@@ -146,37 +149,37 @@ function init() {
 
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS/KBUS module node modules
-			// Initialize event listeners for GM and IKE
-			BMBT.init_listeners();
-			CON1.init_listeners();
-			GM.init_listeners();
-			IKE.init_listeners();
-			LCM.init_listeners();
-			MID.init_listeners();
-			gpio.init_listeners();
-			json.init_listeners();
+			json.reset(() => { // Reset vars (hack =/)
+				// Initialize event listeners for GM and IKE
+				BMBT.init_listeners();
+				CON1.init_listeners();
+				GM.init_listeners();
+				IKE.init_listeners();
+				LCM.init_listeners();
+				MID.init_listeners();
+				gpio.init_listeners();
+				json.init_listeners();
 
-			host_data.init(() => { // Initialize host data object
-				weather.init(() => { // Initialize weather object
-					kodi.init(); // Start Kodi WebSocket client
-					BT.init(); // Start Linux D-Bus Bluetooth handler
+				host_data.init(() => { // Initialize host data object
+					weather.init(() => { // Initialize weather object
+						kodi.init(); // Start Kodi WebSocket client
+						BT.init(); // Start Linux D-Bus Bluetooth handler
 
-					gpio.init(() => { // Initialize GPIO relays
-						HDMI.init(() => { // Open HDMI-CEC
-							socket.init(() => { // Start zeroMQ client
-								api.init(() => { // Start Express API server
-									log.msg({ msg : 'Initialized' });
+						gpio.init(() => { // Initialize GPIO relays
+							HDMI.init(() => { // Open HDMI-CEC
+								socket.init(() => { // Start zeroMQ client
+									api.init(() => { // Start Express API server
+										log.msg({ msg : 'Initialized' });
 
-
-									// notify.notify('Started');
-									// IKE.text_warning('     bmwcd restart', 3000);
-
-									setTimeout(() => {
-										socket.lcd_text_tx({
-											upper : app_name + ' ' + status.system.host.short,
-											lower : 'restarted',
-										});
-									}, 250);
+										// notify.notify('Started');
+										//
+										// setTimeout(() => {
+										// 	socket.lcd_text_tx({
+										// 		upper : app_name + ' ' + status.system.host.short,
+										// 		lower : 'restarted',
+										// 	});
+										// }, 250);
+									}, term);
 								}, term);
 							}, term);
 						}, term);

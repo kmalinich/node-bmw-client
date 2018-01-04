@@ -174,6 +174,7 @@ function decode_audio_control(data) {
 			data.value += 'unknown cmd_type ' + cmd_type + ' - 0x' + data.msg[1].toString(16);
 			return data;
 	}
+	// console.log('cmd_values : %s => %s', '0x' + data.msg[1].toString(16), '0x' + cmd_value.toString(16));
 
 	// Further command-type-specific processing
 	switch (cmd_type) {
