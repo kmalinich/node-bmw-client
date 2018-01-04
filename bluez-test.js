@@ -1,9 +1,7 @@
 /* eslint no-console : 0 */
 
+const bluez  = new (require('bluez'))();
 const objfmt = require('object-format');
-
-const Bluez     = require('bluez');
-const bluetooth = new Bluez();
 
 
 function event_log(action, type, data) {
@@ -12,28 +10,29 @@ function event_log(action, type, data) {
 	console.log('======== Event : %s (%s) ========\n', type, action);
 }
 
+
 // Register callbacks for changed properties
-bluetooth.on('changed-Adapter',        async (data) => { event_log('Changed', 'Adapter',        data); });
-bluetooth.on('changed-Device',         async (data) => { event_log('Changed', 'Device',         data); });
-bluetooth.on('changed-Filesystem',     async (data) => { event_log('Changed', 'Filesystem',     data); });
-bluetooth.on('changed-MediaControl',   async (data) => { event_log('Changed', 'MediaControl',   data); });
-bluetooth.on('changed-MediaItem',      async (data) => { event_log('Changed', 'MediaItem',      data); });
-bluetooth.on('changed-MediaPlayer',    async (data) => { event_log('Changed', 'MediaPlayer',    data); });
-bluetooth.on('changed-MediaTransport', async (data) => { event_log('Changed', 'MediaTransport', data); });
-bluetooth.on('changed-Network',        async (data) => { event_log('Changed', 'Network',        data); });
+bluez.on('changed-Adapter',        async (data) => { event_log('Changed', 'Adapter',        data); });
+bluez.on('changed-Device',         async (data) => { event_log('Changed', 'Device',         data); });
+bluez.on('changed-Filesystem',     async (data) => { event_log('Changed', 'Filesystem',     data); });
+bluez.on('changed-MediaControl',   async (data) => { event_log('Changed', 'MediaControl',   data); });
+bluez.on('changed-MediaItem',      async (data) => { event_log('Changed', 'MediaItem',      data); });
+bluez.on('changed-MediaPlayer',    async (data) => { event_log('Changed', 'MediaPlayer',    data); });
+bluez.on('changed-MediaTransport', async (data) => { event_log('Changed', 'MediaTransport', data); });
+bluez.on('changed-Network',        async (data) => { event_log('Changed', 'Network',        data); });
 
 // Register callbacks for new interfaces
-bluetooth.on('added-Filesystem',   async (data) => { event_log('Added', 'Filesystem',   data); });
-bluetooth.on('added-MediaControl', async (data) => { event_log('Added', 'MediaControl', data); });
-bluetooth.on('added-MediaItem',    async (data) => { event_log('Added', 'MediaItem',    data); console.dir(bluetooth.items); });
-bluetooth.on('added-Network',      async (data) => { event_log('Added', 'Network',      data); });
+bluez.on('added-Filesystem',   async (data) => { event_log('Added', 'Filesystem',   data); });
+bluez.on('added-MediaControl', async (data) => { event_log('Added', 'MediaControl', data); });
+bluez.on('added-MediaItem',    async (data) => { event_log('Added', 'MediaItem',    data); console.dir(bluez.items); });
+bluez.on('added-Network',      async (data) => { event_log('Added', 'Network',      data); });
 
 
-bluetooth.on('added-Adapter', async (data) => {
+bluez.on('added-Adapter', async (data) => {
 	event_log('Added', 'Adapter', data);
 
 	event_log('AdapterInterface', 'Log', 'Attempting to get interface of adapter with path ' + data.object);
-	let adapter = await bluetooth.getAdapter(data.object);
+	let adapter = await bluez.getAdapter(data.object);
 
 	let adapter_properties = await adapter.getProperties();
 	await event_log('AdapterProperties', 'Log', adapter_properties);
@@ -42,7 +41,7 @@ bluetooth.on('added-Adapter', async (data) => {
 	await adapter.Discoverable(true);
 
 	// Register Agent that accepts everything and uses key 1234
-	await bluetooth.registerDefaultAgent();
+	await bluez.registerDefaultAgent();
 	await event_log('Agent', 'Log', 'Registered default agent');
 
 	adapter_properties = await adapter.getProperties();
@@ -50,11 +49,11 @@ bluetooth.on('added-Adapter', async (data) => {
 });
 
 
-bluetooth.on('added-Device', async (data) => {
+bluez.on('added-Device', async (data) => {
 	event_log('Added', 'Device', data);
 
 	event_log('DeviceInterface', 'Log', 'Attempting to get Device interface with address ' + data.properties.Address);
-	let device = await bluetooth.getDevice(data.properties.Address);
+	let device = await bluez.getDevice(data.properties.Address);
 
 	if (data.properties.Trusted === false) {
 		await device.Trusted(true);
@@ -80,11 +79,11 @@ bluetooth.on('added-Device', async (data) => {
 });
 
 
-bluetooth.on('added-MediaPlayer', async (data) => {
+bluez.on('added-MediaPlayer', async (data) => {
 	event_log('Added', 'MediaPlayer', data);
 
 	event_log('MediaPlayerInterface', 'Log', 'Attempting to get MediaPlayer interface with path ' + data.object);
-	let MediaPlayer = await bluetooth.getMediaPlayer(data.object);
+	let MediaPlayer = await bluez.getMediaPlayer(data.object);
 
 	let MediaPlayer_properties = await MediaPlayer.getProperties();
 	await event_log('MediaPlayerProperties', 'Log', MediaPlayer_properties);
@@ -99,11 +98,11 @@ bluetooth.on('added-MediaPlayer', async (data) => {
 });
 
 
-bluetooth.on('added-MediaTransport', async (data) => {
+bluez.on('added-MediaTransport', async (data) => {
 	event_log('Added', 'MediaTransport', data);
 
 	event_log('MediaTransportInterface', 'Log', 'Attempting to get MediaTransport interface with path ' + data.object);
-	let MediaTransport = await bluetooth.getMediaTransport(data.object);
+	let MediaTransport = await bluez.getMediaTransport(data.object);
 
 	let MediaTransport_properties = await MediaTransport.getProperties();
 	await event_log('MediaTransportProperties', 'Log', MediaTransport_properties);
@@ -115,6 +114,6 @@ bluetooth.on('added-MediaTransport', async (data) => {
 
 
 // Initialize bluetooth interface
-bluetooth.init().then(async () => {
-	event_log('Init', 'Log', 'bluetooth.init()');
+bluez.init().then(async () => {
+	event_log('Init', 'Log', 'bluez.init()');
 });

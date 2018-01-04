@@ -84,7 +84,7 @@
 		"app_path": false,
 		"bitmask": false,
 		"bus": false,
-		"config": false,
+		"config": true,
 		"gpio": false,
 		"hex": false,
 		"host_data": false,
@@ -95,7 +95,7 @@
 		"obc_values": false,
 		"os": false,
 		"socket": false,
-		"status": false,
+		"status": true,
 		"update": false,
 		"weather": false
 	},
