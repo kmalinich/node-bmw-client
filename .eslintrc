@@ -93,6 +93,7 @@
 		"log": false,
 		"notify": false,
 		"obc_values": false,
+		"objfmt": false,
 		"os": false,
 		"socket": false,
 		"status": true,

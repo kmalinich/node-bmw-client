@@ -27,7 +27,7 @@ function dsp_mode(mode) {
 	}
 
 	bus.data.send({
-		src : 'RAD',
+		src : 'GT',
 		msg : cmd,
 	});
 }
@@ -37,12 +37,12 @@ function eq_decode(data) {
 	let dsp_mode = data[1] - 1;
 
 	let reverb = data[2] & 0x0F;
-	if (bitmask.test(data[2], 0x10)) {
+	if (bitmask.test(data[2], bitmask.b[4])) {
 		reverb *= -1;
 	}
 
 	let room_size = data[3] & 0x0F;
-	if (bitmask.test(data[3], 0x10)) {
+	if (bitmask.test(data[3], bitmask.b[4])) {
 		room_size *= -1;
 	}
 
@@ -52,7 +52,7 @@ function eq_decode(data) {
 	for (n = 0; n < 7; n++) {
 		band[n] = data[4 + n] & 0x0F;
 
-		if (bitmask.test(data[n + 4], 0x10)) {
+		if (bitmask.test(data[n + 4], bitmask.b[4])) {
 			band[n] *= -1;
 		}
 	}
@@ -130,7 +130,7 @@ function m_audio(value) {
 	}
 
 	bus.data.send({
-		src : 'RAD',
+		src : 'GT',
 		msg : cmd,
 	});
 }

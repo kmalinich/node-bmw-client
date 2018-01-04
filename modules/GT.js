@@ -22,25 +22,72 @@ function parse_out(data) {
 				case 0x0F : data.value += 'EQ button: DSP off';        break;
 				case 0x28 : data.value += 'EQ button: unknown (0x28)'; break;
 
-				case 0x90:
-					data.value += 'EQ button: M-Audio off';
-					// Not really the right place to set this var
-					// It should be in the status from DSP itself
-					update.status('dsp.m_audio', false);
+				case 0x15 : {
+					data.value += 'EQ delta: 0x' + data.msg[2].toString(16);
 					break;
+				}
 
-				case 0x91:
-					data.value += 'EQ button: M-Audio on';
-					update.status('dsp.m_audio', true);
+				case 0x90 : {
+					switch (data.msg[2]) {
+						case 0x00 : {
+							data.value += 'EQ button: M-Audio off';
+
+							// Not really the right place to set this var
+							// It should be in the status from DSP itself
+							update.status('dsp.m_audio', false);
+
+							break;
+						}
+					}
 					break;
+				}
 
-				case 0x95:
-					data.value += 'memory set';
-					update.status('dsp.m_audio', false);
+				case 0x91 : {
+					switch (data.msg[2]) {
+						case 0x00 : {
+							data.value += 'EQ button: M-Audio on';
+
+							// Not really the right place to set this var
+							// It should be in the status from DSP itself
+							update.status('dsp.m_audio', true);
+
+							break;
+						}
+					}
 					break;
+				}
 
-				default:
+				case 0x95 : {
+					data.value += 'memory set - ';
+
+					// data.msg[2]:
+					// 0x00 - 0x07 = room 0-7
+					// 0x20 - 0x27 = echo 0-7
+
+					let amount;
+
+					// Check if the command is setting echo amount or room size and get the value
+					switch (bitmask.test(data.msg[2], bitmask.b[5])) {
+						case false : { // Room size
+							data.value += 'room size - ';
+							amount = data.msg[2];
+							break;
+						}
+
+						case true : { // Echo
+							data.value += 'echo amount - ';
+							// Remove 0x20 from the value
+							amount = bitmask.unset(data.msg[2], bitmask.b[5]);
+						}
+					}
+
+					data.value += amount;
+					break;
+				}
+
+				default : {
 					data.value = Buffer.from(data.msg);
+				}
 			}
 			break;
 		}
