@@ -5,7 +5,7 @@ Do magic with an E38/E39/E46/E53-ish BMW, Raspberry Pi 3, and Node.js 8.x.
 
 ## Advisory
 I dev way faster than I document.  
-This README is about 6-8 months out of date and needs to be completely rewritten.  
+This README is 12+ months out of date and needs to be completely rewritten.  
 I'll get to it...  
 
 ## Disclaimers
@@ -21,7 +21,7 @@ I'll get to it...
 * I make no assertations that I am a professional. I'm just doing this for fun and to learn a little Node.js.
 * It's probably best to use this project as a reference versus fork it.
 
-Currently being developed using my US-spec 2000 E39 540i, and a Raspberry Pi 3 running the latest Raspbian and NodeJS 7.9.x.
+Currently being developed using a US-spec 2000 E39 540i, a US-spec 2002 E39 M5, two Raspberry Pi 3s running Raspbian stretch, three Rolf Resler IBUS adapters, a Samsung DB10D HDMI screen, a PiCAN2 dual-channel CANBUS hat, NodeJS 9.2.x, and more.
 About 90% of it is done in a way I don't really like, but I have so little time to work on this... =/
 
 It acts as, more or less.. plug-in custom firmware for the BMW modules.
@@ -84,6 +84,7 @@ It does:
     * OBC data set/reset
   * Control other things:
     * HDMI CEC on/off
+		* GPIO outputs (for Sainsmart relays)
 * Other:
   * Time/date sync from OS to car
   * Auto-unlock doors when key is turned from run to accessory
