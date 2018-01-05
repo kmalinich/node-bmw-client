@@ -433,19 +433,31 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Update exterior and engine coolant temperature data
 	decode_temperature_values(data) {
 		data.command = 'bro';
 		data.value   = 'temperature values';
 
-		// Update external and engine coolant temp variables
-		if (config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
-			update.status('temperature.exterior.c', Math.round(parseFloat(data.msg[1])));
-			update.status('temperature.exterior.f', Math.round(convert(parseFloat(data.msg[1])).from('celsius').to('fahrenheit')));
+		// Temperatures are not broadcast over CANBUS when ignition is not in run
+		if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
+			let temp_coolant = parseFloat(data.msg[2]);
+
+			// Signed value?
+			if (temp_coolant > 128) temp_coolant = temp_coolant - 256;
+
+			update.status('temperature.coolant.c', Math.round(temp_coolant));
+			update.status('temperature.coolant.f', Math.round(convert(temp_coolant).from('celsius').to('fahrenheit')));
 		}
 
-		if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
-			update.status('temperature.coolant.c', Math.round(parseFloat(data.msg[2])));
-			update.status('temperature.coolant.f', Math.round(convert(parseFloat(data.msg[2])).from('celsius').to('fahrenheit')));
+		// Temperatures are not broadcast over CANBUS when ignition is not in run
+		if (config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
+			let temp_exterior = parseFloat(data.msg[1]);
+
+			// Signed value?
+			if (temp_exterior > 128) temp_exterior = temp_exterior - 256;
+
+			update.status('temperature.exterior.c', Math.round(temp_exterior));
+			update.status('temperature.exterior.f', Math.round(convert(temp_exterior).from('celsius').to('fahrenheit')));
 		}
 
 		this.hud_refresh();
