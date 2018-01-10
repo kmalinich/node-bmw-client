@@ -77,7 +77,7 @@ function decode_button(data) {
 					switch (button) {
 						case 'left'  : break;
 						case 'right' : break;
-						case 'phone' : BT.command('play'); break; // Think about it
+						case 'phone' : bluetooth.command('play'); break; // Think about it
 					}
 					break;
 
@@ -95,9 +95,9 @@ function decode_button(data) {
 			switch (config.bmbt.media) {
 				case 'bluetooth' : // Bluetooth version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depressleft'  : BT.command('previous'); break;
-						case 'depressright' : BT.command('next');     break;
-						case 'depressphone' : BT.command('pause');    break; // Think about it
+						case 'depressleft'  : bluetooth.command('previous'); break;
+						case 'depressright' : bluetooth.command('next');     break;
+						case 'depressphone' : bluetooth.command('pause');    break; // Think about it
 
 						case 'depress1' : LCM.police(true); setTimeout(LCM.police, 150); break;
 						case 'depress2' : LCM.police(true); setTimeout(LCM.police, 250); break;

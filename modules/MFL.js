@@ -78,9 +78,9 @@ function decode_button_media(data) {
 			switch (config.mfl.media) {
 				case 'bluetooth' : // Bluetooth version
 					switch (status.mfl.last.action + status.mfl.last.button) {
-						case 'depressleft'  : BT.command('previous'); break;
-						case 'depressright' : BT.command('next');     break;
-						case 'depressvoice' : BT.command('toggle');   break;
+						case 'depressleft'  : bluetooth.command('previous'); break;
+						case 'depressright' : bluetooth.command('next');     break;
+						case 'depressvoice' : bluetooth.command('toggle');   break;
 
 						case 'holdleft'  : break;
 						case 'holdright' : break;

@@ -120,10 +120,10 @@ function load_modules(pass) {
 	CON1 = require('CON1');
 	DME1 = require('DME1');
 
-	// Custom libraries
-	BT   = require('BT');
-	HDMI = require('HDMI');
-	kodi = require('kodi');
+	// Media libraries
+	bluetooth = require('bluetooth');
+	hdmi      = require('hdmi');
+	kodi      = require('kodi');
 
 	// Data handler/router
 	bus = require('bus');
@@ -163,10 +163,10 @@ function init() {
 				host_data.init(() => { // Initialize host data object
 					weather.init(() => { // Initialize weather object
 						kodi.init(); // Start Kodi WebSocket client
-						BT.init(); // Start Linux D-Bus Bluetooth handler
+						bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 
 						gpio.init(() => { // Initialize GPIO relays
-							HDMI.init(() => { // Open HDMI-CEC
+							hdmi.init(() => { // Open HDMI-CEC
 								socket.init(() => { // Start zeroMQ client
 									api.init(() => { // Start Express API server
 										log.msg({ msg : 'Initialized' });
@@ -201,7 +201,7 @@ function bail() {
 function term() {
 	log.msg({ msg : 'Terminating' });
 
-	HDMI.term(() => { // Close HDMI-CEC
+	hdmi.term(() => { // Close HDMI-CEC
 		gpio.term(() => { // Terminate GPIO relays
 			host_data.term(() => { // Terminate host data timeout
 				socket.term(() => { // Stop zeroMQ client

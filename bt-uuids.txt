@@ -5,18 +5,22 @@ Suffix : 0000-1000-8000-00805f9b34fb
 00001104 IrMC Sync
 00001105 OBEX Object Push
 00001106 OBEX File Transfer
+00001108 Headset
 0000110a Audio Source
 0000110b Audio Sink
 0000110c A/V Remote Control Target
 0000110d Advanced Audio Distribu..
 0000110e A/V Remote Control
+0000110f A/V Remote Control Cont..
 00001112 Headset AG
 00001115 PANU
 00001116 NAP
 00001117 GN
+0000111e Handsfree
 0000111f Handsfree Audio Gateway
 0000112d SIM Access
 0000112f Phonebook Access Server
+00001131 Headset HS
 00001132 Message Access Server
 00001133 Message Notification Se..
 00001200 PnP Information

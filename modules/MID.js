@@ -198,14 +198,14 @@ function parse_out(data) {
 				switch (data.msg[3]) {
 					case 0x00 : break;
 					case 0x01 : break;
-					case 0x02 : BT.command('connect');    break;
-					case 0x03 : BT.command('disconnect'); break;
-					case 0x04 : BT.command('previous');   break;
-					case 0x05 : BT.command('next');       break;
-					case 0x06 : BT.command('pause');      break;
-					case 0x07 : BT.command('play');       break;
-					case 0x08 : BT.command('repeat');     break;
-					case 0x09 : BT.command('shuffle');    break;
+					case 0x02 : bluetooth.command('connect');    break;
+					case 0x03 : bluetooth.command('disconnect'); break;
+					case 0x04 : bluetooth.command('previous');   break;
+					case 0x05 : bluetooth.command('next');       break;
+					case 0x06 : bluetooth.command('pause');      break;
+					case 0x07 : bluetooth.command('play');       break;
+					case 0x08 : bluetooth.command('repeat');     break;
+					case 0x09 : bluetooth.command('shuffle');    break;
 					case 0x0A :
 						update.config('lights.auto', false);
 						LCM.auto_lights();
