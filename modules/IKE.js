@@ -857,9 +857,9 @@ class IKE extends EventEmitter {
 
 		update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]));
 
-		// If the engine is newly running, power up HDMI display
+		// If the engine is newly running
 		if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
-			HDMI.command('poweron');
+			this.emit('engine-running');
 		}
 
 		// If the vehicle is newly in reverse, show IKE message if configured to do so
