@@ -1,5 +1,7 @@
 /* eslint key-spacing : 0 */
 
+const EventEmitter = require('events');
+
 // All the possible values to send to the GM
 // let array_of_possible_values = {
 //   light_alarm                   : true,
@@ -182,15 +184,17 @@ function request(value) {
 	let cmd;
 
 	switch (value) {
-		case 'io-status' :
+		case 'io-status' : {
 			src = 'DIA';
 			cmd = [ 0x0B, 0x00 ]; // Get IO status
 			break;
+		}
 
-		case 'door-status' :
+		case 'door-status' : {
 			src = 'BMBT';
 			cmd = [ 0x79 ];
 			break;
+		}
 	}
 
 	log.module({ msg : 'Requesting \'' + value + '\'' });
@@ -210,46 +214,50 @@ function windows(request) {
 
 	// Switch for window and action
 	switch (request.window) {
-		case 'roof' : // Moonroof
+		case 'roof' : { // Moonroof
 			switch (request.action) {
 				case 'dn' : msg = [ 0x03, 0x01, 0x01 ]; break;
 				case 'up' : msg = [ 0x03, 0x02, 0x01 ]; break;
-				case 'tt' : msg = [ 0x03, 0x00, 0x01 ]; break;
+				case 'tt' : msg = [ 0x03, 0x00, 0x01 ];
 			}
 			break;
+		}
 
-		case 'lf' : // Left front
+		case 'lf' : { // Left front
 			switch (request.action) {
 				case 'dn' : msg = [ 0x01, 0x36, 0x01 ]; break;
-				case 'up' : msg = [ 0x01, 0x1A, 0x01 ]; break;
+				case 'up' : msg = [ 0x01, 0x1A, 0x01 ];
 			}
 			break;
+		}
 
-		case 'rf' : // Right front
+		case 'rf' : { // Right front
 			switch (request.action) {
 				case 'dn' : msg = [ 0x02, 0x20, 0x01 ]; break;
-				case 'up' : msg = [ 0x02, 0x22, 0x01 ]; break;
+				case 'up' : msg = [ 0x02, 0x22, 0x01 ];
 			}
 			break;
+		}
 
-		case 'lr' : // Left rear
+		case 'lr' : { // Left rear
 			switch (request.action) {
 				case 'dn' : msg = [ 0x00, 0x00, 0x01 ]; break;
-				case 'up' : msg = [ 0x42, 0x01 ];       break;
+				case 'up' : msg = [ 0x42, 0x01 ];
 			}
 			break;
+		}
 
-		case 'rr' : // Right rear
+		case 'rr' : { // Right rear
 			switch (request.action) {
 				case 'dn' : msg = [ 0x00, 0x03, 0x01 ]; break;
-				case 'up' : msg = [ 0x43, 0x01 ];       break;
+				case 'up' : msg = [ 0x43, 0x01 ];
 			}
+		}
 	}
 
 	io_set(msg);
 }
 
-const EventEmitter = require('events');
 
 class GM extends EventEmitter {
 	constructor() {
