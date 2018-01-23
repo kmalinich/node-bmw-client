@@ -122,7 +122,8 @@ function load_modules(pass) {
 
 	// Media libraries
 	bluetooth = require('bluetooth');
-	hdmi      = require('hdmi');
+	hdmi_cec  = require('hdmi-cec');
+	hdmi_rpi  = require('hdmi-rpi');
 	kodi      = require('kodi');
 
 	// Data handler/router
@@ -166,19 +167,21 @@ function init() {
 						bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 
 						gpio.init(() => { // Initialize GPIO relays
-							hdmi.init(() => { // Open HDMI-CEC
-								socket.init(() => { // Start zeroMQ client
-									api.init(() => { // Start Express API server
-										log.msg({ msg : 'Initialized' });
+							hdmi_cec.init(() => { // Open HDMI-CEC
+								hdmi_rpi.init(() => { // Open HDMI (RPi)
+									socket.init(() => { // Start zeroMQ client
+										api.init(() => { // Start Express API server
+											log.msg({ msg : 'Initialized' });
 
-										// notify.notify('Started');
-										//
-										// setTimeout(() => {
-										// 	socket.lcd_text_tx({
-										// 		upper : app_name + ' ' + status.system.host.short,
-										// 		lower : 'restarted',
-										// 	});
-										// }, 250);
+											// notify.notify('Started');
+											//
+											// setTimeout(() => {
+											// 	socket.lcd_text_tx({
+											// 		upper : app_name + ' ' + status.system.host.short,
+											// 		lower : 'restarted',
+											// 	});
+											// }, 250);
+										}, term);
 									}, term);
 								}, term);
 							}, term);
@@ -201,11 +204,13 @@ function bail() {
 function term() {
 	log.msg({ msg : 'Terminating' });
 
-	hdmi.term(() => { // Close HDMI-CEC
-		gpio.term(() => { // Terminate GPIO relays
-			host_data.term(() => { // Terminate host data timeout
-				socket.term(() => { // Stop zeroMQ client
-					kodi.term(bail); // Stop Kodi WebSocket client
+	hdmi_cec.term(() => { // Close HDMI-CEC
+		hdmi_rpi.term(() => { // Close HDMI (RPi)
+			gpio.term(() => { // Terminate GPIO relays
+				host_data.term(() => { // Terminate host data timeout
+					socket.term(() => { // Stop zeroMQ client
+						kodi.term(bail); // Stop Kodi WebSocket client
+					}, bail);
 				}, bail);
 			}, bail);
 		}, bail);
