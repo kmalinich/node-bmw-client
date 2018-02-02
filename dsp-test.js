@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-/* eslint key-spacing : 0 */
-/* eslint no-console  : 0 */
+/* eslint key-spacing      : 0 */
+/* eslint no-console       : 0 */
+/* eslint no-global-assign : 0 */
 
-hex = require('./share/hex');
+hex     = require('./share/hex');
 bitmask = require('./share/bitmask');
 
 
@@ -12,7 +13,7 @@ function check_data(data_msg) {
 
 	let dsp_memory = {
 		negative     : mask.bit4,
-		low_batt_str : 'negative: ' + mask.bit4,
+		negative_str : 'negative: ' + mask.bit4,
 
 		band     : null,
 		band_str : null,

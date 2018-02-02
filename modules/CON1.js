@@ -313,9 +313,9 @@ function button_check(button) {
 	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
 
 	switch (button.action) {
-		case 'press' :
+		case 'press' : {
 			switch (button.button) {
-				case 'tel' :
+				case 'tel' : {
 					// To use the TEL button as a toggle for rotation = Kodi volume control
 					if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
 						kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
@@ -327,9 +327,11 @@ function button_check(button) {
 							}
 						}, 8000);
 					}
-					break;
 
-				case 'nav' :
+					break;
+				}
+
+				case 'nav' : {
 					// To use the NAV button as a toggle for left<->right or up<->down rotation
 					if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
 						kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');
@@ -341,12 +343,29 @@ function button_check(button) {
 							}
 						}, 8000);
 					}
-					break;
 
-				default:
+					break;
+				}
+
+				default : {
 					kodi.input(button.button);
+				}
 			}
+
 			break;
+		}
+
+		case 'hold' : {
+			switch (button.button) {
+				case 'in' : {
+					// To use holding the knob button in to toggle RPi display on/off
+					hdmi_rpi.command('powertoggle');
+					break;
+				}
+			}
+
+			break;
+		}
 	}
 }
 
@@ -524,15 +543,9 @@ function parse_out(data) {
 }
 
 function init_listeners() {
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-powerup', () => {
-		send_status_ignition_new();
-	});
-
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-poweroff', () => {
-		send_status_ignition_new();
-	});
+	// Enable/disable keepalive on IKE ignition event
+	IKE.on('ignition-powerup',  () => { send_status_ignition_new(); });
+	IKE.on('ignition-poweroff', () => { send_status_ignition_new(); });
 }
 
 

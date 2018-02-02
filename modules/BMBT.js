@@ -73,32 +73,48 @@ function decode_button(data) {
 	switch (action) {
 		case 'hold' : {
 			switch (config.bmbt.media) {
-				case 'bluetooth' : // Bluetooth version
-					switch (button) {
-						case 'left'  : break;
-						case 'right' : break;
-						case 'phone' : bluetooth.command('play'); break; // Think about it
-					}
+				case 'bluetooth' : { // Bluetooth version
 					break;
+				}
 
-				case 'kodi' : // Kodi version
+				case 'kodi' : { // Kodi version
 					switch (button) {
-						case 'left'  : kodi.command('seek-rewind');  break;
-						case 'right' : kodi.command('seek-forward'); break;
-						case 'phone' : break;
+						case 'left'  : kodi.command('seek-rewind'); break;
+						case 'right' : kodi.command('seek-forward');
 					}
+
+					break;
+				}
 			}
+
 			break;
 		}
 
 		case 'release' : {
 			switch (config.bmbt.media) {
-				case 'bluetooth' : // Bluetooth version
+				case 'bluetooth' : { // Bluetooth version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
 						case 'depressleft'  : bluetooth.command('previous'); break;
-						case 'depressright' : bluetooth.command('next');     break;
-						case 'depressphone' : bluetooth.command('pause');    break; // Think about it
+						case 'depressright' : bluetooth.command('next');
+					}
 
+					break;
+				}
+
+				case 'kodi' : { // Kodi version
+					switch (status.bmbt.last.action + status.bmbt.last.button) {
+						case 'depressleft'  : kodi.command('previous'); break;
+						case 'depressright' : kodi.command('next');     break;
+
+						case 'holdleft'  : kodi.command('toggle'); break;
+						case 'holdright' : kodi.command('toggle');
+					}
+
+					break;
+				}
+
+				default : {
+					switch (status.bmbt.last.action + status.bmbt.last.button) {
 						case 'depress1' : LCM.police(true); setTimeout(LCM.police, 150); break;
 						case 'depress2' : LCM.police(true); setTimeout(LCM.police, 250); break;
 						case 'depress4' : LCM.police(true); setTimeout(LCM.police, 450); break;
@@ -107,23 +123,11 @@ function decode_button(data) {
 						case 'depress3' : LCM.police(false); break;
 						case 'depress6' : LCM.police(true);  break;
 
-						case 'holdleft'  : break;
-						case 'holdright' : break;
-						case 'holdphone' : break;
+						case 'holdphone' : hdmi_rpi.command('powertoggle');
 					}
-					break;
-
-				case 'kodi' : // Kodi version
-					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depressleft'  : kodi.command('previous'); break;
-						case 'depressright' : kodi.command('next');     break;
-						case 'depressphone' : kodi.command('toggle');   break;
-
-						case 'holdleft'  : kodi.command('toggle'); break;
-						case 'holdright' : kodi.command('toggle'); break;
-						case 'holdphone' : break;
-					}
+				}
 			}
+
 			break;
 		}
 
@@ -236,12 +240,10 @@ function toggle_power_if_ready() {
 
 		BMBT.timeouts.power_on = null;
 
-		if (status.rad.source_name !== 'off' || status.vehicle.ignition_level === 0) {
-			return;
-		}
+		if (status.rad.source_name !== 'off' || status.vehicle.ignition_level === 0) return;
 
-		kodi.notify(module_name,         'power [BMBT]');
-		IKE.text_override(module_name + ' power [BMBT]');
+		kodi.notify(module_name,         'power [' + module_name + ']');
+		IKE.text_override(module_name + ' power [' + module_name + ']');
 
 		log.module({ msg : 'Sending power!' });
 
@@ -257,11 +259,13 @@ function toggle_power_if_ready() {
 				RAD.volume_control(5);
 				RAD.volume_control(5);
 			}, 500);
+
 			setTimeout(() => {
 				RAD.volume_control(5);
 				RAD.volume_control(5);
 				RAD.volume_control(5);
 			}, 750);
+
 			setTimeout(() => {
 				RAD.volume_control(5);
 				RAD.volume_control(5);
@@ -372,15 +376,9 @@ function send_button(button) {
 }
 
 function init_listeners() {
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-powerup', () => {
-		status_loop(true);
-	});
-
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-poweroff', () => {
-		status_loop(false);
-	});
+	// Enable/disable keepalive on IKE ignition event
+	IKE.on('ignition-powerup',  () => { status_loop(true);  });
+	IKE.on('ignition-poweroff', () => { status_loop(false); });
 }
 
 
