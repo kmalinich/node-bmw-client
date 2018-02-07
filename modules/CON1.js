@@ -64,7 +64,7 @@ function decode_con_rotation(data) {
 		case false : direction = 'left';
 	}
 
-	log.module({ msg : 'Rotation: ' + direction + ' ' + change_abs + ' notches' });
+	log.module('Rotation: ' + direction + ' ' + change_abs + ' notches');
 
 	update.status('con1.rotation.direction', direction);
 
@@ -75,9 +75,12 @@ function decode_con_rotation(data) {
 	// Not gonna finish this now - but later,
 	// I want to do a dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds
+	let rotation_gap = time_now() - status.con1.rotation.last_msg;
 	update.status('con1.rotation.last_msg', time_now(), false);
 
-	log.module({ msg : 'Rotation: ' + status.con1.rotation.direction });
+	log.module('Time since last rotation : ' + rotation_gap);
+
+	log.module('Rotation: ' + status.con1.rotation.direction);
 
 	let mask_mode = bitmask.create({
 		b0 : status.con1.rotation.horizontal,
@@ -86,20 +89,20 @@ function decode_con_rotation(data) {
 
 	switch (mask_mode) {
 		case 0x01: { // Rotation mode: horizontal
-			kodi.input(status.con1.rotation.direction);
+			for (let i = 0; i < change_abs; i++) kodi.input(status.con1.rotation.direction);
 			break;
 		}
 
 		case 0x02: { // Rotation mode: volume
 			switch (status.con1.rotation.direction) {
-				case 'left'  : kodi.volume('down'); break;
-				case 'right' : kodi.volume('up');   break;
+				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
+				case 'right' : for (let i = 0; i < change_abs; i++) kodi.volume('up');
 			}
 			break;
 		}
 
 		case 0x03: { // Horizontal AND volume mode - error
-			log.module({ msg : 'Error: Horizontal and volume rotation modes simultaneously active, resetting' });
+			log.module('Error: Horizontal and volume rotation modes simultaneously active, resetting');
 
 			update.status('con1.rotation.horizontal', false);
 			update.status('con1.rotation.volume',     false);
@@ -108,8 +111,8 @@ function decode_con_rotation(data) {
 
 		default: { // Rotation mode: normal
 			switch (status.con1.rotation.direction) {
-				case 'left'  : kodi.input('up');   break;
-				case 'right' : kodi.input('down'); break;
+				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up');   break;
+				case 'right' : for (let i = 0; i < change_abs; i++) kodi.input('down');
 			}
 		}
 	}
@@ -303,7 +306,7 @@ function button_check(button) {
 	let change = (status.con1.last.button.action !== button.action || status.con1.last.button.button !== button.button || status.con1.last.button.mode !== button.mode);
 	if (change === false) return;
 
-	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
+	log.module('Button: ' + button.action + ' ' + button.button);
 
 	switch (button.action) {
 		case 'hold' : {
@@ -414,7 +417,7 @@ function decode_con_backlight(data) {
 // data.value   = module_name + ' counter';
 function decode_status_con(data) {
 	if (data.msg[4] === 0x06) { // CON1 needs init
-		log.module({ msg : 'Init triggered' });
+		log.module('Init triggered');
 
 		send_status_cic();
 	}
@@ -426,7 +429,7 @@ function decode_ignition_new(data) {
 	data.command = 'bro';
 	data.value   = 'Ignition status';
 
-	log.module({ msg : 'Ignition message ' + data.msg[0] });
+	log.module('Ignition message ' + data.msg[0]);
 
 	return data;
 }
@@ -436,7 +439,7 @@ function decode_status_cic(data) {
 	data.command = 'con';
 	data.value   = 'CIC1 init iDrive knob';
 
-	log.module({ msg : 'CIC1 status message ' + data.msg[0] });
+	log.module('CIC1 status message ' + data.msg[0]);
 
 	return data;
 }
@@ -484,7 +487,7 @@ function send_backlight(value) {
 		data : Buffer.from([ value, 0x00 ]),
 	});
 
-	log.module({ msg : 'Set backlight value to: ' + status.con1.backlight });
+	log.module('Set backlight value to: ' + status.con1.backlight);
 }
 
 // E90 CIC1 status
@@ -492,7 +495,7 @@ function send_status_cic() {
 	// Bounce if not enabled
 	if (config.media.con1 !== true) return;
 
-	log.module({ msg : 'Sending CIC1 status' });
+	log.module('Sending CIC1 status');
 
 	let msg = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
 	bus.data.send({
@@ -509,7 +512,8 @@ function send_status_ignition_new() {
 	// Bounce if not enabled
 	if (config.media.con1 !== true) return;
 
-	log.module({ msg : 'Sending ignition status' });
+	// This is pretty noisy
+	// log.module('Sending ignition status');
 
 	bus.data.send({
 		bus  : 'can1',
@@ -522,14 +526,14 @@ function send_status_ignition_new() {
 			clearTimeout(CON1.timeouts.status_ignition_new);
 			CON1.timeouts.status_ignition_new = null;
 
-			log.module({ msg : 'Unset ignition status timeout' });
+			log.module('Unset ignition status timeout');
 
 			return;
 		}
 	}
 
 	if (CON1.timeouts.status_ignition_new === null) {
-		log.module({ msg : 'Set ignition status timeout' });
+		log.module('Set ignition status timeout');
 	}
 
 	CON1.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
