@@ -469,6 +469,8 @@ function send_backlight(value) {
 		default   : value--;             // Decrement value by one (see above)
 	}
 
+	update.status('con1.backlight_real', value);
+
 	bus.data.send({
 		bus  : 'can1',
 		id   : 0x202,
