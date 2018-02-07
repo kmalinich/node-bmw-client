@@ -314,6 +314,25 @@ function button_check(button) {
 					hdmi_rpi.command('powertoggle');
 					break;
 				}
+
+				case 'up' : {
+					kodi.command('toggle');
+					break;
+				}
+
+				case 'down' : {
+					break;
+				}
+
+				case 'left' : {
+					kodi.command('previous');
+					break;
+				}
+
+				case 'right' : {
+					kodi.command('next');
+					break;
+				}
 			}
 
 			break;
