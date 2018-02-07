@@ -37,10 +37,6 @@ function decode_con_rotation(data) {
 	// use the math vs. the missed packets
 	// to determine how hard the wheel was flicked
 
-	// Update the data in global status object
-	update.status('con1.rotation.absolute', data.msg[2]);
-	update.status('con1.rotation.relative', data.msg[3]);
-
 	let direction;
 
 	let change = data.msg[3] - status.con1.rotation.relative;
@@ -308,7 +304,8 @@ function button_check(button) {
 	if (change === false) return;
 
 	// Store buttonpress data in 'last' object
-	update.status('con1.last.button', button);
+	update.status('con1.last.button.action', button.action);
+	update.status('con1.last.button.button', button.button);
 
 	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
 
@@ -379,7 +376,7 @@ function decode_con_backlight(data) {
 	// 0xFE      :  0%
 	// 0x00-0xFD :  1%-100%
 
-	// console.log('RECV : '+module_name+' backlight \'%s\'', data.msg[0]);
+	// console.log('RECV : ' + module_name + ' backlight \'%s\'', data.msg[0]);
 	update.status('con1.backlight', data.msg[0]);
 
 	return data;
@@ -387,10 +384,10 @@ function decode_con_backlight(data) {
 
 // 0x4E7
 // data.command = 'sta';
-// data.value   = module_name+' status';
+// data.value   = module_name + ' status';
 // 0x5E7
 // data.command = 'sta';
-// data.value   = module_name+' counter';
+// data.value   = module_name + ' counter';
 function decode_status_con(data) {
 	if (data.msg[4] === 0x06) { // CON1 needs init
 		log.module({ msg : 'Init triggered' });
