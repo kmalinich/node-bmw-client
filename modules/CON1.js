@@ -476,8 +476,6 @@ function send_backlight(value) {
 		id   : 0x202,
 		data : Buffer.from([ value, 0x00 ]),
 	});
-
-	log.module('Set backlight value to: ' + status.con1.backlight.value + ' (' + status.con1.backlight.real + ')');
 }
 
 // E90 CIC1 status
