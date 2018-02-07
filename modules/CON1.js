@@ -72,16 +72,19 @@ function decode_con_rotation(data) {
 	update.status('con1.rotation.absolute', data.msg[2]);
 	update.status('con1.rotation.relative', data.msg[3]);
 
-	// Not gonna finish this now - but later,
-	// I want to do a dynamic timeout for the 'horizontal' and 'volume' rotation modes -
-	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds
+	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
+	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
 	let rotation_gap = time_now() - status.con1.rotation.last_msg;
 	update.status('con1.rotation.last_msg', time_now(), false);
 
-	log.module('Time since last rotation : ' + rotation_gap);
+	if (rotation_gap >= config.con1.rotation_mode_timeout) {
+		log.module('Resetting rotation mode, time since last rotation : ' + rotation_gap + ' ms');
 
-	log.module('Rotation: ' + status.con1.rotation.direction);
+		update.status('con1.rotation.horizontal', false);
+		update.status('con1.rotation.volume',     false);
+	}
 
+	// Create quick bitmask to ease switch statement processing
 	let mask_mode = bitmask.create({
 		b0 : status.con1.rotation.horizontal,
 		b1 : status.con1.rotation.volume,
@@ -348,14 +351,7 @@ function button_check(button) {
 						case 'tel' : {
 							// To use the TEL button as a toggle for rotation = Kodi volume control
 							if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
-								kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
-
-								// In 8000ms, set it back
-								setTimeout(() => {
-									if (update.status('con1.rotation.volume', false)) {
-										kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via timeout');
-									}
-								}, 8000);
+								kodi.notify('CON1 volume mode enabled');
 							}
 
 							break;
@@ -364,14 +360,7 @@ function button_check(button) {
 						case 'nav' : {
 							// To use the NAV button as a toggle for left<->right or up<->down rotation
 							if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
-								kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');
-
-								// In 8000ms, set it back
-								setTimeout(() => {
-									if (update.status('con1.rotation.horizontal', false)) {
-										kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via timeout');
-									}
-								}, 8000);
+								kodi.notify('CON1 horizontal mode enabled');
 							}
 
 							break;
