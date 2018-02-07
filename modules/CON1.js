@@ -78,8 +78,6 @@ function decode_con_rotation(data) {
 	update.status('con1.rotation.last_msg', time_now(), false);
 
 	if (rotation_gap >= config.con1.rotation_mode_timeout) {
-		log.module('Resetting rotation mode, time since last rotation : ' + rotation_gap + ' ms');
-
 		update.status('con1.rotation.horizontal', false);
 		update.status('con1.rotation.volume',     false);
 	}
@@ -350,7 +348,7 @@ function button_check(button) {
 					switch (status.con1.last.button.button) {
 						case 'tel' : {
 							// To use the TEL button as a toggle for rotation = Kodi volume control
-							if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
+							if (update.status('con1.rotation.volume', true)) {
 								kodi.notify('CON1', 'Rotation mode: volume');
 							}
 
@@ -359,7 +357,7 @@ function button_check(button) {
 
 						case 'nav' : {
 							// To use the NAV button as a toggle for left<->right or up<->down rotation
-							if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
+							if (update.status('con1.rotation.horizontal', true)) {
 								kodi.notify('CON1', 'Rotation mode: horizontal');
 							}
 
