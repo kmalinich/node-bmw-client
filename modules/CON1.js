@@ -458,7 +458,7 @@ function send_backlight(value) {
 	if (value < 0x00) value = 0xFF;
 
 	// Set status value
-	update.status('con1.backlight', value);
+	update.status('con1.backlight.value', value);
 
 	// Workarounds
 	switch (value) {
@@ -469,7 +469,7 @@ function send_backlight(value) {
 		default   : value--;             // Decrement value by one (see above)
 	}
 
-	update.status('con1.backlight_real', value);
+	update.status('con1.backlight.real', value);
 
 	bus.data.send({
 		bus  : 'can1',
