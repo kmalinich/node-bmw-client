@@ -319,41 +319,45 @@ function button_check(button) {
 		}
 
 		case 'release' : {
-			switch (status.con1.last.button.action + status.con1.last.button.button) {
-				case 'depresstel' : {
-					// To use the TEL button as a toggle for rotation = Kodi volume control
-					if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
-						kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
+			switch (status.con1.last.button.action) {
+				case 'depress' : {
+					switch (status.con1.last.button.button) {
+						case 'tel' : {
+							// To use the TEL button as a toggle for rotation = Kodi volume control
+							if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
+								kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
 
-						// In 8000ms, set it back
-						setTimeout(() => {
-							if (update.status('con1.rotation.volume', false)) {
-								kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via timeout');
+								// In 8000ms, set it back
+								setTimeout(() => {
+									if (update.status('con1.rotation.volume', false)) {
+										kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via timeout');
+									}
+								}, 8000);
 							}
-						}, 8000);
-					}
 
-					break;
-				}
+							break;
+						}
 
-				case 'depressnav' : {
-					// To use the NAV button as a toggle for left<->right or up<->down rotation
-					if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
-						kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');
+						case 'nav' : {
+							// To use the NAV button as a toggle for left<->right or up<->down rotation
+							if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
+								kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');
 
-						// In 8000ms, set it back
-						setTimeout(() => {
-							if (update.status('con1.rotation.horizontal', false)) {
-								kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via timeout');
+								// In 8000ms, set it back
+								setTimeout(() => {
+									if (update.status('con1.rotation.horizontal', false)) {
+										kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via timeout');
+									}
+								}, 8000);
 							}
-						}, 8000);
+
+							break;
+						}
+
+						default : {
+							kodi.input(status.con1.last.button.button);
+						}
 					}
-
-					break;
-				}
-
-				default : {
-					kodi.input(status.con1.last.button.button);
 				}
 			}
 
