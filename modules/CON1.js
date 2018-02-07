@@ -303,16 +303,24 @@ function button_check(button) {
 	let change = (status.con1.last.button.action !== button.action || status.con1.last.button.button !== button.button || status.con1.last.button.mode !== button.mode);
 	if (change === false) return;
 
-	// Store buttonpress data in 'last' object
-	update.status('con1.last.button.action', button.action);
-	update.status('con1.last.button.button', button.button);
-
 	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
 
 	switch (button.action) {
-		case 'press' : {
+		case 'hold' : {
 			switch (button.button) {
-				case 'tel' : {
+				case 'in' : {
+					// To use holding the knob button in to toggle RPi display on/off
+					hdmi_rpi.command('powertoggle');
+					break;
+				}
+			}
+
+			break;
+		}
+
+		case 'release' : {
+			switch (status.con1.last.button.action + status.con1.last.button.button) {
+				case 'depresstel' : {
 					// To use the TEL button as a toggle for rotation = Kodi volume control
 					if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
 						kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
@@ -328,7 +336,7 @@ function button_check(button) {
 					break;
 				}
 
-				case 'nav' : {
+				case 'depressnav' : {
 					// To use the NAV button as a toggle for left<->right or up<->down rotation
 					if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
 						kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');
@@ -345,25 +353,17 @@ function button_check(button) {
 				}
 
 				default : {
-					kodi.input(button.button);
-				}
-			}
-
-			break;
-		}
-
-		case 'hold' : {
-			switch (button.button) {
-				case 'in' : {
-					// To use holding the knob button in to toggle RPi display on/off
-					hdmi_rpi.command('powertoggle');
-					break;
+					kodi.input(status.con1.last.button.button);
 				}
 			}
 
 			break;
 		}
 	}
+
+	// Store buttonpress data in 'last' object
+	update.status('con1.last.button.action', button.action);
+	update.status('con1.last.button.button', button.button);
 }
 
 // Backlight message
