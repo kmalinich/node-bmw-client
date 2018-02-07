@@ -118,13 +118,13 @@ function decode_con_rotation(data) {
 }
 
 
-// CON1 button press, length 6
+// CON1 button depress, length 6
 function decode_con_button(data) {
 	data.command = 'con';
-	data.value   = 'button press';
+	data.value   = 'button depress';
 
 	// Action bitmask data.msg[3]:
-	// bit0 : Press
+	// bit0 : Depress
 	// bit1 : Hold
 	// bit2 : ??
 	// bit3 : ??
@@ -186,11 +186,11 @@ function decode_con_button(data) {
 
 
 	// button  : menu
-	// press   : 01 C0 01
+	// depress : 01 C0 01
 	// release : 00 C0 01
 
 	// button  : in
-	// press   : 01 DE 01
+	// depress : 01 DE 01
 	// release : 00 DE 01
 
 
@@ -203,8 +203,8 @@ function decode_con_button(data) {
 
 	let unmask = {
 		actions : {
+			depress : false,
 			hold    : false,
-			press   : false,
 			release : false,
 		},
 		buttons : {
@@ -245,7 +245,7 @@ function decode_con_button(data) {
 	}
 
 	unmask.actions = {
-		press   :  m.a.b0 && !m.a.b1 && !m.a.b8,
+		depress :  m.a.b0 && !m.a.b1 && !m.a.b8,
 		hold    : !m.a.b0 &&  m.a.b1 && !m.a.b8,
 		release : !m.a.b0 && !m.a.b1 &&  m.a.b8,
 	};
