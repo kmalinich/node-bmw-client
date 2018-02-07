@@ -449,9 +449,9 @@ function send_backlight(value) {
 	if (config.media.con1 !== true) return;
 
 	// data.msg[0]: Backlight intensity
-	// 0xFE      :  0%
-	// 0x00-0xFD :  1%-100%
-	// 0xFF      : 50%
+	// 0xFE      : 0%
+	// 0x00-0xFD : 1%-100%
+	// 0xFF      : 0%
 
 	// Can't be > 0xFF || < 0x00
 	if (value > 0xFF) value = 0xFF;
@@ -464,7 +464,7 @@ function send_backlight(value) {
 	switch (value) {
 		case 0x00 : value = 0xFE; break; // 0% workaround
 		case 0x7F : value = 0xFF; break; // 50% workaround
-		case 0xFE : value = 0xFD; break; // Almost-100% workaround
+		case 0xFF : value = 0xFE; break; // Almost-100% workaround
 		default   : value--;             // Decrement value by one (see above)
 	}
 
@@ -474,7 +474,7 @@ function send_backlight(value) {
 		data : Buffer.from([ value, 0x00 ]),
 	});
 
-	log.module('Set backlight value to: ' + status.con1.backlight);
+	log.module('Set backlight value to: ' + status.con1.backlight + ' (' + value + ')');
 }
 
 // E90 CIC1 status
@@ -555,6 +555,9 @@ function parse_out(data) {
 }
 
 function init_listeners() {
+	// Stamp last message time as now
+	update.status('con1.rotation.last_msg', time_now(), false);
+
 	// Enable/disable keepalive on IKE ignition event
 	IKE.on('ignition-powerup',  () => { send_status_ignition_new(); });
 	IKE.on('ignition-poweroff', () => { send_status_ignition_new(); });
