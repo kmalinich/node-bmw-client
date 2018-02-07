@@ -463,8 +463,9 @@ function send_backlight(value) {
 	// Workarounds
 	switch (value) {
 		case 0x00 : value = 0xFE; break; // 0% workaround
-		case 0x7F : value = 0xFF; break; // 50% workaround
-		case 0xFF : value = 0xFE; break; // Almost-100% workaround
+		// case 0x7F : value = 0xFF; break; // 50% workaround
+		case 0xFE : value = 0xFD; break; // Almost-100% workaround
+		case 0xFF : value = 0xFD; break; // Almost-100% workaround
 		default   : value--;             // Decrement value by one (see above)
 	}
 
