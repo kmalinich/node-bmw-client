@@ -483,6 +483,9 @@ class IKE extends EventEmitter {
 			dst : 'GLO',
 			msg : [ 0x11, status ],
 		});
+
+		// Also spoof the ignition status inside IKE
+		this.decode_ignition_status(status);
 	}
 
 	// Refresh custom HUD speed
