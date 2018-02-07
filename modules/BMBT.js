@@ -123,7 +123,11 @@ function decode_button(data) {
 						case 'depress3' : LCM.police(false); break;
 						case 'depress6' : LCM.police(true);  break;
 
-						case 'holdphone' : hdmi_rpi.command('powertoggle');
+						case 'holdphone' : {
+							// To use holding the phone button in to toggle RPi display on/off
+							update.status('hdmi.rpi.power_override', true);
+							hdmi_rpi.command('powertoggle');
+						}
 					}
 				}
 			}
