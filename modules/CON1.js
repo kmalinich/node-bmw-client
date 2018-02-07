@@ -310,6 +310,7 @@ function button_check(button) {
 			switch (button.button) {
 				case 'in' : {
 					// To use holding the knob button in to toggle RPi display on/off
+					update.status('hdmi.rpi.power_override', true);
 					hdmi_rpi.command('powertoggle');
 					break;
 				}
