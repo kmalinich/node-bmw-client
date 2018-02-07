@@ -478,14 +478,16 @@ class IKE extends EventEmitter {
 			case 'pos3' : status = 0x07;
 		}
 
-		bus.data.send({
+		let ignition_msg = {
 			src : 'IKE',
 			dst : 'GLO',
 			msg : [ 0x11, status ],
-		});
+		};
+
+		bus.data.send(ignition_msg);
 
 		// Also spoof the ignition status inside IKE
-		this.decode_ignition_status(status);
+		this.decode_ignition_status(ignition_msg);
 	}
 
 	// Refresh custom HUD speed
