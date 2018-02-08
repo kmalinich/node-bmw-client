@@ -68,40 +68,15 @@ function decode_status_open(data) {
 	update.status('vehicle.locked', bitmask.test(data.msg[1], 0x20));
 
 	// Set status.doors.sealed if all doors are closed
-	let update_sealed_doors;
-	if (
-		!status.doors.front_left  &&
-		!status.doors.front_right &&
-		!status.doors.hood        &&
-		!status.doors.rear_left   &&
-		!status.doors.rear_right  &&
-		!status.doors.trunk
-	) {
-		update_sealed_doors = true;
-	}
-	else {
-		update_sealed_doors = false;
-	}
+	let update_sealed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.hood && !status.doors.rear_left && !status.doors.rear_right && !status.doors.trunk);
 	update.status('doors.sealed', update_sealed_doors);
 
 	// Set status.windows.sealed if all windows are closed
-	let update_sealed_windows;
-	if (
-		!status.windows.front_left  &&
-		!status.windows.front_right &&
-		!status.windows.roof        &&
-		!status.windows.rear_left   &&
-		!status.windows.rear_right
-	) {
-		update_sealed_windows = true;
-	}
-	else {
-		update_sealed_windows = false;
-	}
+	let update_sealed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
 	update.status('windows.sealed', update_sealed_windows);
 
 	// Set status.vehicle.sealed if all doors and windows are closed
-	update.status('vehicle.sealed', status.doors.sealed && status.windows.sealed);
+	update.status('vehicle.sealed', (status.doors.sealed && status.windows.sealed));
 
 	return data;
 }
@@ -294,15 +269,15 @@ GM.prototype.decode_status_keyfob = function (data) {
 		key_str : null,
 		keys    : {
 			key0 : !mask.bit1 && !mask.bit2,
-			key1 : mask.bit1  && !mask.bit2,
+			key1 :  mask.bit1 && !mask.bit2,
 			key2 : !mask.bit1 &&  mask.bit2,
-			key3 : mask.bit1  &&  mask.bit2,
+			key3 :  mask.bit1 &&  mask.bit2,
 		},
 
 		button     : null,
 		button_str : null,
 		buttons    : {
-			lock   : mask.bit4  && !mask.bit5 && !mask.bit6 && !mask.bit8,
+			lock   :  mask.bit4 && !mask.bit5 && !mask.bit6 && !mask.bit8,
 			unlock : !mask.bit4 &&  mask.bit5 && !mask.bit6 && !mask.bit8,
 			trunk  : !mask.bit4 && !mask.bit5 &&  mask.bit6 && !mask.bit8,
 			none   : !mask.bit4 && !mask.bit5 && !mask.bit6 &&  mask.bit8,
@@ -413,7 +388,7 @@ GM.prototype.parse_out = function (data) {
 			data.value   = 'TODO seat memory data';
 			break;
 
-		case 0x7A: // Broadcast: Door status
+		case 0x7A: // Broadcast: Open doors (flaps)/windows status
 			data = decode_status_open(data);
 			break;
 
