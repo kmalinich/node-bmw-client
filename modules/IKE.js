@@ -515,8 +515,10 @@ class IKE extends EventEmitter {
 
 		// Only add data to strings if it is populated
 		if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
-		if (status.temperature.coolant.c  !== null) string_temp  = status.temperature.coolant.c + '¨';
 		if (status.vehicle.speed.mph      !== null) string_speed = status.vehicle.speed.mph + 'mph';
+
+		if (status.temperature.coolant.c !== null) string_temp = status.temperature.coolant.c + '¨';
+		if (status.temperature.oil.c     !== null) string_temp = string_temp + '|' + status.temperature.oil.c + '¨';
 
 		// 1m sysload to percentage
 		string_load = Math.round(status.system.cpu.load_pct);
@@ -524,12 +526,12 @@ class IKE extends EventEmitter {
 
 		// Space-pad strings
 		let hud_strings = {
-			center : pad(string_temp,  6),
-			left   : pad(string_cons,  9),
-			load   : pad(string_load,  9),
-			right  : pad(string_time,  9),
-			speed  : pad(string_speed, 9),
-			volt   : pad(string_volt,  9),
+			center : pad(string_temp,  7),
+			left   : pad(string_cons,  8),
+			load   : pad(string_load,  8),
+			right  : pad(string_time,  8),
+			speed  : pad(string_speed, 8),
+			volt   : pad(string_volt,  8),
 		};
 
 		hud_strings.center = pad(string_temp, (4 + (7 - string_time.length)));
