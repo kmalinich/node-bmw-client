@@ -124,20 +124,34 @@ function parse_338(data) {
 	// 1 = Sport off
 	// 2 = Sport on
 	// 3 = Sport error
+
+	let parse = {
+		msg     : '0x338',
+		vehicle : {
+			sport : {
+				active : ((data.msg[2] === 0x00 || data.msg[2] === 0x02) && (data.msg[2] !== 0x01 && data.msg[2] !== 0x03)),
+				error  : data.msg[2] === 0x03,
+			},
+		},
+	};
+
+	update.status('vehicle.sport.active', parse.vehicle.sport.active);
+	update.status('vehicle.sport.error',  parse.vehicle.sport.error);
+
 	return data;
 }
 
 function parse_545(data) {
 	// Byte 3
-	// bit 0 - Oil level error if motortype = S62
-	// bit 1 - Oil Level Warning
-	// bit 2 - Oil Level Error
+	// bit 0 - Oil level error, if motortype = S62
+	// bit 1 - Oil level warning
+	// bit 2 - Oil level error
 	// bit 3 - Overheat Light
-	// bit 4, 5, 6 - M3/M5 RPM Warning Field (refer to tables below)
-	// Byte 4 - Oil Temperature (ºC = X - 48)
-	// Byte 5 - Charge Light (0 = off, 1 = on; only used on some DMEs)
-	// Byte 6 - CSL Oil Level (format unclear)
-	// Byte 7 - Possibly MSS54 TPM Trigger
+	// bit 4, 5, 6 - M3/M5 RPM warning field (refer to tables below)
+	// Byte 4 - Oil temperature (ºC = X - 48)
+	// Byte 5 - Charge light (0 = off, 1 = on; only used on some DMEs)
+	// Byte 6 - CSL oil level (format unclear)
+	// Byte 7 - Possibly MSS54 TPM trigger
 
 	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
 
@@ -194,6 +208,12 @@ function parse_545(data) {
 
 
 function parse_613(data) {
+	// B0 : Odometer LSB
+	// B1 : Odometer MSB [Convert from hex to decimal. multiply by 10 and that is odometer in km]
+	// B2 : Fuel level : Full is hex 39, fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
+	// B3 : Running Clock LSB
+	// B4 : Running Clock MSB minutes since last time battery power was lost
+
 	let parse = {
 		msg  : '0x613',
 		fuel : {
@@ -201,12 +221,6 @@ function parse_613(data) {
 			liters : (data.msg[2] >= 0x80) && data.msg[2] - 0x80 || data.msg[2],
 		},
 	};
-
-	// B0 : Odometer LSB
-	// B1 : Odometer MSB [Convert from Hex to Decimal. Multiply by 10 and that is Odometer in Km]
-	// B2 : is fuel level. Full being hex 39 Fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
-	// B3 : Running Clock LSB
-	// B4 : Running Clock MSB minutes since last time battery power was lost
 
 	parse.fuel.level = Math.round((parse.fuel.liters / config.fuel.liters_max) * 100);
 	if (parse.fuel.level < 0)   parse.fuel.level = 0;
