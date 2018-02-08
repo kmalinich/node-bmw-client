@@ -73,14 +73,18 @@ function decode_button(data) {
 	switch (action) {
 		case 'hold' : {
 			switch (config.bmbt.media) {
-				case 'bluetooth' : { // Bluetooth version
-					break;
-				}
+				case 'bluetooth' : break; // Bluetooth version
 
 				case 'kodi' : { // Kodi version
 					switch (button) {
-						case 'left'  : kodi.command('seek-rewind'); break;
-						case 'right' : kodi.command('seek-forward');
+						case 'left'  : kodi.command('seek-rewind');  break;
+						case 'right' : kodi.command('seek-forward'); break;
+
+						case 'phone' : {
+							// To use holding the phone button in to toggle RPi display on/off
+							update.status('hdmi.rpi.power_override', true);
+							hdmi_rpi.command('powertoggle');
+						}
 					}
 
 					break;
@@ -106,36 +110,29 @@ function decode_button(data) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 
-						case 'holdleft'  : kodi.command('toggle'); break;
+						case 'depressknob' : kodi.command('in'); break;
+
+						case 'holdleft'  : kodi.command('toggle'); break; // This resumes normal playback after doing fast-forward or fast-reverse when lifting off the button
 						case 'holdright' : kodi.command('toggle');
 					}
 
 					break;
 				}
+			}
 
-				default : {
-					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depress1' : LCM.police(true); setTimeout(LCM.police, 150); break;
-						case 'depress2' : LCM.police(true); setTimeout(LCM.police, 250); break;
-						case 'depress4' : LCM.police(true); setTimeout(LCM.police, 450); break;
-						case 'depress5' : LCM.police(true); setTimeout(LCM.police, 550); break;
+			// Any version
+			switch (status.bmbt.last.action + status.bmbt.last.button) {
+				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 200); break;
+				case 'depress2' : LCM.police(true); setTimeout(LCM.police, 300); break;
+				case 'depress4' : LCM.police(true); setTimeout(LCM.police, 400); break;
+				case 'depress5' : LCM.police(true); setTimeout(LCM.police, 500); break;
 
-						case 'depress3' : LCM.police(false); break;
-						case 'depress6' : LCM.police(true);  break;
-
-						case 'holdphone' : {
-							// To use holding the phone button in to toggle RPi display on/off
-							update.status('hdmi.rpi.power_override', true);
-							hdmi_rpi.command('powertoggle');
-						}
-					}
-				}
+				case 'depress3' : LCM.police(false); break;
+				case 'depress6' : LCM.police(true);
 			}
 
 			break;
 		}
-
-			// case 'depress' :
 	}
 
 	// Update status object with the new data
@@ -164,6 +161,17 @@ function decode_knob(data) {
 	steps = data.msg[1];
 
 	data.value += direction + ' ' + steps + ' steps';
+
+	switch (config.bmbt.media) {
+		case 'kodi' : { // Kodi version
+			switch (direction) {
+				case 'left'  : kodi.input('up'); break;
+				case 'right' : kodi.input('down');
+			}
+
+			break;
+		}
+	}
 
 	return data;
 }

@@ -111,7 +111,7 @@ function decode_con_rotation(data) {
 
 		default: { // Rotation mode: normal
 			switch (status.con1.rotation.direction) {
-				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up');   break;
+				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up'); break;
 				case 'right' : for (let i = 0; i < change_abs; i++) kodi.input('down');
 			}
 		}
@@ -351,6 +351,7 @@ function button_check(button) {
 							// To use the TEL button as a toggle for rotation = Kodi volume control
 							if (update.status('con1.rotation.volume', true)) {
 								kodi.notify('CON1', 'Rotation mode: volume');
+								update.status('con1.rotation.last_msg', time_now(), false);
 							}
 
 							break;
@@ -360,6 +361,7 @@ function button_check(button) {
 							// To use the NAV button as a toggle for left<->right or up<->down rotation
 							if (update.status('con1.rotation.horizontal', true)) {
 								kodi.notify('CON1', 'Rotation mode: horizontal');
+								update.status('con1.rotation.last_msg', time_now(), false);
 							}
 
 							break;
@@ -379,8 +381,6 @@ function button_check(button) {
 	// Store buttonpress data in 'last' object
 	update.status('con1.last.button.action', button.action);
 	update.status('con1.last.button.button', button.button);
-
-	update.status('con1.rotation.last_msg', time_now(), false);
 }
 
 // Backlight message
