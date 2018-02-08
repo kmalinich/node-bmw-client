@@ -75,7 +75,6 @@ function decode_con_rotation(data) {
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
 	let rotation_gap = time_now() - status.con1.rotation.last_msg;
-	update.status('con1.rotation.last_msg', time_now(), false);
 
 	if (rotation_gap >= config.con1.rotation_mode_timeout) {
 		update.status('con1.rotation.horizontal', false);
@@ -117,6 +116,8 @@ function decode_con_rotation(data) {
 			}
 		}
 	}
+
+	update.status('con1.rotation.last_msg', time_now(), false);
 
 	return data;
 }
@@ -378,6 +379,8 @@ function button_check(button) {
 	// Store buttonpress data in 'last' object
 	update.status('con1.last.button.action', button.action);
 	update.status('con1.last.button.button', button.button);
+
+	update.status('con1.rotation.last_msg', time_now(), false);
 }
 
 // Backlight message
