@@ -2,13 +2,14 @@
 function request(value) {
 	let cmd;
 
-	log.module({ msg : 'Requesting \'' + value + '\'' });
+	log.module('Requesting \'' + value + '\'');
 
 	switch (value) {
-		case 'immobiliserstatus' :
+		case 'immobiliserstatus' : {
 			// cmd = [0x73, 0x00, 0x00, 0x80];
 			cmd = [ 0x73 ];
 			break;
+		}
 	}
 
 	bus.data.send({
@@ -20,7 +21,7 @@ function request(value) {
 // Parse data sent from EWS module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x74: // Broadcast: immobiliser status
+		case 0x74 : { // Broadcast: immobiliser status
 			data.command = 'bro';
 			data.value   = 'key presence - ';
 
@@ -31,49 +32,63 @@ function parse_out(data) {
 
 			// Key detected/vehicle immobilised
 			switch (data.msg[1]) {
-				case 0x00:
+				case 0x00 : {
 					data.value += 'no key';
 					update.status('immobilizer.key_present', false);
 					break;
-				case 0x01:
+				}
+
+				case 0x01 : {
 					data.value += 'immobilisation deactivated';
 					// update.status('immobilizer.key_present', null);
 					update.status('immobilizer.immobilized', false);
 					break;
-				case 0x04:
+				}
+
+				case 0x04 : {
 					data.value += 'valid key';
 					update.status('immobilizer.key_present', true);
 					update.status('immobilizer.immobilized', false);
 					break;
-				default:
+				}
+
+				default : {
 					data.value += Buffer.from([ data.msg[1] ]);
+				}
 			}
 
 			// Key number 255/0xFF = no key
-			if (data.msg[2] == 0xFF) {
-				update.status('immobilizer.key_number', null);
-			}
-			else {
-				update.status('immobilizer.key_number', data.msg[2]);
+			switch (data.msg[2]) {
+				case 0xFF : {
+					update.status('immobilizer.key_number', null);
+					break;
+				}
+
+				default : {
+					update.status('immobilizer.key_number', data.msg[2]);
+				}
 			}
 
 			data.value += ', key ' + status.immobilizer.key_number;
 			break;
+		}
 
-		case 0xA0: // Broadcast: diagnostic command acknowledged
+		case 0xA0 : { // Broadcast: diagnostic command acknowledged
 			data.command = 'bro';
 			data.value   = 'diagnostic command acknowledged';
 			break;
+		}
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	log.bus(data);
 }
 
 module.exports = {
-	parse_out : (data)  => { parse_out(data); },
-	request   : (value) => { request(value);  },
+	parse_out : parse_out,
+	request   : request,
 };

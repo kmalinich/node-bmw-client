@@ -42,7 +42,7 @@
 	"optionalDependencies": {
 		"bluez": "git+https://github.com/kmalinich/node-bluez.git",
 		"dbus": "git+https://github.com/Shouqun/node-dbus.git",
-		"dbus-native": "^0.2.3",
+		"dbus-native": "^0.2.4",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
 		"onoff": "^1.1.9",

@@ -1128,7 +1128,7 @@ class IKE extends EventEmitter {
 			timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - this.max_len_text));
 
 			// Send initial string if we're currently the first up
-			if (this.hud_override_text == message) {
+			if (this.hud_override_text === message) {
 				switch (direction) {
 					case 'left' : {
 						this.text(message, null, true);
