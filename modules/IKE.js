@@ -535,7 +535,7 @@ class IKE extends EventEmitter {
 			volt  : pad(string_volt,  7),
 		};
 
-		hud_strings.center = pad(string_temp, (4 + (7 - string_time.length)));
+		hud_strings.center = pad(string_temp, (6 + (7 - string_time.length)));
 
 		// Change left string to be load/CPU temp if over threshold
 		if (status.system.temperature > 65) hud_strings.left = hud_strings.load;
