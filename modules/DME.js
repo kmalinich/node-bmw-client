@@ -8,14 +8,14 @@ function parse_out(data) {
 			data.value   = Buffer.from(data.msg);
 	}
 
-	if (data.dst == null || typeof data.dst == 'undefined') {
+	if (data.dst === null || typeof data.dst === 'undefined') {
 		data.dst = {
 			id   : 0x12,
 			name : module_name,
 		};
 	}
 
-	if (data.msg[0] == null || typeof data.msg[0] == 'undefined') {
+	if (data.msg[0] === null || typeof data.msg[0] === 'undefined') {
 		data.msg = [ 0xFF ];
 	}
 

@@ -78,7 +78,7 @@ function refresh_text() {
 function text_loop(action) {
 	if (config.media.mid !== true) return;
 	if (status.vehicle.ignition_level < 1) action = false;
-	if (MID.text_text_loop == action) return;
+	if (MID.text_text_loop === action) return;
 
 	log.module({ msg : 'Text loop ' + action });
 
@@ -107,7 +107,7 @@ function text_loop(action) {
 function status_loop(action) {
 	if (config.emulate.mid !== true) return;
 	if (status.vehicle.ignition_level < 1) action = false;
-	if (MID.status_status_loop == action) return;
+	if (MID.status_status_loop === action) return;
 
 	log.module({ msg : 'Status loop ' + action });
 
@@ -161,7 +161,7 @@ function toggle_power_if_ready() {
 	// log.module({ msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
 	// log.module({ msg: 'rad.source_name : \''+status.rad.source_name+'\'' });
 
-	if (status.rad.source_name == 'off') {
+	if (status.rad.source_name === 'off') {
 		IKE.text_override('MID power, from MID');
 		log.module({ msg : 'Sending power!'	});
 
@@ -194,10 +194,11 @@ function parse_out(data) {
 			data.command = 'bro';
 			data.value   = 'button pressed: ' + data.msg[1] + ' ' + data.msg[2] + ' ' + data.msg[3];
 
-			if (data.msg[1] == 0x00 && data.msg[2] == 0x15) {
+			if (data.msg[1] === 0x00 && data.msg[2] === 0x15) {
 				switch (data.msg[3]) {
 					case 0x00 : break;
 					case 0x01 : break;
+
 					case 0x02 : bluetooth.command('connect');    break;
 					case 0x03 : bluetooth.command('disconnect'); break;
 					case 0x04 : bluetooth.command('previous');   break;
@@ -206,14 +207,18 @@ function parse_out(data) {
 					case 0x07 : bluetooth.command('play');       break;
 					case 0x08 : bluetooth.command('repeat');     break;
 					case 0x09 : bluetooth.command('shuffle');    break;
-					case 0x0A :
+
+					case 0x0A : {
 						update.config('lights.auto', false);
 						LCM.auto_lights();
 						break;
-					case 0x0B :
+					}
+
+					case 0x0B : {
 						update.config('lights.auto', true);
 						LCM.auto_lights();
 						break;
+					}
 				}
 			}
 
@@ -347,6 +352,7 @@ function send_button(button) {
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
 		log.module({ msg : 'Button up: ' + button });
+
 		bus.data.send({
 			dst : 'RAD',
 			msg : packet_up,
