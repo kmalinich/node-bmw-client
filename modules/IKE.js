@@ -527,11 +527,11 @@ class IKE extends EventEmitter {
 		// Space-pad strings
 		let hud_strings = {
 			center : pad(string_temp,  7),
-			left   : pad(string_cons,  8),
-			load   : pad(string_load,  8),
+			left   : pad(string_cons,  6),
+			load   : pad(string_load,  6),
 			right  : pad(string_time,  8),
-			speed  : pad(string_speed, 8),
-			volt   : pad(string_volt,  8),
+			speed  : pad(string_speed, 6),
+			volt   : pad(string_volt,  6),
 		};
 
 		hud_strings.center = pad(string_temp, (4 + (7 - string_time.length)));
