@@ -605,7 +605,7 @@ class IKE extends EventEmitter {
 			msg = [ msg, target ];
 		}
 
-		// log.module({ msg : action+' OBC value \''+value+'\'' });
+		// log.module(action + ' OBC value \''+value+'\'');
 
 		bus.data.send({
 			src : 'GT',
@@ -1094,6 +1094,7 @@ class IKE extends EventEmitter {
 
 		bus.data.send({
 			src : 'RAD',
+			dst : 'LOC',
 			msg : message_hex,
 		});
 
