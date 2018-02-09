@@ -517,8 +517,8 @@ class IKE extends EventEmitter {
 		if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
 		if (status.vehicle.speed.mph      !== null) string_speed = status.vehicle.speed.mph + 'mph';
 
-		if (status.temperature.coolant.c !== null) string_temp = status.temperature.coolant.c + '¨';
-		if (status.temperature.oil.c     !== null) string_temp = string_temp + '|' + status.temperature.oil.c + '¨';
+		if (status.temperature.coolant.c !== null) string_temp = Math.round(status.temperature.coolant.c) + '¨';
+		if (status.temperature.oil.c     !== null) string_temp = string_temp + '|' + Math.round(status.temperature.oil.c) + '¨';
 
 		// 1m sysload to percentage
 		string_load = Math.round(status.system.cpu.load_pct);
