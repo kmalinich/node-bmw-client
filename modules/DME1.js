@@ -8,7 +8,7 @@ function encode_316(rpm) {
 
 	if (rpm_encoded.length !== 4) rpm_encoded = '0' + rpm_encoded;
 
-	let msg = [ 0x05, 0x00, parseInt('0x' + rpm_encoded.substring(2, 4)), parseInt('0x' + rpm_encoded.substring(0, 2)), 0x00, 0x00, 0x00, 0x00 ];
+	let msg = [ 0x05, 0x16, parseInt('0x' + rpm_encoded.substring(2, 4)), parseInt('0x' + rpm_encoded.substring(0, 2)), 0x16, 0x18, 0x00, 0x16 ];
 
 	bus.data.send({
 		bus  : 'can0',
