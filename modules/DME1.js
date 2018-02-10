@@ -1,5 +1,24 @@
 const convert = require('node-unit-conversion');
 
+// This is dangerous and awesome if you can see what it does
+function encode_316(rpm) {
+	let rpm_encoded;
+
+	rpm_encoded = Math.round(rpm * 6.4).toString(16);
+
+	if (rpm_encoded.length !== 4) rpm_encoded = '0' + rpm_encoded;
+
+	let msg = [ 0x05, 0x00, parseInt('0x' + rpm_encoded.substring(2, 4)), parseInt('0x' + rpm_encoded.substring(0, 2)), 0x00, 0x00, 0x00, 0x00 ];
+
+	bus.data.send({
+		bus  : 'can0',
+		id   : 0x316,
+		data : Buffer.from(msg),
+	});
+
+	log.msg('Sent encoded CANBUS packet ARBID 0x316 with RPM : ' + rpm);
+}
+
 function parse_316(data) {
 	let parse = {
 		arbid     : '0x316',
@@ -7,8 +26,8 @@ function parse_316(data) {
 		rpm       : parseFloat((parseInt('0x' + data.msg[3].toString(16) + data.msg[2].toString(16)) / 6.4).toFixed(0)),
 		ac_clutch : bitmask.test(data.msg[0], 0x40),
 		key       : {
-			acc   : bitmask.test(data.msg[0], 0x01),
-			run   : bitmask.test(data.msg[0], 0x04),
+			acc   : bitmask.test(data.msg[0], 0x04), // This appears backwards,
+			run   : bitmask.test(data.msg[0], 0x01), // but is actually correct
 			start : bitmask.test(data.msg[0], 0x10),
 		},
 		torque : {
@@ -36,8 +55,8 @@ function parse_329(data) {
 	// Byte 3
 	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
 	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
-	// bit 4 - Possibly Motor Status (0 = on, 1 = off)
-	// bits 5, 6, 7 - Tank Evap duty cycle
+	// bit 4 - Possibly motor status (0 = on, 1 = off)
+	// bits 5, 6, 7 - Tank evap duty cycle
 
 	let parse = {
 		msg    : '0x329',
@@ -337,4 +356,6 @@ module.exports = {
 
 	// Functions
 	parse_out : parse_out,
+
+	encode_316 : encode_316,
 };
