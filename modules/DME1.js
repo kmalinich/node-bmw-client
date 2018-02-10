@@ -11,7 +11,7 @@ function encode_316(rpm) {
 	let msg = [ 0x05, 0x16, parseInt('0x' + rpm_encoded.substring(2, 4)), parseInt('0x' + rpm_encoded.substring(0, 2)), 0x16, 0x18, 0x00, 0x16 ];
 
 	// Send packet 100x
-	for (let i = 0; i < 100; i++) {
+	for (let i = 0; i < 1000; i++) {
 		bus.data.send({
 			bus  : 'can0',
 			id   : 0x316,
@@ -19,7 +19,7 @@ function encode_316(rpm) {
 		});
 	}
 
-	log.msg('Sent 100x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
+	log.msg('Sent 1000x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
 }
 
 function parse_316(data) {
