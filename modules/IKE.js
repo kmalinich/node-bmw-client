@@ -1085,7 +1085,7 @@ class IKE extends EventEmitter {
 		let message_hex;
 
 		// message_hex = [ 0x23, 0x42, 0x30 ];
-		message_hex = [ 0x23, 0x50, 0x30, 0x07 ];
+		message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
 
 		message_hex = message_hex.concat(this.text_prepare(message));
 
@@ -1094,7 +1094,7 @@ class IKE extends EventEmitter {
 
 		bus.data.send({
 			src : 'RAD',
-			dst : 'LOC',
+			dst : 'IKE',
 			msg : message_hex,
 		});
 
