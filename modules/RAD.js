@@ -23,11 +23,11 @@ function decode_audio_control_command(data) {
 
 	let command;
 	switch (mask.bit7) {
-		case true: { // 7T
+		case true : { // 7T
 			switch (mask.bit6) {
-				case true: { // 7T.6T
+				case true : { // 7T.6T
 					switch (mask.bit5) {
-						case true: { // 7T.6T.5T
+						case true : { // 7T.6T.5T
 							switch (mask.bit4) {
 								case true : // 7T.6T.5T.4T
 									break;
@@ -39,7 +39,7 @@ function decode_audio_control_command(data) {
 							break;
 						}
 
-						case false: { // 7T.6T.5F
+						case false : { // 7T.6T.5F
 							switch (mask.bit4) {
 								case true : // 7T.6T.5F.4T
 									break;
@@ -53,9 +53,9 @@ function decode_audio_control_command(data) {
 					break;
 				} // 7T.6T
 
-				case false: { // 7T.6F
+				case false : { // 7T.6F
 					switch (mask.bit5) {
-						case true: { // 7T.6F.5T
+						case true : { // 7T.6F.5T
 							switch (mask.bit4) {
 								case true : // 7T.6F.5T.4T
 									break;
@@ -67,7 +67,7 @@ function decode_audio_control_command(data) {
 							break;
 						}
 
-						case false: { // 7T.6F.5F
+						case false : { // 7T.6F.5F
 							switch (mask.bit4) {
 								case true : // 7T.6F.5F.4T
 									break;
@@ -83,11 +83,11 @@ function decode_audio_control_command(data) {
 			break;
 		} // 7T
 
-		case false: { // 7F
+		case false : { // 7F
 			switch (mask.bit6) {
-				case true: { // 7F.6T
+				case true : { // 7F.6T
 					switch (mask.bit5) {
-						case true: { // 7F.6T.5T
+						case true : { // 7F.6T.5T
 							switch (mask.bit4) {
 								case true : // 7F.6T.5T.4T
 									command = 'bass';
@@ -99,7 +99,7 @@ function decode_audio_control_command(data) {
 							break;
 						}
 
-						case false: { // 7F.6T.5F
+						case false : { // 7F.6T.5F
 							switch (mask.bit4) {
 								case true : // 7F.6T.5F.4T
 									command = 'balance';
@@ -113,9 +113,9 @@ function decode_audio_control_command(data) {
 					break;
 				} // 7F.6T
 
-				case false: { // 7F.6F
+				case false : { // 7F.6F
 					switch (mask.bit5) {
-						case true: { // 7F.6F.5T
+						case true : { // 7F.6F.5T
 							switch (mask.bit4) {
 								case true : // 7F.6F.5T.4T
 									command = 'dsp0';
@@ -127,7 +127,7 @@ function decode_audio_control_command(data) {
 							break;
 						}
 
-						case false: { // 7F.6F.5F
+						case false : { // 7F.6F.5F
 							switch (mask.bit4) {
 								case true : // 7F.6F.5F.4T
 									break;
@@ -189,7 +189,7 @@ function decode_audio_control(data) {
 			data.value += 'source ' + status.rad.source_name;
 			break;
 
-		default:
+		default :
 			// Technically not legit
 			data.value += 'command ' + cmd_type + ' ' + cmd_value;
 	}
@@ -236,17 +236,18 @@ function parse_out(data) {
 					update.status('dsp.m_audio', false);
 					break;
 
-				default:
+				default :
 					data.value = Buffer.from(data.msg);
 			}
 			break;
 		}
 
-		case 0x36: // Audio control (i.e. source)
+		case 0x36 : { // Audio control (i.e. source)
 			data = decode_audio_control(data);
 			break;
+		}
 
-		case 0x38: // Control: CD
+		case 0x38 : { // Control: CD
 			data.command = 'con';
 			data.value   = 'CD - ';
 
@@ -263,6 +264,7 @@ function parse_out(data) {
 				case 0x08 : data.value += 'random-off';   break;
 			}
 			break;
+		}
 
 		case 0x4A : { // Control: Cassette
 			BMBT.send_cassette_status(data.msg[1]);
@@ -278,7 +280,7 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x46: // Control: LCD
+		case 0x46 : { // Control: LCD
 			data.command = 'con';
 			data.value   = 'LCD: ';
 
@@ -287,15 +289,18 @@ function parse_out(data) {
 				default   : data.value += data.msg[1];
 			}
 			break;
+		}
 
-		case 0xA5: // Control: Screen text
+		case 0xA5 : { // Control: Screen text
 			data.command = 'con';
 			data.value   = 'screen text TODO';
 			break;
+		}
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	log.bus(data);
@@ -319,7 +324,7 @@ function volume_control(value) {
 		default : return;
 	}
 
-	log.module({ msg : 'Sending volume control: ' + value });
+	log.module('Sending volume control: ' + value);
 
 	bus.data.send({
 		src : 'MID',
@@ -329,16 +334,40 @@ function volume_control(value) {
 }
 
 function send_audio_control(source) {
-	let msg_tunertape = [ 0x36, 0xA1 ];
-	let msg_cd        = [ 0x36, 0xA0 ];
+	let cmd = 0x36;
+
+	let msgs = {
+		cd  : [ cmd, 0xA0 ],
+		off : [ cmd, 0xAF ],
+
+		tunertape : [ cmd, 0xA1 ],
+
+		dsp : {
+			function_0 : [ cmd, 0xE1 ],
+			function_1 : [ cmd, 0x30 ],
+		},
+	};
+
 	let msg;
 
 	switch (source) {
-		case 'cd'         : msg = msg_cd;        break;
-		case 'tuner/tape' : msg = msg_tunertape; break;
+		case 'cd' : msg = msgs.cd; break;
+
+		case 'dsp-0' : msg = msgs.dsp.function_0; break;
+		case 'dsp-1' : msg = msgs.dsp.function_1; break;
+
+		case 1            :
+		case 'tape'       :
+		case 'tuner'      :
+		case 'tuner/tape' :
+		case 'tunertape'  :
+		case 'on'         : msg = msgs.tunertape; break;
+
+		case 0     :
+		case 'off' : msg = msgs.off;
 	}
 
-	log.module({ msg : 'Sending audio control: ' + source });
+	log.module('Sending audio control: ' + source);
 
 	bus.data.send({
 		src : module_name,
@@ -347,8 +376,39 @@ function send_audio_control(source) {
 	});
 }
 
+function send_cassette_control(command) {
+	let cmd = 0x4A;
+
+	let msgs = {
+		on  : [ cmd, 0xFF ],
+		off : [ cmd, 0x00 ],
+	};
+
+	let msg;
+
+	switch (command) {
+		case 1    :
+		case 'on' : msg = msgs.on; break;
+
+		case 0     :
+		case 'off' : msg = msgs.off;
+	}
+
+	log.module('Sending cassette control: ' + command);
+
+	bus.data.send({
+		src : module_name,
+		dst : 'BMBT',
+		msg : msg,
+	});
+}
+
+
 module.exports = {
-	parse_out          : parse_out,
-	send_audio_control : send_audio_control,
-	volume_control     : volume_control,
+	parse_out : parse_out,
+
+	volume_control : volume_control,
+
+	send_audio_control    : send_audio_control,
+	send_cassette_control : send_cassette_control,
 };
