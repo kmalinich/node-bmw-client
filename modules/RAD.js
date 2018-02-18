@@ -409,6 +409,9 @@ function init_listeners() {
 		// Bounce if we're not configured to emulate the RAD module
 		if (config.emulate.rad !== true) return;
 
+		// Send device status
+		bus.cmds.send_device_status(module_name);
+
 		// Not really any good idea why it's this sequence of commands
 		// that turns the DSP amp on. I looked at logs from three
 		// different DSP-equipped cars and it's always this
