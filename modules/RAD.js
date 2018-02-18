@@ -333,41 +333,74 @@ function volume_control(value) {
 	});
 }
 
-function send_audio_control(source) {
+function send_audio_control(command) {
 	let cmd = 0x36;
 
 	let msgs = {
-		cd  : [ cmd, 0xA0 ],
 		off : [ cmd, 0xAF ],
-
-		tunertape : [ cmd, 0xA1 ],
 
 		dsp : {
 			function_0 : [ cmd, 0xE1 ],
 			function_1 : [ cmd, 0x30 ],
 		},
+
+		source : {
+			cd        : [ cmd, 0xA0 ],
+			tunertape : [ cmd, 0xA1 ],
+		},
+
 	};
 
 	let msg;
 
-	switch (source) {
-		case 'cd' : msg = msgs.cd; break;
+	switch (command) {
+		case 'cd changer' :
+		case 'cd'         :
+		case 'cd-changer' :
+		case 'cdc'        : {
+			command = 'source cd changer';
+			msg     = msgs.source.cd;
+			break;
+		}
 
-		case 'dsp-0' : msg = msgs.dsp.function_0; break;
-		case 'dsp-1' : msg = msgs.dsp.function_1; break;
+		case 'dsp-0' : {
+			command = 'DSP function 0';
+			msg     = msgs.dsp.function_0;
+			break;
+		}
+
+		case 'dsp-1' : {
+			command = 'DSP function 1';
+			msg     = msgs.dsp.function_1;
+			break;
+		}
 
 		case 1            :
 		case 'tape'       :
 		case 'tuner'      :
 		case 'tuner/tape' :
 		case 'tunertape'  :
-		case 'on'         : msg = msgs.tunertape; break;
+		case 'power on'   :
+		case 'power'      :
+		case 'power-on'   :
+		case 'poweron'    :
+		case 'on'         : {
+			command = 'source tuner/tape';
+			msg     = msgs.source.tunertape;
+			break;
+		}
 
-		case 0     :
-		case 'off' : msg = msgs.off;
+		case 0           :
+		case 'off'       :
+		case 'power off' :
+		case 'power-off' :
+		case 'poweroff'  : {
+			command = 'power off';
+			msg     = msgs.off;
+		}
 	}
 
-	log.module('Sending audio control: ' + source);
+	log.module('Sending audio control: ' + command);
 
 	bus.data.send({
 		src : module_name,
@@ -387,11 +420,25 @@ function send_cassette_control(command) {
 	let msg;
 
 	switch (command) {
-		case 1    :
-		case 'on' : msg = msgs.on; break;
+		case 1          :
+		case 'on'       :
+		case 'power on' :
+		case 'power'    :
+		case 'power-on' :
+		case 'poweron'  : {
+			command = 'power on';
+			msg     = msgs.on;
+			break;
+		}
 
-		case 0     :
-		case 'off' : msg = msgs.off;
+		case 0           :
+		case 'off'       :
+		case 'power off' :
+		case 'power-off' :
+		case 'poweroff'  : {
+			command = 'power off';
+			msg     = msgs.off;
+		}
 	}
 
 	log.module('Sending cassette control: ' + command);
