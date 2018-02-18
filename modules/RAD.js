@@ -412,6 +412,12 @@ function init_listeners() {
 		// Send device status
 		bus.cmds.send_device_status(module_name);
 
+		// Request status from BMBT, CDC, DSP, and MID (this needs to be a loop)
+		let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
+		array_request.forEach((module_request) => {
+			bus.cmds.request_device_status(module_name, module_request);
+		});
+
 		// Not really any good idea why it's this sequence of commands
 		// that turns the DSP amp on. I looked at logs from three
 		// different DSP-equipped cars and it's always this
