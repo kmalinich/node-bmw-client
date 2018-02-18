@@ -200,6 +200,14 @@ function decode_audio_control(data) {
 	return data;
 }
 
+// Parse data sent to RAD module
+function parse_in(data) {
+	switch (data.msg[0]) {
+		default : {
+		}
+	}
+}
+
 // Parse data sent from RAD module
 function parse_out(data) {
 	// Device status
@@ -492,6 +500,7 @@ function init_listeners() {
 
 
 module.exports = {
+	parse_in  : parse_in,
 	parse_out : parse_out,
 
 	init_listeners : init_listeners,
