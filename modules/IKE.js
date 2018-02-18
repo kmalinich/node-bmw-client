@@ -906,6 +906,8 @@ class IKE extends EventEmitter {
 				case 'unlock' : this.data_refresh();
 			}
 		});
+
+		log.module('Initialized listeners');
 	}
 
 	// Refresh OBC data

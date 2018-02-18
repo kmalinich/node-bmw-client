@@ -975,6 +975,8 @@ function init_listeners() {
 		log.module({ msg : 'Received GM keyfob event' });
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
+
+	log.module('Initialized listeners');
 }
 
 

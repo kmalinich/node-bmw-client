@@ -403,9 +403,36 @@ function send_cassette_control(command) {
 	});
 }
 
+function init_listeners() {
+	// Perform DSP powerup sequence on IKE ignition event
+	IKE.on('ignition-powerup',  () => {
+		// Not really any good idea why it's this sequence of commands
+		// that turns the DSP amp on. I looked at logs from three
+		// different DSP-equipped cars and it's always this
+		send_audio_control(0);
+
+		send_audio_control('dsp-1');
+		send_audio_control('dsp-0');
+
+		send_audio_control(1);
+
+		send_cassette_control(1);
+	});
+
+	// Perform DSP poweroff sequence on IKE ignition event
+	IKE.on('ignition-poweroff',  () => {
+		send_audio_control(0);
+		send_cassette_control(0);
+	});
+
+	log.module('Initialized listeners');
+}
+
 
 module.exports = {
 	parse_out : parse_out,
+
+	init_listeners : init_listeners,
 
 	volume_control : volume_control,
 
