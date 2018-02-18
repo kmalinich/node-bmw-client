@@ -406,6 +406,9 @@ function send_cassette_control(command) {
 function init_listeners() {
 	// Perform DSP powerup sequence on IKE ignition event
 	IKE.on('ignition-powerup',  () => {
+		// Bounce if we're not configured to emulate the RAD module
+		if (config.emulate.rad !== true) return;
+
 		// Not really any good idea why it's this sequence of commands
 		// that turns the DSP amp on. I looked at logs from three
 		// different DSP-equipped cars and it's always this
@@ -421,6 +424,9 @@ function init_listeners() {
 
 	// Perform DSP poweroff sequence on IKE ignition event
 	IKE.on('ignition-poweroff',  () => {
+		// Bounce if we're not configured to emulate the RAD module
+		if (config.emulate.rad !== true) return;
+
 		send_audio_control(0);
 		send_cassette_control(0);
 	});
