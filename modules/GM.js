@@ -252,6 +252,8 @@ GM.prototype.init_listeners = function () {
 		// If the doors are closed and locked, toggle door locks
 		if (status.vehicle.locked && status.doors.sealed) this.locks();
 	});
+
+	log.module('Initialized listeners');
 };
 
 // [0x72] Decode a key fob bitmask message, and act upon the results

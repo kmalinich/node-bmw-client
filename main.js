@@ -158,6 +158,7 @@ function init() {
 				IKE.init_listeners();
 				LCM.init_listeners();
 				MID.init_listeners();
+				RAD.init_listeners();
 				gpio.init_listeners();
 				json.init_listeners();
 

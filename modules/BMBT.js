@@ -391,6 +391,8 @@ function init_listeners() {
 	// Enable/disable keepalive on IKE ignition event
 	IKE.on('ignition-powerup',  () => { status_loop(true);  });
 	IKE.on('ignition-poweroff', () => { status_loop(false); });
+
+	log.module('Initialized listeners');
 }
 
 

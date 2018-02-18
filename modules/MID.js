@@ -372,6 +372,8 @@ function init_listeners() {
 		status_loop(false);
 		text_loop(false);
 	});
+
+	log.module('Initialized listeners');
 }
 
 
