@@ -449,7 +449,7 @@ function decode_status_cic(data) {
 
 function backlight(value) {
 	// Bounce if not enabled or vehicle not on
-	if (config.media.con1 !== true || vehicle.ignition_level === 0) return;
+	if (config.media.con1 !== true || status.vehicle.ignition_level === 0) return;
 
 	// data.msg[0]: Backlight intensity
 	// 0xFE      : 0%
@@ -484,7 +484,7 @@ function backlight(value) {
 // E90 CIC1 status
 function status_cic() {
 	// Bounce if not enabled or vehicle not on
-	if (config.media.con1 !== true || vehicle.ignition_level === 0) return;
+	if (config.media.con1 !== true || status.vehicle.ignition_level === 0) return;
 
 	log.module('Sending CIC1 status');
 
@@ -533,7 +533,7 @@ function status_ignition() {
 // Parse data sent from module
 function parse_out(data) {
 	// Bounce if not enabled or vehicle not on
-	if (config.media.con1 !== true || vehicle.ignition_level === 0) return;
+	if (config.media.con1 !== true || status.vehicle.ignition_level === 0) return;
 
 	switch (data.src.id) {
 		case 0x202 : data = decode_con_backlight(data); break;
