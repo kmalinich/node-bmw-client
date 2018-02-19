@@ -272,6 +272,8 @@ function decode_bm_button(data) {
 
 	data.value += action + ' ' + button;
 
+	log.module('Received BMBT button: ' + data.value);
+
 	switch (action) {
 		case 'release' : {
 			switch (button) {
@@ -303,6 +305,10 @@ function parse_in(data) {
 		}
 
 		case 0x4B : { // Broadcast: Cassette status
+			return;
+		}
+
+		default : {
 			return;
 		}
 	}
