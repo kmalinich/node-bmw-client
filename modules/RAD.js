@@ -292,7 +292,7 @@ function decode_bm_button(data) {
 function parse_in(data) {
 	switch (data.msg[0]) {
 		case 0x47 : { // Broadcast: BM status
-			return;
+			return data;
 		}
 
 		case 0x48 : { // Broadcast: BM button
@@ -301,15 +301,15 @@ function parse_in(data) {
 		}
 
 		case 0x49 : { // Broadcast: BM knob
-			return;
+			return data;
 		}
 
 		case 0x4B : { // Broadcast: Cassette status
-			return;
+			return data;
 		}
 
 		default : {
-			return;
+			return data;
 		}
 	}
 
