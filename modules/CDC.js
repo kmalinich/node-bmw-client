@@ -19,7 +19,7 @@ function parse_in(data) {
 			}
 
 			// Do CDC->LOC CD status play
-			send_cd_status(data.value);
+			cd_status(data.value);
 			break;
 	}
 }
@@ -53,7 +53,7 @@ function parse_out(data) {
 }
 
 // CDC->RAD CD status
-function send_cd_status(value) {
+function cd_status(value) {
 	let bit;
 
 	switch (value) {
@@ -83,7 +83,7 @@ function send_cd_status(value) {
 }
 
 module.exports = {
-	parse_in       : parse_in,
-	parse_out      : parse_out,
-	send_cd_status : send_cd_status,
+	cd_status : cd_status,
+	parse_in  : parse_in,
+	parse_out : parse_out,
 };

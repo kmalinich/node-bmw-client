@@ -200,10 +200,12 @@ function decode_audio_control(data) {
 	return data;
 }
 
+
 // Parse data sent to RAD module
 function parse_in(data) {
 	switch (data.msg[0]) {
 		default : {
+			break;
 		}
 	}
 }
@@ -275,7 +277,7 @@ function parse_out(data) {
 		}
 
 		case 0x4A : { // Control: Cassette
-			BMBT.send_cassette_status(data.msg[1]);
+			BMBT.cassette_status(data.msg[1]);
 
 			data.command = 'con';
 			data.value   = 'cassette: ';
@@ -314,34 +316,8 @@ function parse_out(data) {
 	log.bus(data);
 }
 
-function volume_control(value) {
-	let msg_value;
-	switch (value) {
-		case 5 : msg_value = 0x51; break;
-		case 4 : msg_value = 0x41; break;
-		case 3 : msg_value = 0x31; break;
-		case 2 : msg_value = 0x21; break;
-		case 1 : msg_value = 0x11; break;
-
-		case -5 : msg_value = 0x50; break;
-		case -4 : msg_value = 0x40; break;
-		case -3 : msg_value = 0x30; break;
-		case -2 : msg_value = 0x20; break;
-		case -1 : msg_value = 0x10; break;
-
-		default : return;
-	}
-
-	log.module('Sending volume control: ' + value);
-
-	bus.data.send({
-		src : 'MID',
-		dst : module_name,
-		msg : [ 0x32, msg_value ],
-	});
-}
-
-function send_audio_control(command) {
+// Send audio control commands
+function audio_control(command) {
 	let cmd = 0x36;
 
 	let msgs = {
@@ -384,6 +360,7 @@ function send_audio_control(command) {
 		}
 
 		case 1            :
+		case true         :
 		case 'tape'       :
 		case 'tuner'      :
 		case 'tuner/tape' :
@@ -399,6 +376,7 @@ function send_audio_control(command) {
 		}
 
 		case 0           :
+		case false       :
 		case 'off'       :
 		case 'power off' :
 		case 'power-off' :
@@ -417,7 +395,7 @@ function send_audio_control(command) {
 	});
 }
 
-function send_cassette_control(command) {
+function cassette_control(command) {
 	let cmd = 0x4A;
 
 	let msgs = {
@@ -429,6 +407,7 @@ function send_cassette_control(command) {
 
 	switch (command) {
 		case 1          :
+		case true       :
 		case 'on'       :
 		case 'power on' :
 		case 'power'    :
@@ -440,6 +419,7 @@ function send_cassette_control(command) {
 		}
 
 		case 0           :
+		case false       :
 		case 'off'       :
 		case 'power off' :
 		case 'power-off' :
@@ -458,41 +438,102 @@ function send_cassette_control(command) {
 	});
 }
 
+function volume_control(value = 1) {
+	let msg_value;
+	switch (value) {
+		case 5 : msg_value = 0x51; break;
+		case 4 : msg_value = 0x41; break;
+		case 3 : msg_value = 0x31; break;
+		case 2 : msg_value = 0x21; break;
+		case 1 : msg_value = 0x11; break;
+
+		case -5 : msg_value = 0x50; break;
+		case -4 : msg_value = 0x40; break;
+		case -3 : msg_value = 0x30; break;
+		case -2 : msg_value = 0x20; break;
+		case -1 : msg_value = 0x10; break;
+
+		default : return;
+	}
+
+	log.module('Sending volume control: ' + value);
+
+	bus.data.send({
+		src : 'MID',
+		dst : module_name,
+		msg : [ 0x32, msg_value ],
+	});
+}
+
+
+// Power on DSP amp and GPIO pin for amplifier
+function audio_power(power_state) {
+	log.module('Setting audio power to state : ' + power_state);
+
+	switch (power_state) {
+		case false : {
+			// Bounce if we're not configured to emulate the RAD module
+			if (config.emulate.rad !== true) return;
+
+			// Disable GPIO relay for amp power
+			gpio.set('amp', false);
+
+			audio_control(false);
+			cassette_control(false);
+
+			break;
+		}
+
+		case true : {
+			// Bounce if we're not configured to emulate the RAD module
+			if (config.emulate.rad !== true) return;
+
+			// Enable GPIO relay for amp power
+			gpio.set('amp', true);
+
+			// Send device status
+			bus.cmds.send_device_status(module_name);
+
+			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
+			let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
+			array_request.forEach((module_request) => {
+				bus.cmds.request_device_status(module_name, module_request);
+			});
+
+			// Not really any good idea why it's this sequence of commands that turns the DSP amp on
+			// I've looked at logs from three different DSP-equipped cars and it's always this sequence
+
+			// Set DSP source to off
+			audio_control(false);
+
+			// Send DSP functions 1 and 0
+			audio_control('dsp-1');
+			audio_control('dsp-0');
+
+			// Set DSP source to on (tuner/tape)
+			audio_control(true);
+
+			// Turn on BMBT
+			cassette_control(true);
+
+			// Turn volume up 25 points (OEM is actually 24)
+			for (let i = 0; i < 4; i++) volume_control(5);
+		}
+	}
+}
+
+
 function init_listeners() {
 	// Perform DSP powerup sequence on IKE ignition event
 	IKE.on('ignition-powerup',  () => {
-		// Bounce if we're not configured to emulate the RAD module
-		if (config.emulate.rad !== true) return;
-
-		// Send device status
-		bus.cmds.send_device_status(module_name);
-
-		// Request status from BMBT, CDC, DSP, and MID (this needs to be a loop)
-		let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
-		array_request.forEach((module_request) => {
-			bus.cmds.request_device_status(module_name, module_request);
-		});
-
-		// Not really any good idea why it's this sequence of commands
-		// that turns the DSP amp on. I looked at logs from three
-		// different DSP-equipped cars and it's always this
-		send_audio_control(0);
-
-		send_audio_control('dsp-1');
-		send_audio_control('dsp-0');
-
-		send_audio_control(1);
-
-		send_cassette_control(1);
+		audio_power(true);
 	});
 
 	// Perform DSP poweroff sequence on IKE ignition event
 	IKE.on('ignition-poweroff',  () => {
-		// Bounce if we're not configured to emulate the RAD module
-		if (config.emulate.rad !== true) return;
-
-		send_audio_control(0);
-		send_cassette_control(0);
+		setTimeout(() => {
+			audio_power(false);
+		}, config.media.poweroff_delay);
 	});
 
 	log.module('Initialized listeners');
@@ -505,8 +546,8 @@ module.exports = {
 
 	init_listeners : init_listeners,
 
-	volume_control : volume_control,
-
-	send_audio_control    : send_audio_control,
-	send_cassette_control : send_cassette_control,
+	audio_power      : audio_power,
+	audio_control    : audio_control,
+	cassette_control : cassette_control,
+	volume_control   : volume_control,
 };

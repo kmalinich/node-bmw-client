@@ -184,7 +184,7 @@ function status_loop(action) {
 
 	if (BMBT.status_status_loop === action) return;
 
-	log.module({ msg : 'status_loop(' + action + ')' });
+	log.module('status_loop(' + action + ')');
 
 	switch (action) {
 		case false :
@@ -200,10 +200,10 @@ function status_loop(action) {
 			// Set status variable
 			BMBT.status_status_loop = false;
 
-			if (BMBT.timeouts.status_loop !== null) {
-				log.module({ msg : 'Unset status refresh timeout' });
-				clearTimeout(BMBT.timeouts.status_loop);
-				BMBT.timeouts.status_loop = null;
+			if (BMBT.timeout.status_loop !== null) {
+				log.module('Unset status refresh timeout');
+				clearTimeout(BMBT.timeout.status_loop);
+				BMBT.timeout.status_loop = null;
 			}
 			break;
 
@@ -214,14 +214,14 @@ function status_loop(action) {
 			// Set status variable
 			BMBT.status_status_loop = true;
 
-			log.module({ msg : 'Set status refresh timeout' });
+			log.module('Set status refresh timeout');
 	}
 }
 
 // Send BMBT status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
-		log.module({ msg : 'Refreshing status' });
+		log.module('Refreshing status');
 
 		bus.cmds.send_device_status('CDC');
 		bus.cmds.send_device_status('BMBT');
@@ -230,7 +230,7 @@ function refresh_status() {
 		bus.cmds.request_device_status(module_name, 'RAD');
 		bus.cmds.request_device_status('RAD',  'DSP');
 
-		BMBT.timeouts.status_loop = setTimeout(refresh_status, 8000);
+		BMBT.timeout.status_loop = setTimeout(refresh_status, 8000);
 
 		return;
 	}
@@ -243,23 +243,23 @@ function toggle_power_if_ready() {
 	if (config.emulate.bmbt !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
-	if (BMBT.timeouts.power_on !== null) return;
+	if (BMBT.timeout.power_on !== null) return;
 
-	BMBT.timeouts.power_on = setTimeout(() => {
+	BMBT.timeout.power_on = setTimeout(() => {
 		// Debug logging
-		// log.module({ msg : 'dsp.ready: '+status.dsp.ready });
-		// log.module({ msg : 'rad.source_name: '+status.rad.source_name });
+		// log.module('dsp.ready: ' + status.dsp.ready);
+		// log.module('rad.source_name: ' + status.rad.source_name);
 
-		BMBT.timeouts.power_on = null;
+		BMBT.timeout.power_on = null;
 
 		if (status.rad.source_name !== 'off' || status.vehicle.ignition_level === 0) return;
 
 		kodi.notify(module_name,         'power [' + module_name + ']');
 		IKE.text_override(module_name + ' power [' + module_name + ']');
 
-		log.module({ msg : 'Sending power!' });
+		log.module('Sending power!');
 
-		send_button('power');
+		button('power');
 		// DSP.request('memory'); // Get the DSP memory
 
 		status_loop(true);
@@ -267,21 +267,15 @@ function toggle_power_if_ready() {
 		// Increase volume after power on
 		if (config.bmbt.vol_at_poweron === true) {
 			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
+				for (let i = 0; i < 2; i++) RAD.volume_control(5);
 			}, 500);
 
 			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
+				for (let i = 0; i < 2; i++) RAD.volume_control(5);
 			}, 750);
 
 			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
+				for (let i = 0; i < 2; i++) RAD.volume_control(5);
 			}, 1000);
 		}
 	}, 1000);
@@ -291,7 +285,7 @@ function toggle_power_if_ready() {
 function parse_in(data) {
 	switch (data.msg[0]) {
 		case 0x4A: // Cassette control
-			send_cassette_status();
+			cassette_status();
 			toggle_power_if_ready();
 			break;
 	}
@@ -300,7 +294,7 @@ function parse_in(data) {
 // Parse data sent from BMBT module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x4B: // Cassette status
+		case 0x4B : // Cassette status
 			data.command = 'sta';
 			data.value   = 'cassette: ';
 
@@ -313,29 +307,30 @@ function parse_out(data) {
 			}
 			break;
 
-		case 0x47: // Broadcast: BM status
+		case 0x47 : // Broadcast: BM status
 			data = decode_button(data);
 			break;
 
-		case 0x48: // Broadcast: BM button
+		case 0x48 : // Broadcast: BM button
 			data = decode_button(data);
 			break;
 
-		case 0x49: // Broadcast: BM knob
+		case 0x49 : // Broadcast: BM knob
 			data = decode_knob(data);
 			break;
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
 			break;
+		}
 	}
 
 	log.bus(data);
 }
 
 // Say we have no tape in the player
-function send_cassette_status(value = 0x05) {
+function cassette_status(value = 0x05) {
 	bus.data.send({
 		src : module_name,
 		dst : 'RAD',
@@ -344,7 +339,7 @@ function send_cassette_status(value = 0x05) {
 }
 
 // Emulate button presses
-function send_button(button) {
+function button(button) {
 	let button_down = 0x00;
 	// let button_hold;
 	let button_up;
@@ -362,7 +357,7 @@ function send_button(button) {
 			break;
 	}
 
-	log.module({ msg : 'Button down ' + button });
+	log.module('Button down ' + button);
 
 	// Init variables
 	let command     = 0x48; // Button action
@@ -377,7 +372,7 @@ function send_button(button) {
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ msg : 'Button up ' + button });
+		log.module('Button up ' + button);
 
 		bus.data.send({
 			src : module_name,
@@ -399,16 +394,16 @@ function init_listeners() {
 module.exports = {
 	status_status_loop : false,
 
-	timeouts : {
+	timeout : {
 		power_on    : null,
 		status_loop : null,
 	},
 
+	button                : button,
+	cassette_status       : cassette_status,
 	init_listeners        : init_listeners,
 	parse_in              : parse_in,
 	parse_out             : parse_out,
-	send_button           : send_button,
-	send_cassette_status  : send_cassette_status,
 	status_loop           : status_loop,
 	toggle_power_if_ready : toggle_power_if_ready,
 };

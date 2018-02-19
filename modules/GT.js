@@ -228,7 +228,7 @@ function parse_out(data) {
 		}
 
 		case 0x4A : { // Control: Cassette
-			BMBT.send_cassette_status(data.msg[1]);
+			BMBT.cassette_status(data.msg[1]);
 
 			data.command = 'con';
 			data.value   = 'cassette: ';

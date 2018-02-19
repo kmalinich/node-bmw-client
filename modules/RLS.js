@@ -95,7 +95,7 @@ function decode_light_control_status(data) {
 	return data;
 }
 
-function send_light_control_status(data) {
+function light_control_status(data) {
 	// Init variables
 	let byte1 = 0x00;
 	let byte2 = 0x00;
@@ -202,7 +202,7 @@ function request(value) {
 }
 
 module.exports = {
-	send_light_control_status : send_light_control_status,
+	light_control_status : light_control_status,
 
 	request   : request,
 	parse_out : parse_out,
