@@ -272,7 +272,7 @@ function decode_bm_button(data) {
 
 	data.value += action + ' ' + button;
 
-	log.module('Received BMBT button: ' + data.value);
+	log.module('Received BMBT button: ' + action + ' ' + button);
 
 	switch (action) {
 		case 'release' : {
