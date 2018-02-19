@@ -581,12 +581,12 @@ function audio_power(power_state) {
 
 		switch (status.rad.source_name) {
 			case 'off' : {
-				audio_control(true);
+				audio_power(true);
 				break;
 			}
 
 			default : {
-				audio_control(false);
+				audio_power(false);
 			}
 		}
 
