@@ -89,14 +89,14 @@ function decode_con_rotation(data) {
 
 	switch (mask_mode) {
 		case 0x01: { // Rotation mode: horizontal
-			for (let i = 0; i < change_abs; i++) kodi.input(status.con1.rotation.direction);
+			for (let i = 0; i < (change_abs + 1); i++) kodi.input(status.con1.rotation.direction);
 			break;
 		}
 
 		case 0x02: { // Rotation mode: volume
 			switch (status.con1.rotation.direction) {
-				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
-				case 'right' : for (let i = 0; i < change_abs; i++) kodi.volume('up');
+				case 'left'  : for (let i = 0; i < (change_abs + 1); i++) kodi.volume('down'); break;
+				case 'right' : for (let i = 0; i < (change_abs + 1); i++) kodi.volume('up');
 			}
 			break;
 		}
@@ -111,8 +111,8 @@ function decode_con_rotation(data) {
 
 		default: { // Rotation mode: normal
 			switch (status.con1.rotation.direction) {
-				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up'); break;
-				case 'right' : for (let i = 0; i < change_abs; i++) kodi.input('down');
+				case 'left'  : for (let i = 0; i < (change_abs + 1); i++) kodi.input('up'); break;
+				case 'right' : for (let i = 0; i < (change_abs + 1); i++) kodi.input('down');
 			}
 		}
 	}
@@ -415,7 +415,7 @@ function decode_status_con(data) {
 	return data;
 }
 
-function decode_ignition_new(data) {
+function decode_ignition(data) {
 	data.command = 'bro';
 	data.value   = 'Ignition status';
 
@@ -448,8 +448,8 @@ function decode_status_cic(data) {
 
 
 function backlight(value) {
-	// Bounce if not enabled
-	if (config.media.con1 !== true) return;
+	// Bounce if not enabled or vehicle not on
+	if (config.media.con1 !== true || vehicle.ignition_level === 0) return;
 
 	// data.msg[0]: Backlight intensity
 	// 0xFE      : 0%
@@ -483,8 +483,8 @@ function backlight(value) {
 
 // E90 CIC1 status
 function status_cic() {
-	// Bounce if not enabled
-	if (config.media.con1 !== true) return;
+	// Bounce if not enabled or vehicle not on
+	if (config.media.con1 !== true || vehicle.ignition_level === 0) return;
 
 	log.module('Sending CIC1 status');
 
@@ -532,8 +532,8 @@ function status_ignition() {
 
 // Parse data sent from module
 function parse_out(data) {
-	// Bounce if not enabled
-	if (config.media.con1 !== true) return;
+	// Bounce if not enabled or vehicle not on
+	if (config.media.con1 !== true || vehicle.ignition_level === 0) return;
 
 	switch (data.src.id) {
 		case 0x202 : data = decode_con_backlight(data); break;
@@ -546,9 +546,9 @@ function parse_out(data) {
 			data.value   = module_name + ' ACK to CIC1 init';
 			break;
 
-		case 0x4F8 : data = decode_ignition_new(data); break;
-		case 0x4E7 : data = decode_status_con(data);   break;
-		case 0x5E7 : data = decode_status_con(data);   break;
+		case 0x4F8 : data = decode_ignition(data);   break;
+		case 0x4E7 : data = decode_status_con(data); break;
+		case 0x5E7 : data = decode_status_con(data); break;
 
 		default:
 			data.command = 'unk';
@@ -572,7 +572,6 @@ function init_listeners() {
 
 module.exports = {
 	timeout : {
-		status_cic      : null,
 		status_ignition : null,
 	},
 
