@@ -270,6 +270,8 @@ function decode_bm_button(data) {
 		default   : button = 'Unknown';
 	}
 
+	data.value += action + ' ' + button;
+
 	switch (action) {
 		case 'release' : {
 			switch (button) {
@@ -288,7 +290,7 @@ function decode_bm_button(data) {
 function parse_in(data) {
 	switch (data.msg[0]) {
 		case 0x47 : { // Broadcast: BM status
-			break;
+			return;
 		}
 
 		case 0x48 : { // Broadcast: BM button
@@ -297,13 +299,15 @@ function parse_in(data) {
 		}
 
 		case 0x49 : { // Broadcast: BM knob
-			break;
+			return;
 		}
 
 		case 0x4B : { // Broadcast: Cassette status
-			break;
+			return;
 		}
 	}
+
+	log.bus(data);
 }
 
 // Parse data sent from RAD module
