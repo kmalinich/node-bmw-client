@@ -272,12 +272,14 @@ function decode_bm_button(data) {
 
 	data.value += action + ' ' + button;
 
-	log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
-
 	switch (action) {
-		case 'depress' : {
+		case 'release' : {
 			switch (button) {
-				case 'power' : audio_power('toggle'); break;
+				case 'power' : {
+					log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
+					audio_power('toggle');
+					break;
+				}
 			}
 
 			break;
@@ -479,23 +481,6 @@ function audio_control(command) {
 			break;
 		}
 
-		case 'toggle' : {
-			log.module('Toggling audio power');
-
-			switch (status.rad.source_name) {
-				case 'off' : {
-					audio_control(true);
-					break;
-				}
-
-				default : {
-					audio_control(false);
-				}
-			}
-
-			return;
-		}
-
 		case 0           :
 		case false       :
 		case 'off'       :
@@ -591,6 +576,23 @@ function volume_control(value = 1) {
 
 // Power on DSP amp and GPIO pin for amplifier
 function audio_power(power_state) {
+	if (power_state === 'toggle') {
+		log.module('Toggling audio power');
+
+		switch (status.rad.source_name) {
+			case 'off' : {
+				audio_control(true);
+				break;
+			}
+
+			default : {
+				audio_control(false);
+			}
+		}
+
+		return;
+	}
+
 	log.module('Setting audio power to state : ' + power_state);
 
 	switch (power_state) {
