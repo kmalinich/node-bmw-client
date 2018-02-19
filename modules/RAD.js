@@ -484,12 +484,12 @@ function audio_control(command) {
 
 			switch (status.rad.source_name) {
 				case 'off' : {
-					audio_control(false);
+					audio_control(true);
 					break;
 				}
 
 				default : {
-					audio_control(true);
+					audio_control(false);
 				}
 			}
 
