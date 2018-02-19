@@ -272,10 +272,10 @@ function decode_bm_button(data) {
 
 	data.value += action + ' ' + button;
 
-	log.module('Received BMBT button: ' + action + ' ' + button);
+	log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
 
 	switch (action) {
-		case 'release' : {
+		case 'depress' : {
 			switch (button) {
 				case 'power' : audio_power('toggle'); break;
 			}
@@ -312,8 +312,6 @@ function parse_in(data) {
 			return data;
 		}
 	}
-
-	log.bus(data);
 }
 
 // Parse data sent from RAD module
