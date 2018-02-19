@@ -110,7 +110,7 @@ function decode_button(data) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 
-						case 'depressknob' : kodi.command('in'); break;
+						case 'depressknob' : kodi.input('in'); break;
 
 						case 'holdleft'  : kodi.command('toggle'); break; // This resumes normal playback after doing fast-forward or fast-reverse when lifting off the button
 						case 'holdright' : kodi.command('toggle');
@@ -138,6 +138,21 @@ function decode_button(data) {
 	// Update status object with the new data
 	update.status('bmbt.last.action', action);
 	update.status('bmbt.last.button', button);
+
+	return data;
+}
+
+function decode_cassette_status(data) {
+	data.command = 'sta';
+	data.value   = 'cassette: ';
+
+	switch (data.msg[1]) {
+		case 0x00 : data.value += 'off';     break;
+		case 0x05 : data.value += 'no tape'; break;
+		case 0x06 : data.value += 'tape in'; break;
+		case 0xFF : data.value += 'on';      break;
+		default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
+	}
 
 	return data;
 }
@@ -187,7 +202,7 @@ function status_loop(action) {
 	log.module('status_loop(' + action + ')');
 
 	switch (action) {
-		case false :
+		case false : {
 			update.status('rad.source_name', 'off');
 
 			update.status('dsp.reset',  true);
@@ -206,8 +221,9 @@ function status_loop(action) {
 				BMBT.timeout.status_loop = null;
 			}
 			break;
+		}
 
-		case true :
+		case true : {
 			// Send a couple through to prime the pumps
 			refresh_status();
 
@@ -215,6 +231,7 @@ function status_loop(action) {
 			BMBT.status_status_loop = true;
 
 			log.module('Set status refresh timeout');
+		}
 	}
 }
 
@@ -294,30 +311,25 @@ function parse_in(data) {
 // Parse data sent from BMBT module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x4B : // Cassette status
-			data.command = 'sta';
-			data.value   = 'cassette: ';
-
-			switch (data.msg[1]) {
-				case 0x00 : data.value += 'off';     break;
-				case 0x05 : data.value += 'no tape'; break;
-				case 0x06 : data.value += 'tape in'; break;
-				case 0xFF : data.value += 'on';      break;
-				default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
-			}
-			break;
-
-		case 0x47 : // Broadcast: BM status
+		case 0x47 : { // Broadcast: BM status
 			data = decode_button(data);
 			break;
+		}
 
-		case 0x48 : // Broadcast: BM button
+		case 0x48 : { // Broadcast: BM button
 			data = decode_button(data);
 			break;
+		}
 
-		case 0x49 : // Broadcast: BM knob
+		case 0x49 : { // Broadcast: BM knob
 			data = decode_knob(data);
 			break;
+		}
+
+		case 0x4B : { // Broadcast: Cassette status
+			data = decode_cassette_status(data);
+			break;
+		}
 
 		default : {
 			data.command = 'unk';
@@ -346,7 +358,7 @@ function button(button) {
 
 	// Switch statement to determine button, then encode bitmask
 	switch (button) {
-		case 'power' :
+		case 'power' : {
 			// Get down value of button
 			button_down = bitmask.set(button_down, bitmask.bit[1]);
 			button_down = bitmask.set(button_down, bitmask.bit[2]);
@@ -355,6 +367,7 @@ function button(button) {
 			// button_hold = bitmask.set(button_down, bitmask.bit[6]);
 			button_up = bitmask.set(button_down, bitmask.bit[7]);
 			break;
+		}
 	}
 
 	log.module('Button down ' + button);

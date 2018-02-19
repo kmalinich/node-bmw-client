@@ -170,28 +170,37 @@ function decode_audio_control(data) {
 		case 'fader'   : cmd_value = data.msg[1] - 0x80; break;
 		case 'source'  : cmd_value = data.msg[1] - 0xA0; break;
 		case 'treble'  : cmd_value = data.msg[1] - 0xC0; break;
-		default        :
+
+		default : {
 			data.value += 'unknown cmd_type ' + cmd_type + ' - 0x' + data.msg[1].toString(16);
 			return data;
+		}
 	}
 	// console.log('cmd_values : %s => %s', '0x' + data.msg[1].toString(16), '0x' + cmd_value.toString(16));
 
 	// Further command-type-specific processing
 	switch (cmd_type) {
-		case 'source' :
+		case 'source' : {
 			switch (cmd_value) {
-				case 0x00 : update.status('rad.source_name', 'cd');         break;
-				case 0x01 : update.status('rad.source_name', 'tuner/tape'); break;
-				case 0x0F : update.status('rad.source_name', 'off');
+				case 0x00 :
+				case 0xA0 : update.status('rad.source_name', 'cd'); break;
+
+				case 0x01 :
+				case 0xA1 : update.status('rad.source_name', 'tuner/tape'); break;
+
+				case 0x0F :
+				case 0xAF : update.status('rad.source_name', 'off');
 			}
 
 			// Technically not legit
 			data.value += 'source ' + status.rad.source_name;
 			break;
+		}
 
-		default :
+		default : {
 			// Technically not legit
 			data.value += 'command ' + cmd_type + ' ' + cmd_value;
+		}
 	}
 
 	// Update status var with interpreted value
@@ -200,11 +209,98 @@ function decode_audio_control(data) {
 	return data;
 }
 
+function decode_bm_button(data) {
+	let action = 'depress';
+	let button;
+
+	// Determine action
+	let mask = bitmask.check(data.msg[1]).mask;
+	switch (mask.b6) {
+		case true : {
+			switch (mask.b7) {
+				case true  : break;
+				case false : {
+					// Remove hold bit from button value
+					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
+					action      = 'hold';
+				}
+			}
+			break;
+		}
+
+		case false : {
+			switch (mask.b7) {
+				case false : break;
+				case true  : {
+					// Remove release bit from button value
+					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
+					action      = 'release';
+				}
+			}
+		}
+	}
+
+	// Determine button
+	switch (data.msg[1]) {
+		case 0x00 : button = 'right';    break;
+		case 0x01 : button = '2';        break;
+		case 0x02 : button = '4';        break;
+		case 0x03 : button = '6';        break;
+		case 0x04 : button = 'tone';     break;
+		case 0x05 : button = 'knob';     break;
+		case 0x06 : button = 'power';    break;
+		case 0x07 : button = 'clock';    break;
+		case 0x08 : button = 'phone';    break;
+		case 0x10 : button = 'left';     break;
+		case 0x11 : button = '1';        break;
+		case 0x12 : button = '3';        break;
+		case 0x13 : button = '5';        break;
+		case 0x14 : button = '<>';       break;
+		case 0x20 : button = 'select';   break;
+		case 0x21 : button = 'am';       break;
+		case 0x22 : button = 'rds';      break;
+		case 0x23 : button = 'mode';     break;
+		case 0x24 : button = 'eject';    break;
+		case 0x30 : button = 'rad menu'; break;
+		case 0x31 : button = 'fm';       break;
+		case 0x32 : button = 'pty/tp';   break;
+		case 0x33 : button = 'dolby';    break;
+		case 0x34 : button = 'gt menu';  break;
+		case 0x38 : button = 'info';     break;
+		default   : button = 'Unknown';
+	}
+
+	switch (action) {
+		case 'release' : {
+			switch (button) {
+				case 'power' : audio_power('toggle'); break;
+			}
+
+			break;
+		}
+	}
+
+	return data;
+}
+
 
 // Parse data sent to RAD module
 function parse_in(data) {
 	switch (data.msg[0]) {
-		default : {
+		case 0x47 : { // Broadcast: BM status
+			break;
+		}
+
+		case 0x48 : { // Broadcast: BM button
+			data = decode_bm_button(data);
+			break;
+		}
+
+		case 0x49 : { // Broadcast: BM knob
+			break;
+		}
+
+		case 0x4B : { // Broadcast: Cassette status
 			break;
 		}
 	}
@@ -375,12 +471,30 @@ function audio_control(command) {
 			break;
 		}
 
+		case 'toggle' : {
+			log.module('Toggling audio power');
+
+			switch (status.rad.source_name) {
+				case 'off' : {
+					audio_control(false);
+					break;
+				}
+
+				default : {
+					audio_control(true);
+				}
+			}
+
+			return;
+		}
+
 		case 0           :
 		case false       :
 		case 'off'       :
 		case 'power off' :
 		case 'power-off' :
-		case 'poweroff'  : {
+		case 'poweroff'  :
+		default          : {
 			command = 'power off';
 			msg     = msgs.off;
 		}
@@ -423,7 +537,8 @@ function cassette_control(command) {
 		case 'off'       :
 		case 'power off' :
 		case 'power-off' :
-		case 'poweroff'  : {
+		case 'poweroff'  :
+		default          : {
 			command = 'power off';
 			msg     = msgs.off;
 		}
