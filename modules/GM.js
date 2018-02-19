@@ -43,44 +43,6 @@ const EventEmitter = require('events');
 //   wipers_spray                  : true,
 // };
 
-// [0x7A] Decode a door status message from the GM and act upon the results
-function decode_status_open(data) {
-	data.command = 'bro';
-	data.value   = 'door status';
-
-	// Set status from message by decoding bitmask
-	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x01));
-	update.status('doors.front_right', bitmask.test(data.msg[1], 0x02));
-	update.status('doors.hood',        bitmask.test(data.msg[2], 0x40));
-	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x04));
-	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x08));
-	update.status('doors.trunk',       bitmask.test(data.msg[2], 0x20));
-
-	update.status('lights.interior', bitmask.test(data.msg[1], 0x40));
-
-	update.status('windows.front_left',  bitmask.test(data.msg[2], 0x01));
-	update.status('windows.front_right', bitmask.test(data.msg[2], 0x02));
-	update.status('windows.rear_left',   bitmask.test(data.msg[2], 0x04));
-	update.status('windows.rear_right',  bitmask.test(data.msg[2], 0x08));
-	update.status('windows.roof',        bitmask.test(data.msg[2], 0x10));
-
-	// This is correct, in a sense... Not a good sense, but in a sense
-	update.status('vehicle.locked', bitmask.test(data.msg[1], 0x20));
-
-	// Set status.doors.sealed if all doors are closed
-	let update_sealed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.hood && !status.doors.rear_left && !status.doors.rear_right && !status.doors.trunk);
-	update.status('doors.sealed', update_sealed_doors);
-
-	// Set status.windows.sealed if all windows are closed
-	let update_sealed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
-	update.status('windows.sealed', update_sealed_windows);
-
-	// Set status.vehicle.sealed if all doors and windows are closed
-	update.status('vehicle.sealed', (status.doors.sealed && status.windows.sealed));
-
-	return data;
-}
-
 // This is just a dumb placeholder
 // Decode the GM bitmask string and output an array of true/false values
 function io_decode(data) {
@@ -313,6 +275,51 @@ GM.prototype.decode_status_keyfob = function (data) {
 	return data;
 };
 
+// [0x7A] Decode a door status message from the GM and act upon the results
+GM.prototype.decode_status_open = function (data) {
+	data.command = 'bro';
+	data.value   = 'door status';
+
+	// Set status from message by decoding bitmask
+	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x01));
+	update.status('doors.front_right', bitmask.test(data.msg[1], 0x02));
+	update.status('doors.hood',        bitmask.test(data.msg[2], 0x40));
+	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x04));
+	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x08));
+	update.status('doors.trunk',       bitmask.test(data.msg[2], 0x20));
+
+	update.status('lights.interior', bitmask.test(data.msg[1], 0x40));
+
+	update.status('windows.front_left',  bitmask.test(data.msg[2], 0x01));
+	update.status('windows.front_right', bitmask.test(data.msg[2], 0x02));
+	update.status('windows.rear_left',   bitmask.test(data.msg[2], 0x04));
+	update.status('windows.rear_right',  bitmask.test(data.msg[2], 0x08));
+	update.status('windows.roof',        bitmask.test(data.msg[2], 0x10));
+
+	// This is correct, in a sense... Not a good sense, but in a sense
+	update.status('vehicle.locked', bitmask.test(data.msg[1], 0x20));
+
+	// Set status.doors.sealed if all doors are closed
+	let update_sealed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.hood && !status.doors.rear_left && !status.doors.rear_right && !status.doors.trunk);
+	update.status('doors.sealed', update_sealed_doors);
+
+	// Set status.windows.sealed if all windows are closed
+	let update_sealed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
+	update.status('windows.sealed', update_sealed_windows);
+
+	// Set status.vehicle.sealed if all doors and windows are closed
+	update.status('vehicle.sealed', (status.doors.sealed && status.windows.sealed));
+
+	// Emit open event
+	this.emit('open', {
+		doors   : status.doors,
+		locked  : status.vehicle.locked,
+		windows : status.windows,
+	});
+
+	return data;
+};
+
 GM.prototype.decode_status_wiper = function (data) {
 	data.command = 'bro';
 	data.value   = 'wiper status';
@@ -353,6 +360,9 @@ GM.prototype.decode_status_wiper = function (data) {
 		}, 1500);
 	}
 
+	// Emit wiper event
+	this.emit('wiper', status.gm.wipers);
+
 	return data;
 };
 
@@ -373,36 +383,36 @@ GM.prototype.decode_status_crash_alarm = function (data) {
 // Parse data sent from GM module
 GM.prototype.parse_out = function (data) {
 	switch (data.msg[0]) {
-		case 0x72: // Broadcast: Key fob status
+		case 0x72 : // Broadcast: Key fob status
 			data = this.decode_status_keyfob(data);
 			break;
 
-		case 0x76: // Broadcast: 'Crash alarm'
+		case 0x76 : // Broadcast: 'Crash alarm'
 			data = this.decode_status_crash_alarm(data);
 			break;
 
-		case 0x77: // Broadcast: Wiper status
+		case 0x77 : // Broadcast: Wiper status
 			data = this.decode_status_wiper(data);
 			break;
 
-		case 0x78: // Broadcast: Seat memory data
+		case 0x78 : // Broadcast: Seat memory data
 			data.command = 'bro';
 			data.value   = 'TODO seat memory data';
 			break;
 
-		case 0x7A: // Broadcast: Open doors (flaps)/windows status
-			data = decode_status_open(data);
+		case 0x7A : // Broadcast: Open doors (flaps)/windows status
+			data = this.decode_status_open(data);
 			break;
 
-		case 0xA0: // Reply: Diagnostic command acknowledged
+		case 0xA0 : // Reply: Diagnostic command acknowledged
 			data.command = 'rep';
 			data.value   = 'TODO diagnostic command ack';
 			break;
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
-			break;
+		}
 	}
 
 	log.bus(data);

@@ -76,47 +76,49 @@ function refresh_text() {
 
 // Set or unset the text interval
 function text_loop(action) {
-	if (config.media.mid !== true) return;
-	if (status.vehicle.ignition_level < 1) action = false;
-	if (MID.text_text_loop === action) return;
+	if (config.media.mid              !==   true) return;
+	if (status.vehicle.ignition_level  <       1) action = false;
+	if (MID.status.text_loop          === action) return;
 
 	log.module({ msg : 'Text loop ' + action });
 
 	switch (action) {
-		case false:
-			clearInterval(MID.interval_text_loop);
+		case false : {
+			clearInterval(MID.interval.text_loop);
 
 			// Set text variables
-			MID.text_text_loop = false;
+			MID.status.text_loop = false;
 			break;
+		}
 
-		case true:
+		case true : {
 			// Set text variable
-			MID.text_text_loop = true;
+			MID.status.text_loop = true;
 
 			// Send a couple through to prime the pumps
 			refresh_text();
 
-			MID.interval_text_loop = setInterval(() => {
+			MID.interval.text_loop = setInterval(() => {
 				refresh_text();
 			}, 5000);
+		}
 	}
 }
 
 // Set or unset the status interval
 function status_loop(action) {
-	if (config.emulate.mid !== true) return;
-	if (status.vehicle.ignition_level < 1) action = false;
-	if (MID.status_status_loop === action) return;
+	if (config.emulate.mid            !==   true) return;
+	if (status.vehicle.ignition_level  <       1) action = false;
+	if (MID.status.status_loop        === action) return;
 
 	log.module({ msg : 'Status loop ' + action });
 
 	switch (action) {
-		case false:
-			clearInterval(MID.interval_status_loop);
+		case false : {
+			clearInterval(MID.interval.status_loop);
 
 			// Set status variables
-			MID.status_status_loop = false;
+			MID.status.status_loop = false;
 
 			update.status('rad.source_name', 'off');
 
@@ -128,17 +130,20 @@ function status_loop(action) {
 			update.status('rad.ready',  false);
 
 			break;
-		case true:
+		}
+
+		case true : {
 			// Set status variable
-			MID.status_status_loop = true;
+			MID.status.status_loop = true;
 
 			// Send a couple through to prime the pumps
 			refresh_status();
 
-			MID.interval_status_loop = setInterval(() => {
+			MID.interval.status_loop = setInterval(() => {
 				refresh_status();
 			}, 20000);
 			break;
+		}
 	}
 }
 
@@ -165,7 +170,7 @@ function toggle_power_if_ready() {
 		IKE.text_override('MID power, from MID');
 		log.module({ msg : 'Sending power!'	});
 
-		send_button('power');
+		button('power');
 		DSP.request('memory'); // Get the DSP memory
 	}
 }
@@ -319,7 +324,7 @@ function parse_out(data) {
 }
 
 // Emulate button presses
-function send_button(button) {
+function button(button) {
 	let button_down = 0x00;
 	let button_hold;
 	let button_up;
@@ -378,16 +383,21 @@ function init_listeners() {
 
 
 module.exports = {
-	interval_status_loop : null,
-	interval_text_loop   : null,
-	status_status_loop   : false,
-	status_text_loop     : false,
+	interval : {
+		status_loop : null,
+		text_loop   : null,
+	},
 
+	status : {
+		status_loop : false,
+		text_loop   : false,
+	},
+
+	button                : button,
 	init_listeners        : init_listeners,
 	parse_in              : parse_in,
 	parse_out             : parse_out,
 	refresh_text          : refresh_text,
-	send_button           : send_button,
 	status_loop           : status_loop,
 	text_loop             : text_loop,
 	toggle_power_if_ready : toggle_power_if_ready,

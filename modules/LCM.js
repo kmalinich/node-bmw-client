@@ -17,9 +17,9 @@ function auto_lights() {
 		case false : {
 			io_encode({});
 
-			if (LCM.timeouts.lights_auto !== null) {
-				clearTimeout(LCM.timeouts.lights_auto);
-				LCM.timeouts.lights_auto = null;
+			if (LCM.timeout.lights_auto !== null) {
+				clearTimeout(LCM.timeout.lights_auto);
+				LCM.timeout.lights_auto = null;
 				log.module({ msg : 'Unset autolights timeout' });
 			}
 
@@ -31,7 +31,7 @@ function auto_lights() {
 		}
 
 		case true : {
-			if (LCM.timeouts.lights_auto === null) {
+			if (LCM.timeout.lights_auto === null) {
 				log.module({ msg : 'Set autolights timeout' });
 			}
 
@@ -120,7 +120,7 @@ function auto_lights_process() {
 
 	// Process/send LCM data on 10 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
-	LCM.timeouts.lights_auto = setTimeout(auto_lights_process, 10000);
+	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 10000);
 }
 
 // Cluster/interior backlight
@@ -734,7 +734,7 @@ function parse_out(data) {
 			data.value   = 'dimmer value 1';
 
 			// Set CON1 backlight level
-			CON1.send_backlight(data.msg[1]);
+			CON1.backlight(data.msg[1]);
 
 			update.status('lcm.dimmer.value_1', data.msg[1]);
 			// update.status('lcm.io.15',          data.msg[1]);
@@ -795,7 +795,7 @@ function welcome_lights(action, override = false) {
 			LCM.counts.welcome_lights++;
 
 			// Clear welcome lights status after configured timeout
-			LCM.timeouts.lights_welcome = setTimeout(() => {
+			LCM.timeout.lights_welcome = setTimeout(() => {
 				// If we're not over the configured welcome lights limit yet
 				if (LCM.counts.welcome_lights <= config.lights.welcome_lights_sec) {
 					LCM.welcome_lights(true, true);
@@ -809,8 +809,8 @@ function welcome_lights(action, override = false) {
 
 		case false : {
 			// Clear any remaining timeout(s)
-			clearTimeout(LCM.timeouts.lights_welcome);
-			LCM.timeouts.lights_welcome = null;
+			clearTimeout(LCM.timeout.lights_welcome);
+			LCM.timeout.lights_welcome = null;
 
 			// Reset welcome lights counter
 			LCM.counts.welcome_lights = 0;
@@ -829,8 +829,8 @@ function pl() {
 	if (status.lcm.police_lights.counts.loop >= config.lights.police_lights.limit || status.lcm.police_lights.ok !== true) {
 		update.status('lcm.police_lights.ok', false);
 
-		clearTimeout(LCM.timeouts.lights_police);
-		LCM.timeouts.lights_police = null;
+		clearTimeout(LCM.timeout.lights_police);
+		LCM.timeout.lights_police = null;
 
 		io_encode({});
 
@@ -934,7 +934,7 @@ function pl() {
 		update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1));
 	}
 
-	LCM.timeouts.lights_police = setTimeout(pl, config.lights.police_lights.delay);
+	LCM.timeout.lights_police = setTimeout(pl, config.lights.police_lights.delay);
 }
 
 // Check if the current police lights count is in the provided array
@@ -987,7 +987,7 @@ module.exports = {
 	},
 
 	// Timeout variables
-	timeouts : {
+	timeout : {
 		lights_auto    : null,
 		lights_police  : null,
 		lights_welcome : null,

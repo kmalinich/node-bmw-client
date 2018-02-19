@@ -409,7 +409,7 @@ function decode_status_con(data) {
 	if (data.msg[4] === 0x06) { // CON1 needs init
 		log.module('Init triggered');
 
-		send_status_cic();
+		status_cic();
 	}
 
 	return data;
@@ -434,7 +434,7 @@ function decode_status_cic(data) {
 	return data;
 }
 
-// function send_heartbeat() {
+// function heartbeat() {
 // 	// 2BA -> 00 00 00 00 10
 // 	// 2BA -> 00 00 00 00 20
 //
@@ -447,7 +447,7 @@ function decode_status_cic(data) {
 // }
 
 
-function send_backlight(value) {
+function backlight(value) {
 	// Bounce if not enabled
 	if (config.media.con1 !== true) return;
 
@@ -466,7 +466,7 @@ function send_backlight(value) {
 	// Workarounds
 	switch (value) {
 		case 0x00 : value = 0xFE; break; // 0% workaround
-		// case 0x7F : value = 0xFF; break; // 50% workaround
+			// case 0x7F : value = 0xFF; break; // 50% workaround
 		case 0xFE : value = 0xFD; break; // Almost-100% workaround
 		case 0xFF : value = 0xFD; break; // Almost-100% workaround
 		default   : value--;             // Decrement value by one (see above)
@@ -482,7 +482,7 @@ function send_backlight(value) {
 }
 
 // E90 CIC1 status
-function send_status_cic() {
+function status_cic() {
 	// Bounce if not enabled
 	if (config.media.con1 !== true) return;
 
@@ -499,7 +499,7 @@ function send_status_cic() {
 }
 
 // E90 Ignition status
-function send_status_ignition_new() {
+function status_ignition() {
 	// Bounce if not enabled
 	if (config.media.con1 !== true) return;
 
@@ -513,9 +513,9 @@ function send_status_ignition_new() {
 	});
 
 	if (status.vehicle.ignition_level === 0) {
-		if (CON1.timeouts.status_ignition_new !== null) {
-			clearTimeout(CON1.timeouts.status_ignition_new);
-			CON1.timeouts.status_ignition_new = null;
+		if (CON1.timeout.status_ignition !== null) {
+			clearTimeout(CON1.timeout.status_ignition);
+			CON1.timeout.status_ignition = null;
 
 			log.module('Unset ignition status timeout');
 
@@ -523,11 +523,11 @@ function send_status_ignition_new() {
 		}
 	}
 
-	if (CON1.timeouts.status_ignition_new === null) {
+	if (CON1.timeout.status_ignition === null) {
 		log.module('Set ignition status timeout');
 	}
 
-	CON1.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
+	CON1.timeout.status_ignition = setTimeout(status_ignition, 1000);
 }
 
 // Parse data sent from module
@@ -563,22 +563,24 @@ function init_listeners() {
 	update.status('con1.rotation.last_msg', time_now(), false);
 
 	// Enable/disable keepalive on IKE ignition event
-	IKE.on('ignition-powerup',  () => { send_status_ignition_new(); });
-	IKE.on('ignition-poweroff', () => { send_status_ignition_new(); });
+	IKE.on('ignition-powerup',  () => { status_ignition(); });
+	IKE.on('ignition-poweroff', () => { status_ignition(); });
 
 	log.module('Initialized listeners');
 }
 
 
 module.exports = {
-	timeouts : {
-		status_cic          : null,
-		status_ignition_new : null,
+	timeout : {
+		status_cic      : null,
+		status_ignition : null,
 	},
 
 	// Functions
-	init_listeners           : init_listeners,
-	parse_out                : parse_out,
-	send_backlight           : send_backlight,
-	send_status_ignition_new : send_status_ignition_new,
+	init_listeners : init_listeners,
+
+	backlight : backlight,
+	parse_out : parse_out,
+
+	status_ignition : status_ignition,
 };
