@@ -203,7 +203,7 @@ function parse_545(data) {
 		},
 		temperature : {
 			oil : {
-				c : parseFloat(((data.msg[4] * 0.75) - 48.373).toFixed(2)),
+				c : parseFloat((data.msg[4] - 48.373).toFixed(2)),
 				f : null,
 			},
 		},
