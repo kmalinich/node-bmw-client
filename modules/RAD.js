@@ -596,6 +596,8 @@ function audio_power(power_state) {
 	log.module('Setting audio power to state : ' + power_state);
 
 	switch (power_state) {
+		case 0     :
+		case 'off' :
 		case false : {
 			// Bounce if we're not configured to emulate the RAD module
 			if (config.emulate.rad !== true) return;
@@ -613,6 +615,8 @@ function audio_power(power_state) {
 			break;
 		}
 
+		case 1    :
+		case 'on' :
 		case true : {
 			// Bounce if we're not configured to emulate the RAD module
 			if (config.emulate.rad !== true) return;
