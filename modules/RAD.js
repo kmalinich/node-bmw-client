@@ -649,10 +649,10 @@ function audio_power(power_state) {
 			// Turn on BMBT
 			cassette_control(true);
 
-			// Turn volume up 25 points
+			// Turn volume up ~30 points
 			setTimeout(() => {
-				for (let i = 0; i < 5; i++) volume_control(5);
-			}, 3000);
+				for (let i = 0; i < 6; i++) volume_control(5);
+			}, 3500);
 
 			// Start BT/Kodi playback
 			bluetooth.command('play');
