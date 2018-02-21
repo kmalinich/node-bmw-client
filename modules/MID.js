@@ -13,7 +13,7 @@ const pad = require('pad');
 function refresh_text() {
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
-	log.module({ msg : 'Updating MID text' });
+	log.module('Updating MID text');
 
 	let message_hex;
 
@@ -80,7 +80,7 @@ function text_loop(action) {
 	if (status.vehicle.ignition_level  <       1) action = false;
 	if (MID.status.text_loop          === action) return;
 
-	log.module({ msg : 'Text loop ' + action });
+	log.module('Text loop ' + action);
 
 	switch (action) {
 		case false : {
@@ -111,7 +111,7 @@ function status_loop(action) {
 	if (status.vehicle.ignition_level  <       1) action = false;
 	if (MID.status.status_loop        === action) return;
 
-	log.module({ msg : 'Status loop ' + action });
+	log.module('Status loop ' + action);
 
 	switch (action) {
 		case false : {
@@ -163,12 +163,12 @@ function toggle_power_if_ready() {
 	if (status.vehicle.ignition_level === 0 || config.emulate.mid !== true) return;
 
 	// Debug logging
-	// log.module({ msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
-	// log.module({ msg: 'rad.source_name : \''+status.rad.source_name+'\'' });
+	// log.module('dsp.ready         : \'' + status.dsp.ready + '\'');
+	// log.module('rad.source_name : \'' + status.rad.source_name + '\'');
 
 	if (status.rad.source_name === 'off') {
 		IKE.text_override('MID power, from MID');
-		log.module({ msg : 'Sending power!'	});
+		log.module('Sending power!');
 
 		button('power');
 		DSP.request('memory'); // Get the DSP memory
@@ -342,7 +342,7 @@ function button(button) {
 			break;
 	}
 
-	log.module({ msg : 'Button down: ' + button + ', hold: ' + button_hold });
+	log.module('Button down: ' + button + ', hold: ' + button_hold);
 
 	// Init variables
 	let command     = 0x48; // Button action
@@ -356,7 +356,7 @@ function button(button) {
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ msg : 'Button up: ' + button });
+		log.module('Button up: ' + button);
 
 		bus.data.send({
 			dst : 'RAD',

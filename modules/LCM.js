@@ -20,7 +20,7 @@ function auto_lights() {
 			if (LCM.timeout.lights_auto !== null) {
 				clearTimeout(LCM.timeout.lights_auto);
 				LCM.timeout.lights_auto = null;
-				log.module({ msg : 'Unset autolights timeout' });
+				log.module('Unset autolights timeout');
 			}
 
 			// Set status variables
@@ -32,7 +32,7 @@ function auto_lights() {
 
 		case true : {
 			if (LCM.timeout.lights_auto === null) {
-				log.module({ msg : 'Set autolights timeout' });
+				log.module('Set autolights timeout');
 			}
 
 			// Set status variable
@@ -73,9 +73,9 @@ function auto_lights_process() {
 	let lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
 
 	// Debug logging
-	// log.module({ msg : '   current : \''+now_time+'\'' });
-	// log.module({ msg : ' lights_on : \''+lights_on+'\''    });
-	// log.module({ msg : 'lights_off : \''+lights_off+'\''   });
+	// log.module('   current : \''+now_time+'\'' });
+	// log.module(' lights_on : \''+lights_on+'\''    });
+	// log.module('lights_off : \''+lights_off+'\''   });
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
@@ -84,7 +84,7 @@ function auto_lights_process() {
 		return;
 	}
 
-	// log.module({ msg : 'Processing auto lights' });
+	// log.module('Processing auto lights' });
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
@@ -125,7 +125,7 @@ function auto_lights_process() {
 
 // Cluster/interior backlight
 function set_backlight(value) {
-	log.module({ msg : 'Setting backlight to ' + value });
+	log.module('Setting backlight to ' + value);
 
 	bus.data.send({
 		src : 'LCM',
@@ -227,7 +227,7 @@ function comfort_turn_flash(action) {
 	// Double-check the requested action
 	if (action !== 'left' && action !== 'right') return;
 
-	log.module({ msg : 'Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed });
+	log.module('Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed);
 
 	// Update status variables, and prepare cluster message
 	let cluster_msg_outer;
@@ -264,7 +264,7 @@ function comfort_turn_flash(action) {
 	let timer_off  = (config.lights.comfort_turn.flashes - 1) * 500;
 	let timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
 
-	log.module({ msg : 'Comfort turn timer: ' + timer_off + 'ms' });
+	log.module('Comfort turn timer: ' + timer_off + 'ms');
 
 	// Timeout for turning off the comfort turn signal
 	setTimeout(() => {
@@ -628,7 +628,7 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
-	log.module({ msg : 'Setting IO status' });
+	log.module('Setting IO status');
 
 	packet.unshift(0x0C);
 	bus.data.send({
@@ -681,7 +681,7 @@ function request(value) {
 	let src;
 	let msg;
 
-	log.module({ msg : 'Requesting \'' + value + '\'' });
+	log.module('Requesting \'' + value + '\'');
 
 	switch (value) {
 		case 'coding' : coding_get(); return;
@@ -781,7 +781,7 @@ function welcome_lights(action, override = false) {
 	// Bounce if welcome lights status is equal to request
 	if (status.lights.welcome_lights === action && override === false) return;
 
-	log.module({ msg : 'Welcome lights: ' + action });
+	log.module('Welcome lights: ' + action);
 
 	switch (action) {
 		case true : {
@@ -972,7 +972,7 @@ function init_listeners() {
 
 	// Enable/disable welcome lights on GM keyfob event
 	GM.on('keyfob', (keyfob) => {
-		log.module({ msg : 'Received GM keyfob event' });
+		log.module('Received GM keyfob event');
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 
