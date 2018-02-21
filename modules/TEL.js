@@ -43,6 +43,10 @@ function parse_out(data) {
 		}
 
 		case 0x2C : { // Broadcast: Telephone status
+			data.command = 'bro';
+			data.value   = 'telephone status TODO';
+
+			// Bitmask
 			// Bit0 : Handsfree
 			// Bit1 : Active call (false = phone menu displayed)
 			// Bit2 : Incoming call
@@ -50,9 +54,6 @@ function parse_out(data) {
 			// Bit4 : Phone on
 			// Bit5 : Phone active
 			// Bit6 : Phone adapter installed
-
-			data.command = 'bro';
-			data.value   = 'telephone status TODO';
 			break;
 		}
 
@@ -64,11 +65,14 @@ function parse_out(data) {
 
 		case 0xA6 : { // Request: Special indicators
 			data.command = 'req';
-			data.value   = 'special indicators';
+			data.value   = 'special indicators TODO';
 			break;
 		}
 
 		case 0xA9 : { // Broadcast: Telephone data
+			data.command = 'bro';
+			data.value   = 'telephone data TODO';
+
 			// A9 03 30 30, NAV,TEL, Telephone data Current_network_request     Count_0
 			// A9 0A 30 30, NAV,TEL, Telephone data Current_phone_status        Count_0
 			// A9 31 00 00, TEL,NAV, Telephone data Telematics_settings_request
@@ -76,13 +80,10 @@ function parse_out(data) {
 			// A9 0B 00 00 04,       TEL,NAV, Telephone data Data="0B 00 00 04"
 			// A9 27 01 00 41 00 00, NAV,RAD, Telephone data Data="27 01 00 41 00 00"
 			// A9 28 01 00 4D 00 00, NAV,RAD, Telephone data Data="28 01 00 4D 00 00"
-
-			data.command = 'bro';
-			data.value   = 'telephone data TODO';
 			break;
 		}
 
-		default: {
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
 		}

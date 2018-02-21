@@ -119,6 +119,7 @@ function load_modules(pass) {
 	ASC1 = require('ASC1');
 	CON1 = require('CON1');
 	DME1 = require('DME1');
+	NBT1 = require('NBT1');
 
 	// Media libraries
 	bluetooth = require('bluetooth');
