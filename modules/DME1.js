@@ -19,7 +19,7 @@ function encode_316(rpm) {
 		});
 	}
 
-	log.msg('Sent 5000x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
+	log.module('Sent 5000x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
 }
 
 function parse_316(data) {
