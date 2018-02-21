@@ -504,7 +504,7 @@ function status_ignition() {
 	if (config.media.con1 !== true) return;
 
 	// This is pretty noisy
-	// log.module('Sending ignition status');
+	log.module('Sending ignition status');
 
 	bus.data.send({
 		bus  : 'can1',
@@ -541,18 +541,20 @@ function parse_out(data) {
 		case 0x267 : data = decode_con_button(data);    break;
 		case 0x273 : data = decode_status_cic(data);    break;
 
-		case 0x277: // CON1 ACK to rotational initialization message
+		case 0x277 : { // CON1 ACK to rotational initialization message
 			data.command = 'rep';
 			data.value   = module_name + ' ACK to CIC1 init';
 			break;
+		}
 
 		case 0x4F8 : data = decode_ignition(data);   break;
 		case 0x4E7 : data = decode_status_con(data); break;
 		case 0x5E7 : data = decode_status_con(data); break;
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	// log.bus(data);
