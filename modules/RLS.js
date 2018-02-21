@@ -136,7 +136,7 @@ function light_control_status(data) {
 
 	let cmd = [ 0x59, byte1, byte2 ];
 
-	log.module({ msg : 'Sending light control status, intensity: ' + data.intensity + ', lights on: ' + data.lights + ', reason: ' + data.reason });
+	log.module('Sending light control status, intensity: ' + data.intensity + ', lights on: ' + data.lights + ', reason: ' + data.reason);
 
 	bus.data.send({
 		src : 'RLS',

@@ -54,7 +54,7 @@ function io_decode(data) {
 // Encode the GM bitmask string from an input of true/false values
 // This is just a dumb placeholder
 function io_encode(object) {
-	log.module({ msg : 'Encoding IO status' });
+	log.module('Encoding IO status');
 
 	// Initialize bitmask variables
 	let bitmask_0  = 0x00;
@@ -76,13 +76,13 @@ function io_encode(object) {
 
 // Control interior lighting PWM brightness
 function interior_light(value) {
-	log.module({ msg : 'Setting interior light to ' + value });
+	log.module('Setting interior light to ' + value);
 	io_set([ 0x10, 0x05, value ]);
 }
 
 // Send message to GM
 function io_set(packet) {
-	log.module({ msg : 'Setting IO status' });
+	log.module('Setting IO status');
 
 	// Add 'set IO status' command to beginning of array
 	packet.unshift(0x0C);
@@ -98,7 +98,7 @@ function io_set(packet) {
 function locks() {
 	// Send the notification to the log and the cluster
 	let notify_message = 'Toggling door locks';
-	log.module({ msg : notify_message });
+	log.module(notify_message);
 	IKE.text_override(notify_message);
 
 	// Hex:
@@ -134,7 +134,7 @@ function request(value) {
 		}
 	}
 
-	log.module({ msg : 'Requesting \'' + value + '\'' });
+	log.module('Requesting \'' + value + '\'');
 
 	bus.data.send({
 		src : src,
@@ -144,7 +144,7 @@ function request(value) {
 
 // GM power window control
 function windows(request) {
-	log.module({ msg : 'Window control: ' + request.window + ', ' + request.action });
+	log.module('Window control: ' + request.window + ', ' + request.action);
 
 	// Init message variable
 	let msg;

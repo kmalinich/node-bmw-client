@@ -27,19 +27,19 @@ objfmt = require('object-format');
 function term_config(pass) {
 	process.on('SIGTERM', () => {
 		console.log('');
-		log.msg({ msg : 'Caught SIGTERM' });
+		log.msg('Caught SIGTERM');
 		process.nextTick(term);
 	});
 
 	process.on('SIGINT', () => {
 		console.log('');
-		log.msg({ msg : 'Caught SIGINT' });
+		log.msg('Caught SIGINT');
 		process.nextTick(term);
 	});
 
 	process.on('exit', () => {
 		bail();
-		log.msg({ msg : 'Terminated' });
+		log.msg('Terminated');
 	});
 
 	process.nextTick(pass);
@@ -139,7 +139,7 @@ function load_modules(pass) {
 	// Push notification library
 	if (config.notification.method !== null) notify = require('notify');
 
-	log.module({ msg : 'Loaded modules' });
+	log.module('Loaded modules');
 
 	process.nextTick(pass);
 }
@@ -147,7 +147,7 @@ function load_modules(pass) {
 
 // Global init
 function init() {
-	log.msg({ msg : 'Initializing' });
+	log.msg('Initializing');
 
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS/KBUS module node modules
@@ -173,7 +173,7 @@ function init() {
 								hdmi_rpi.init(() => { // Open HDMI (RPi)
 									socket.init(() => { // Start zeroMQ client
 										api.init(() => { // Start Express API server
-											log.msg({ msg : 'Initialized' });
+											log.msg('Initialized');
 
 											// notify.notify('Started');
 											//
@@ -204,7 +204,7 @@ function bail() {
 
 // Global term
 function term() {
-	log.msg({ msg : 'Terminating' });
+	log.msg('Terminating');
 
 	hdmi_cec.term(() => { // Close HDMI-CEC
 		hdmi_rpi.term(() => { // Close HDMI (RPi)

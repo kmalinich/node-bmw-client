@@ -114,7 +114,7 @@ function led(object) {
 	if (object.solid_green)  byte = bitmask.set(byte, bitmask.bit[4]);
 	if (object.flash_green)  byte = bitmask.set(byte, bitmask.bit[5]);
 
-	log.module({ msg : 'Setting LED' });
+	log.module('Setting LED');
 
 	// Send message
 	bus.data.send({

@@ -468,7 +468,7 @@ class IKE extends EventEmitter {
 	// Pretend to be IKE saying the car is on
 	// Note - this can and WILL set the alarm off - kudos to the Germans
 	ignition(value) {
-		log.module({ msg : 'Sending ignition status: ' + value });
+		log.module('Sending ignition status: ' + value);
 
 		let status;
 		switch (value) {
@@ -504,7 +504,7 @@ class IKE extends EventEmitter {
 	hud_refresh(override = false) {
 		if (override === false && !this.ok2hud()) return;
 
-		log.module({ msg : 'Refreshing HUD' });
+		log.module('Refreshing HUD');
 
 		let string_load;
 		let string_cons  = '';
@@ -557,7 +557,7 @@ class IKE extends EventEmitter {
 
 	// OBC set clock
 	obc_clock() {
-		log.module({ msg : 'Setting OBC clock to current time' });
+		log.module('Setting OBC clock to current time');
 
 		let time = moment();
 
@@ -615,7 +615,7 @@ class IKE extends EventEmitter {
 
 	// Check control messages
 	text_urgent(message, timeout = 5000) {
-		log.module({ msg : 'Sending urgent IKE text message: \'' + message + '\'' });
+		log.module('Sending urgent IKE text message: \'' + message + '\'');
 
 		let message_hex;
 
@@ -691,14 +691,14 @@ class IKE extends EventEmitter {
 	text_nopad(message, cb = null, override = false) {
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
-			log.module({ msg : 'NOT sending non-padded IKE text message: \'' + message + '\'' });
+			log.module('NOT sending non-padded IKE text message: \'' + message + '\'');
 
 			// Exec callback function if present
 			typeof cb === 'function' && cb();
 			return;
 		}
 
-		log.module({ msg : 'Sending non-padded IKE text message: \'' + message + '\'' });
+		log.module('Sending non-padded IKE text message: \'' + message + '\'');
 
 		let message_hex;
 
@@ -722,7 +722,7 @@ class IKE extends EventEmitter {
 				clearTimeout(this.timeout_data_refresh);
 				this.timeout_data_refresh = null;
 
-				log.module({ msg : 'Unset data refresh timeout' });
+				log.module('Unset data refresh timeout');
 
 				return;
 			}
@@ -735,7 +735,7 @@ class IKE extends EventEmitter {
 		LCM.request('io-status');
 
 		if (status.vehicle.ignition_level !== 0) {
-			if (this.timeout_data_refresh === null) log.module({ msg : 'Set data refresh timeout' });
+			if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
 
 			// setTimeout for next update
 			let self = this;
@@ -769,7 +769,7 @@ class IKE extends EventEmitter {
 		if (data.msg[1] > previous_level) {
 			switch (data.msg[1]) { // Evaluate new ignition state
 				case 1: // Accessory
-					log.module({ msg : 'Powerup state' });
+					log.module('Powerup state');
 					this.emit('ignition-powerup');
 
 					bus.cmds.request_device_status(module_name, 'RAD');
@@ -778,13 +778,13 @@ class IKE extends EventEmitter {
 				case 3: // Run
 					// If the accessory (1) ignition message wasn't caught
 					if (previous_level === 0) {
-						log.module({ msg : 'Powerup state' });
+						log.module('Powerup state');
 						this.emit('ignition-powerup');
 
 						bus.cmds.request_device_status(module_name, 'RAD');
 					}
 
-					log.module({ msg : 'Run state' });
+					log.module('Run state');
 					this.emit('ignition-run');
 
 					// Refresh OBC data
@@ -794,7 +794,7 @@ class IKE extends EventEmitter {
 				case 7 : { // Start
 					switch (previous_level) {
 						case 0 : { // If the accessory (1) ignition message wasn't caught
-							log.module({ msg : 'Powerup state' });
+							log.module('Powerup state');
 							this.emit('ignition-powerup');
 
 							bus.cmds.request_device_status(module_name, 'RAD');
@@ -802,7 +802,7 @@ class IKE extends EventEmitter {
 						}
 
 						case 3 : { // If the run (3) ignition message wasn't caught
-							log.module({ msg : 'Run state' });
+							log.module('Run state');
 							this.emit('ignition-run');
 
 							// Refresh OBC data
@@ -811,7 +811,7 @@ class IKE extends EventEmitter {
 						}
 
 						default : {
-							log.module({ msg : 'Start-begin state' });
+							log.module('Start-begin state');
 							this.emit('ignition-start-begin');
 						}
 					}
@@ -825,21 +825,21 @@ class IKE extends EventEmitter {
 				case 0: // Off
 					// If the accessory (1) ignition message wasn't caught
 					if (previous_level === 3) {
-						log.module({ msg : 'Powerdown state' });
+						log.module('Powerdown state');
 						this.emit('ignition-powerdown');
 					}
 
-					log.module({ msg : 'Poweroff state' });
+					log.module('Poweroff state');
 					this.emit('ignition-poweroff');
 					break;
 
 				case 1: // Accessory
-					log.module({ msg : 'Powerdown state' });
+					log.module('Powerdown state');
 					this.emit('ignition-powerdown');
 					break;
 
 				case 3: // Run
-					log.module({ msg : 'Start-end state' });
+					log.module('Start-end state');
 					this.emit('ignition-start-end');
 			}
 		}
@@ -914,7 +914,7 @@ class IKE extends EventEmitter {
 	obc_refresh() {
 		this.emit('obc-refresh');
 
-		log.module({ msg : 'Refreshing all OBC data' });
+		log.module('Refreshing all OBC data');
 
 		// Immo+GM data
 		EWS.request('immobiliserstatus');
@@ -1062,7 +1062,7 @@ class IKE extends EventEmitter {
 			default : return;
 		}
 
-		log.module({ msg : 'Requesting \'' + value + '\'' });
+		log.module('Requesting \'' + value + '\'');
 
 		bus.data.send({
 			src : src,
@@ -1075,14 +1075,14 @@ class IKE extends EventEmitter {
 	text(message, cb = null, override = false) {
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
-			log.module({ msg : 'NOT sending space-padded IKE text message: \'' + message + '\'' });
+			log.module('NOT sending space-padded IKE text message: \'' + message + '\'');
 
 			// Exec callback function if present
 			typeof cb === 'function' && cb();
 			return;
 		}
 
-		log.module({ msg : 'Sending space-padded IKE text message: \'' + message + '\'' });
+		log.module('Sending space-padded IKE text message: \'' + message + '\'');
 
 		let message_hex;
 
