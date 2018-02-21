@@ -615,7 +615,7 @@ class IKE extends EventEmitter {
 
 	// Check control messages
 	text_urgent(message, timeout = 5000) {
-		log.msg({ msg : 'Sending urgent IKE text message: \'' + message + '\'' });
+		log.module({ msg : 'Sending urgent IKE text message: \'' + message + '\'' });
 
 		let message_hex;
 
@@ -635,7 +635,7 @@ class IKE extends EventEmitter {
 
 	// Check control warnings
 	text_warning(message, timeout = 10000) {
-		log.msg('Sending warning IKE text message: \'' + message + '\'');
+		log.module('Sending warning IKE text message: \'' + message + '\'');
 
 		let message_hex;
 
@@ -691,14 +691,14 @@ class IKE extends EventEmitter {
 	text_nopad(message, cb = null, override = false) {
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
-			log.msg({ msg : 'NOT sending non-padded IKE text message: \'' + message + '\'' });
+			log.module({ msg : 'NOT sending non-padded IKE text message: \'' + message + '\'' });
 
 			// Exec callback function if present
 			typeof cb === 'function' && cb();
 			return;
 		}
 
-		log.msg({ msg : 'Sending non-padded IKE text message: \'' + message + '\'' });
+		log.module({ msg : 'Sending non-padded IKE text message: \'' + message + '\'' });
 
 		let message_hex;
 
@@ -1075,14 +1075,14 @@ class IKE extends EventEmitter {
 	text(message, cb = null, override = false) {
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
-			log.msg({ msg : 'NOT sending space-padded IKE text message: \'' + message + '\'' });
+			log.module({ msg : 'NOT sending space-padded IKE text message: \'' + message + '\'' });
 
 			// Exec callback function if present
 			typeof cb === 'function' && cb();
 			return;
 		}
 
-		log.msg({ msg : 'Sending space-padded IKE text message: \'' + message + '\'' });
+		log.module({ msg : 'Sending space-padded IKE text message: \'' + message + '\'' });
 
 		let message_hex;
 
