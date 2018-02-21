@@ -606,6 +606,10 @@ function audio_power(power_state) {
 			audio_control(false);
 			cassette_control(false);
 
+			// Pause BT/Kodi playback
+			bluetooth.command('pause');
+			kodi.command('pause');
+
 			break;
 		}
 
@@ -641,10 +645,14 @@ function audio_power(power_state) {
 			// Turn on BMBT
 			cassette_control(true);
 
-			// Turn volume up 25 points (OEM is actually 24)
+			// Turn volume up 24 points
 			setTimeout(() => {
-				for (let i = 0; i < 4; i++) volume_control(5);
+				for (let i = 0; i < 8; i++) volume_control(3);
 			}, 1000);
+
+			// Start BT/Kodi playback
+			bluetooth.command('play');
+			kodi.command('play');
 		}
 	}
 }
