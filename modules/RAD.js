@@ -603,14 +603,14 @@ function audio_power(power_state) {
 			if (config.emulate.rad !== true) return;
 
 			// Disable GPIO relay for amp power
-			gpio.set('amp', false);
+			gpio.set('amp', false); // Should be an emitted event
+
+			// Pause BT/Kodi playback
+			bluetooth.command('pause'); // Should be an emitted event
+			kodi.command('pause');      // Should be an emitted event
 
 			audio_control(false);
 			cassette_control(false);
-
-			// Pause BT/Kodi playback
-			bluetooth.command('pause');
-			kodi.command('pause');
 
 			break;
 		}
@@ -622,7 +622,11 @@ function audio_power(power_state) {
 			if (config.emulate.rad !== true) return;
 
 			// Enable GPIO relay for amp power
-			gpio.set('amp', true);
+			gpio.set('amp', true); // Should be an emitted event
+
+			// Start BT/Kodi playback
+			bluetooth.command('play'); // Should be an emitted event
+			kodi.command('play');     // Should be an emitted event
 
 			// Send device status
 			bus.cmds.send_device_status(module_name);
@@ -653,23 +657,74 @@ function audio_power(power_state) {
 			setTimeout(() => {
 				for (let i = 0; i < 6; i++) volume_control(5);
 			}, 3500);
-
-			// Start BT/Kodi playback
-			bluetooth.command('play');
-			kodi.command('play');
 		}
 	}
 }
 
 
 function init_listeners() {
+	// Wait for open event from GM to assist poweroff sequence
+	GM.on('open', (data) => {
+		// Bounce if we're still waiting for the poweroff message
+		if (RAD.waiting.ignition === true) return;
+
+		switch (data.doors.sealed) {
+			case false : {
+				if (RAD.waiting.open.doors.sealed.false === true) {
+					log.module('No longer waiting for GM.open.doors.sealed.false event');
+					RAD.waiting.open.doors.sealed.false = false;
+				}
+				break;
+			}
+
+			case true : {
+				// Waiting here for at least one door to be previously opened
+				if (RAD.waiting.open.doors.sealed.false === true) {
+					log.module('No longer waiting for GM.open.doors.sealed.true event');
+					RAD.waiting.open.doors.sealed.true = false;
+				}
+			}
+		}
+
+		// We've successfully waited for all three events
+		if (RAD.waiting.open.doors.sealed.false === false && RAD.waiting.open.doors.sealed.true === false) {
+			log.module('Ignition off, doors sealed then unsealed, setting audio_power to false');
+			audio_power(false);
+		}
+	});
+
 	// Perform DSP powerup sequence on IKE ignition event
 	IKE.on('ignition-powerup',  () => {
+		RAD.waiting.ignition = true;
+		log.module('Waiting for IKE.ignition-poweroff event');
+
 		audio_power(true);
 	});
 
-	// Perform DSP poweroff sequence on IKE ignition event
+	// Initialize DSP poweroff sequence on IKE ignition event,
+	// wait for open events from GM
 	IKE.on('ignition-poweroff',  () => {
+		log.module('No longer waiting for IKE.ignition-poweroff event');
+		RAD.waiting.ignition = false;
+
+		// Wait for doors to be unsealed, unless they already are
+		switch (status.doors.sealed) {
+			case false : {
+				log.module('Door(s) already open - NOT waiting for GM.open.doors.sealed.false event');
+				RAD.waiting.open.doors.sealed.false = false;
+				break;
+			}
+
+			case true  : {
+				log.module('Waiting for GM.open.doors.sealed.false event');
+				RAD.waiting.open.doors.sealed.false = true;
+			}
+		}
+
+		log.module('Waiting for GM.open.doors.sealed.true event');
+		RAD.waiting.open.doors.sealed.true = true;
+
+		// Override timeout
 		setTimeout(() => {
 			audio_power(false);
 		}, config.media.poweroff_delay);
@@ -680,6 +735,19 @@ function init_listeners() {
 
 
 module.exports = {
+	waiting : {
+		ignition : false,
+
+		open : {
+			doors : {
+				sealed : {
+					true  : false,
+					false : false,
+				},
+			},
+		},
+	},
+
 	parse_in  : parse_in,
 	parse_out : parse_out,
 
