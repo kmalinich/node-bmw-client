@@ -620,7 +620,7 @@ function audio_power(power_state) {
 			bus.cmds.send_device_status(module_name);
 
 			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
-			let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
+			let array_request = [ 'BMBT', 'CDC', 'DSP', 'DSPC', 'MID' ];
 			array_request.forEach((module_request) => {
 				bus.cmds.request_device_status(module_name, module_request);
 			});
@@ -642,7 +642,9 @@ function audio_power(power_state) {
 			cassette_control(true);
 
 			// Turn volume up 25 points (OEM is actually 24)
-			for (let i = 0; i < 4; i++) volume_control(5);
+			setTimeout(() => {
+				for (let i = 0; i < 4; i++) volume_control(5);
+			}, 1000);
 		}
 	}
 }

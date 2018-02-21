@@ -76,7 +76,7 @@ function decode_con_rotation(data) {
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
 	let rotation_gap = time_now() - status.con1.rotation.last_msg;
 
-	if (rotation_gap >= config.con1.rotation_mode_timeout) {
+	if (rotation_gap >= config.con1.timeout.rotation_mode) {
 		update.status('con1.rotation.horizontal', false);
 		update.status('con1.rotation.volume',     false);
 	}
@@ -88,20 +88,20 @@ function decode_con_rotation(data) {
 	});
 
 	switch (mask_mode) {
-		case 0x01: { // Rotation mode: horizontal
-			for (let i = 0; i < (change_abs + 1); i++) kodi.input(status.con1.rotation.direction);
+		case 0x01 : { // Rotation mode: horizontal
+			for (let i = 0; i < change_abs; i++) kodi.input(status.con1.rotation.direction);
 			break;
 		}
 
-		case 0x02: { // Rotation mode: volume
+		case 0x02 : { // Rotation mode: volume
 			switch (status.con1.rotation.direction) {
-				case 'left'  : for (let i = 0; i < (change_abs + 1); i++) kodi.volume('down'); break;
-				case 'right' : for (let i = 0; i < (change_abs + 1); i++) kodi.volume('up');
+				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
+				case 'right' : for (let i = 0; i < change_abs; i++) kodi.volume('up');
 			}
 			break;
 		}
 
-		case 0x03: { // Horizontal AND volume mode - error
+		case 0x03 : { // Horizontal AND volume mode - error
 			log.module('Error: Horizontal and volume rotation modes simultaneously active, resetting');
 
 			update.status('con1.rotation.horizontal', false);
@@ -109,10 +109,10 @@ function decode_con_rotation(data) {
 			break;
 		}
 
-		default: { // Rotation mode: normal
+		default : { // Rotation mode: normal
 			switch (status.con1.rotation.direction) {
-				case 'left'  : for (let i = 0; i < (change_abs + 1); i++) kodi.input('up'); break;
-				case 'right' : for (let i = 0; i < (change_abs + 1); i++) kodi.input('down');
+				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up'); break;
+				case 'right' : for (let i = 0; i < change_abs; i++) kodi.input('down');
 			}
 		}
 	}
@@ -448,8 +448,8 @@ function decode_status_cic(data) {
 
 
 function backlight(value) {
-	// Bounce if not enabled or vehicle not on
-	if (config.media.con1 !== true || status.vehicle.ignition_level === 0) return;
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
 
 	// data.msg[0]: Backlight intensity
 	// 0xFE      : 0%
@@ -483,8 +483,8 @@ function backlight(value) {
 
 // E90 CIC1 status
 function status_cic() {
-	// Bounce if not enabled or vehicle not on
-	if (config.media.con1 !== true || status.vehicle.ignition_level === 0) return;
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
 
 	log.module('Sending CIC1 status');
 
@@ -532,8 +532,8 @@ function status_ignition() {
 
 // Parse data sent from module
 function parse_out(data) {
-	// Bounce if not enabled or vehicle not on
-	if (config.media.con1 !== true || status.vehicle.ignition_level === 0) return;
+	// Bounce if not enabled
+	if (config.media.con1 !== true) return;
 
 	switch (data.src.id) {
 		case 0x202 : data = decode_con_backlight(data); break;

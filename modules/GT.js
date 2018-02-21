@@ -208,6 +208,13 @@ function parse_out(data) {
 		// Control: DSP
 		case 0x34 : data = parse_control_dsp(data); break;
 
+		// Control: Select menu
+		case 0x37 : {
+			data.command = 'con';
+			data.value   = 'select menu TODO : 0x' + data.msg[1].toString(16);
+			break;
+		}
+
 		case 0x41 : { // Control: Aux heat/vent
 			data.command = 'con';
 
