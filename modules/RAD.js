@@ -277,7 +277,7 @@ function decode_bm_button(data) {
 			switch (button) {
 				case 'power' : {
 					log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
-					audio_power('toggle');
+					audio_power('toggle', true);
 					break;
 				}
 			}
@@ -575,7 +575,7 @@ function volume_control(value = 1) {
 
 
 // Power on DSP amp and GPIO pin for amplifier
-function audio_power(power_state) {
+function audio_power(power_state, on_ignition = true) {
 	if (power_state === 'toggle') {
 		log.module('Toggling audio power');
 
@@ -606,8 +606,10 @@ function audio_power(power_state) {
 			gpio.set('amp', false); // Should be an emitted event
 
 			// Pause BT/Kodi playback
-			bluetooth.command('pause'); // Should be an emitted event
-			kodi.command('pause');      // Should be an emitted event
+			if (on_ignition === true) {
+				bluetooth.command('pause'); // Should be an emitted event
+				kodi.command('pause');      // Should be an emitted event
+			}
 
 			audio_control(false);
 			cassette_control(false);
@@ -625,11 +627,13 @@ function audio_power(power_state) {
 			gpio.set('amp', true); // Should be an emitted event
 
 			// Toggle media playback
-			setTimeout(() => {
-				// Start BT/Kodi playback
-				bluetooth.command('play'); // Should be an emitted event
-				kodi.command('play');     // Should be an emitted event
-			}, config.media.kodi.timeout.powerup);
+			if (on_ignition === true) {
+				setTimeout(() => {
+					// Start BT/Kodi playback
+					bluetooth.command('play'); // Should be an emitted event
+					kodi.command('play');     // Should be an emitted event
+				}, config.media.kodi.timeout.powerup);
+			}
 
 			// Send device status
 			bus.cmds.send_device_status(module_name);
