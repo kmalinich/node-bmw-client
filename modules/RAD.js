@@ -721,7 +721,7 @@ function init_listeners() {
 		// We've successfully waited for all three events
 		if (RAD.waiting.open.doors.sealed.false === false && RAD.waiting.open.doors.sealed.true === false) {
 			log.module('Ignition off, doors sealed then unsealed, setting audio_power to false');
-			audio_power(false);
+			audio_power(false, false);
 		}
 	});
 
@@ -730,7 +730,7 @@ function init_listeners() {
 		RAD.waiting.ignition = true;
 		log.module('Waiting for IKE.ignition-poweroff event');
 
-		audio_power(true);
+		audio_power(true, true);
 	});
 
 	// Initialize DSP poweroff sequence on IKE ignition event,
@@ -758,7 +758,7 @@ function init_listeners() {
 
 		// Override timeout
 		setTimeout(() => {
-			audio_power(false);
+			audio_power(false, false);
 		}, config.media.poweroff_delay);
 	});
 
