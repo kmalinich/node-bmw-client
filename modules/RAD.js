@@ -760,6 +760,7 @@ function init_listeners() {
 
 		// Override timeout
 		setTimeout(() => {
+			RAD.waiting.ignition.powerup = true;
 			audio_power(false, true);
 		}, config.media.poweroff_delay);
 	});
