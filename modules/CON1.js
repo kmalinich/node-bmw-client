@@ -513,13 +513,15 @@ function status_ignition() {
 	});
 
 	if (status.vehicle.ignition_level === 0) {
-		if (CON1.timeout.status_ignition !== null) {
-			clearTimeout(CON1.timeout.status_ignition);
-			CON1.timeout.status_ignition = null;
+		if (CON1.waiting.open.doors.sealed.false === false && CON1.waiting.open.doors.sealed.true === false) {
+			if (CON1.timeout.status_ignition !== null) {
+				clearTimeout(CON1.timeout.status_ignition);
+				CON1.timeout.status_ignition = null;
 
-			log.module('Unset ignition status timeout');
+				log.module('Unset ignition status timeout');
 
-			return;
+				return;
+			}
 		}
 	}
 
@@ -564,9 +566,77 @@ function init_listeners() {
 	// Stamp last message time as now
 	update.status('con1.rotation.last_msg', time_now(), false);
 
+	// Wait for open event from GM to assist poweroff sequence
+	GM.on('open', (data) => {
+		// Bounce if we're still waiting for the poweroff message
+		if (CON1.waiting.ignition === true) return;
+
+		switch (data.doors.sealed) {
+			case false : {
+				if (CON1.waiting.open.doors.sealed.false === true) {
+					log.module('No longer waiting for GM.open.doors.sealed.false event');
+					CON1.waiting.open.doors.sealed.false = false;
+				}
+				break;
+			}
+
+			case true : {
+				// Waiting here for at least one door to be previously opened
+				if (CON1.waiting.open.doors.sealed.true === true) {
+					log.module('No longer waiting for GM.open.doors.sealed.true event');
+					CON1.waiting.open.doors.sealed.true = false;
+				}
+			}
+		}
+
+		// We've successfully waited for all three events
+		if (CON1.waiting.open.doors.sealed.false === false && CON1.waiting.open.doors.sealed.true === false) {
+			log.module('Ignition off, doors sealed then unsealed, no longer sending ignition status message');
+			status_ignition();
+		}
+	});
+
 	// Enable/disable keepalive on IKE ignition event
-	IKE.on('ignition-powerup',  () => { status_ignition(); });
-	IKE.on('ignition-poweroff', () => { status_ignition(); });
+	IKE.on('ignition-powerup', () => {
+		CON1.waiting.ignition = true;
+		log.module('Waiting for IKE.ignition-poweroff event');
+
+		status_ignition();
+	});
+
+	IKE.on('ignition-poweroff', () => {
+		log.module('No longer waiting for IKE.ignition-poweroff event');
+		CON1.waiting.ignition = false;
+
+		// Wait for doors to be unsealed, unless they already are
+		switch (status.doors.sealed) {
+			case false : {
+				log.module('Door(s) already open - NOT waiting for GM.open.doors.sealed.false event');
+				CON1.waiting.open.doors.sealed.false = false;
+				break;
+			}
+
+			case true  : {
+				log.module('Waiting for GM.open.doors.sealed.false event');
+				CON1.waiting.open.doors.sealed.false = true;
+			}
+		}
+
+		log.module('Waiting for GM.open.doors.sealed.true event');
+		CON1.waiting.open.doors.sealed.true = true;
+
+		// Override timeout
+		setTimeout(() => {
+			CON1.waiting.ignition = false;
+
+			CON1.waiting.open.doors.sealed = {
+				true  : false,
+				false : false,
+			};
+
+			status_ignition();
+		}, config.media.poweroff_delay);
+	});
 
 	log.module('Initialized listeners');
 }
@@ -575,6 +645,19 @@ function init_listeners() {
 module.exports = {
 	timeout : {
 		status_ignition : null,
+	},
+
+	waiting : {
+		ignition : false,
+
+		open : {
+			doors : {
+				sealed : {
+					true  : false,
+					false : false,
+				},
+			},
+		},
 	},
 
 	// Functions
