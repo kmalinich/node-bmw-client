@@ -665,29 +665,29 @@ function audio_power(power_state, on_ignition = true) {
 			// Turn volume up ~30 points
 			setTimeout(() => {
 				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 1500);
-
-			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 1750);
-
-			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
 			}, 2000);
+
+			setTimeout(() => {
+				for (let i = 0; i < 2; i++) volume_control(5);
+			}, 2250);
+
+			setTimeout(() => {
+				for (let i = 0; i < 2; i++) volume_control(5);
+			}, 2500);
 
 			// Increase volume after power on
 			if (config.bmbt.vol_at_poweron === true) {
 				setTimeout(() => {
 					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 2250);
-
-				setTimeout(() => {
-					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 2500);
+				}, 2750);
 
 				setTimeout(() => {
 					for (let i = 0; i < 2; i++) volume_control(5);
 				}, 3000);
+
+				setTimeout(() => {
+					for (let i = 0; i < 2; i++) volume_control(5);
+				}, 3250);
 			}
 		}
 	}
