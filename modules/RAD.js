@@ -753,13 +753,13 @@ function init_listeners() {
 
 module.exports = {
 	waiting : {
-		ignition : false,
+		ignition : true,
 
 		open : {
 			doors : {
 				sealed : {
-					true  : false,
-					false : false,
+					true  : true,
+					true : true,
 				},
 			},
 		},
