@@ -277,7 +277,7 @@ function decode_bm_button(data) {
 			switch (button) {
 				case 'power' : {
 					log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
-					audio_power('toggle', true);
+					audio_power('toggle', false);
 					break;
 				}
 			}
@@ -581,12 +581,12 @@ function audio_power(power_state, on_ignition = true) {
 
 		switch (status.rad.source_name) {
 			case 'off' : {
-				audio_power(true);
+				audio_power(true, on_ignition);
 				break;
 			}
 
 			default : {
-				audio_power(false);
+				audio_power(false, on_ignition);
 			}
 		}
 
@@ -606,7 +606,7 @@ function audio_power(power_state, on_ignition = true) {
 			gpio.set('amp', false); // Should be an emitted event
 
 			// Pause BT/Kodi playback
-			if (on_ignition === true) {
+			if (on_ignition === false) {
 				bluetooth.command('pause'); // Should be an emitted event
 				kodi.command('pause');      // Should be an emitted event
 			}
@@ -627,7 +627,7 @@ function audio_power(power_state, on_ignition = true) {
 			gpio.set('amp', true); // Should be an emitted event
 
 			// Toggle media playback
-			if (on_ignition === true) {
+			if (on_ignition === false) {
 				setTimeout(() => {
 					// Start BT/Kodi playback
 					bluetooth.command('play'); // Should be an emitted event
@@ -721,7 +721,7 @@ function init_listeners() {
 		// We've successfully waited for all three events
 		if (RAD.waiting.open.doors.sealed.false === false && RAD.waiting.open.doors.sealed.true === false) {
 			log.module('Ignition off, doors sealed then unsealed, setting audio_power to false');
-			audio_power(false, false);
+			audio_power(false, true);
 		}
 	});
 
@@ -758,7 +758,7 @@ function init_listeners() {
 
 		// Override timeout
 		setTimeout(() => {
-			audio_power(false, false);
+			audio_power(false, true);
 		}, config.media.poweroff_delay);
 	});
 
