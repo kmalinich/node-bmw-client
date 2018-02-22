@@ -142,6 +142,40 @@ function request(value) {
 	});
 }
 
+// GM power mirror control
+function mirrors(request) {
+	log.module('Mirror control: ' + request.mirror + ', ' + request.action);
+
+	// Init message variable
+	let msg;
+
+	// Switch for mirror and action
+	switch (request.mirror) {
+		case 0      :
+		case 'l'    :
+		case 'lf'   :
+		case 'left' : { // Left front
+			switch (request.action) {
+				case 'in'  : msg = [ 0x01, 0x31, 0x01 ]; break;
+				case 'out' : msg = [ 0x01, 0x30, 0x01 ];
+			}
+			break;
+		}
+
+		case 1       :
+		case 'r'     :
+		case 'rf'    :
+		case 'right' : { // Right front
+			switch (request.action) {
+				case 'in'  : msg = [ 0x02, 0x31, 0x01 ]; break;
+				case 'out' : msg = [ 0x02, 0x30, 0x01 ];
+			}
+		}
+	}
+
+	io_set(msg);
+}
+
 // GM power window control
 function windows(request) {
 	log.module('Window control: ' + request.window + ', ' + request.action);
@@ -204,6 +238,7 @@ class GM extends EventEmitter {
 		this.io_decode      = io_decode;
 		this.io_encode      = io_encode;
 		this.locks          = locks;
+		this.mirrors        = mirrors;
 		this.request        = request;
 		this.windows        = windows;
 	}
