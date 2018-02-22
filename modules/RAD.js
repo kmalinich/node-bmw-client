@@ -679,7 +679,7 @@ function init_listeners() {
 
 			case true : {
 				// Waiting here for at least one door to be previously opened
-				if (RAD.waiting.open.doors.sealed.false === true) {
+				if (RAD.waiting.open.doors.sealed.true === true) {
 					log.module('No longer waiting for GM.open.doors.sealed.true event');
 					RAD.waiting.open.doors.sealed.true = false;
 				}
