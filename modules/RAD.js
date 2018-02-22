@@ -624,9 +624,12 @@ function audio_power(power_state) {
 			// Enable GPIO relay for amp power
 			gpio.set('amp', true); // Should be an emitted event
 
-			// Start BT/Kodi playback
-			bluetooth.command('play'); // Should be an emitted event
-			kodi.command('play');     // Should be an emitted event
+			// Toggle media playback
+			setTimeout(() => {
+				// Start BT/Kodi playback
+				bluetooth.command('play'); // Should be an emitted event
+				kodi.command('play');     // Should be an emitted event
+			}, config.media.kodi.timeout.powerup);
 
 			// Send device status
 			bus.cmds.send_device_status(module_name);
@@ -673,7 +676,7 @@ function audio_power(power_state) {
 						for (let i = 0; i < 2; i++) volume_control(5);
 					}, 1000);
 				}
-			}, 3500);
+			}, 3000);
 		}
 	}
 }
@@ -758,8 +761,8 @@ module.exports = {
 		open : {
 			doors : {
 				sealed : {
+					false : true,
 					true  : true,
-					true : true,
 				},
 			},
 		},
