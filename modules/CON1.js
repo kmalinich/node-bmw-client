@@ -504,7 +504,7 @@ function status_ignition() {
 	if (config.media.con1 !== true) return;
 
 	// This is pretty noisy
-	log.module('Sending ignition status');
+	// log.module('Sending ignition status');
 
 	bus.data.send({
 		bus  : 'can1',
