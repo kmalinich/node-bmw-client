@@ -653,8 +653,8 @@ module.exports = {
 		open : {
 			doors : {
 				sealed : {
+					false : true,
 					true  : true,
-					true : true,
 				},
 			},
 		},
