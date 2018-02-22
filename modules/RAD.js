@@ -698,7 +698,7 @@ function init_listeners() {
 	// Wait for open event from GM to assist poweroff sequence
 	GM.on('open', (data) => {
 		// Bounce if we're still waiting for the poweroff message
-		if (RAD.waiting.ignition === true) return;
+		if (RAD.waiting.ignition === true || RAD.waiting.ignition.powerup === true) return;
 
 		switch (data.doors.sealed) {
 			case false : {
@@ -721,13 +721,15 @@ function init_listeners() {
 		// We've successfully waited for all three events
 		if (RAD.waiting.open.doors.sealed.false === false && RAD.waiting.open.doors.sealed.true === false) {
 			log.module('Ignition off, doors sealed then unsealed, setting audio_power to false');
+			RAD.waiting.ignition.powerup = true;
 			audio_power(false, true);
 		}
 	});
 
 	// Perform DSP powerup sequence on IKE ignition event
 	IKE.on('ignition-powerup',  () => {
-		RAD.waiting.ignition = true;
+		RAD.waiting.ignition.poweroff = true;
+		RAD.waiting.ignition.powerup  = false;
 		log.module('Waiting for IKE.ignition-poweroff event');
 
 		audio_power(true, true);
@@ -737,7 +739,7 @@ function init_listeners() {
 	// wait for open events from GM
 	IKE.on('ignition-poweroff',  () => {
 		log.module('No longer waiting for IKE.ignition-poweroff event');
-		RAD.waiting.ignition = false;
+		RAD.waiting.ignition.poweroff = false;
 
 		// Wait for doors to be unsealed, unless they already are
 		switch (status.doors.sealed) {
@@ -768,7 +770,10 @@ function init_listeners() {
 
 module.exports = {
 	waiting : {
-		ignition : true,
+		ignition : {
+			poweroff : true,
+			powerup  : true,
+		},
 
 		open : {
 			doors : {

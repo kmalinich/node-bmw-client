@@ -569,7 +569,7 @@ function init_listeners() {
 	// Wait for open event from GM to assist poweroff sequence
 	GM.on('open', (data) => {
 		// Bounce if we're still waiting for the poweroff message
-		if (CON1.waiting.ignition === true) return;
+		if (CON1.waiting.ignition.poweroff === true || CON1.waiting.ignition.powerup === true) return;
 
 		switch (data.doors.sealed) {
 			case false : {
@@ -592,13 +592,15 @@ function init_listeners() {
 		// We've successfully waited for all three events
 		if (CON1.waiting.open.doors.sealed.false === false && CON1.waiting.open.doors.sealed.true === false) {
 			log.module('Ignition off, doors sealed then unsealed, no longer sending ignition status message');
+			CON1.waiting.ignition.powerup = true;
 			status_ignition();
 		}
 	});
 
 	// Enable/disable keepalive on IKE ignition event
 	IKE.on('ignition-powerup', () => {
-		CON1.waiting.ignition = true;
+		CON1.waiting.ignition.poweroff = true;
+		CON1.waiting.ignition.powerup  = false;
 		log.module('Waiting for IKE.ignition-poweroff event');
 
 		status_ignition();
@@ -606,7 +608,7 @@ function init_listeners() {
 
 	IKE.on('ignition-poweroff', () => {
 		log.module('No longer waiting for IKE.ignition-poweroff event');
-		CON1.waiting.ignition = false;
+		CON1.waiting.ignition.poweroff = false;
 
 		// Wait for doors to be unsealed, unless they already are
 		switch (status.doors.sealed) {
@@ -627,7 +629,10 @@ function init_listeners() {
 
 		// Override timeout
 		setTimeout(() => {
-			CON1.waiting.ignition = false;
+			CON1.waiting.ignition = {
+				poweroff : false,
+				powerup  : false,
+			};
 
 			CON1.waiting.open.doors.sealed = {
 				true  : false,
@@ -648,8 +653,10 @@ module.exports = {
 	},
 
 	waiting : {
-		ignition : true,
-
+		ignition : {
+			poweroff : true,
+			powerup  : true,
+		},
 		open : {
 			doors : {
 				sealed : {
