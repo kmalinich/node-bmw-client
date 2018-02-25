@@ -42,10 +42,10 @@
 	"optionalDependencies": {
 		"bluez": "git+https://github.com/kmalinich/node-bluez.git",
 		"dbus": "git+https://github.com/Shouqun/node-dbus.git",
-		"dbus-native": "^0.2.4",
+		"dbus-native": "^0.2.5",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
-		"onoff": "^1.1.9",
+		"onoff": "^1.2.0",
 		"pi-temperature": "^2.0.0",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git",
 		"smc": "^2.0.0"
