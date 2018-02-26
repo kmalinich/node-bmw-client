@@ -5,7 +5,9 @@
 
 Frames:
 00 00 8A DD F1 15 30 02 Engine running
-XX XX 8A DD F1 15 30 02 Ignition on
+00 00 8A DD F1 15 30 :30
+:q
+02 Ignition on
 
 XX = irrelevant, 00 is ok for this
 
@@ -14,3 +16,21 @@ ID: 0x130, not sure if this wakes up anything, still it is broadcasted by FEM-mo
 00 F0 FC FF FF Off
 01 F0 FC FF FF Acc
 05 F0 FC FF FF Run
+
+CID_COLOR_DEPTH
+18 or 24 (Both work)
+
+CDI_COM_MODE
+SPI (mii seems to work with color_depth set to 18) - SPI works with both apparently
+
+CID_DISPLAY_RES
+1280 480
+
+CID_DISPLAY_SIZE
+8.8 or 10.25 (Depends of your screen)
+
+DISPLAY_VARIANTE
+breites_display
+
+CID_APIX_MODE
+apix1
