@@ -310,6 +310,15 @@ function button_check(button) {
 
 	log.module('Button: ' + button.action + ' ' + button.button);
 
+	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
+	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
+	let rotation_gap = time_now() - status.con1.rotation.last_msg;
+
+	if (rotation_gap >= config.con1.timeout.rotation_mode) {
+		update.status('con1.rotation.horizontal', false);
+		update.status('con1.rotation.volume',     false);
+	}
+
 	switch (button.action) {
 		case 'hold' : {
 			switch (button.button) {
@@ -336,7 +345,6 @@ function button_check(button) {
 
 				case 'right' : {
 					kodi.command('next');
-					break;
 				}
 			}
 

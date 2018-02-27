@@ -1,21 +1,24 @@
 // F30 wakeup:
 //
 // ID: 0x12F
-// Wakes up at least NBT and ZBE on table
+// Wakes up NBT and ZBE, at minimum
 
 Frames:
 00 00 8A DD F1 15 30 02 Engine running
-00 00 8A DD F1 15 30 :30
-:q
+XX XX 8A DD F1 15 30 30 ??
+37 7C 8A DD D4 05 33 06 ??
+
 02 Ignition on
 
 XX = irrelevant, 00 is ok for this
 
+
 F30 another terminal status frame:
-ID: 0x130, not sure if this wakes up anything, still it is broadcasted by FEM-module
+ID: 0x130, not sure if this wakes up anything, still it is broadcast by the FEM module
 00 F0 FC FF FF Off
 01 F0 FC FF FF Acc
 05 F0 FC FF FF Run
+
 
 CID_COLOR_DEPTH
 18 or 24 (Both work)
