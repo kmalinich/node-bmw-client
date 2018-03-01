@@ -19,6 +19,17 @@ ID: 0x130, not sure if this wakes up anything, still it is broadcast by the FEM 
 01 F0 FC FF FF Acc
 05 F0 FC FF FF Run
 
+C1 42 FF FF FF
+C1 42 FF FF FF
+D5 42 FF FF FF
+C5 42 FF FF FF
+C1 42 FF FF FF
+
+C1 = Ignition ready
+D5 = Engine starting
+C5 = Engine running
+
+
 
 CID_COLOR_DEPTH
 18 or 24 (Both work)
