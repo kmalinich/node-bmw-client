@@ -132,10 +132,56 @@ function parse_touch_count(value) {
 
 // Touch iDrive controller data
 function decode_touchpad(data) {
-	let x = Math.round(parseFloat(parseInt('0x' + data[1].toString(16) + data[0].toString(16))) / 655.35);
-	let y = Math.round(parseFloat(parseInt('0x' + data[3].toString(16) + data[2].toString(16))) / 79.99);
+	let x = Math.round(parseFloat(parseInt('0x' + data.msg[1].toString(16) + data.msg[0].toString(16))) / 655.35);
+	let y = Math.round(parseFloat(parseInt('0x' + data.msg[3].toString(16) + data.msg[2].toString(16))) / 79.99);
 
-	update.status('con1.touch.count', parse_touch_count(data[4]));
+	if (x === 0 || y === 0) return;
+
+	let change_x = x - status.con1.touch.x;
+
+	let change_x_calc = 256 - Math.abs(change_x);
+
+	// If change_x_calc is less than 128,
+	// the relative counter has either rolled from 128-255 to 0-127 or 0-127 to 128-255
+	let rollover = (change_x_calc < 128);
+	if (rollover) {
+		switch (change_x > 0) {
+			case true  : change_x = (change_x - 256); break;
+			case false : change_x = (change_x + 256);
+		}
+	}
+
+	// The absolute number of notches travelled
+	// let change_x_abs = Math.abs(change_x);
+
+	let direction_x;
+	switch (change_x > 0) {
+		case true  : direction_x = 'right'; break;
+		case false : direction_x = 'left';
+	}
+
+	// let change_x = x - status.con1.touch.x;
+	let change_y = y - status.con1.touch.y;
+
+	// Change kodi track on x axis movement
+	switch (direction_x) {
+		case 'left' : {
+			kodi.command('previous');
+			break;
+		}
+
+		case 'right' : {
+			kodi.command('next');
+		}
+	}
+
+	// Change kodi volume on y axis movement
+	switch (Math.sign(change_y) === 1) {
+		case false : kodi.volume('down'); break;
+		case true  : kodi.volume('up');
+	}
+
+	update.status('con1.touch.count', parse_touch_count(data.msg[4]));
 	update.status('con1.touch.x',     x);
 	update.status('con1.touch.y',     y);
 }
