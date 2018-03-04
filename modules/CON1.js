@@ -16,11 +16,6 @@ const time_now = require('performance-now');
 // Ignition status
 // 4F8 -> 00 42 FE 01 FF FF FF FF
 
-// Counter/heartbeat
-// Byte 4 changes from one state to the other every 5 sec
-// 2BA -> 00 00 00 00 10
-// 2BA -> 00 00 00 00 20
-
 
 // iDrive knob rotation
 // ARBID 0x264: <Buffer e1 fd b5 fb 7f 1e>
@@ -120,6 +115,29 @@ function decode_con_rotation(data) {
 	update.status('con1.rotation.last_msg', time_now(), false);
 
 	return data;
+}
+
+
+// How many appendages are touching the CON1 touchpad
+function parse_touch_count(value) {
+	switch (value) {
+		case 0x00 : return 2;
+		case 0x0F : return 4;
+		case 0x10 : return 1;
+		case 0x11 : return 0;
+		case 0x1F : return 3;
+		default   : return value;
+	}
+}
+
+// Touch iDrive controller data
+function decode_touchpad(data) {
+	let x = Math.round(parseFloat(parseInt('0x' + data[1].toString(16) + data[0].toString(16))) / 655.35);
+	let y = Math.round(parseFloat(parseInt('0x' + data[3].toString(16) + data[2].toString(16))) / 79.99);
+
+	update.status('con1.touch.count', parse_touch_count(data[4]));
+	update.status('con1.touch.x',     x);
+	update.status('con1.touch.y',     y);
 }
 
 
@@ -442,18 +460,6 @@ function decode_status_cic(data) {
 	return data;
 }
 
-// function heartbeat() {
-// 	// 2BA -> 00 00 00 00 10
-// 	// 2BA -> 00 00 00 00 20
-//
-// 	switch (status.con1.last.heartbeat) {
-// 		case 0x10 : update.status('con1.last.heartbeat', 0x20); break;
-// 		default   : update.status('con1.last.heartbeat', 0x10);
-// 	}
-//
-// 	return data;
-// }
-
 
 function backlight(value) {
 	// Bounce if not enabled
@@ -514,10 +520,26 @@ function status_ignition() {
 	// This is pretty noisy
 	// log.module('Sending ignition status');
 
+	// Defaults are NBT messages
+	let msg = {
+		id   : 0x12F,
+		data : [ 0x37, 0x7C, 0x8A, 0xDD, 0xD4, 0x05, 0x33, 0x06B ],
+	};
+
+	switch (config.con1.hu_mode) {
+		case 'cic' : {
+			msg = {
+				id   : 0x4F8,
+				data : [ 0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF ],
+			};
+			break;
+		}
+	}
+
 	bus.data.send({
 		bus  : 'can1',
-		id   : 0x4F8,
-		data : Buffer.from([ 0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF ]),
+		id   : msg.id,
+		data : Buffer.from(msg.data),
 	});
 
 	if (status.vehicle.ignition_level === 0) {
@@ -537,7 +559,7 @@ function status_ignition() {
 		log.module('Set ignition status timeout');
 	}
 
-	CON1.timeout.status_ignition = setTimeout(status_ignition, 1000);
+	CON1.timeout.status_ignition = setTimeout(status_ignition, 200);
 }
 
 // Parse data sent from module
@@ -546,6 +568,7 @@ function parse_out(data) {
 	if (config.media.con1 !== true) return;
 
 	switch (data.src.id) {
+		case 0x0BF : data = decode_touchpad(data);      break;
 		case 0x202 : data = decode_con_backlight(data); break;
 		case 0x264 : data = decode_con_rotation(data);  break;
 		case 0x267 : data = decode_con_button(data);    break;
