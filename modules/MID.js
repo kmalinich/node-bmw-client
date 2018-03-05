@@ -178,10 +178,11 @@ function toggle_power_if_ready() {
 // Parse data sent to MID module
 function parse_in(data) {
 	switch (data.msg[0]) {
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
 			break;
+		}
 	}
 
 	log.bus(data);
@@ -190,12 +191,13 @@ function parse_in(data) {
 // Parse data sent from MID module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x20: // Broadcast: Display status
+		case 0x20 : { // Broadcast : { Display status
 			data.command = 'bro';
 			data.value   = 'display status: ';
 			break;
+		}
 
-		case 0x31: // Broadcast: Button pressed
+		case 0x31 : { // Broadcast : { Button pressed
 			data.command = 'bro';
 			data.value   = 'button pressed: ' + data.msg[1] + ' ' + data.msg[2] + ' ' + data.msg[3];
 
@@ -303,21 +305,25 @@ function parse_out(data) {
 			// 01 20 00,MID,IKE,Button Button_0_pressed
 			// 01 20 40,MID,IKE,Button Button_0_released
 			break;
+		}
 
-		case 0x47: // Broadcast: BM status
+		case 0x47 : { // Broadcast : { BM status
 			data.command = 'bro';
 			data.value   = 'BM status';
 			break;
+		}
 
-		case 0x48: // Broadcast: BM button
+		case 0x48 : { // Broadcast : { BM button
 			data.command = 'bro';
 			data.value   = 'BM button';
 			break;
+		}
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
 			break;
+		}
 	}
 
 	log.bus(data);
@@ -331,7 +337,7 @@ function button(button) {
 
 	// Switch statement to determine button, then encode bitmask
 	switch (button) {
-		case 'power' :
+		case 'power' : {
 			// Get down value of button
 			button_down = bitmask.set(button_down, bitmask.bit[1]);
 			button_down = bitmask.set(button_down, bitmask.bit[2]);
@@ -340,6 +346,7 @@ function button(button) {
 			button_hold = bitmask.set(button_down, bitmask.bit[6]);
 			button_up   = bitmask.set(button_down, bitmask.bit[7]);
 			break;
+		}
 	}
 
 	log.module('Button down: ' + button + ', hold: ' + button_hold);
@@ -366,16 +373,10 @@ function button(button) {
 }
 
 function init_listeners() {
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-powerup', () => {
-		status_loop(true);
-		text_loop(true);
-	});
-
-	// Disable keepalive on IKE ignition event
-	IKE.on('ignition-poweroff', () => {
-		status_loop(false);
-		text_loop(false);
+	// Perform commands on power lib active event
+	update.on('status.power.active', (data) => {
+		status_loop(data.new);
+		text_loop(data.new);
 	});
 
 	log.module('Initialized listeners');

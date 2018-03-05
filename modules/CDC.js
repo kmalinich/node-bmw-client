@@ -1,10 +1,11 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 // Parse data sent to CDC module
 function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.cdc !== true) return;
+
 	// Init variables
 	switch (data.msg[0]) {
-		case 0x38: // Control: CD
+		case 0x38 : { // Control: CD
 			// Command
 			switch (data.msg[1]) {
 				case 0x00 : data.value = 'status';       break;
@@ -15,12 +16,12 @@ function parse_in(data) {
 				case 0x05 : data.value = 'fast-reverse'; break;
 				case 0x06 : data.value = 'scan-off';     break;
 				case 0x07 : data.value = 'end';          break;
-				case 0x08 : data.value = 'random-off';   break;
+				case 0x08 : data.value = 'random-off';
 			}
 
 			// Do CDC->LOC CD status play
 			cd_status(data.value);
-			break;
+		}
 	}
 }
 
@@ -28,7 +29,7 @@ function parse_in(data) {
 function parse_out(data) {
 	// Init variables
 	switch (data.msg[0]) {
-		case 0x39: // Broadcast: CD status
+		case 0x39 : { // Broadcast: CD status
 			data.command = 'sta';
 			data.value   = 'CD - ';
 
@@ -40,13 +41,16 @@ function parse_out(data) {
 				case 0x03 : data.value += 'fast-forward'; break;
 				case 0x04 : data.value += 'fast-reverse'; break;
 				case 0x07 : data.value += 'end';          break;
-				case 0x08 : data.value += 'loading';      break;
+				case 0x08 : data.value += 'loading';
 			}
-			break;
 
-		default:
+			break;
+		}
+
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	log.bus(data);
@@ -54,13 +58,16 @@ function parse_out(data) {
 
 // CDC->RAD CD status
 function cd_status(value) {
-	let bit;
+	// Bounce if emulation isn't enabled
+	if (config.emulate.cdc !== true) return;
 
+	let bit;
 	switch (value) {
-		case 'status' :
+		case 'status' : {
 			// Send play or stop status based on vehicle ignition
 			bit = (status.vehicle.ignition_level > 0) && 0x02 || 0x00;
 			break;
+		}
 
 		case 'stop'  : bit = 0x00; break;
 		case 'pause' : bit = 0x01; break;
@@ -72,18 +79,22 @@ function cd_status(value) {
 		case 'end' : bit = 0x00; break;
 
 		case 'scan-off'   : bit = 0x02; break;
-		case 'random-off' : bit = 0x02; break;
+		case 'random-off' : bit = 0x02;
 	}
 
+	log.module('Sending CD status: ' + value);
+
 	bus.data.send({
-		src : module_name,
+		src : 'CDC',
 		dst : 'RAD',
 		msg : [ 0x39, bit, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01 ],
 	});
 }
 
+
 module.exports = {
 	cd_status : cd_status,
+
 	parse_in  : parse_in,
 	parse_out : parse_out,
 };

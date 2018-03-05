@@ -7,20 +7,23 @@ app_intf = 'client';
 
 process.title = app_name;
 
+terminating = false;
 
 // node-bmw libraries
 api        = require('api');
 bitmask    = require('bitmask');
+gpio       = require('gpio');          // GPIO library
 hex        = require('hex');
-socket     = new (require('socket'))();
 json       = require('json');
 log        = require('log-output');
 obc_values = require('obc-values');
-os         = require('os');
-update     = require('update');
+objfmt     = require('object-format'); // JSON/object formatter
 weather    = require('weather');
 
-objfmt = require('object-format');
+// Class/event-based modules
+power  = new (require('power'))();  // External device power control library
+socket = new (require('socket'))();
+update = new (require('update'))();
 
 
 // Configure term event listeners
@@ -37,10 +40,7 @@ function term_config(pass) {
 		process.nextTick(term);
 	});
 
-	process.on('exit', () => {
-		bail();
-		log.msg('Terminated');
-	});
+	process.on('exit', bail);
 
 	process.nextTick(pass);
 }
@@ -59,11 +59,8 @@ function load_modules(pass) {
 	DMEK = require('DMEK');
 	DSP  = require('DSP');
 	DSPC = require('DSPC');
-	EWS  = require('EWS');
-	GM   = new (require('GM'))();
 	GT   = require('GT');
 	IHKA = require('IHKA');
-	IKE  = new (require('IKE'))();
 	LCM  = require('LCM');
 	MFL  = require('MFL');
 	MID  = require('MID');
@@ -75,6 +72,11 @@ function load_modules(pass) {
 	RLS  = require('RLS');
 	TEL  = require('TEL');
 	VID  = require('VID');
+
+	// Class/event-based modules
+	GM  = new (require('GM'))();
+	EWS = new (require('EWS'))();
+	IKE = new (require('IKE'))();
 
 	// Not-yet-utilized DBUS/KBUS/IBUS modules
 	// AHL  = require('AHL');
@@ -119,6 +121,7 @@ function load_modules(pass) {
 	ASC1 = require('ASC1');
 	CON1 = require('CON1');
 	DME1 = require('DME1');
+	FEM1 = require('FEM1');
 	NBT1 = require('NBT1');
 
 	// Media libraries
@@ -133,13 +136,10 @@ function load_modules(pass) {
 	// Host data object (CPU, memory, etc.)
 	host_data = require('host-data');
 
-	// GPIO library
-	gpio = require('gpio');
-
 	// Push notification library
-	if (config.notification.method !== null) notify = require('notify');
+	notify = require('notify');
 
-	log.module('Loaded modules');
+	log.msg('Loaded modules');
 
 	process.nextTick(pass);
 }
@@ -155,13 +155,19 @@ function init() {
 				// Initialize event listeners for GM and IKE
 				BMBT.init_listeners();
 				CON1.init_listeners();
+				FEM1.init_listeners();
 				GM.init_listeners();
 				IKE.init_listeners();
 				LCM.init_listeners();
 				MID.init_listeners();
+				NBT1.init_listeners();
 				RAD.init_listeners();
+
+				bus.data.init_listeners();
 				gpio.init_listeners();
 				json.init_listeners();
+				kodi.init_listeners();
+				power.init_listeners();
 
 				host_data.init(() => { // Initialize host data object
 					weather.init(() => { // Initialize weather object
@@ -174,15 +180,7 @@ function init() {
 									socket.init(() => { // Start zeroMQ client
 										api.init(() => { // Start Express API server
 											log.msg('Initialized');
-
 											// notify.notify('Started');
-											//
-											// setTimeout(() => {
-											// 	socket.lcd_text_tx({
-											// 		upper : app_name + ' ' + status.system.host.short,
-											// 		lower : 'restarted',
-											// 	});
-											// }, 250);
 										}, term);
 									}, term);
 								}, term);
@@ -198,12 +196,17 @@ function init() {
 // Save-N-Exit
 function bail() {
 	json.write(() => { // Write JSON config and status files
+		log.msg('Terminated');
 		process.exit();
 	});
 }
 
 // Global term
 function term() {
+	if (terminating === true) return;
+
+	terminating = true;
+
 	log.msg('Terminating');
 
 	hdmi_cec.term(() => { // Close HDMI-CEC

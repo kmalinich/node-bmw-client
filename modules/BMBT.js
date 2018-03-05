@@ -396,9 +396,10 @@ function button(button) {
 }
 
 function init_listeners() {
-	// Enable/disable keepalive on IKE ignition event
-	IKE.on('ignition-powerup',  () => { status_loop(true);  });
-	IKE.on('ignition-poweroff', () => { status_loop(false); });
+	// Perform commands on power lib active event
+	update.on('status.power.active', (data) => {
+		status_loop(data.new);
+	});
 
 	log.module('Initialized listeners');
 }

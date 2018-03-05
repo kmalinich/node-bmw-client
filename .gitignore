@@ -4,9 +4,9 @@
 *.swp
 .DS_Store
 ._*
-candump/
-config.json
-node_modules/
-package-lock.json
-status.json
-test/
+/candump/
+/config.json
+/node_modules/
+/package-lock.json
+/status.json
+/test/

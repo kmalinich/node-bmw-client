@@ -976,6 +976,15 @@ function init_listeners() {
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 
+	// Activate autolights if we got 'em
+	update.on('status.vehicle.ignition', auto_lights_process);
+
+	// Update autolights status on wiper speed change
+	update.on('status.gm.wipers.speed', () => {
+		// Call auto_lights_process() after 1.5s, else just tapping mist/spray turns on the lights
+		setTimeout(auto_lights_process, 1500);
+	});
+
 	log.module('Initialized listeners');
 }
 

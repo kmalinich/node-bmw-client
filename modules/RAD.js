@@ -335,25 +335,29 @@ function parse_out(data) {
 				case 0x0F : data.value += 'EQ button: DSP off';        break;
 				case 0x28 : data.value += 'EQ button: unknown (0x28)'; break;
 
-				case 0x90:
+				case 0x90 : {
 					data.value += 'EQ button: M-Audio off';
 					// Not really the right place to set this var
 					// It should be in the status from DSP itself
 					update.status('dsp.m_audio', false);
 					break;
+				}
 
-				case 0x91:
+				case 0x91 : {
 					data.value += 'EQ button: M-Audio on';
 					update.status('dsp.m_audio', true);
 					break;
+				}
 
-				case 0x95:
+				case 0x95 : {
 					data.value += 'memory set';
 					update.status('dsp.m_audio', false);
 					break;
+				}
 
-				default :
+				default : {
 					data.value = Buffer.from(data.msg);
+				}
 			}
 			break;
 		}
@@ -377,8 +381,9 @@ function parse_out(data) {
 				case 0x05 : data.value += 'fast-reverse'; break;
 				case 0x06 : data.value += 'scan-off';     break;
 				case 0x07 : data.value += 'end';          break;
-				case 0x08 : data.value += 'random-off';   break;
+				case 0x08 : data.value += 'random-off';
 			}
+
 			break;
 		}
 
@@ -651,16 +656,14 @@ function audio_power(power_state, on_ignition = true) {
 			audio_control(false);
 
 			// Send DSP functions 1 and 0
-			audio_control('dsp-1');
-			audio_control('dsp-0');
+			setTimeout(() => { audio_control('dsp-1'); }, 250);
+			setTimeout(() => { audio_control('dsp-0'); }, 500);
 
 			// Set DSP source to on (tuner/tape)
-			audio_control(true);
+			setTimeout(() => { audio_control(true); }, 750);
 
 			// Turn on BMBT
-			setTimeout(() => {
-				cassette_control(true);
-			}, 1000);
+			setTimeout(() => { cassette_control(true); }, 1000);
 
 			// Turn volume up ~30 points
 			setTimeout(() => {
@@ -695,74 +698,9 @@ function audio_power(power_state, on_ignition = true) {
 
 
 function init_listeners() {
-	// Wait for open event from GM to assist poweroff sequence
-	GM.on('open', (data) => {
-		// Bounce if we're still waiting for the poweroff message
-		if (RAD.waiting.ignition === true || RAD.waiting.ignition.powerup === true) return;
-
-		switch (data.doors.sealed) {
-			case false : {
-				if (RAD.waiting.open.doors.sealed.false === true) {
-					log.module('No longer waiting for GM.open.doors.sealed.false event');
-					RAD.waiting.open.doors.sealed.false = false;
-				}
-				break;
-			}
-
-			case true : {
-				// Waiting here for at least one door to be previously opened
-				if (RAD.waiting.open.doors.sealed.true === true) {
-					log.module('No longer waiting for GM.open.doors.sealed.true event');
-					RAD.waiting.open.doors.sealed.true = false;
-				}
-			}
-		}
-
-		// We've successfully waited for all three events
-		if (RAD.waiting.open.doors.sealed.false === false && RAD.waiting.open.doors.sealed.true === false) {
-			log.module('Ignition off, doors sealed then unsealed, setting audio_power to false');
-			RAD.waiting.ignition.powerup = true;
-			audio_power(false, true);
-		}
-	});
-
-	// Perform DSP powerup sequence on IKE ignition event
-	IKE.on('ignition-powerup',  () => {
-		RAD.waiting.ignition.poweroff = true;
-		RAD.waiting.ignition.powerup  = false;
-		log.module('Waiting for IKE.ignition-poweroff event');
-
-		audio_power(true, true);
-	});
-
-	// Initialize DSP poweroff sequence on IKE ignition event,
-	// wait for open events from GM
-	IKE.on('ignition-poweroff',  () => {
-		log.module('No longer waiting for IKE.ignition-poweroff event');
-		RAD.waiting.ignition.poweroff = false;
-
-		// Wait for doors to be unsealed, unless they already are
-		switch (status.doors.sealed) {
-			case false : {
-				log.module('Door(s) already open - NOT waiting for GM.open.doors.sealed.false event');
-				RAD.waiting.open.doors.sealed.false = false;
-				break;
-			}
-
-			case true  : {
-				log.module('Waiting for GM.open.doors.sealed.false event');
-				RAD.waiting.open.doors.sealed.false = true;
-			}
-		}
-
-		log.module('Waiting for GM.open.doors.sealed.true event');
-		RAD.waiting.open.doors.sealed.true = true;
-
-		// Override timeout
-		setTimeout(() => {
-			RAD.waiting.ignition.powerup = true;
-			audio_power(false, true);
-		}, config.media.poweroff_delay);
+	// Perform commands on power lib active event
+	update.on('status.power.active', (data) => {
+		audio_power(data.new, true);
 	});
 
 	log.module('Initialized listeners');
@@ -770,22 +708,6 @@ function init_listeners() {
 
 
 module.exports = {
-	waiting : {
-		ignition : {
-			poweroff : true,
-			powerup  : true,
-		},
-
-		open : {
-			doors : {
-				sealed : {
-					false : true,
-					true  : true,
-				},
-			},
-		},
-	},
-
 	parse_in  : parse_in,
 	parse_out : parse_out,
 
