@@ -467,27 +467,59 @@ class IKE extends EventEmitter {
 
 	// Pretend to be IKE saying the car is on
 	// Note - this can and WILL set the alarm off - kudos to the Germans
-	ignition(value) {
-		log.module('Sending ignition status: ' + value);
+	ignition(state) {
+		// Format state name
+		switch (state) {
+			case 0       :
+			case false   :
+			case '0'     :
+			case 'false' :
+			case 'o'     :
+			case 'off'   : state = 'off'; break;
 
-		let status;
-		switch (value) {
-			case 'off'  : status = 0x00; break;
-			case 'pos1' : status = 0x01; break;
-			case 'pos2' : status = 0x03; break;
-			case 'pos3' : status = 0x07;
+			case 1           :
+			case '1'         :
+			case 'a'         :
+			case 'acc'       :
+			case 'accessory' :
+			case 'pos1'      : state = 'accessory'; break;
+
+			case 2      :
+			case '2'    :
+			case 'r'    :
+			case 'run'  :
+			case 'pos2' : state = 'run'; break;
+
+			case 3       :
+			case '3'     :
+			case 's'     :
+			case 'start' :
+			case 'pos3'  : state = 'start'; break;
+
+			default : {
+				log.module('Invalid ignition state: ' + state);
+				return;
+			}
 		}
+
+		// Prepare state value
+		let value;
+		switch (state) {
+			case 'off'       : value = 0x00; break;
+			case 'accessory' : value = 0x01; break;
+			case 'run'       : value = 0x03; break;
+			case 'start'     : value = 0x07;
+		}
+
+		log.module('Sending ignition state: ' + state);
 
 		let ignition_msg = {
 			src : 'IKE',
 			dst : 'GLO',
-			msg : [ 0x11, status ],
+			msg : [ 0x11, value ],
 		};
 
 		bus.data.send(ignition_msg);
-
-		// Also spoof the ignition status inside IKE
-		this.decode_ignition_status(ignition_msg);
 	}
 
 	// Refresh custom HUD speed
@@ -506,12 +538,14 @@ class IKE extends EventEmitter {
 
 		log.module('Refreshing HUD');
 
-		let string_load;
+		// 1m sysload to percentage
+		let string_load = status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%';
+
 		let string_cons  = '';
 		let string_speed = '';
 		let string_temp  = '';
 		let string_time  = moment().format('h:mm'); // TODO add config option for 12h/24h
-		let string_volt  = status.lcm.voltage.terminal_30 + 'v';
+		let string_volt  = '';
 
 		// Only add data to strings if it is populated
 		if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
@@ -520,9 +554,7 @@ class IKE extends EventEmitter {
 		if (status.temperature.coolant.c !== null) string_temp = Math.round(status.temperature.coolant.c) + '¨';
 		if (status.temperature.oil.c     !== null) string_temp = string_temp + '|' + Math.round(status.temperature.oil.c) + '¨';
 
-		// 1m sysload to percentage
-		string_load = Math.round(status.system.cpu.load_pct);
-		string_load = status.system.temperature + '¨|' + string_load + '%';
+		if (status.lcm.voltage.terminal_30 !== null) string_volt = status.lcm.voltage.terminal_30 + 'v';
 
 		// Space-pad strings
 		let hud_strings = {
@@ -548,29 +580,22 @@ class IKE extends EventEmitter {
 
 		// Send text to IKE and update this.last_hud_refresh value
 		this.text(hud_string, () => { this.last_hud_refresh = now(); });
-
-		// socket.lcd_text_tx({
-		// 	upper : 'kdm-e39-01',
-		// 	lower : status.system.temperature + 'C|' + status.system.cpu.load_pct + '%',
-		// });
 	}
 
 	// OBC set clock
 	obc_clock() {
 		log.module('Setting OBC clock to current time');
 
-		let time = moment();
-
 		// Time
 		bus.data.send({
 			src : 'GT',
-			msg : [ 0x40, 0x01, time.format('H'), time.format('m') ],
+			msg : [ 0x40, 0x01, moment().format('H'), moment().format('m') ],
 		});
 
 		// Date
 		bus.data.send({
 			src : 'GT',
-			msg : [ 0x40, 0x02, time.format('D'), time.format('M'), time.format('YY') ],
+			msg : [ 0x40, 0x02, moment().format('D'), moment().format('M'), moment().format('YY') ],
 		});
 	}
 
@@ -593,7 +618,6 @@ class IKE extends EventEmitter {
 			case 'set' : {
 				cmd       = 0x40; // OBC data set (speed limit/distance)
 				action_id = 0x00;
-				break;
 			}
 		}
 
@@ -668,7 +692,17 @@ class IKE extends EventEmitter {
 		message = message.substring(0, this.max_len_text);
 
 		// Space-pad if pad === true
-		if (pad === true) message = pad(message, this.max_len_text);
+		switch (pad) {
+			case true : {
+				message = pad(message, this.max_len_text);
+				log.module('Sending space-padded IKE text message: \'' + message + '\'');
+				break;
+			}
+
+			case false : {
+				log.module('Sending non-padded IKE text message: \'' + message + '\'');
+			}
+		}
 
 		// Convert ASCII to hex and return
 		return hex.a2h(message);
@@ -697,8 +731,6 @@ class IKE extends EventEmitter {
 			typeof cb === 'function' && cb();
 			return;
 		}
-
-		log.module('Sending non-padded IKE text message: \'' + message + '\'');
 
 		let message_hex;
 
@@ -751,8 +783,6 @@ class IKE extends EventEmitter {
 
 		// Set ignition status value
 		if (update.status('vehicle.ignition_level', data.msg[1])) {
-			// Activate autolights if we got 'em
-			LCM.auto_lights_process();
 			// Disable/enable HUD refresh
 			this.data_refresh();
 		}
@@ -822,7 +852,7 @@ class IKE extends EventEmitter {
 		// Ignition going down
 		else if (data.msg[1] < previous_level) {
 			switch (data.msg[1]) { // Evaluate new ignition state
-				case 0: // Off
+				case 0 : { // Off
 					// If the accessory (1) ignition message wasn't caught
 					if (previous_level === 3) {
 						log.module('Powerdown state');
@@ -831,16 +861,21 @@ class IKE extends EventEmitter {
 
 					log.module('Poweroff state');
 					this.emit('ignition-poweroff');
-					break;
 
-				case 1: // Accessory
+					break;
+				}
+
+				case 1 : { // Accessory
 					log.module('Powerdown state');
 					this.emit('ignition-powerdown');
-					break;
 
-				case 3: // Run
+					break;
+				}
+
+				case 3 : { // Run
 					log.module('Start-end state');
 					this.emit('ignition-start-end');
+				}
 			}
 		}
 
@@ -917,7 +952,7 @@ class IKE extends EventEmitter {
 		log.module('Refreshing all OBC data');
 
 		// Immo+GM data
-		EWS.request('immobiliserstatus');
+		EWS.request('immobilizerstatus');
 		GM.request('io-status');
 		GM.request('door-status');
 
@@ -1040,22 +1075,38 @@ class IKE extends EventEmitter {
 			}
 
 			case 'status-glo' : {
+				log.module('Requesting \'' + value + '\'');
+
 				for (loop_dst in bus.modules.modules) {
-					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-						bus.cmds.request_device_status('IKE', loop_dst);
+					switch (loop_dst) {
+						case 'DIA' : break;
+						case 'GLO' : break;
+						case 'LOC' : break;
+						case src   : break;
+
+						default : bus.cmds.request_device_status('IKE', loop_dst);
 					}
 				}
+
 				return;
 			}
 
 			case 'status-short' : {
+				log.module('Requesting \'' + value + '\'');
+
 				bus.modules.modules_check.forEach((loop_dst) => {
 					src = module_name;
 
-					if (loop_dst != 'DIA' && loop_dst != 'GLO' && loop_dst != 'LOC' && loop_dst != src) {
-						bus.cmds.request_device_status('IKE', loop_dst);
+					switch (loop_dst) {
+						case 'DIA' : break;
+						case 'GLO' : break;
+						case 'LOC' : break;
+						case src   : break;
+
+						default : bus.cmds.request_device_status('IKE', loop_dst);
 					}
 				});
+
 				return;
 			}
 
@@ -1081,8 +1132,6 @@ class IKE extends EventEmitter {
 			typeof cb === 'function' && cb();
 			return;
 		}
-
-		log.module('Sending space-padded IKE text message: \'' + message + '\'');
 
 		let message_hex;
 
