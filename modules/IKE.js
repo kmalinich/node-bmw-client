@@ -421,12 +421,12 @@ class IKE extends EventEmitter {
 
 		// Update vehicle and engine speed variables
 		// Also allow update from IBUS/KBUS even if CANBUS is enabled when the ignition
-		if (config.canbus.speed === false || status.vehicle.ignition_level < 3) {
+		if (config.bus.canbus.speed === false || status.vehicle.ignition_level < 3) {
 			update.status('vehicle.speed.kmh', parseFloat(data.msg[1] * 2));
 			update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1] * 2))).from('kilometre').to('us mile').toFixed(2)));
 		}
 
-		if (config.canbus.rpm === false || status.vehicle.ignition_level < 3) {
+		if (config.bus.canbus.rpm === false || status.vehicle.ignition_level < 3) {
 			update.status('engine.speed', parseFloat(data.msg[2] * 100));
 		}
 
@@ -439,7 +439,7 @@ class IKE extends EventEmitter {
 		data.value   = 'temperature values';
 
 		// Temperatures are not broadcast over CANBUS when ignition is not in run
-		if (config.canbus.coolant === false || status.vehicle.ignition_level < 3) {
+		if (config.bus.canbus.coolant === false || status.vehicle.ignition_level < 3) {
 			let temp_coolant = parseFloat(data.msg[2]);
 
 			// Signed value?
@@ -450,7 +450,7 @@ class IKE extends EventEmitter {
 		}
 
 		// Temperatures are not broadcast over CANBUS when ignition is not in run
-		if (config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
+		if (config.bus.canbus.exterior === false || status.vehicle.ignition_level < 3) {
 			let temp_exterior = parseFloat(data.msg[1]);
 
 			// Signed value?
