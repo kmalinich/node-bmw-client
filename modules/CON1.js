@@ -166,7 +166,6 @@ function decode_button(data) {
 	// depress : 01 DE 01
 	// release : 00 DE 01
 
-
 	// Decode bitmasks
 	let m = {
 		a : bitmask.check(data.msg[3]).mask, // Actions bitmask
@@ -270,6 +269,9 @@ function decode_button(data) {
 // iDrive knob rotation
 // 264 -> E1 FD B5 FB 7F 1E
 function decode_rotation(data) {
+	data.command = 'con';
+	data.value   = 'Knob rotation';
+
 	// data.msg[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn
 	// data.msg[3] : Counts up and down between 0x00-0xFE : depending on the direction of rotation
 
@@ -287,7 +289,7 @@ function decode_rotation(data) {
 	let change = data.msg[3] - status.con1.rotation.relative;
 
 	// If it hasn't rotated any notches
-	if (change === 0) return;
+	if (change === 0) return data;
 
 	let change_calc = 256 - Math.abs(change);
 
@@ -314,7 +316,7 @@ function decode_rotation(data) {
 	update.status('con1.rotation.direction', direction);
 
 	// Update data in global status object
-	update.status('con1.rotation.absolute', data.msg[2]);
+	update.status('con1.rotation.absolute', data.msg[2], false);
 	update.status('con1.rotation.relative', data.msg[3]);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
@@ -370,16 +372,19 @@ function decode_rotation(data) {
 function decode_status(data) {
 	data.command = 'sta';
 
-	switch (data.id) {
+	switch (data.src.id) {
 		case 0x4E7 : data.value = 'status'; break;
-		case 0x5E7 : data.value = 'counter';
+		case 0x5E7 : data.value = 'Counter: ' + data.msg;
 	}
 
 	switch (data.msg[4]) {
-		case 0x01 :
 		case 0x06 : { // CON1 needs init
-			log.module('Init triggered');
-			NBT1.status();
+			switch (config.nbt1.mode.toLowerCase()) {
+				case 'cic' : {
+					log.module('Init triggered');
+					NBT1.status();
+				}
+			}
 		}
 	}
 
@@ -399,59 +404,35 @@ function decode_touch_count(value) {
 }
 
 // Touch iDrive controller data
+// This is, for now, a dirty hack
 function decode_touchpad(data) {
-	let x = Math.round(parseFloat(parseInt('0x' + data.msg[1].toString(16) + data.msg[0].toString(16))) / 655.35);
-	let y = Math.round(parseFloat(parseInt('0x' + data.msg[3].toString(16) + data.msg[2].toString(16))) / 79.99);
+	data.command = 'con';
+	data.value   = 'Touchpad contact';
 
-	if (x === 0 || y === 0) return;
+	let x = data.msg[1];
+	let y = data.msg[3];
 
-	let change_x = x - status.con1.touch.x;
+	let touch_count = decode_touch_count(data.msg[4]);
 
-	let change_x_calc = 256 - Math.abs(change_x);
+	// Update status variables
+	update.status('con1.touch.count', touch_count);
 
-	// If change_x_calc is less than 128,
-	// the relative counter has either rolled from 128-255 to 0-127 or 0-127 to 128-255
-	let rollover = (change_x_calc < 128);
-	if (rollover) {
-		switch (change_x > 0) {
-			case true  : change_x = (change_x - 256); break;
-			case false : change_x = (change_x + 256);
-		}
-	}
+	// Bounce if more than 1 digit on the touchpad
+	if (touch_count !== 1) return data;
 
-	// The absolute number of notches travelled
-	// let change_x_abs = Math.abs(change_x);
+	if (y === 0) return data;
 
-	let direction_x;
-	switch (change_x > 0) {
-		case true  : direction_x = 'right'; break;
-		case false : direction_x = 'left';
-	}
+	data.value += ' X: ' + x + ' Y: ' + y;
 
-	// let change_x = x - status.con1.touch.x;
-	let change_y = y - status.con1.touch.y;
+	// Update status variables
+	update.status('con1.touch.x', x, false);
+	update.status('con1.touch.y', y, false);
 
-	// Change kodi track on x axis movement
-	switch (direction_x) {
-		case 'left' : {
-			kodi.command('previous');
-			break;
-		}
+	// y-axis value maxes out at 30 - so we'll do a bit of multiplication
+	// let volume_level = Math.round(y * (3 + (1 / 3)));
+	// kodi.volume(volume_level);
 
-		case 'right' : {
-			kodi.command('next');
-		}
-	}
-
-	// Change kodi volume on y axis movement
-	switch (Math.sign(change_y) === 1) {
-		case false : kodi.volume('down'); break;
-		case true  : kodi.volume('up');
-	}
-
-	update.status('con1.touch.count', decode_touch_count(data.msg[4]));
-	update.status('con1.touch.x',     x);
-	update.status('con1.touch.y',     y);
+	return data;
 }
 
 
@@ -459,7 +440,51 @@ function init_listeners() {
 	// Stamp last message time as now
 	update.status('con1.rotation.last_msg', time_now(), false);
 
+	// Perform commands on power lib active event
+	update.on('status.power.active', init_rotation);
+
 	log.module('Initialized listeners');
+}
+
+// Initialize CON1 rotation counter
+function init_rotation() {
+	// Bounce if not enabled
+	if (config.retrofit.con1 !== true && config.retrofit.nbt1 !== true) return;
+
+	// Handle setting/unsetting timeout
+	switch (status.power.active) {
+		case false : {
+			if (CON1.timeout.init_rotation !== null) {
+				clearTimeout(CON1.timeout.init_rotation);
+				CON1.timeout.init_rotation = null;
+
+				log.module('Unset CON1 rotation init timeout');
+			}
+
+			// Return here since we're not re-sending again
+			return;
+		}
+
+		case true : {
+			if (CON1.timeout.init_rotation === null) {
+				log.module('Set CON1 rotation init timeout');
+			}
+
+			CON1.timeout.init_rotation = setTimeout(init_rotation, 10000);
+		}
+	}
+
+	// When CON1 receives this message, it resets it's relative rotation counter to -1
+	update.status('con1.rotation.relative', -1, false);
+
+	log.module('Sending CON1 rotation init');
+
+	// Send message
+	bus.data.send({
+		bus  : 'can1',
+		id   : 0x273,
+		data : Buffer.from([ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x00 ]),
+	});
 }
 
 
@@ -488,6 +513,10 @@ function parse_out(data) {
 
 
 module.exports = {
+	timeout : {
+		init_rotation : null,
+	},
+
 	// Functions
 	init_listeners : init_listeners,
 

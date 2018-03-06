@@ -733,9 +733,6 @@ function parse_out(data) {
 			data.command = 'bro';
 			data.value   = 'dimmer value 1';
 
-			// Set CON1 backlight level
-			CON1.backlight(data.msg[1]);
-
 			update.status('lcm.dimmer.value_1', data.msg[1]);
 			// update.status('lcm.io.15',          data.msg[1]);
 			break;

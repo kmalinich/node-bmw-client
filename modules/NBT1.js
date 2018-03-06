@@ -14,7 +14,7 @@ function decode_ignition(data) {
 }
 
 // Used for iDrive knob rotational initialization
-function decode_status(data) {
+function decode_status_module(data) {
 	// Bounce if not enabled
 	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
 
@@ -32,9 +32,8 @@ function init_listeners() {
 	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
 
 	// Perform commands on power lib active event
-	update.on('status.power.active', (data) => {
-		status_ignition(data.new);
-	});
+	update.on('status.power.active', status_module);
+	update.on('status.power.active', status_ignition);
 
 	log.module('Initialized listeners');
 }
@@ -61,11 +60,11 @@ function parse_out(data) {
 	if (config.retrofit.nbt1 !== true) return;
 
 	switch (data.src.id) {
-		case 0x273 : data = decode_status(data); break;
+		case 0x273 : data = decode_status_module(data); break;
 
 		case 0x277 : { // NBT1 ACK to rotational initialization message
 			data.command = 'rep';
-			data.value   = 'NBT1 => NBT1 : ACK init';
+			data.value   = 'CON1 => NBT1 : ACK init';
 			break;
 		}
 
@@ -78,35 +77,104 @@ function parse_out(data) {
 		}
 	}
 
-	// log.bus(data);
+	log.bus(data);
 }
 
 
+// NBT1 status
+// 273 -> 1D E1 00 F0 FF 7F DE 04
+function status_module() {
+	// Bounce if not enabled
+	if (config.emulate.nbt1 !== true) return;
+
+	switch (config.nbt1.mode.toLowerCase()) {
+		case 'cic' : {
+			// When CON1 receives this message, it resets it's relative rotation counter to -1
+			update.status('con1.rotation.relative', -1);
+			break;
+		}
+
+		case 'nbt' : {
+			switch (status.power.active) {
+				case false : {
+					if (NBT1.timeout.status_module !== null) {
+						clearTimeout(NBT1.timeout.status_module);
+						NBT1.timeout.status_module = null;
+
+						log.module('Unset module status timeout');
+					}
+
+					// Return here since we're not re-sending again
+					return;
+				}
+
+				case true : {
+					if (NBT1.timeout.status_module === null) {
+						log.module('Set module status timeout');
+					}
+
+					NBT1.timeout.status_module = setTimeout(status_module, 2000);
+				}
+			}
+		}
+	}
+
+	// Default is NBT1 message
+	let msg = {
+		bus  : 'can1',
+		id   : 0x563,
+		data : [ 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x63 ],
+	};
+
+	switch (config.nbt1.mode.toLowerCase()) {
+		case 'cic' : {
+			msg.id   = 0x273;
+			msg.data = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
+		}
+	}
+
+	// This is pretty noisy due to 2000ms timeout
+	// log.module('Sending module status');
+
+	// Convert data array to Buffer
+	msg.data = Buffer.from(msg.data);
+
+	// Send message
+	bus.data.send(msg);
+
+	// When this command fires, also update backlight value
+	FEM1.backlight();
+}
+
 // Ignition status
-function status_ignition(state = true) {
+// TODO : Should be in CAS1 module
+function status_ignition() {
 	// Bounce if not enabled
 	if (config.retrofit.con1 !== true && config.retrofit.nbt1 !== true) return;
 
 	// Handle setting/unsetting timeout
-	switch (state) {
+	switch (status.power.active) {
 		case false : {
 			// Return here if timeout is already null
-			if (NBT1.timeout.status_ignition === null) return;
+			if (NBT1.timeout.status_ignition !== null) {
+				clearTimeout(NBT1.timeout.status_ignition);
+				NBT1.timeout.status_ignition = null;
 
-			clearTimeout(NBT1.timeout.status_ignition);
-			NBT1.timeout.status_ignition = null;
+				log.module('Unset ignition status timeout');
+			}
 
-			log.module('Unset ignition status timeout');
 			// Return here since we're not re-sending again
 			return;
 		}
 
 		case true : {
-			if (NBT1.timeout.status_ignition !== null) break;
-			log.module('Set ignition status timeout');
+			if (NBT1.timeout.status_ignition === null) {
+				log.module('Set ignition status timeout');
+			}
+
+			NBT1.timeout.status_ignition = setTimeout(status_ignition, 200);
 		}
 	}
-
 
 	// Default is NBT1 message
 	let msg = {
@@ -130,32 +198,13 @@ function status_ignition(state = true) {
 
 	// Send message
 	bus.data.send(msg);
-
-	NBT1.timeout.status_ignition = setTimeout(status_ignition, 200);
-}
-
-// NBT1 status
-// 273 -> 1D E1 00 F0 FF 7F DE 04
-function status_nbt() {
-	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true) return;
-
-	log.module('Sending NBT1 status');
-
-	bus.data.send({
-		bus  : 'can1',
-		id   : 0x273,
-		data : Buffer.from([ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ]),
-	});
-
-	// When NBT1 sends this message, NBT1 resets it's relative rotation counter to -1
-	update.status('con1.rotation.relative', -1);
 }
 
 
 module.exports = {
 	timeout : {
 		status_ignition : null,
+		status_module   : null,
 	},
 
 	// Functions
@@ -164,6 +213,6 @@ module.exports = {
 	parse_in  : parse_in,
 	parse_out : parse_out,
 
-	status_ignition : status_ignition,
-	status_nbt      : status_nbt,
+	status_ignition : status_ignition, // Should be in CAS1 module
+	status_module   : status_module,
 };

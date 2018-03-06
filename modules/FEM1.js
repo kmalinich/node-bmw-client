@@ -1,4 +1,11 @@
-function backlight(value) {
+function backlight(value = status.lcm.dimmer.value_1) {
+	// Super-prepare default value
+	if (typeof value === 'undefined' || value === null || value === '') {
+		value = 0xFF;
+	}
+
+	log.module('Setting backlight to value : ' + value);
+
 	// Bounce if not enabled
 	if (config.emulate.fem1 !== true) return;
 
@@ -70,9 +77,21 @@ function init_listeners() {
 			}
 
 			case true : { // Turn on backlight when power turns on
-				backlight(0xFF);
+				backlight();
 			}
 		}
+	});
+
+	// Set backlight based on current dimmer level
+	update.on('status.lcm.dimmer.value_1', (data) => {
+		// 0xFF value from LCM = off
+		let value;
+		switch (data.new) {
+			case 0xFF : value = 0x00; break;
+			default   : value = data.new;
+		}
+
+		backlight(value);
 	});
 
 	log.module('Initialized listeners');
