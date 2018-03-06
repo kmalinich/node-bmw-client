@@ -519,7 +519,17 @@ class IKE extends EventEmitter {
 			msg : [ 0x11, value ],
 		};
 
-		bus.data.send(ignition_msg);
+		// If in full emulation mode, "send" the data, if not, just parse the message as if it were real
+		switch (config.loopback) {
+			case false : {
+				this.decode_ignition_status(ignition_msg);
+				break;
+			}
+
+			case true : {
+				bus.data.send(ignition_msg);
+			}
+		}
 	}
 
 	// Refresh custom HUD speed
