@@ -453,7 +453,7 @@ function init_listeners() {
 // Initialize CON1 rotation counter
 function init_rotation() {
 	// Bounce if not enabled
-	if (config.retrofit.con1 !== true && config.retrofit.nbt1 !== true) return;
+	if (config.emulate.nbt1 !== true) return;
 
 	// Handle setting/unsetting timeout
 	switch (status.power.active) {
