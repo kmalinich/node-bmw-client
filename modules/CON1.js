@@ -441,7 +441,11 @@ function init_listeners() {
 	update.status('con1.rotation.last_msg', time_now(), false);
 
 	// Perform commands on power lib active event
-	update.on('status.power.active', init_rotation);
+	update.on('status.power.active', () => {
+		setTimeout(() => {
+			init_rotation();
+		}, 250);
+	});
 
 	log.module('Initialized listeners');
 }
