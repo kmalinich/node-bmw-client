@@ -50,8 +50,8 @@ function decode_button_media(data) {
 	// Assemble log string and output message
 	data.value += unmask.action + ' ' + unmask.button;
 
-	// If media control is disabled, return here
-	if (config.mfl.media === false) return data;
+	// Translate button presses to CANBUS messages
+	translate_button_media(unmask);
 
 	switch (unmask.action) {
 		case 'hold' : {
@@ -78,9 +78,9 @@ function decode_button_media(data) {
 			switch (config.mfl.media) {
 				case 'bluetooth' : // Bluetooth version
 					switch (status.mfl.last.action + status.mfl.last.button) {
-						case 'depressleft'  : BT.command('previous'); break;
-						case 'depressright' : BT.command('next');     break;
-						case 'depressvoice' : BT.command('toggle');   break;
+						case 'depressleft'  : bluetooth.command('previous'); break;
+						case 'depressright' : bluetooth.command('next');     break;
+						case 'depressvoice' : bluetooth.command('toggle');   break;
 
 						case 'holdleft'  : break;
 						case 'holdright' : break;
@@ -103,8 +103,6 @@ function decode_button_media(data) {
 		}
 	}
 
-	// case 'depress' :
-
 	// Update status object with the new data
 	update.status('mfl.last.action', unmask.action);
 	update.status('mfl.last.button', unmask.button);
@@ -125,28 +123,128 @@ function decode_button_recirc(data) {
 	return data;
 }
 
+
 // Parse data sent from MFL module
 function parse_out(data) {
 	// 50 B0 01,MFL --> SES: Device status request
 	// 50 C8 01,MFL --> TEL: Device status request
 
 	switch (data.msg[0]) {
-		case 0x3A: // Button: Recirculation
+		case 0x3A : { // Button: Recirculation
 			data = decode_button_recirc(data);
 			break;
+		}
 
-		case 0x3B: // Button: Media
+		case 0x3B : { // Button: Media
 			data = decode_button_media(data);
 			break;
+		}
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	log.bus(data);
 }
 
+
+// Translate button presses to CANBUS messages
+function translate_button_media(unmask) {
+	// Return here if disabled
+	if (config.translate.mfl !== true) return;
+
+	let src = 0x1D6;
+
+	// Depress
+	// Voice    : 0x1D6 > 0xC0, 0x01
+	// Phone    : 0x1D6 > 0xC1, 0x00
+	// Vol down : 0x1D6 > 0xC4, 0x00
+	// Vol up   : 0x1D6 > 0xC8, 0x00
+	// Right    : 0x1D6 > 0xD0, 0x00
+	// Left     : 0x1D6 > 0xE0, 0x00
+	//
+	// Release : 0x1D6 > 0xC0, 0x00
+
+	switch (unmask.action) {
+		case 'depress' : {
+			switch (unmask.button) {
+				case 'left' : {
+					bus.data.send({
+						bus  : 'can1',
+						id   : src,
+						data : [ 0xE0, 0x00 ],
+					});
+
+					break;
+				}
+
+				case 'right' : {
+					bus.data.send({
+						bus  : 'can1',
+						id   : src,
+						data : [ 0xD0, 0x00 ],
+					});
+
+					break;
+				}
+
+				case 'volume -' : {
+					bus.data.send({
+						bus  : 'can1',
+						id   : src,
+						data : [ 0xC4, 0x00 ],
+					});
+
+					break;
+				}
+
+				case 'volume +' : {
+					bus.data.send({
+						bus  : 'can1',
+						id   : src,
+						data : [ 0xC8, 0x00 ],
+					});
+
+					break;
+				}
+
+				case 'voice' : {
+					bus.data.send({
+						bus  : 'can1',
+						id   : src,
+						data : [ 0xC0, 0x01 ],
+					});
+				}
+			}
+
+			break;
+		}
+
+		case 'hold' : {
+			switch (unmask.button) {
+				case 'left'  : break;
+				case 'right' : break;
+				case 'voice' : break;
+			}
+
+			break;
+		}
+
+		case 'release' : {
+			bus.data.send({
+				bus  : 'can1',
+				id   : src,
+				data : [ 0xC0, 0x00 ],
+			});
+		}
+	}
+}
+
+
 module.exports = {
 	parse_out : parse_out,
+
+	translate_button_media : translate_button_media,
 };

@@ -1,43 +1,49 @@
 /* eslint no-console       : 0 */
 /* eslint no-global-assign : 0 */
 
+// Bump up default max event listeners
+require('events').EventEmitter.defaultMaxListeners = 15;
+
 app_path = __dirname;
 app_name = 'bmwcd';
 app_intf = 'client';
 
 process.title = app_name;
 
+terminating = false;
 
 // node-bmw libraries
 api        = require('api');
 bitmask    = require('bitmask');
+gpio       = require('gpio');          // GPIO library
 hex        = require('hex');
-socket     = new (require('socket'))();
 json       = require('json');
 log        = require('log-output');
 obc_values = require('obc-values');
-os         = require('os');
-update     = require('update');
+objfmt     = require('object-format'); // JSON/object formatter
 weather    = require('weather');
+
+// Class/event-based modules
+power  = new (require('power'))();  // External device power control library
+socket = new (require('socket'))();
+update = new (require('update'))();
 
 
 // Configure term event listeners
 function term_config(pass) {
 	process.on('SIGTERM', () => {
 		console.log('');
-		log.msg({ msg : 'Caught SIGTERM' });
+		log.msg('Caught SIGTERM');
 		process.nextTick(term);
 	});
 
 	process.on('SIGINT', () => {
 		console.log('');
-		log.msg({ msg : 'Caught SIGINT' });
+		log.msg('Caught SIGINT');
 		process.nextTick(term);
 	});
 
-	process.on('exit', () => {
-		log.msg({ msg : 'Terminated' });
-	});
+	process.on('exit', bail);
 
 	process.nextTick(pass);
 }
@@ -47,78 +53,85 @@ function term_config(pass) {
 function load_modules(pass) {
 	// DBUS/KBUS/IBUS modules
 	ABG  = require('ABG');
-	AHL  = require('AHL');
-	ANZV = require('ANZV');
 	ASC  = require('ASC');
-	ASST = require('ASST');
 	BMBT = require('BMBT');
 	CCM  = require('CCM');
 	CDC  = require('CDC');
-	CDCD = require('CDCD');
-	CID  = require('CID');
-	CSU  = require('CSU');
-	CVM  = require('CVM');
 	DIA  = require('DIA');
 	DME  = require('DME');
 	DMEK = require('DMEK');
 	DSP  = require('DSP');
 	DSPC = require('DSPC');
-	EGS  = require('EGS');
-	EHC  = require('EHC');
-	EKM  = require('EKM');
-	EKP  = require('EKP');
-	EWS  = require('EWS');
-	FBZV = require('FBZV');
-	FHK  = require('FHK');
-	FID  = require('FID');
-	FMBT = require('FMBT');
-	GM   = new (require('GM'))();
-	GR   = require('GR');
 	GT   = require('GT');
-	GTF  = require('GTF');
-	HAC  = require('HAC');
-	HKM  = require('HKM');
 	IHKA = require('IHKA');
-	IKE  = new (require('IKE'))();
-	IRIS = require('IRIS');
 	LCM  = require('LCM');
-	LWS  = require('LWS');
 	MFL  = require('MFL');
 	MID  = require('MID');
-	MM3  = require('MM3');
-	MML  = require('MML');
-	MMR  = require('MMR');
 	NAV  = require('NAV');
-	NAVC = require('NAVC');
 	NAVE = require('NAVE');
-	NAVJ = require('NAVJ');
 	PDC  = require('PDC');
-	PIC  = require('PIC');
 	RAD  = require('RAD');
-	RCC  = require('RCC');
-	RCSC = require('RCSC');
 	RDC  = require('RDC');
 	RLS  = require('RLS');
-	SDRS = require('SDRS');
-	SES  = require('SES');
-	SHD  = require('SHD');
-	SM   = require('SM');
-	SMAD = require('SMAD');
-	SOR  = require('SOR');
-	STH  = require('STH');
-	TCU  = require('TCU');
 	TEL  = require('TEL');
 	VID  = require('VID');
+
+	// Class/event-based modules
+	GM  = new (require('GM'))();
+	EWS = new (require('EWS'))();
+	IKE = new (require('IKE'))();
+
+	// Not-yet-utilized DBUS/KBUS/IBUS modules
+	// AHL  = require('AHL');
+	// ANZV = require('ANZV');
+	// ASST = require('ASST');
+	// CDCD = require('CDCD');
+	// CID  = require('CID');
+	// CSU  = require('CSU');
+	// CVM  = require('CVM');
+	// EGS  = require('EGS');
+	// EHC  = require('EHC');
+	// EKM  = require('EKM');
+	// EKP  = require('EKP');
+	// FBZV = require('FBZV');
+	// FHK  = require('FHK');
+	// FID  = require('FID');
+	// FMBT = require('FMBT');
+	// GR   = require('GR');
+	// GTF  = require('GTF');
+	// HAC  = require('HAC');
+	// HKM  = require('HKM');
+	// IRIS = require('IRIS');
+	// LWS  = require('LWS');
+	// MM3  = require('MM3');
+	// MML  = require('MML');
+	// MMR  = require('MMR');
+	// NAVC = require('NAVC');
+	// NAVJ = require('NAVJ');
+	// PIC  = require('PIC');
+	// RCC  = require('RCC');
+	// RCSC = require('RCSC');
+	// SDRS = require('SDRS');
+	// SES  = require('SES');
+	// SHD  = require('SHD');
+	// SM   = require('SM');
+	// SMAD = require('SMAD');
+	// SOR  = require('SOR');
+	// STH  = require('STH');
+	// TCU  = require('TCU');
 
 	// CANBUS modules
 	ASC1 = require('ASC1');
 	CON1 = require('CON1');
 	DME1 = require('DME1');
+	FEM1 = require('FEM1');
+	NBT1 = require('NBT1');
 
-	// Custom libraries
-	BT   = require('BT');
-	HDMI = require('HDMI');
-	kodi = require('kodi');
+	// Media libraries
+	bluetooth = require('bluetooth');
+	hdmi_cec  = require('hdmi-cec');
+	hdmi_rpi  = require('hdmi-rpi');
+	kodi      = require('kodi');
 
 	// Data handler/router
 	bus = require('bus');
@@ -126,13 +139,10 @@ function load_modules(pass) {
 	// Host data object (CPU, memory, etc.)
 	host_data = require('host-data');
 
-	// GPIO library
-	gpio = require('gpio');
-
 	// Push notification library
-	if (config.notification.method !== null) notify = require('notify');
+	notify = require('notify');
 
-	log.module({ msg : 'Loaded modules' });
+	log.msg('Loaded modules');
 
 	process.nextTick(pass);
 }
@@ -140,41 +150,42 @@ function load_modules(pass) {
 
 // Global init
 function init() {
-	log.msg({ msg : 'Initializing' });
+	log.msg('Initializing');
 
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS/KBUS module node modules
-			// Initialize event listeners for GM and IKE
-			BMBT.init_listeners();
-			CON1.init_listeners();
-			GM.init_listeners();
-			IKE.init_listeners();
-			LCM.init_listeners();
-			MID.init_listeners();
-			gpio.init_listeners();
-			json.init_listeners();
+			json.reset(() => { // Reset vars (hack =/)
+				// Initialize event listeners for GM and IKE
+				BMBT.init_listeners();
+				CON1.init_listeners();
+				FEM1.init_listeners();
+				GM.init_listeners();
+				IKE.init_listeners();
+				LCM.init_listeners();
+				MID.init_listeners();
+				NBT1.init_listeners();
+				RAD.init_listeners();
 
-			host_data.init(() => { // Initialize host data object
-				weather.init(() => { // Initialize weather object
-					kodi.init(); // Start Kodi WebSocket client
-					BT.init(); // Start Linux D-Bus Bluetooth handler
+				bus.data.init_listeners();
+				gpio.init_listeners();
+				json.init_listeners();
+				kodi.init_listeners();
+				power.init_listeners();
 
-					gpio.init(() => { // Initialize GPIO relays
-						HDMI.init(() => { // Open HDMI-CEC
-							socket.init(() => { // Start zeroMQ client
-								api.init(() => { // Start Express API server
-									log.msg({ msg : 'Initialized' });
+				host_data.init(() => { // Initialize host data object
+					weather.init(() => { // Initialize weather object
+						kodi.init(); // Start Kodi WebSocket client
+						bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 
-
-									// notify.notify('Started');
-									// IKE.text_warning('     bmwcd restart', 3000);
-
-									setTimeout(() => {
-										socket.lcd_text_tx({
-											upper : app_name + ' ' + status.system.host.short,
-											lower : 'restarted',
-										});
-									}, 250);
+						gpio.init(() => { // Initialize GPIO relays
+							hdmi_cec.init(() => { // Open HDMI-CEC
+								hdmi_rpi.init(() => { // Open HDMI (RPi)
+									socket.init(() => { // Start zeroMQ client
+										api.init(() => { // Start Express API server
+											log.msg('Initialized');
+											// notify.notify('Started');
+										}, term);
+									}, term);
 								}, term);
 							}, term);
 						}, term);
@@ -188,19 +199,26 @@ function init() {
 // Save-N-Exit
 function bail() {
 	json.write(() => { // Write JSON config and status files
+		log.msg('Terminated');
 		process.exit();
 	});
 }
 
 // Global term
 function term() {
-	log.msg({ msg : 'Terminating' });
+	if (terminating === true) return;
 
-	HDMI.term(() => { // Close HDMI-CEC
-		gpio.term(() => { // Terminate GPIO relays
-			host_data.term(() => { // Terminate host data timeout
-				socket.term(() => { // Stop zeroMQ client
-					kodi.term(bail); // Stop Kodi WebSocket client
+	terminating = true;
+
+	log.msg('Terminating');
+
+	hdmi_cec.term(() => { // Close HDMI-CEC
+		hdmi_rpi.term(() => { // Close HDMI (RPi)
+			gpio.term(() => { // Terminate GPIO relays
+				host_data.term(() => { // Terminate host data timeout
+					socket.term(() => { // Stop zeroMQ client
+						kodi.term(bail); // Stop Kodi WebSocket client
+					}, bail);
 				}, bail);
 			}, bail);
 		}, bail);

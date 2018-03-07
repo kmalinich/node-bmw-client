@@ -1,134 +1,103 @@
 /* eslint key-spacing : 0 */
 
-const module_name = __filename.slice(__dirname.length + 1, -3);
-
 const time_now = require('performance-now');
 
-// The rotational knob is connected to a 16 bit counter
-// whose value is sent via CANBUS
 
+function button_check(button) {
+	// Workaround for the last of a proper 'release' message when in 'joystick mode'
+	let joystick_release = (button.mode === 'joystick' && button.action === 'release' && button.button === 'none');
+	if (joystick_release === true) button.button = status.con1.last.button.button;
 
-// Message examples:
+	// Detect if there is a change from the last button message, bounce if not
+	// CON1 sends a lot of repeat messages (it's CANBUS)
+	let change = (status.con1.last.button.action !== button.action || status.con1.last.button.button !== button.button || status.con1.last.button.mode !== button.mode);
+	if (change === false) return;
 
-// CIC1 status
-// 273 -> 1D E1 00 F0 FF 7F DE 04
+	log.module('Button: ' + button.action + ' ' + button.button);
 
-// Ignition status
-// 4F8 -> 00 42 FE 01 FF FF FF FF
+	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
+	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
+	let rotation_gap = time_now() - status.con1.rotation.last_msg;
 
-// Counter/heartbeat
-// Byte 4 changes from one state to the other every 5 sec
-// 2BA -> 00 00 00 00 10
-// 2BA -> 00 00 00 00 20
-
-
-// iDrive knob rotation
-// ARBID 0x264: <Buffer e1 fd b5 fb 7f 1e>
-function decode_con_rotation(data) {
-	// data.msg[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn
-	// data.msg[3] : Counts up and down between 0x00-0xFE : depending on the direction of rotation
-
-	// so do the math .. i've had several beers
-
-	// Spin it hard enough and you can get it to jump up to 24 notches!
-	// This is set up to handle up to 127 notches in either direction, we should be ok
-
-	// If you're clever, you can actually
-	// use the math vs. the missed packets
-	// to determine how hard the wheel was flicked
-
-	// Update the data in global status object
-	update.status('con1.rotation.absolute', data.msg[2]);
-	update.status('con1.rotation.relative', data.msg[3]);
-
-	let direction;
-
-	let change = data.msg[3] - status.con1.rotation.relative;
-
-	// If it hasn't rotated any notches
-	if (change === 0) return;
-
-	let change_calc = 256 - Math.abs(change);
-
-	// If change_calc is less than 128,
-	// the relative counter has either rolled from 128-255 to 0-127 or 0-127 to 128-255
-	let rollover = (change_calc < 128);
-	if (rollover) {
-		switch (change > 0) {
-			case true  : change = (change - 256); break;
-			case false : change = (change + 256);
-		}
+	if (rotation_gap >= config.con1.timeout.rotation_mode) {
+		update.status('con1.rotation.horizontal', false);
+		update.status('con1.rotation.volume',     false);
 	}
 
-	// The absolute number of notches travelled
-	let change_abs = Math.abs(change);
+	switch (button.action) {
+		case 'hold' : {
+			switch (button.button) {
+				case 'in' : {
+					// To use holding the knob button in to toggle RPi display on/off
+					update.status('hdmi.rpi.power_override', true);
+					hdmi_rpi.command('powertoggle');
+					break;
+				}
 
-	switch (change > 0) {
-		case true  : direction = 'right'; break;
-		case false : direction = 'left';
-	}
-
-	log.module({ msg : 'Rotation: ' + direction + ' ' + change_abs + ' notches' });
-
-	update.status('con1.rotation.direction', direction);
-
-	// Update data in global status object
-	update.status('con1.rotation.absolute', data.msg[2]);
-	update.status('con1.rotation.relative', data.msg[3]);
-
-	// Not gonna finish this now - but later,
-	// I want to do a dynamic timeout for the 'horizontal' and 'volume' rotation modes -
-	// where instead of a fixed timeout, you have to leave the knob alone for XYZ milliseconds
-	update.status('con1.rotation.last_msg', time_now(), false);
-
-	log.module({ msg : 'Rotation: ' + status.con1.rotation.direction });
-
-	let mask_mode = bitmask.create({
-		b0 : status.con1.rotation.horizontal,
-		b1 : status.con1.rotation.volume,
-	});
-
-	switch (mask_mode) {
-		case 0x01: { // Rotation mode: horizontal
-			kodi.input(status.con1.rotation.direction);
-			break;
-		}
-
-		case 0x02: { // Rotation mode: volume
-			switch (status.con1.rotation.direction) {
-				case 'left'  : kodi.volume('down'); break;
-				case 'right' : kodi.volume('up');   break;
+				case 'up'    : kodi.command('toggle'); break;
+				case 'down'  : break;
+				case 'left'  : kodi.command('previous'); break;
+				case 'right' : kodi.command('next');
 			}
+
 			break;
 		}
 
-		case 0x03: { // Horizontal AND volume mode - error
-			log.module({ msg : 'Error: Horizontal and volume rotation modes simultaneously active, resetting' });
+		case 'release' : {
+			switch (status.con1.last.button.action) {
+				case 'depress' : {
+					switch (status.con1.last.button.button) {
+						case 'tel' : {
+							// To use the TEL button as a toggle for rotation = Kodi volume control
+							if (update.status('con1.rotation.volume', true)) {
+								kodi.notify('CON1', 'Rotation mode: volume');
+								update.status('con1.rotation.last_msg', time_now(), false);
+							}
 
-			update.status('con1.rotation.horizontal', false);
-			update.status('con1.rotation.volume',     false);
-			break;
-		}
+							break;
+						}
 
-		default: { // Rotation mode: normal
-			switch (status.con1.rotation.direction) {
-				case 'left'  : kodi.input('up');   break;
-				case 'right' : kodi.input('down'); break;
+						case 'nav' : {
+							// To use the NAV button as a toggle for left<->right or up<->down rotation
+							if (update.status('con1.rotation.horizontal', true)) {
+								kodi.notify('CON1', 'Rotation mode: horizontal');
+								update.status('con1.rotation.last_msg', time_now(), false);
+							}
+
+							break;
+						}
+
+						default : {
+							kodi.input(status.con1.last.button.button);
+						}
+					}
+				}
 			}
+
+			break;
 		}
 	}
+
+	// Store buttonpress data in 'last' object
+	update.status('con1.last.button.action', button.action);
+	update.status('con1.last.button.button', button.button);
+}
+
+// CON1 ACK to rotational initialization message
+function decode_ack(data) {
+	data.command = 'rep';
+	data.value   = 'CON1 ACK to NBT1 init';
 
 	return data;
 }
 
-
-// CON1 button press, length 6
-function decode_con_button(data) {
+// CON1 button depress, length 6
+function decode_button(data) {
 	data.command = 'con';
-	data.value   = 'button press';
+	data.value   = 'button depress';
 
 	// Action bitmask data.msg[3]:
-	// bit0 : Press
+	// bit0 : Depress
 	// bit1 : Hold
 	// bit2 : ??
 	// bit3 : ??
@@ -190,13 +159,12 @@ function decode_con_button(data) {
 
 
 	// button  : menu
-	// press   : 01 C0 01
+	// depress : 01 C0 01
 	// release : 00 C0 01
 
 	// button  : in
-	// press   : 01 DE 01
+	// depress : 01 DE 01
 	// release : 00 DE 01
-
 
 	// Decode bitmasks
 	let m = {
@@ -207,8 +175,8 @@ function decode_con_button(data) {
 
 	let unmask = {
 		actions : {
+			depress : false,
 			hold    : false,
-			press   : false,
 			release : false,
 		},
 		buttons : {
@@ -249,7 +217,7 @@ function decode_con_button(data) {
 	}
 
 	unmask.actions = {
-		press   :  m.a.b0 && !m.a.b1 && !m.a.b8,
+		depress :  m.a.b0 && !m.a.b1 && !m.a.b8,
 		hold    : !m.a.b0 &&  m.a.b1 && !m.a.b8,
 		release : !m.a.b0 && !m.a.b1 &&  m.a.b8,
 	};
@@ -297,254 +265,264 @@ function decode_con_button(data) {
 	return data;
 }
 
-function button_check(button) {
-	// Workaround for the last of a proper 'release' message when in 'joystick mode'
-	let joystick_release = (button.mode === 'joystick' && button.action === 'release' && button.button === 'none');
-	if (joystick_release === true) button.button = status.con1.last.button.button;
-
-	// Detect if there is a change from the last button message, bounce if not
-	// CON1 sends a lot of repeat messages (it's CANBUS)
-	let change = (status.con1.last.button.action !== button.action || status.con1.last.button.button !== button.button || status.con1.last.button.mode !== button.mode);
-	if (change === false) return;
-
-	// Store buttonpress data in 'last' object
-	update.status('con1.last.button', button);
-
-	log.module({ msg : 'Button: ' + button.action + ' ' + button.button });
-
-	switch (button.action) {
-		case 'press' :
-			switch (button.button) {
-				case 'tel' :
-					// To use the TEL button as a toggle for rotation = Kodi volume control
-					if (update.status('con1.rotation.volume', !status.con1.rotation.volume)) {
-						kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via button');
-
-						// In 8000ms, set it back
-						setTimeout(() => {
-							if (update.status('con1.rotation.volume', false)) {
-								kodi.notify('CON1 volume: ' + status.con1.rotation.volume, 'Updated via timeout');
-							}
-						}, 8000);
-					}
-					break;
-
-				case 'nav' :
-					// To use the NAV button as a toggle for left<->right or up<->down rotation
-					if (update.status('con1.rotation.horizontal', !status.con1.rotation.horizontal)) {
-						kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via button');
-
-						// In 8000ms, set it back
-						setTimeout(() => {
-							if (update.status('con1.rotation.horizontal', false)) {
-								kodi.notify('CON1 horizontal: ' + status.con1.rotation.horizontal, 'Updated via timeout');
-							}
-						}, 8000);
-					}
-					break;
-
-				default:
-					kodi.input(button.button);
-			}
-			break;
-	}
-}
-
-// Backlight message
-function decode_con_backlight(data) {
-	data.command = 'bro';
-	data.value   = 'Dimmer status';
-
-	// data.msg[0]: Backlight intensity
-	// 0xFF      : 50%
-	// 0xFE      :  0%
-	// 0x00-0xFD :  1%-100%
-
-	// console.log('RECV : '+module_name+' backlight \'%s\'', data.msg[0]);
-	update.status('con1.backlight', data.msg[0]);
-
-	return data;
-}
-
-// 0x4E7
-// data.command = 'sta';
-// data.value   = module_name+' status';
-// 0x5E7
-// data.command = 'sta';
-// data.value   = module_name+' counter';
-function decode_status_con(data) {
-	if (data.msg[4] === 0x06) { // CON1 needs init
-		log.module({ msg : 'Init triggered' });
-
-		send_status_cic();
-	}
-
-	return data;
-}
-
-function decode_ignition_new(data) {
-	data.command = 'bro';
-	data.value   = 'Ignition status';
-
-	log.module({ msg : 'Ignition message ' + data.msg[0] });
-
-	return data;
-}
-
-// Used for iDrive knob rotational initialization
-function decode_status_cic(data) {
+// The rotational knob is connected to a 16 bit counter whose value is sent via CANBUS
+// iDrive knob rotation
+// 264 -> E1 FD B5 FB 7F 1E
+function decode_rotation(data) {
 	data.command = 'con';
-	data.value   = 'CIC1 init iDrive knob';
+	data.value   = 'Knob rotation';
 
-	log.module({ msg : 'CIC1 status message ' + data.msg[0] });
+	// data.msg[2] : Counts up          between 0x00-0xFE : once every notch, regardless of the direction of turn
+	// data.msg[3] : Counts up and down between 0x00-0xFE : depending on the direction of rotation
 
-	return data;
-}
+	// so do the math .. i've had several beers
 
-// function send_heartbeat() {
-// 	// 2BA -> 00 00 00 00 10
-// 	// 2BA -> 00 00 00 00 20
-//
-// 	switch (status.con1.last.heartbeat) {
-// 		case 0x10 : update.status('con1.last.heartbeat', 0x20); break;
-// 		default   : update.status('con1.last.heartbeat', 0x10);
-// 	}
-//
-// 	return data;
-// }
+	// Spin it hard enough and you can get it to jump up to 24 notches!
+	// This is set up to handle up to 127 notches in either direction, we should be ok
 
+	// If you're clever, you can actually
+	// use the math vs. the missed packets
+	// to determine how hard the wheel was flicked
 
-function send_backlight(value) {
-	// Bounce if not enabled
-	if (config.media.con1 !== true) return;
+	let direction;
 
-	// data.msg[0]: Backlight intensity
-	// 0xFE      :  0%
-	// 0x00-0xFD :  1%-100%
-	// 0xFF      : 50%
+	let change = data.msg[3] - status.con1.rotation.relative;
 
-	// Can't be > 0xFF || < 0x00
-	if (value > 0xFF) value = 0xFF;
-	if (value < 0x00) value = 0xFF;
+	// If it hasn't rotated any notches
+	if (change === 0) return data;
 
-	// Set status value
-	update.status('con1.backlight', value);
+	let change_calc = 256 - Math.abs(change);
 
-	// Workarounds
-	switch (value) {
-		case 0x00 : value = 0xFE; break; // 0% workaround
-		case 0x7F : value = 0xFF; break; // 50% workaround
-		case 0xFE : value = 0xFD; break; // Almost-100% workaround
-		default   : value--;             // Decrement value by one (see above)
-	}
-
-	bus.data.send({
-		bus  : 'can1',
-		id   : 0x202,
-		data : Buffer.from([ value, 0x00 ]),
-	});
-
-	log.module({ msg : 'Set backlight value to: ' + status.con1.backlight });
-}
-
-// E90 CIC1 status
-function send_status_cic() {
-	// Bounce if not enabled
-	if (config.media.con1 !== true) return;
-
-	log.module({ msg : 'Sending CIC1 status' });
-
-	let msg = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
-	bus.data.send({
-		bus  : 'can1',
-		id   : 0x273,
-		data : Buffer.from(msg),
-	});
-
-	update.status('con1.rotation.relative', -1);
-}
-
-// E90 Ignition status
-function send_status_ignition_new() {
-	// Bounce if not enabled
-	if (config.media.con1 !== true) return;
-
-	log.module({ msg : 'Sending ignition status' });
-
-	bus.data.send({
-		bus  : 'can1',
-		id   : 0x4F8,
-		data : Buffer.from([ 0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF ]),
-	});
-
-	if (status.vehicle.ignition_level === 0) {
-		if (CON1.timeouts.status_ignition_new !== null) {
-			clearTimeout(CON1.timeouts.status_ignition_new);
-			CON1.timeouts.status_ignition_new = null;
-
-			log.module({ msg : 'Unset ignition status timeout' });
-
-			return;
+	// If change_calc is less than 128,
+	// the relative counter has either rolled from 128-255 to 0-127 or 0-127 to 128-255
+	let rollover = (change_calc < 128);
+	if (rollover) {
+		switch (change > 0) {
+			case true  : change = (change - 256); break;
+			case false : change = (change + 256);
 		}
 	}
 
-	if (CON1.timeouts.status_ignition_new === null) {
-		log.module({ msg : 'Set ignition status timeout' });
+	// The absolute number of notches travelled
+	let change_abs = Math.abs(change);
+
+	switch (change > 0) {
+		case true  : direction = 'right'; break;
+		case false : direction = 'left';
 	}
 
-	CON1.timeouts.status_ignition_new = setTimeout(send_status_ignition_new, 1000);
+	log.module('Rotation: ' + direction + ' ' + change_abs + ' notches');
+
+	update.status('con1.rotation.direction', direction);
+
+	// Update data in global status object
+	update.status('con1.rotation.absolute', data.msg[2], false);
+	update.status('con1.rotation.relative', data.msg[3]);
+
+	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
+	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
+	let rotation_gap = time_now() - status.con1.rotation.last_msg;
+
+	if (rotation_gap >= config.con1.timeout.rotation_mode) {
+		update.status('con1.rotation.horizontal', false);
+		update.status('con1.rotation.volume',     false);
+	}
+
+	// Create quick bitmask to ease switch statement processing
+	let mask_mode = bitmask.create({
+		b0 : status.con1.rotation.horizontal,
+		b1 : status.con1.rotation.volume,
+	});
+
+	switch (mask_mode) {
+		case 0x01 : { // Rotation mode: horizontal
+			for (let i = 0; i < change_abs; i++) kodi.input(status.con1.rotation.direction);
+			break;
+		}
+
+		case 0x02 : { // Rotation mode: volume
+			switch (status.con1.rotation.direction) {
+				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
+				case 'right' : for (let i = 0; i < change_abs; i++) kodi.volume('up');
+			}
+			break;
+		}
+
+		case 0x03 : { // Horizontal AND volume mode - error
+			log.module('Error: Horizontal and volume rotation modes simultaneously active, resetting');
+
+			update.status('con1.rotation.horizontal', false);
+			update.status('con1.rotation.volume',     false);
+			break;
+		}
+
+		default : { // Rotation mode: normal
+			switch (status.con1.rotation.direction) {
+				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up'); break;
+				case 'right' : for (let i = 0; i < change_abs; i++) kodi.input('down');
+			}
+		}
+	}
+
+	update.status('con1.rotation.last_msg', time_now(), false);
+
+	return data;
 }
+
+function decode_status(data) {
+	data.command = 'sta';
+
+	switch (data.src.id) {
+		case 0x4E7 : data.value = 'status'; break;
+		case 0x5E7 : data.value = 'Counter: ' + data.msg;
+	}
+
+	switch (data.msg[4]) {
+		case 0x06 : { // CON1 needs init
+			switch (config.nbt1.mode.toLowerCase()) {
+				case 'cic' : {
+					log.module('Init triggered');
+					NBT1.status();
+				}
+			}
+		}
+	}
+
+	return data;
+}
+
+// How many appendages are touching the CON1 touchpad
+function decode_touch_count(value) {
+	switch (value) {
+		case 0x00 : return 2;
+		case 0x0F : return 4;
+		case 0x10 : return 1;
+		case 0x11 : return 0;
+		case 0x1F : return 3;
+		default   : return value;
+	}
+}
+
+// Touch iDrive controller data
+// This is, for now, a dirty hack
+function decode_touchpad(data) {
+	data.command = 'con';
+	data.value   = 'Touchpad contact';
+
+	let x = data.msg[1];
+	let y = data.msg[3];
+
+	let touch_count = decode_touch_count(data.msg[4]);
+
+	// Update status variables
+	update.status('con1.touch.count', touch_count);
+
+	// Bounce if more than 1 digit on the touchpad
+	if (touch_count !== 1) return data;
+
+	if (y === 0) return data;
+
+	data.value += ' X: ' + x + ' Y: ' + y;
+
+	// Update status variables
+	update.status('con1.touch.x', x, false);
+	update.status('con1.touch.y', y, false);
+
+	// y-axis value maxes out at 30 - so we'll do a bit of multiplication
+	// let volume_level = Math.round(y * (3 + (1 / 3)));
+	// kodi.volume(volume_level);
+
+	return data;
+}
+
+
+function init_listeners() {
+	// Stamp last message time as now
+	update.status('con1.rotation.last_msg', time_now(), false);
+
+	// Perform commands on power lib active event
+	update.on('status.power.active', () => {
+		setTimeout(() => {
+			init_rotation();
+		}, 250);
+	});
+
+	log.module('Initialized listeners');
+}
+
+// Initialize CON1 rotation counter
+function init_rotation() {
+	// Bounce if not enabled
+	if (config.emulate.nbt1 !== true) return;
+
+	// Handle setting/unsetting timeout
+	switch (status.power.active) {
+		case false : {
+			if (CON1.timeout.init_rotation !== null) {
+				clearTimeout(CON1.timeout.init_rotation);
+				CON1.timeout.init_rotation = null;
+
+				log.module('Unset CON1 rotation init timeout');
+			}
+
+			// Return here since we're not re-sending again
+			return;
+		}
+
+		case true : {
+			if (CON1.timeout.init_rotation === null) {
+				log.module('Set CON1 rotation init timeout');
+			}
+
+			CON1.timeout.init_rotation = setTimeout(init_rotation, 10000);
+		}
+	}
+
+	// When CON1 receives this message, it resets it's relative rotation counter to -1
+	update.status('con1.rotation.relative', -1, false);
+
+	log.module('Sending CON1 rotation init');
+
+	// Send message
+	bus.data.send({
+		bus  : 'can1',
+		id   : 0x273,
+		data : Buffer.from([ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x00 ]),
+	});
+}
+
 
 // Parse data sent from module
 function parse_out(data) {
 	// Bounce if not enabled
-	if (config.media.con1 !== true) return;
+	if (config.retrofit.con1 !== true) return;
 
 	switch (data.src.id) {
-		case 0x202 : data = decode_con_backlight(data); break;
-		case 0x264 : data = decode_con_rotation(data);  break;
-		case 0x267 : data = decode_con_button(data);    break;
-		case 0x273 : data = decode_status_cic(data);    break;
+		case 0x0BF : data = decode_touchpad(data);  break;
+		case 0x264 : data = decode_rotation(data);  break;
+		case 0x267 : data = decode_button(data);    break;
+		case 0x277 : data = decode_ack(data);       break;
 
-		case 0x277: // CON1 ACK to rotational initialization message
-			data.command = 'rep';
-			data.value   = module_name + ' ACK to CIC1 init';
-			break;
+		case 0x4E7 :
+		case 0x5E7 : data = decode_status(data); break;
 
-		case 0x4F8 : data = decode_ignition_new(data); break;
-		case 0x4E7 : data = decode_status_con(data);   break;
-		case 0x5E7 : data = decode_status_con(data);   break;
-
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
-	// log.bus(data);
-}
-
-function init_listeners() {
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-powerup', () => {
-		send_status_ignition_new();
-	});
-
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-poweroff', () => {
-		send_status_ignition_new();
-	});
+	log.bus(data);
 }
 
 
 module.exports = {
-	timeouts : {
-		status_cic          : null,
-		status_ignition_new : null,
+	timeout : {
+		init_rotation : null,
 	},
 
 	// Functions
-	init_listeners           : init_listeners,
-	parse_out                : parse_out,
-	send_backlight           : send_backlight,
-	send_status_ignition_new : send_status_ignition_new,
+	init_listeners : init_listeners,
+
+	parse_out : parse_out,
 };

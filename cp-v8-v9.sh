@@ -9,4 +9,11 @@ for FILE_V8 in $(find . -name index-v8.js); do
 	fi
 done
 
+cd .. || exit 2
+
+if grep -q pi /etc/passwd > /dev/null 2>&1; then
+	echo "Fixing permissions (pi:pi)"
+	chown -R pi:pi .
+fi
+
 exit 0

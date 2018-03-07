@@ -13,7 +13,7 @@ const pad = require('pad');
 function refresh_text() {
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
-	log.module({ msg : 'Updating MID text' });
+	log.module('Updating MID text');
 
 	let message_hex;
 
@@ -76,47 +76,49 @@ function refresh_text() {
 
 // Set or unset the text interval
 function text_loop(action) {
-	if (config.media.mid !== true) return;
-	if (status.vehicle.ignition_level < 1) action = false;
-	if (MID.text_text_loop == action) return;
+	if (config.media.mid              !==   true) return;
+	if (status.vehicle.ignition_level  <       1) action = false;
+	if (MID.status.text_loop          === action) return;
 
-	log.module({ msg : 'Text loop ' + action });
+	log.module('Text loop ' + action);
 
 	switch (action) {
-		case false:
-			clearInterval(MID.interval_text_loop);
+		case false : {
+			clearInterval(MID.interval.text_loop);
 
 			// Set text variables
-			MID.text_text_loop = false;
+			MID.status.text_loop = false;
 			break;
+		}
 
-		case true:
+		case true : {
 			// Set text variable
-			MID.text_text_loop = true;
+			MID.status.text_loop = true;
 
 			// Send a couple through to prime the pumps
 			refresh_text();
 
-			MID.interval_text_loop = setInterval(() => {
+			MID.interval.text_loop = setInterval(() => {
 				refresh_text();
 			}, 5000);
+		}
 	}
 }
 
 // Set or unset the status interval
 function status_loop(action) {
-	if (config.emulate.mid !== true) return;
-	if (status.vehicle.ignition_level < 1) action = false;
-	if (MID.status_status_loop == action) return;
+	if (config.emulate.mid            !==   true) return;
+	if (status.vehicle.ignition_level  <       1) action = false;
+	if (MID.status.status_loop        === action) return;
 
-	log.module({ msg : 'Status loop ' + action });
+	log.module('Status loop ' + action);
 
 	switch (action) {
-		case false:
-			clearInterval(MID.interval_status_loop);
+		case false : {
+			clearInterval(MID.interval.status_loop);
 
 			// Set status variables
-			MID.status_status_loop = false;
+			MID.status.status_loop = false;
 
 			update.status('rad.source_name', 'off');
 
@@ -128,17 +130,20 @@ function status_loop(action) {
 			update.status('rad.ready',  false);
 
 			break;
-		case true:
+		}
+
+		case true : {
 			// Set status variable
-			MID.status_status_loop = true;
+			MID.status.status_loop = true;
 
 			// Send a couple through to prime the pumps
 			refresh_status();
 
-			MID.interval_status_loop = setInterval(() => {
+			MID.interval.status_loop = setInterval(() => {
 				refresh_status();
 			}, 20000);
 			break;
+		}
 	}
 }
 
@@ -158,14 +163,14 @@ function toggle_power_if_ready() {
 	if (status.vehicle.ignition_level === 0 || config.emulate.mid !== true) return;
 
 	// Debug logging
-	// log.module({ msg: 'dsp.ready         : \''+status.dsp.ready+'\'' });
-	// log.module({ msg: 'rad.source_name : \''+status.rad.source_name+'\'' });
+	// log.module('dsp.ready         : \'' + status.dsp.ready + '\'');
+	// log.module('rad.source_name : \'' + status.rad.source_name + '\'');
 
-	if (status.rad.source_name == 'off') {
+	if (status.rad.source_name === 'off') {
 		IKE.text_override('MID power, from MID');
-		log.module({ msg : 'Sending power!'	});
+		log.module('Sending power!');
 
-		send_button('power');
+		button('power');
 		DSP.request('memory'); // Get the DSP memory
 	}
 }
@@ -173,10 +178,11 @@ function toggle_power_if_ready() {
 // Parse data sent to MID module
 function parse_in(data) {
 	switch (data.msg[0]) {
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
 			break;
+		}
 	}
 
 	log.bus(data);
@@ -185,35 +191,41 @@ function parse_in(data) {
 // Parse data sent from MID module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x20: // Broadcast: Display status
+		case 0x20 : { // Broadcast : { Display status
 			data.command = 'bro';
 			data.value   = 'display status: ';
 			break;
+		}
 
-		case 0x31: // Broadcast: Button pressed
+		case 0x31 : { // Broadcast : { Button pressed
 			data.command = 'bro';
 			data.value   = 'button pressed: ' + data.msg[1] + ' ' + data.msg[2] + ' ' + data.msg[3];
 
-			if (data.msg[1] == 0x00 && data.msg[2] == 0x15) {
+			if (data.msg[1] === 0x00 && data.msg[2] === 0x15) {
 				switch (data.msg[3]) {
 					case 0x00 : break;
 					case 0x01 : break;
-					case 0x02 : BT.command('connect');    break;
-					case 0x03 : BT.command('disconnect'); break;
-					case 0x04 : BT.command('previous');   break;
-					case 0x05 : BT.command('next');       break;
-					case 0x06 : BT.command('pause');      break;
-					case 0x07 : BT.command('play');       break;
-					case 0x08 : BT.command('repeat');     break;
-					case 0x09 : BT.command('shuffle');    break;
-					case 0x0A :
+
+					case 0x02 : bluetooth.command('connect');    break;
+					case 0x03 : bluetooth.command('disconnect'); break;
+					case 0x04 : bluetooth.command('previous');   break;
+					case 0x05 : bluetooth.command('next');       break;
+					case 0x06 : bluetooth.command('pause');      break;
+					case 0x07 : bluetooth.command('play');       break;
+					case 0x08 : bluetooth.command('repeat');     break;
+					case 0x09 : bluetooth.command('shuffle');    break;
+
+					case 0x0A : {
 						update.config('lights.auto', false);
 						LCM.auto_lights();
 						break;
-					case 0x0B :
+					}
+
+					case 0x0B : {
 						update.config('lights.auto', true);
 						LCM.auto_lights();
 						break;
+					}
 				}
 			}
 
@@ -293,35 +305,39 @@ function parse_out(data) {
 			// 01 20 00,MID,IKE,Button Button_0_pressed
 			// 01 20 40,MID,IKE,Button Button_0_released
 			break;
+		}
 
-		case 0x47: // Broadcast: BM status
+		case 0x47 : { // Broadcast : { BM status
 			data.command = 'bro';
 			data.value   = 'BM status';
 			break;
+		}
 
-		case 0x48: // Broadcast: BM button
+		case 0x48 : { // Broadcast : { BM button
 			data.command = 'bro';
 			data.value   = 'BM button';
 			break;
+		}
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
 			break;
+		}
 	}
 
 	log.bus(data);
 }
 
 // Emulate button presses
-function send_button(button) {
+function button(button) {
 	let button_down = 0x00;
 	let button_hold;
 	let button_up;
 
 	// Switch statement to determine button, then encode bitmask
 	switch (button) {
-		case 'power' :
+		case 'power' : {
 			// Get down value of button
 			button_down = bitmask.set(button_down, bitmask.bit[1]);
 			button_down = bitmask.set(button_down, bitmask.bit[2]);
@@ -330,9 +346,10 @@ function send_button(button) {
 			button_hold = bitmask.set(button_down, bitmask.bit[6]);
 			button_up   = bitmask.set(button_down, bitmask.bit[7]);
 			break;
+		}
 	}
 
-	log.module({ msg : 'Button down: ' + button + ', hold: ' + button_hold });
+	log.module('Button down: ' + button + ', hold: ' + button_hold);
 
 	// Init variables
 	let command     = 0x48; // Button action
@@ -346,7 +363,8 @@ function send_button(button) {
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ msg : 'Button up: ' + button });
+		log.module('Button up: ' + button);
+
 		bus.data.send({
 			dst : 'RAD',
 			msg : packet_up,
@@ -355,31 +373,32 @@ function send_button(button) {
 }
 
 function init_listeners() {
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-powerup', () => {
-		status_loop(true);
-		text_loop(true);
+	// Perform commands on power lib active event
+	update.on('status.power.active', (data) => {
+		status_loop(data.new);
+		text_loop(data.new);
 	});
 
-	// Disable keepalive on IKE ignition event
-	IKE.on('ignition-poweroff', () => {
-		status_loop(false);
-		text_loop(false);
-	});
+	log.module('Initialized listeners');
 }
 
 
 module.exports = {
-	interval_status_loop : null,
-	interval_text_loop   : null,
-	status_status_loop   : false,
-	status_text_loop     : false,
+	interval : {
+		status_loop : null,
+		text_loop   : null,
+	},
 
+	status : {
+		status_loop : false,
+		text_loop   : false,
+	},
+
+	button                : button,
 	init_listeners        : init_listeners,
 	parse_in              : parse_in,
 	parse_out             : parse_out,
 	refresh_text          : refresh_text,
-	send_button           : send_button,
 	status_loop           : status_loop,
 	text_loop             : text_loop,
 	toggle_power_if_ready : toggle_power_if_ready,
