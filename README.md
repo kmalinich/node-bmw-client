@@ -14,6 +14,7 @@ This README is 12+ months out of date and needs to be completely rewritten, to i
 * tvservice/vcgencmd HDMI screen control or HDMI-CEC screen control
 * Custom afterrun timer for accessory relays via Pi GPIO
 * SO MUCH OTHER STUFF
+* For snippets, check out <a href="https://www.instagram.com/hotgarbagellc/">my Instagram</a>
 I'll get to it... eventually  
 
 ## Disclaimers
@@ -29,7 +30,7 @@ I'll get to it... eventually
 * I make no assertations that I am a professional. I'm just doing this for fun and to learn a little Node.js.
 * It's probably best to use this project as a reference versus fork it.
 
-Currently being developed using a US-spec 2000 E39 540i, a US-spec 2002 E39 M5, two Raspberry Pi 3s running Raspbian stretch, 2 Rolf Resler IBUS/KBUS adapters, a Samsung DB10D HDMI screen, a PiCAN2 dual-channel CANBUS hat, NodeJS 9.x, and more.
+Currently being developed using a US-spec 2000 E39 540i, a US-spec 2002 E39 M5, two Raspberry Pi 3s running Raspbian stretch, Rolf Resler IBUS/KBUS adapters, NBT HW 07, PiCAN2 dual-channel CANBUS hats, a HDMI screen, NodeJS 9.x, and more.
 About 90% of it is done in a way I don't really like, but I have so little time to work on this... =/
 
 It acts as, more or less.. plug-in custom firmware for the BMW modules.
