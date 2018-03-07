@@ -298,8 +298,8 @@ function decode_rotation(data) {
 	let rollover = (change_calc < 128);
 	if (rollover) {
 		switch (change > 0) {
-			case true  : change = (change - 256); break;
-			case false : change = (change + 256);
+			case false : change = (change + 256); break;
+			case true  : change = (change - 256);
 		}
 	}
 
@@ -307,8 +307,8 @@ function decode_rotation(data) {
 	let change_abs = Math.abs(change);
 
 	switch (change > 0) {
-		case true  : direction = 'right'; break;
-		case false : direction = 'left';
+		case false : direction = 'left'; break;
+		case true  : direction = 'right';
 	}
 
 	log.module('Rotation: ' + direction + ' ' + change_abs + ' notches');

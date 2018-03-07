@@ -521,14 +521,8 @@ class IKE extends EventEmitter {
 
 		// If in full emulation mode, "send" the data, if not, just parse the message as if it were real
 		switch (config.loopback) {
-			case false : {
-				this.decode_ignition_status(ignition_msg);
-				break;
-			}
-
-			case true : {
-				bus.data.send(ignition_msg);
-			}
+			case false : this.decode_ignition_status(ignition_msg); break;
+			case true  : bus.data.send(ignition_msg);
 		}
 	}
 
@@ -703,14 +697,14 @@ class IKE extends EventEmitter {
 
 		// Space-pad if pad === true
 		switch (pad) {
-			case true : {
-				message = pad(message, this.max_len_text);
-				log.module('Sending space-padded IKE text message: \'' + message + '\'');
+			case false : {
+				log.module('Sending non-padded IKE text message: \'' + message + '\'');
 				break;
 			}
 
-			case false : {
-				log.module('Sending non-padded IKE text message: \'' + message + '\'');
+			case true : {
+				message = pad(message, this.max_len_text);
+				log.module('Sending space-padded IKE text message: \'' + message + '\'');
 			}
 		}
 
@@ -939,8 +933,8 @@ class IKE extends EventEmitter {
 
 			this.timeout_accept_refresh = setTimeout(() => {
 				switch (config.options.obc_refresh_on_start) {
-					case true : this.obc_refresh(); break;
-					default   : this.request('ignition');
+					case false : this.request('ignition'); break;
+					default    : this.obc_refresh();
 				}
 			}, 2500);
 		});

@@ -1,31 +1,36 @@
 // Parse data sent from IHKA module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x83: // Broadcast: AC compressor status
+		case 0x83 : { // Broadcast: AC compressor status
 			update.status('ihka.ac', bitmask.test(data.msg[1], 0x80));
 			data.command = 'bro';
 			data.value   = 'AC compressor status ' + data.msg;
 			break;
+		}
 
-		case 0x86: // Broadcast: Rear defroster status
+		case 0x86 : { // Broadcast: Rear defroster status
 			update.status('ihka.defroster', bitmask.test(data.msg[1], 0x01));
 			data.command = 'bro';
 			data.value   = 'defroster status ' + status.ihka.defroster;
 			break;
+		}
 
-		case 0xA0: // Reply to DIA: success
+		case 0xA0 : { // Reply to DIA: success
 			data.command = 'rep';
 			data.value   = data.msg;
 			break;
+		}
 
-		case 0xB0: // Reply: Something else
+		case 0xB0 : { // Reply: Something else
 			data.command = 'rep';
 			data.value   = data.msg;
 			break;
+		}
 
-		default:
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	log.bus(data);
@@ -43,7 +48,7 @@ function aux(data) {
 
 	// Add 1 if we're turning it on
 	switch (data.action) {
-		case true : cmd++; break;
+		case true : cmd++;
 	}
 
 	bus.data.send({
