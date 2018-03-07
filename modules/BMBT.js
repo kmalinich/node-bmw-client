@@ -73,79 +73,86 @@ function decode_button(data) {
 	switch (action) {
 		case 'hold' : {
 			switch (config.bmbt.media) {
-				case 'bluetooth' : // Bluetooth version
-					switch (button) {
-						case 'left'  : break;
-						case 'right' : break;
-						case 'eject' : BT.command('play'); break; // Think about it
-					}
-					break;
+				case 'bluetooth' : break; // Bluetooth version
 
-				case 'kodi' : // Kodi version
+				case 'kodi' : { // Kodi version
 					switch (button) {
 						case 'left'  : kodi.command('seek-rewind');  break;
 						case 'right' : kodi.command('seek-forward'); break;
-						case 'eject' : break;
+
+						case 'phone' : {
+							// To use holding the phone button in to toggle RPi display on/off
+							update.status('hdmi.rpi.power_override', true);
+							hdmi_rpi.command('powertoggle');
+						}
 					}
+
+					break;
+				}
 			}
+
 			break;
 		}
 
 		case 'release' : {
 			switch (config.bmbt.media) {
-				case 'bluetooth' : // Bluetooth version
+				case 'bluetooth' : { // Bluetooth version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depressleft'  : BT.command('previous'); break;
-						case 'depressright' : BT.command('next');     break;
-						case 'depresseject' : BT.command('pause');    break; // Think about it
-
-						case 'depress2' : {
-							IKE.text_warning('   Police lights!   ');
-							LCM.police(true);
-							setTimeout(() => {
-								LCM.police(false);
-							}, 500);
-							break;
-						}
-
-						case 'depress5' : {
-							IKE.text_warning('   Police lights!   ');
-							LCM.police(true);
-							setTimeout(() => {
-								LCM.police(false);
-							}, 500);
-							break;
-						}
-
-						case 'depress3' : LCM.police(true);  break;
-						case 'depress6' : LCM.police(false); break;
-
-						case 'holdleft'  : break;
-						case 'holdright' : break;
-						case 'holdeject' : break;
+						case 'depressleft'  : bluetooth.command('previous'); break;
+						case 'depressright' : bluetooth.command('next');
 					}
-					break;
 
-				case 'kodi' : // Kodi version
+					break;
+				}
+
+				case 'kodi' : { // Kodi version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
-						case 'depresseject' : kodi.command('toggle');   break;
 
-						case 'holdleft'  : kodi.command('toggle'); break;
-						case 'holdright' : kodi.command('toggle'); break;
-						case 'holdeject' : break;
+						case 'depressknob' : kodi.input('in'); break;
+
+						case 'holdleft'  : kodi.command('toggle'); break; // This resumes normal playback after doing fast-forward or fast-reverse when lifting off the button
+						case 'holdright' : kodi.command('toggle');
 					}
+
+					break;
+				}
 			}
+
+			// Any version
+			switch (status.bmbt.last.action + status.bmbt.last.button) {
+				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 200); break;
+				case 'depress2' : LCM.police(true); setTimeout(LCM.police, 300); break;
+				case 'depress4' : LCM.police(true); setTimeout(LCM.police, 400); break;
+				case 'depress5' : LCM.police(true); setTimeout(LCM.police, 500); break;
+
+				case 'depress3' : LCM.police(false); break;
+				case 'depress6' : LCM.police(true);
+			}
+
 			break;
 		}
-
-			// case 'depress' :
 	}
 
 	// Update status object with the new data
 	update.status('bmbt.last.action', action);
 	update.status('bmbt.last.button', button);
+
+	return data;
+}
+
+function decode_cassette_status(data) {
+	data.command = 'sta';
+	data.value   = 'cassette: ';
+
+	switch (data.msg[1]) {
+		case 0x00 : data.value += 'off';     break;
+		case 0x05 : data.value += 'no tape'; break;
+		case 0x06 : data.value += 'tape in'; break;
+		case 0xFF : data.value += 'on';      break;
+		default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
+	}
 
 	return data;
 }
@@ -170,6 +177,17 @@ function decode_knob(data) {
 
 	data.value += direction + ' ' + steps + ' steps';
 
+	switch (config.bmbt.media) {
+		case 'kodi' : { // Kodi version
+			switch (direction) {
+				case 'left'  : kodi.input('up'); break;
+				case 'right' : kodi.input('down');
+			}
+
+			break;
+		}
+	}
+
 	return data;
 }
 
@@ -181,10 +199,10 @@ function status_loop(action) {
 
 	if (BMBT.status_status_loop === action) return;
 
-	log.module({ msg : 'status_loop(' + action + ')' });
+	log.module('status_loop(' + action + ')');
 
 	switch (action) {
-		case false :
+		case false : {
 			update.status('rad.source_name', 'off');
 
 			update.status('dsp.reset',  true);
@@ -197,28 +215,30 @@ function status_loop(action) {
 			// Set status variable
 			BMBT.status_status_loop = false;
 
-			if (BMBT.timeouts.status_loop !== null) {
-				log.module({ msg : 'Unset status refresh timeout' });
-				clearTimeout(BMBT.timeouts.status_loop);
-				BMBT.timeouts.status_loop = null;
+			if (BMBT.timeout.status_loop !== null) {
+				log.module('Unset status refresh timeout');
+				clearTimeout(BMBT.timeout.status_loop);
+				BMBT.timeout.status_loop = null;
 			}
 			break;
+		}
 
-		case true :
+		case true : {
 			// Send a couple through to prime the pumps
 			refresh_status();
 
 			// Set status variable
 			BMBT.status_status_loop = true;
 
-			log.module({ msg : 'Set status refresh timeout' });
+			log.module('Set status refresh timeout');
+		}
 	}
 }
 
 // Send BMBT status, and request status from RAD
 function refresh_status() {
 	if (status.vehicle.ignition_level > 0) {
-		log.module({ msg : 'Refreshing status' });
+		log.module('Refreshing status');
 
 		bus.cmds.send_device_status('CDC');
 		bus.cmds.send_device_status('BMBT');
@@ -227,7 +247,7 @@ function refresh_status() {
 		bus.cmds.request_device_status(module_name, 'RAD');
 		bus.cmds.request_device_status('RAD',  'DSP');
 
-		BMBT.timeouts.status_loop = setTimeout(refresh_status, 8000);
+		BMBT.timeout.status_loop = setTimeout(refresh_status, 8000);
 
 		return;
 	}
@@ -240,25 +260,23 @@ function toggle_power_if_ready() {
 	if (config.emulate.bmbt !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
-	if (BMBT.timeouts.power_on !== null) return;
+	if (BMBT.timeout.power_on !== null) return;
 
-	BMBT.timeouts.power_on = setTimeout(() => {
+	BMBT.timeout.power_on = setTimeout(() => {
 		// Debug logging
-		// log.module({ msg : 'dsp.ready: '+status.dsp.ready });
-		// log.module({ msg : 'rad.source_name: '+status.rad.source_name });
+		// log.module('dsp.ready: ' + status.dsp.ready);
+		// log.module('rad.source_name: ' + status.rad.source_name);
 
-		BMBT.timeouts.power_on = null;
+		BMBT.timeout.power_on = null;
 
-		if (status.rad.source_name !== 'off' || status.vehicle.ignition_level === 0) {
-			return;
-		}
+		if (status.rad.source_name !== 'off' || status.vehicle.ignition_level === 0) return;
 
-		kodi.notify(module_name,         'power [BMBT]');
-		IKE.text_override(module_name + ' power [BMBT]');
+		kodi.notify(module_name,         'power [' + module_name + ']');
+		IKE.text_override(module_name + ' power [' + module_name + ']');
 
-		log.module({ msg : 'Sending power!' });
+		log.module('Sending power!');
 
-		send_button('power');
+		button('power');
 		// DSP.request('memory'); // Get the DSP memory
 
 		status_loop(true);
@@ -266,19 +284,15 @@ function toggle_power_if_ready() {
 		// Increase volume after power on
 		if (config.bmbt.vol_at_poweron === true) {
 			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
+				for (let i = 0; i < 2; i++) RAD.volume_control(5);
 			}, 500);
+
 			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
+				for (let i = 0; i < 2; i++) RAD.volume_control(5);
 			}, 750);
+
 			setTimeout(() => {
-				RAD.volume_control(5);
-				RAD.volume_control(5);
-				RAD.volume_control(5);
+				for (let i = 0; i < 2; i++) RAD.volume_control(5);
 			}, 1000);
 		}
 	}, 1000);
@@ -288,7 +302,7 @@ function toggle_power_if_ready() {
 function parse_in(data) {
 	switch (data.msg[0]) {
 		case 0x4A: // Cassette control
-			send_cassette_status();
+			cassette_status();
 			toggle_power_if_ready();
 			break;
 	}
@@ -297,42 +311,38 @@ function parse_in(data) {
 // Parse data sent from BMBT module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x4B: // Cassette status
-			data.command = 'sta';
-			data.value   = 'cassette: ';
-
-			switch (data.msg[1]) {
-				case 0x00 : data.value += 'off';     break;
-				case 0x05 : data.value += 'no tape'; break;
-				case 0x06 : data.value += 'tape in'; break;
-				case 0xFF : data.value += 'on';      break;
-				default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
-			}
-			break;
-
-		case 0x47: // Broadcast: BM status
+		case 0x47 : { // Broadcast: BM status
 			data = decode_button(data);
 			break;
+		}
 
-		case 0x48: // Broadcast: BM button
+		case 0x48 : { // Broadcast: BM button
 			data = decode_button(data);
 			break;
+		}
 
-		case 0x49: // Broadcast: BM knob
+		case 0x49 : { // Broadcast: BM knob
 			data = decode_knob(data);
 			break;
+		}
 
-		default:
+		case 0x4B : { // Broadcast: Cassette status
+			data = decode_cassette_status(data);
+			break;
+		}
+
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
 			break;
+		}
 	}
 
 	log.bus(data);
 }
 
 // Say we have no tape in the player
-function send_cassette_status(value = 0x05) {
+function cassette_status(value = 0x05) {
 	bus.data.send({
 		src : module_name,
 		dst : 'RAD',
@@ -341,14 +351,14 @@ function send_cassette_status(value = 0x05) {
 }
 
 // Emulate button presses
-function send_button(button) {
+function button(button) {
 	let button_down = 0x00;
 	// let button_hold;
 	let button_up;
 
 	// Switch statement to determine button, then encode bitmask
 	switch (button) {
-		case 'power' :
+		case 'power' : {
 			// Get down value of button
 			button_down = bitmask.set(button_down, bitmask.bit[1]);
 			button_down = bitmask.set(button_down, bitmask.bit[2]);
@@ -357,9 +367,10 @@ function send_button(button) {
 			// button_hold = bitmask.set(button_down, bitmask.bit[6]);
 			button_up = bitmask.set(button_down, bitmask.bit[7]);
 			break;
+		}
 	}
 
-	log.module({ msg : 'Button down ' + button });
+	log.module('Button down ' + button);
 
 	// Init variables
 	let command     = 0x48; // Button action
@@ -374,7 +385,7 @@ function send_button(button) {
 
 	// Prepare and send the up message after 150ms
 	setTimeout(() => {
-		log.module({ msg : 'Button up ' + button });
+		log.module('Button up ' + button);
 
 		bus.data.send({
 			src : module_name,
@@ -385,31 +396,28 @@ function send_button(button) {
 }
 
 function init_listeners() {
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-powerup', () => {
-		status_loop(true);
+	// Perform commands on power lib active event
+	update.on('status.power.active', (data) => {
+		status_loop(data.new);
 	});
 
-	// Enable keepalive on IKE ignition event
-	IKE.on('ignition-poweroff', () => {
-		status_loop(false);
-	});
+	log.module('Initialized listeners');
 }
 
 
 module.exports = {
 	status_status_loop : false,
 
-	timeouts : {
+	timeout : {
 		power_on    : null,
 		status_loop : null,
 	},
 
+	button                : button,
+	cassette_status       : cassette_status,
 	init_listeners        : init_listeners,
 	parse_in              : parse_in,
 	parse_out             : parse_out,
-	send_button           : send_button,
-	send_cassette_status  : send_cassette_status,
 	status_loop           : status_loop,
 	toggle_power_if_ready : toggle_power_if_ready,
 };

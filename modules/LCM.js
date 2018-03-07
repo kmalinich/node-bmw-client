@@ -17,10 +17,10 @@ function auto_lights() {
 		case false : {
 			io_encode({});
 
-			if (LCM.timeouts.lights_auto !== null) {
-				clearTimeout(LCM.timeouts.lights_auto);
-				LCM.timeouts.lights_auto = null;
-				log.module({ msg : 'Unset autolights timeout' });
+			if (LCM.timeout.lights_auto !== null) {
+				clearTimeout(LCM.timeout.lights_auto);
+				LCM.timeout.lights_auto = null;
+				log.module('Unset autolights timeout');
 			}
 
 			// Set status variables
@@ -31,8 +31,8 @@ function auto_lights() {
 		}
 
 		case true : {
-			if (LCM.timeouts.lights_auto === null) {
-				log.module({ msg : 'Set autolights timeout' });
+			if (LCM.timeout.lights_auto === null) {
+				log.module('Set autolights timeout');
 			}
 
 			// Set status variable
@@ -73,9 +73,9 @@ function auto_lights_process() {
 	let lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
 
 	// Debug logging
-	// log.module({ msg : '   current : \''+now_time+'\'' });
-	// log.module({ msg : ' lights_on : \''+lights_on+'\''    });
-	// log.module({ msg : 'lights_off : \''+lights_off+'\''   });
+	// log.module('   current : \''+now_time+'\'' });
+	// log.module(' lights_on : \''+lights_on+'\''    });
+	// log.module('lights_off : \''+lights_off+'\''   });
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
@@ -84,7 +84,7 @@ function auto_lights_process() {
 		return;
 	}
 
-	// log.module({ msg : 'Processing auto lights' });
+	// log.module('Processing auto lights' });
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
@@ -120,12 +120,12 @@ function auto_lights_process() {
 
 	// Process/send LCM data on 10 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
-	LCM.timeouts.lights_auto = setTimeout(auto_lights_process, 10000);
+	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 10000);
 }
 
 // Cluster/interior backlight
 function set_backlight(value) {
-	log.module({ msg : 'Setting backlight to ' + value });
+	log.module('Setting backlight to ' + value);
 
 	bus.data.send({
 		src : 'LCM',
@@ -227,7 +227,7 @@ function comfort_turn_flash(action) {
 	// Double-check the requested action
 	if (action !== 'left' && action !== 'right') return;
 
-	log.module({ msg : 'Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed });
+	log.module('Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed);
 
 	// Update status variables, and prepare cluster message
 	let cluster_msg_outer;
@@ -264,7 +264,7 @@ function comfort_turn_flash(action) {
 	let timer_off  = (config.lights.comfort_turn.flashes - 1) * 500;
 	let timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
 
-	log.module({ msg : 'Comfort turn timer: ' + timer_off + 'ms' });
+	log.module('Comfort turn timer: ' + timer_off + 'ms');
 
 	// Timeout for turning off the comfort turn signal
 	setTimeout(() => {
@@ -628,7 +628,7 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
-	log.module({ msg : 'Setting IO status' });
+	log.module('Setting IO status');
 
 	packet.unshift(0x0C);
 	bus.data.send({
@@ -681,7 +681,7 @@ function request(value) {
 	let src;
 	let msg;
 
-	log.module({ msg : 'Requesting \'' + value + '\'' });
+	log.module('Requesting \'' + value + '\'');
 
 	switch (value) {
 		case 'coding' : coding_get(); return;
@@ -732,6 +732,7 @@ function parse_out(data) {
 		case 0x5C: // Broadcast: light dimmer status
 			data.command = 'bro';
 			data.value   = 'dimmer value 1';
+
 			update.status('lcm.dimmer.value_1', data.msg[1]);
 			// update.status('lcm.io.15',          data.msg[1]);
 			break;
@@ -777,7 +778,7 @@ function welcome_lights(action, override = false) {
 	// Bounce if welcome lights status is equal to request
 	if (status.lights.welcome_lights === action && override === false) return;
 
-	log.module({ msg : 'Welcome lights: ' + action });
+	log.module('Welcome lights: ' + action);
 
 	switch (action) {
 		case true : {
@@ -791,7 +792,7 @@ function welcome_lights(action, override = false) {
 			LCM.counts.welcome_lights++;
 
 			// Clear welcome lights status after configured timeout
-			LCM.timeouts.lights_welcome = setTimeout(() => {
+			LCM.timeout.lights_welcome = setTimeout(() => {
 				// If we're not over the configured welcome lights limit yet
 				if (LCM.counts.welcome_lights <= config.lights.welcome_lights_sec) {
 					LCM.welcome_lights(true, true);
@@ -805,8 +806,8 @@ function welcome_lights(action, override = false) {
 
 		case false : {
 			// Clear any remaining timeout(s)
-			clearTimeout(LCM.timeouts.lights_welcome);
-			LCM.timeouts.lights_welcome = null;
+			clearTimeout(LCM.timeout.lights_welcome);
+			LCM.timeout.lights_welcome = null;
 
 			// Reset welcome lights counter
 			LCM.counts.welcome_lights = 0;
@@ -825,16 +826,20 @@ function pl() {
 	if (status.lcm.police_lights.counts.loop >= config.lights.police_lights.limit || status.lcm.police_lights.ok !== true) {
 		update.status('lcm.police_lights.ok', false);
 
-		clearTimeout(LCM.timeouts.lights_police);
-		LCM.timeouts.lights_police = null;
+		clearTimeout(LCM.timeout.lights_police);
+		LCM.timeout.lights_police = null;
 
 		io_encode({});
 
-		update.status('lcm.police_lights.on', false);
+		if (update.status('lcm.police_lights.on', false)) {
+			setTimeout(IKE.text_urgent_off, 1000);
+		}
 		return;
 	}
 
-	update.status('lcm.police_lights.on', true);
+	if (update.status('lcm.police_lights.on', true)) {
+		IKE.text_warning('   Police lights!   ', 0);
+	}
 
 	let object = {
 		front : {
@@ -926,7 +931,7 @@ function pl() {
 		update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1));
 	}
 
-	LCM.timeouts.lights_police = setTimeout(pl, config.lights.police_lights.delay);
+	LCM.timeout.lights_police = setTimeout(pl, config.lights.police_lights.delay);
 }
 
 // Check if the current police lights count is in the provided array
@@ -934,7 +939,7 @@ function pl_check(data) {
 	return data.includes(status.lcm.police_lights.counts.main);
 }
 
-function police(action) {
+function police(action = false) {
 	update.status('lcm.police_lights.ok', action);
 
 	if (status.lcm.police_lights.on === action) return;
@@ -964,9 +969,20 @@ function init_listeners() {
 
 	// Enable/disable welcome lights on GM keyfob event
 	GM.on('keyfob', (keyfob) => {
-		log.module({ msg : 'Received GM keyfob event' });
+		log.module('Received GM keyfob event');
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
+
+	// Activate autolights if we got 'em
+	update.on('status.vehicle.ignition', auto_lights_process);
+
+	// Update autolights status on wiper speed change
+	update.on('status.gm.wipers.speed', () => {
+		// Call auto_lights_process() after 1.5s, else just tapping mist/spray turns on the lights
+		setTimeout(auto_lights_process, 1500);
+	});
+
+	log.module('Initialized listeners');
 }
 
 
@@ -977,7 +993,7 @@ module.exports = {
 	},
 
 	// Timeout variables
-	timeouts : {
+	timeout : {
 		lights_auto    : null,
 		lights_police  : null,
 		lights_welcome : null,

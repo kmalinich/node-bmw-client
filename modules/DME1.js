@@ -1,5 +1,27 @@
 const convert = require('node-unit-conversion');
 
+// This is dangerous and awesome if you can see what it does
+function encode_316(rpm) {
+	let rpm_encoded;
+
+	rpm_encoded = Math.round(rpm * 6.4).toString(16);
+
+	if (rpm_encoded.length !== 4) rpm_encoded = '0' + rpm_encoded;
+
+	let msg = [ 0x05, 0x16, parseInt('0x' + rpm_encoded.substring(2, 4)), parseInt('0x' + rpm_encoded.substring(0, 2)), 0x16, 0x18, 0x00, 0x16 ];
+
+	// Send packet 5000x
+	for (let i = 0; i < 5000; i++) {
+		bus.data.send({
+			bus  : 'can0',
+			id   : 0x316,
+			data : Buffer.from(msg),
+		});
+	}
+
+	log.module('Sent 5000x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
+}
+
 function parse_316(data) {
 	let parse = {
 		arbid     : '0x316',
@@ -7,8 +29,8 @@ function parse_316(data) {
 		rpm       : parseFloat((parseInt('0x' + data.msg[3].toString(16) + data.msg[2].toString(16)) / 6.4).toFixed(0)),
 		ac_clutch : bitmask.test(data.msg[0], 0x40),
 		key       : {
-			acc   : bitmask.test(data.msg[0], 0x01),
-			run   : bitmask.test(data.msg[0], 0x04),
+			acc   : bitmask.test(data.msg[0], 0x04), // This appears backwards,
+			run   : bitmask.test(data.msg[0], 0x01), // but is actually correct
 			start : bitmask.test(data.msg[0], 0x10),
 		},
 		torque : {
@@ -36,8 +58,8 @@ function parse_329(data) {
 	// Byte 3
 	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
 	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
-	// bit 4 - Possibly Motor Status (0 = on, 1 = off)
-	// bits 5, 6, 7 - Tank Evap duty cycle
+	// bit 4 - Possibly motor status (0 = on, 1 = off)
+	// bits 5, 6, 7 - Tank evap duty cycle
 
 	let parse = {
 		msg    : '0x329',
@@ -124,20 +146,34 @@ function parse_338(data) {
 	// 1 = Sport off
 	// 2 = Sport on
 	// 3 = Sport error
+
+	let parse = {
+		msg     : '0x338',
+		vehicle : {
+			sport : {
+				active : ((data.msg[2] === 0x00 || data.msg[2] === 0x02) && (data.msg[2] !== 0x01 && data.msg[2] !== 0x03)),
+				error  : data.msg[2] === 0x03,
+			},
+		},
+	};
+
+	update.status('vehicle.sport.active', parse.vehicle.sport.active);
+	update.status('vehicle.sport.error',  parse.vehicle.sport.error);
+
 	return data;
 }
 
 function parse_545(data) {
 	// Byte 3
-	// bit 0 - Oil level error if motortype = S62
-	// bit 1 - Oil Level Warning
-	// bit 2 - Oil Level Error
+	// bit 0 - Oil level error, if motortype = S62
+	// bit 1 - Oil level warning
+	// bit 2 - Oil level error
 	// bit 3 - Overheat Light
-	// bit 4, 5, 6 - M3/M5 RPM Warning Field (refer to tables below)
-	// Byte 4 - Oil Temperature (ºC = X - 48)
-	// Byte 5 - Charge Light (0 = off, 1 = on; only used on some DMEs)
-	// Byte 6 - CSL Oil Level (format unclear)
-	// Byte 7 - Possibly MSS54 TPM Trigger
+	// bit 4, 5, 6 - M3/M5 RPM warning field (refer to tables below)
+	// Byte 4 - Oil temperature (ºC = X - 48)
+	// Byte 5 - Charge light (0 = off, 1 = on; only used on some DMEs)
+	// Byte 6 - CSL oil level (format unclear)
+	// Byte 7 - Possibly MSS54 TPM trigger
 
 	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
 
@@ -167,7 +203,7 @@ function parse_545(data) {
 		},
 		temperature : {
 			oil : {
-				c : parseFloat(((data.msg[4] * 0.75) - 48.373).toFixed(2)),
+				c : parseFloat((data.msg[4] - 48.373).toFixed(2)),
 				f : null,
 			},
 		},
@@ -194,6 +230,12 @@ function parse_545(data) {
 
 
 function parse_613(data) {
+	// B0 : Odometer LSB
+	// B1 : Odometer MSB [Convert from hex to decimal. multiply by 10 and that is odometer in km]
+	// B2 : Fuel level : Full is hex 39, fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
+	// B3 : Running Clock LSB
+	// B4 : Running Clock MSB minutes since last time battery power was lost
+
 	let parse = {
 		msg  : '0x613',
 		fuel : {
@@ -201,12 +243,6 @@ function parse_613(data) {
 			liters : (data.msg[2] >= 0x80) && data.msg[2] - 0x80 || data.msg[2],
 		},
 	};
-
-	// B0 : Odometer LSB
-	// B1 : Odometer MSB [Convert from Hex to Decimal. Multiply by 10 and that is Odometer in Km]
-	// B2 : is fuel level. Full being hex 39 Fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
-	// B3 : Running Clock LSB
-	// B4 : Running Clock MSB minutes since last time battery power was lost
 
 	parse.fuel.level = Math.round((parse.fuel.liters / config.fuel.liters_max) * 100);
 	if (parse.fuel.level < 0)   parse.fuel.level = 0;
@@ -323,4 +359,6 @@ module.exports = {
 
 	// Functions
 	parse_out : parse_out,
+
+	encode_316 : encode_316,
 };

@@ -1,10 +1,10 @@
 {
 	"env": {
-		"browser": true,
+		"browser": false,
 		"es6": true,
-		"jquery": true,
+		"jquery": false,
 		"node": true,
-		"worker": true
+		"worker": false
 	},
 	"extends": [
 		"eslint:recommended"
@@ -17,7 +17,6 @@
 		"ASC1": false,
 		"ASST": false,
 		"BMBT": false,
-		"BT": false,
 		"CCM": false,
 		"CDC": false,
 		"CDCD": false,
@@ -37,6 +36,7 @@
 		"EKP": false,
 		"EWS": false,
 		"FBZV": false,
+		"FEM1": false,
 		"FHK": false,
 		"FID": false,
 		"FMBT": false,
@@ -45,7 +45,6 @@
 		"GT": false,
 		"GTF": false,
 		"HAC": false,
-		"HDMI": false,
 		"HKM": false,
 		"IHKA": false,
 		"IKE": false,
@@ -61,6 +60,7 @@
 		"NAVC": false,
 		"NAVE": false,
 		"NAVJ": false,
+		"NBT1": false,
 		"PDC": false,
 		"PIC": false,
 		"RAD": false,
@@ -83,9 +83,12 @@
 		"app_name": false,
 		"app_path": false,
 		"bitmask": false,
+		"bluetooth": false,
 		"bus": false,
-		"config": false,
-		"gpio": false,
+		"config": true,
+		"gpio": true,
+		"hdmi_cec": false,
+		"hdmi_rpi": false,
 		"hex": false,
 		"host_data": false,
 		"json": false,
@@ -93,14 +96,16 @@
 		"log": false,
 		"notify": false,
 		"obc_values": false,
-		"os": false,
+		"objfmt": false,
+		"power": false,
 		"socket": false,
-		"status": false,
+		"status": true,
+		"terminating": false,
 		"update": false,
 		"weather": false
 	},
 	"parserOptions": {
-		"ecmaVersion": 6,
+		"ecmaVersion": 2017,
 		"sourceType": "module"
 	},
 	"plugins": [
