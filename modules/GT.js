@@ -87,6 +87,25 @@ function parse_dsp_memory(data) {
 
 	// Check if the command is DSP EQ delta update or echo/room size
 	switch (data.msg[2] === 0x15) {
+		case false : {
+			// Check if the command is setting echo amount or room size and get the value
+			switch (bitmask.test(data.msg[2], bitmask.b[5])) {
+				case false : { // Room size
+					data.value += 'room size - ';
+					amount = data.msg[2];
+					break;
+				}
+
+				case true : { // Echo
+					data.value += 'echo amount - ';
+					// Remove 0x20 from the value
+					amount = bitmask.unset(data.msg[2], bitmask.b[5]);
+				}
+			}
+
+			break;
+		}
+
 		case true : {
 			let mask = bitmask.check(data.msg[3]).mask;
 
@@ -118,25 +137,6 @@ function parse_dsp_memory(data) {
 
 			// Assemble log string
 			data.value += dsp_memory.band_str + ', ' + dsp_memory.negative_str;
-
-			break;
-		}
-
-		case false : {
-			// Check if the command is setting echo amount or room size and get the value
-			switch (bitmask.test(data.msg[2], bitmask.b[5])) {
-				case false : { // Room size
-					data.value += 'room size - ';
-					amount = data.msg[2];
-					break;
-				}
-
-				case true : { // Echo
-					data.value += 'echo amount - ';
-					// Remove 0x20 from the value
-					amount = bitmask.unset(data.msg[2], bitmask.b[5]);
-				}
-			}
 		}
 	}
 

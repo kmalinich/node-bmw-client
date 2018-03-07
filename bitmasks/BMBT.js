@@ -56,27 +56,20 @@ function button_sample(hex) {
 
 function button_decode(value) {
 	let action = clc.yellow('⬇');
-	let button;
 
 	// Determine action
 	let mask = bitmask.check(value).mask;
 	switch (mask.b6) {
-		case true : {
+		case false : {
 			switch (mask.b7) {
-				case true  : break;
-				case false : {
-					action = clc.red('⬅');
-				}
+				case true : action = clc.green('⬆');
 			}
 			break;
 		}
 
-		case false : {
+		case true : {
 			switch (mask.b7) {
-				case false : break;
-				case true  : {
-					action = clc.green('⬆');
-				}
+				case false : action = clc.red('⬅');
 			}
 		}
 	}
@@ -86,6 +79,7 @@ function button_decode(value) {
 	value = bitmask.unset(value, bitmask.b[7]);
 
 	// Determine button
+	let button;
 	switch (value) {
 		case 0x00 : button = '>';        break;
 		case 0x01 : button = '2';        break;
