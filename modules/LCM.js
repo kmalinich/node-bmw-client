@@ -167,18 +167,18 @@ function comfort_turn(data) {
 	// Determine the direction of the previously active turn signal
 	let before;
 	switch (data.before.left.active) {
-		case true : {
-			switch (data.before.right.active) {
-				case true  : break; // They can't both be active
-				case false : before = 'left';
-			}
-			break;
-		}
-
 		case false : {
 			switch (data.before.right.active) {
 				case false : before = null; break; // Neither are active
 				case true  : before = 'right';
+			}
+
+			break;
+		}
+
+		case true : {
+			switch (data.before.right.active) {
+				case false : before = 'left'; // They can't both be active
 			}
 		}
 	}
@@ -187,18 +187,18 @@ function comfort_turn(data) {
 	let mask = bitmask.check(data.after).mask;
 	let after;
 	switch (mask.bit5) {
-		case true : {
-			switch (mask.bit6) {
-				case true  : break; // They can't both be active
-				case false : after = 'left';
-			}
-			break;
-		}
-
 		case false : {
 			switch (mask.bit6) {
 				case false : after = null; break; // Neither are active
 				case true  : after = 'right';
+			}
+
+			break;
+		}
+
+		case true : {
+			switch (mask.bit6) {
+				case false : after = 'left'; // They can't both be active
 			}
 		}
 	}
@@ -647,8 +647,8 @@ function reset() {
 	// Determine dimmer value from config, depending if lowbeams are on
 	let reset_dimmer_val;
 	switch (status.lights.auto.lowbeam) {
-		case true  : reset_dimmer_val = config.lights.dimmer.lights_on; break;
-		case false : reset_dimmer_val = config.lights.dimmer.lights_off;
+		case false : reset_dimmer_val = config.lights.dimmer.lights_off; break;
+		case true  : reset_dimmer_val = config.lights.dimmer.lights_on;
 	}
 
 	// Object of autolights related values
@@ -686,26 +686,30 @@ function request(value) {
 	switch (value) {
 		case 'coding' : coding_get(); return;
 
-		case 'dimmer' :
+		case 'dimmer' : {
 			src = 'BMBT';
 			msg = [ 0x5D ];
 			break;
+		}
 
 		case 'identity' : identity_get(); return;
 
-		case 'io-status' :
+		case 'io-status' : {
 			src = 'DIA';
 			msg = [ 0x0B, 0x00 ]; // Get IO status
 			break;
+		}
 
-		case 'light-status' :
+		case 'light-status' : {
 			src = 'GT';
 			msg = [ 0x5A ];
 			break;
+		}
 
-		case 'vehicledata' :
+		case 'vehicledata' : {
 			src = 'IKE';
 			msg = [ 0x53 ];
+		}
 	}
 
 	bus.data.send({
@@ -717,54 +721,58 @@ function request(value) {
 // Parse data sent from LCM module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x54: // Broadcast: vehicle data
+		case 0x54 : { // Broadcast: vehicle data
 			data.command = 'bro';
 			data.value   = 'vehicle data';
 			decode(data); // Decode it
 			break;
+		}
 
-		case 0x5B: // Broadcast: light status
+		case 0x5B : { // Broadcast: light status
 			data.command = 'bro';
 			data.value   = 'light status';
 			decode(data); // Decode it
 			break;
+		}
 
-		case 0x5C: // Broadcast: light dimmer status
+		case 0x5C : { // Broadcast: light dimmer status
 			data.command = 'bro';
 			data.value   = 'dimmer value 1';
 
 			update.status('lcm.dimmer.value_1', data.msg[1]);
 			// update.status('lcm.io.15',          data.msg[1]);
 			break;
+		}
 
-		case 0xA0: // Reply to DIA: success
+		case 0xA0 : { // Reply to DIA: success
 			data.command = 'rep';
 
 			switch (data.msg.length) {
-				case 33:
+				case 33 : {
 					data.command = 'bro';
 					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
+				}
 
-				case 13:
+				case 13 : {
 					data.command = 'bro';
 					data.value   = 'io-status';
 					decode(data); // Decode it
 					break;
+				}
 
-				case 1:
-					data.value = 'ACK';
-					break;
-
-				default:
-					data.value = Buffer.from(data.msg);
+				case 1  : data.value = 'ACK'; break;
+				default : data.value = Buffer.from(data.msg);
 			}
-			break;
 
-		default:
+			break;
+		}
+
+		default : {
 			data.command = 'unk';
 			data.value   = Buffer.from(data.msg);
+		}
 	}
 
 	log.bus(data);
@@ -781,29 +789,6 @@ function welcome_lights(action, override = false) {
 	log.module('Welcome lights: ' + action);
 
 	switch (action) {
-		case true : {
-			// Set status var to true
-			update.status('lights.welcome_lights', action);
-
-			// Send configured welcome lights
-			io_encode(config.lights.welcome_lights);
-
-			// Increment welcome lights counter
-			LCM.counts.welcome_lights++;
-
-			// Clear welcome lights status after configured timeout
-			LCM.timeout.lights_welcome = setTimeout(() => {
-				// If we're not over the configured welcome lights limit yet
-				if (LCM.counts.welcome_lights <= config.lights.welcome_lights_sec) {
-					LCM.welcome_lights(true, true);
-				}
-				else {
-					LCM.welcome_lights(false, true);
-				}
-			}, 1000);
-			break;
-		}
-
 		case false : {
 			// Clear any remaining timeout(s)
 			clearTimeout(LCM.timeout.lights_welcome);
@@ -817,6 +802,27 @@ function welcome_lights(action, override = false) {
 
 			// Send empty object to turn off all LCM outputs (if vehicle is off)
 			if (status.vehicle.ignition_level === 0) io_encode({});
+
+			break;
+		}
+
+		case true : {
+			// Set status var to true
+			update.status('lights.welcome_lights', action);
+
+			// Send configured welcome lights
+			io_encode(config.lights.welcome_lights);
+
+			// Increment welcome lights counter
+			LCM.counts.welcome_lights++;
+
+			// Clear welcome lights status after configured timeout
+			LCM.timeout.lights_welcome = setTimeout(() => {
+				// If we're not over the configured welcome lights limit yet
+				LCM.welcome_lights((LCM.counts.welcome_lights <= config.lights.welcome_lights_sec), true);
+			}, 1000);
+
+			break;
 		}
 	}
 }
@@ -950,7 +956,6 @@ function police(action = false) {
 				update.status('lcm.police_lights.counts.loop', 0);
 				update.status('lcm.police_lights.counts.main', 0);
 			}
-			break;
 		}
 	}
 

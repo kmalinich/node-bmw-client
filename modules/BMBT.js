@@ -11,25 +11,24 @@ function decode_button(data) {
 	// Determine action
 	let mask = bitmask.check(data.msg[1]).mask;
 	switch (mask.b6) {
+		case false : {
+			switch (mask.b7) {
+				case true : {
+					// Remove release bit from button value
+					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
+					action      = 'release';
+				}
+			}
+
+			break;
+		}
+
 		case true : {
 			switch (mask.b7) {
-				case true  : break;
 				case false : {
 					// Remove hold bit from button value
 					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
 					action      = 'hold';
-				}
-			}
-			break;
-		}
-
-		case false : {
-			switch (mask.b7) {
-				case false : break;
-				case true  : {
-					// Remove release bit from button value
-					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
-					action      = 'release';
 				}
 			}
 		}
