@@ -14,7 +14,7 @@ This README is 12+ months out of date and needs to be completely rewritten, to i
 * tvservice/vcgencmd HDMI screen control or HDMI-CEC screen control
 * Custom afterrun timer for accessory relays via Pi GPIO
 * SO MUCH OTHER STUFF
-* For snippets, check out <a href="https://www.instagram.com/hotgarbagellc/">my Instagram</a>
+* For snippets, check out <a href="https://www.instagram.com/hotgarbagellc/">my Instagram</a>  
 I'll get to it... eventually  
 
 ## Disclaimers
