@@ -1,12 +1,20 @@
 # node-bmw-client
-Do magic with an E38/E39/E46/E53-ish BMW, Raspberry Pi 3, and Node.js 8.x.  
+Do magic with an E38/E39/E46/E53-ish BMW, Raspberry Pi 3, and Node.js 9.x.  
 
 <img src="https://darksky.net/dev/img/attribution/poweredby-oneline.png" href="https://darksky.net/poweredby" alt="Powered by Dark Sky" width="200">
 
 ## Advisory
 I dev way faster than I document.  
-This README is 12+ months out of date and needs to be completely rewritten.  
-I'll get to it...  
+This README is 12+ months out of date and needs to be completely rewritten, to include things like:
+* NBT retrofit support (HW 07)
+  * Currently power on/off and steering wheel controls are working, very early WIP
+* iDrive controller to Kodi support
+  * Supports K-CAN and K-CAN2 iDrive controllers
+  * E38/E39/E53 MFL > NBT support
+* tvservice/vcgencmd HDMI screen control or HDMI-CEC screen control
+* Custom afterrun timer for accessory relays via Pi GPIO
+* SO MUCH OTHER STUFF
+I'll get to it... eventually  
 
 ## Disclaimers
 * First and foremost, this project can and might hurt you.
@@ -21,7 +29,7 @@ I'll get to it...
 * I make no assertations that I am a professional. I'm just doing this for fun and to learn a little Node.js.
 * It's probably best to use this project as a reference versus fork it.
 
-Currently being developed using a US-spec 2000 E39 540i, a US-spec 2002 E39 M5, two Raspberry Pi 3s running Raspbian stretch, three Rolf Resler IBUS adapters, a Samsung DB10D HDMI screen, a PiCAN2 dual-channel CANBUS hat, NodeJS 9.2.x, and more.
+Currently being developed using a US-spec 2000 E39 540i, a US-spec 2002 E39 M5, two Raspberry Pi 3s running Raspbian stretch, 2 Rolf Resler IBUS/KBUS adapters, a Samsung DB10D HDMI screen, a PiCAN2 dual-channel CANBUS hat, NodeJS 9.x, and more.
 About 90% of it is done in a way I don't really like, but I have so little time to work on this... =/
 
 It acts as, more or less.. plug-in custom firmware for the BMW modules.
@@ -42,7 +50,7 @@ It does:
   * Rear fog LED in gauge cluster acts as auto-lights status light (since my car doesn't actually have a rear fog)
     * It only shows when fogs or low-beams are on =/
   * "Comfort" turn signal emulation, a la newer BMWs
-    * 3-flash comfort turn is a joke, this does 6-flash
+    * 3-flash comfort turn is a joke, this does 5-flash
 * Media:
   * HDMI CEC control to power on/off HDMI display on ignition change
   * Kodi API integration
