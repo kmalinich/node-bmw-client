@@ -569,7 +569,7 @@ function volume_control(value = 1) {
 		default : return;
 	}
 
-	log.module('Sending volume control: ' + value);
+	// log.module('Sending volume control: ' + value);
 
 	bus.data.send({
 		src : 'MID',

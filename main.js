@@ -32,12 +32,16 @@ update = new (require('update'))();
 // Configure term event listeners
 function term_config(pass) {
 	process.on('SIGTERM', () => {
+		if (terminating === true) return;
+
 		console.log('');
 		log.msg('Caught SIGTERM');
 		process.nextTick(term);
 	});
 
 	process.on('SIGINT', () => {
+		if (terminating === true) return;
+
 		console.log('');
 		log.msg('Caught SIGINT');
 		process.nextTick(term);
@@ -207,7 +211,6 @@ function bail() {
 // Global term
 function term() {
 	if (terminating === true) return;
-
 	terminating = true;
 
 	log.msg('Terminating');

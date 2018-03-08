@@ -8,7 +8,7 @@ function decode_ignition(data) {
 	data.command = 'bro';
 	data.value   = 'Ignition status';
 
-	log.module('Ignition message ' + Buffer.from(data.msg));
+	// log.module('Ignition message ' + Buffer.from(data.msg));
 
 	return data;
 }
@@ -21,7 +21,7 @@ function decode_status_module(data) {
 	data.command = 'con';
 	data.value   = 'NBT1 init iDrive knob';
 
-	log.module('NBT1 status message ' + Buffer.from(data.msg));
+	// log.module('NBT1 status message ' + Buffer.from(data.msg));
 
 	return data;
 }
@@ -57,10 +57,11 @@ function parse_in(data) {
 // Parse data sent from module
 function parse_out(data) {
 	// Bounce if not enabled
-	if (config.retrofit.nbt1 !== true) return;
+	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
 
 	switch (data.src.id) {
-		case 0x273 : data = decode_status_module(data); break;
+		case 0x273 :
+		case 0x563 : data = decode_status_module(data); break;
 
 		case 0x277 : { // NBT1 ACK to rotational initialization message
 			data.command = 'rep';
@@ -85,7 +86,7 @@ function parse_out(data) {
 // 273 -> 1D E1 00 F0 FF 7F DE 04
 function status_module() {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true) return;
+	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
 
 	switch (config.nbt1.mode.toLowerCase()) {
 		case 'cic' : {
