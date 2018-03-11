@@ -214,7 +214,7 @@ function translate_button_media(unmask) {
 					bus.data.send({
 						bus  : 'can1',
 						id   : src,
-						data : [ 0xC0, 0x01 ],
+						data : [ 0xC0, 0x0D ],
 					});
 				}
 			}
