@@ -156,16 +156,30 @@ class GM extends EventEmitter {
 		// This is correct, in a sense... Not a good sense, but in a sense
 		update.status('vehicle.locked', bitmask.test(data.msg[1], 0x20));
 
-		// Set status.doors.sealed if all doors are closed
-		let update_sealed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.hood && !status.doors.rear_left && !status.doors.rear_right && !status.doors.trunk);
+
+		// Set status.doors.closed if all doors are closed
+		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.hood && !status.doors.rear_left && !status.doors.rear_right && !status.doors.trunk);
+		update.status('doors.closed', update_closed_doors);
+
+		// Set status.doors.open if any doors are open
+		update.status('doors.open', (update_closed_doors === true));
+
+		// Set status.doors.sealed if all doors and flaps are closed
+		let update_sealed_doors = (!status.doors.closed && !status.doors.hood && !status.doors.trunk);
 		update.status('doors.sealed', update_sealed_doors);
 
-		// Set status.windows.sealed if all windows are closed
-		let update_sealed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
-		update.status('windows.sealed', update_sealed_windows);
+
+		// Set status.windows.closed if all windows are closed
+		let update_closed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
+		update.status('windows.closed', update_closed_windows);
+
+		// Set status.windows.open if all windows are open
+		update.status('windows.open', (update_closed_windows === true));
+
 
 		// Set status.vehicle.sealed if all doors and windows are closed
-		update.status('vehicle.sealed', (status.doors.sealed && status.windows.sealed));
+		update.status('vehicle.sealed', (status.doors.sealed && status.windows.closed));
+
 
 		// Emit open event
 		this.emit('open', {
