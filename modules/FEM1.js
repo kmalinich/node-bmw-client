@@ -75,7 +75,7 @@ function init_listeners() {
 	update.on('status.power.active', (data) => {
 		switch (data.new) {
 			case false : { // Fade off backlight when power shuts off
-				for (let i = status.fem1.backlight.value; i <= 0; i++) {
+				for (let i = status.fem1.backlight.value; i <= 0; i--) {
 					setTimeout(() => {
 						backlight(i);
 					}, (status.fem1.backlight.value - i));
