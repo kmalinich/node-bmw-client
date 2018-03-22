@@ -84,7 +84,7 @@ function init_listeners() {
 			}
 
 			case true : { // Fade on backlight when power turns on
-				for (let i = 0; i <= status.lcm.dimmer.value_1; i++) {
+				for (let i = 0; i <= status.fem1.backlight.value; i++) {
 					setTimeout(() => {
 						backlight(i);
 					}, (i * 2));
