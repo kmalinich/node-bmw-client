@@ -506,6 +506,7 @@ function io_encode(object) {
 			b6 : object.clamp_r,
 			b7 : object.clamp_30b,
 		}),
+
 		b1 : bitmask.create({
 			b0 : object.input_key_in_ignition,
 			b1 : object.input_seat_belts_lock,
@@ -516,6 +517,7 @@ function io_encode(object) {
 			b6 : object.input_armoured_door,
 			b7 : object.input_brake_fluid_level,
 		}),
+
 		b2 : bitmask.create({
 			b0 : object.switch_brake,
 			b1 : object.switch_highbeam,
@@ -526,6 +528,7 @@ function io_encode(object) {
 			b6 : object.switch_turn_right,
 			b7 : object.switch_turn_left,
 		}),
+
 		b3 : bitmask.create({
 			b0 : object.input_air_suspension,
 			b1 : object.input_hold_up_alarm,
@@ -536,6 +539,7 @@ function io_encode(object) {
 			b6 : object.input_engine_failsafe,
 			b7 : object.input_tire_defect,
 		}),
+
 		b4 : bitmask.create({
 			b0 : false,
 			b1 : false,
@@ -546,6 +550,7 @@ function io_encode(object) {
 			b6 : object.output_highbeam_front_left,
 			b7 : object.output_turn_side_left,
 		}),
+
 		b5 : bitmask.create({
 			b0 : object.output_standing_front_left,
 			b1 : object.output_standing_inner_rear_left,
@@ -556,6 +561,7 @@ function io_encode(object) {
 			b6 : object.output_fog_front_right,
 			b7 : object.output_fog_rear_trailer,
 		}),
+
 		b6 : bitmask.create({
 			b0 : false,
 			b1 : object.input_vertical_aim,
@@ -566,6 +572,7 @@ function io_encode(object) {
 			b6 : object.output_turn_front_right,
 			b7 : object.output_turn_rear_left,
 		}),
+
 		b7 : bitmask.create({
 			b0 : object.output_turn_side_right,
 			b1 : object.output_turn_rear_right,
@@ -576,6 +583,7 @@ function io_encode(object) {
 			b6 : object.output_turn_front_left,
 			b7 : object.output_reverse_rear_right,
 		}),
+
 		b8 : bitmask.create({
 			b0 : object.mode_failsafe,
 			b1 : false,
@@ -586,6 +594,7 @@ function io_encode(object) {
 			b6 : object.mode_sleep,
 			b7 : false,
 		}),
+
 		b9  : status.lcm.io[9],
 		b10 : status.lcm.io[10],
 		b11 : status.lcm.io[11],

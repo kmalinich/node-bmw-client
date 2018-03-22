@@ -1,4 +1,4 @@
-function backlight(value = status.lcm.dimmer.value_1) {
+function backlight(value = status.fem.backlight.value) {
 	// Super-prepare default value
 	if (typeof value === 'undefined' || value === null || value === '') {
 		value = 0xFF;
