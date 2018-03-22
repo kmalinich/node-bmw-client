@@ -1,6 +1,6 @@
 function backlight(value = status.fem1.backlight.value) {
 	// Bounce if the power's off
-	if (status.power.active !== true) return;
+	// if (status.power.active !== true) return;
 
 	// Super-prepare default value
 	if (typeof value === 'undefined' || value === null || value === '') {
