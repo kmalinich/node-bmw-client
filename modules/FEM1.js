@@ -77,7 +77,7 @@ function init_listeners() {
 			}
 
 			case true : { // Turn on backlight when power turns on
-				backlight();
+				backlight(status.lcm.dimmer.value_1);
 			}
 		}
 	});
