@@ -74,13 +74,21 @@ function decode_backlight(data) {
 function init_listeners() {
 	update.on('status.power.active', (data) => {
 		switch (data.new) {
-			case false : { // Turn off backlight when power shuts off
-				backlight(0x00);
+			case false : { // Fade off backlight when power shuts off
+				for (let i = status.fem1.backlight.value; i <= 0; i++) {
+					setTimeout(() => {
+						backlight(i);
+					}, (status.fem1.backlight.value - i));
+				}
 				break;
 			}
 
-			case true : { // Turn on backlight when power turns on
-				backlight(status.lcm.dimmer.value_1);
+			case true : { // Fade on backlight when power turns on
+				for (let i = 0; i <= status.lcm.dimmer.value_1; i++) {
+					setTimeout(() => {
+						backlight(status.lcm.dimmer.value_1);
+					}, (i * 2));
+				}
 			}
 		}
 	});
