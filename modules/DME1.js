@@ -65,13 +65,7 @@ function parse_329(data) {
 	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
 	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
 	// bit 4 - Possibly motor status (0 = on, 1 = off)
-	// bits 5, 6, 7 - Tank evap duty cycle
-
-	let parse = {
-		msg     : '0x338',
-		vehicle : {
-		},
-	};
+	// bits 5, 6, 7 - MSS52 sport mode, tank evap duty cycle.. pfft
 
 	let parse = {
 		msg : '0x329',
