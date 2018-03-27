@@ -55,6 +55,12 @@ function parse_316(data) {
 }
 
 function parse_329(data) {
+	// Byte 2
+	// 0 = Sport on (request by SMG transmission)
+	// 1 = Sport off
+	// 2 = Sport on
+	// 3 = Sport error
+
 	// Byte 3
 	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
 	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
@@ -62,29 +68,40 @@ function parse_329(data) {
 	// bits 5, 6, 7 - Tank evap duty cycle
 
 	let parse = {
-		msg    : '0x329',
+		msg     : '0x338',
+		vehicle : {
+		},
+	};
+
+	let parse = {
+		msg : '0x329',
+
 		engine : {
 			throttle : {
 				cruise : parseFloat((data.msg[4] / 2.54).toFixed(1)),
 				pedal  : parseFloat((data.msg[5] / 2.54).toFixed(1)),
 			},
+
 			atmospheric_pressure : {
 				mbar : (data.msg[2] * 2) + 597,
 				mmhg : null,
 				psi  : null,
 			},
 		},
+
 		temperature : {
 			coolant : {
 				c : parseFloat(((data.msg[1] * 0.75) - 48.373).toFixed(2)),
 				f : null,
 			},
 		},
+
 		vehicle : {
 			brake    : bitmask.test(data.msg[6], 0x01),
 			clutch   : bitmask.test(data.msg[3], 0x01),
 			kickdown : bitmask.test(data.msg[6], 0x08),
-			cruise   : {
+
+			cruise : {
 				button : {
 					resume : bitmask.test(data.msg[3], 0x40) && bitmask.test(data.msg[3], 0x20),
 					minus  : bitmask.test(data.msg[3], 0x40) && !bitmask.test(data.msg[3], 0x20),
@@ -92,12 +109,19 @@ function parse_329(data) {
 					plus   : bitmask.test(data.msg[3], 0x20) && !bitmask.test(data.msg[3], 0x40),
 					unk1   : bitmask.test(data.msg[3], 0x01),
 				},
+
 				status : {
 					activating : bitmask.test(data.msg[6], 0x20),
 					active     : bitmask.test(data.msg[6], 0x08),
 					resume     : bitmask.test(data.msg[6], 0x10),
 					unk1       : bitmask.test(data.msg[6], 0x01),
 				},
+			},
+
+			//                                 XX
+			// can0  329   [8]  40 51 C4 04 00 03 00 00
+			sport : {
+				active : data.msg[5] === 0x03,
 			},
 		},
 	};
@@ -132,6 +156,8 @@ function parse_329(data) {
 	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
 	update.status('temperature.coolant.f', parse.temperature.coolant.f);
+
+	update.status('vehicle.sport.active', parse.vehicle.sport.active);
 
 	// Trigger a HUD refresh if coolant temp is updated
 	if (update.status('temperature.coolant.c', parse.temperature.coolant.c)) IKE.hud_refresh();
@@ -230,11 +256,11 @@ function parse_545(data) {
 
 
 function parse_613(data) {
-	// B0 : Odometer LSB
-	// B1 : Odometer MSB [Convert from hex to decimal. multiply by 10 and that is odometer in km]
-	// B2 : Fuel level : Full is hex 39, fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
-	// B3 : Running Clock LSB
-	// B4 : Running Clock MSB minutes since last time battery power was lost
+	// Byte 0 : Odometer LSB
+	// Byte 1 : Odometer MSB [Convert from hex to decimal. multiply by 10 and that is odometer in km]
+	// Byte 2 : Fuel level : Full is hex 39, fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
+	// Byte 3 : Running Clock LSB
+	// Byte 4 : Running Clock MSB minutes since last time battery power was lost
 
 	let parse = {
 		msg  : '0x613',
@@ -254,30 +280,34 @@ function parse_613(data) {
 
 function parse_615(data) {
 	// ARBID: 0x615 sent from the instrument cluster
-	// -B0 AC signal. Hex 80 when on (10000000) Other bits say something else (Load, Aux fan speed request? system pressure?)
-	// -B1 4 when headlights/parking lights on
-	// -B2
-	// -B3 Outside Air Temperature: x being temperature in Deg C, (x>=0 deg C,DEC2HEX(x),DEC2HEX(-x)+128) x range min -40 C max 50 C
-	// -B4 1 = Driver door open; 2 = handbrake up
-	// -B5 2 = Left turn signal, 4 = Right turn signal, 6 = hazards
+	// Byte 0 : AC signal. Hex 80 when on (10000000) Other bits say something else (Load, Aux fan speed request? system pressure?)
+	// Byte 1 : 4 when headlights/parking lights on
+	// Byte 2 : ??
+	// Byte 3 : Outside Air Temperature: x being temperature in Deg C, (x>=0 deg C,DEC2HEX(x),DEC2HEX(-x)+128) x range min -40 C max 50 C
+	// Byte 4 : 1 = Driver door open; 2 = handbrake up
+	// Byte 5 : 2 = Left turn signal, 4 = Right turn signal, 6 = hazards
 
 	let parse = {
-		msg    : '0x615',
+		msg : '0x615',
+
 		engine : {
 			ac_request    : data.msg[0],
 			aux_fan_speed : data.msg[1],
 		},
+
 		temperature : {
 			exterior : {
 				c : (data.msg[3] >= 0x80) && data.msg[3] - 0x80 || data.msg[3],
 				f : null,
 			},
+
 			// This isn't right
 			intake : {
 				c : (data.msg[6] >= 0x80) && data.msg[6] - 0x80 || data.msg[6],
 				f : null,
 			},
 		},
+
 		vehicle : {
 			handbrake : bitmask.test(data.msg[4], 0x02),
 		},
@@ -302,8 +332,8 @@ function parse_615(data) {
 
 	update.status('vehicle.handbrake', parse.vehicle.handbrake);
 
-	// update.status('temperature.intake.c', parse.temperature.intake.c);
-	// update.status('temperature.intake.f', parse.temperature.intake.f);
+	update.status('temperature.intake.c', parse.temperature.intake.c);
+	update.status('temperature.intake.f', parse.temperature.intake.f);
 }
 
 
@@ -352,6 +382,7 @@ function parse_out(data) {
 
 	// log.bus(data);
 }
+
 
 module.exports = {
 	// Variables
