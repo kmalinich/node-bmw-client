@@ -162,7 +162,7 @@ class GM extends EventEmitter {
 		update.status('doors.closed', update_closed_doors);
 
 		// Set status.doors.open if any doors are open
-		update.status('doors.open', (update_closed_doors === true));
+		update.status('doors.open', (update_closed_doors === false));
 
 		// Set status.doors.sealed if all doors and flaps are closed
 		let update_sealed_doors = (!status.doors.closed && !status.doors.hood && !status.doors.trunk);
@@ -173,8 +173,8 @@ class GM extends EventEmitter {
 		let update_closed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
 		update.status('windows.closed', update_closed_windows);
 
-		// Set status.windows.open if all windows are open
-		update.status('windows.open', (update_closed_windows === true));
+		// Set status.windows.open if any windows are open
+		update.status('windows.open', (update_closed_windows === false));
 
 
 		// Set status.vehicle.sealed if all doors and windows are closed
@@ -429,7 +429,7 @@ class GM extends EventEmitter {
 					switch (data.old) {
 						case 'run' : {
 							// If the doors are closed and locked, toggle door locks
-							if (status.vehicle.locked && status.doors.sealed) this.locks();
+							if (status.vehicle.locked && status.doors.closed) this.locks();
 						}
 					}
 				}
