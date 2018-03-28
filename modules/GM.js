@@ -158,7 +158,7 @@ class GM extends EventEmitter {
 
 
 		// Set status.doors.closed if all doors are closed
-		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.hood && !status.doors.rear_left && !status.doors.rear_right && !status.doors.trunk);
+		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
 		update.status('doors.closed', update_closed_doors);
 
 		// Set status.doors.open if any doors are open
