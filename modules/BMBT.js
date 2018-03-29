@@ -10,13 +10,13 @@ function decode_button(data) {
 
 	// Determine action
 	let mask = bitmask.check(data.msg[1]).mask;
-	switch (mask.b6) {
+	switch (mask.b7) {
 		case false : {
-			switch (mask.b7) {
-				case true : {
-					// Remove release bit from button value
+			switch (mask.b6) {
+				case false : {
+					// Remove hold bit from button value
 					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
-					action      = 'release';
+					action      = 'hold';
 				}
 			}
 
@@ -24,13 +24,9 @@ function decode_button(data) {
 		}
 
 		case true : {
-			switch (mask.b7) {
-				case false : {
-					// Remove hold bit from button value
-					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
-					action      = 'hold';
-				}
-			}
+			// Remove release bit from button value
+			data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
+			action      = 'release';
 		}
 	}
 
@@ -67,13 +63,13 @@ function decode_button(data) {
 	data.value += action + ' ' + button;
 
 	// If media control is disabled, return here
-	// if (config.bmbt.media === false) return data;
+	if (config.bmbt.media === false) return data;
 
 	switch (action) {
 		case 'depress' : {
 			switch (button) {
 				case 'mode' : {
-					// To use holding the phone button in to toggle RPi display on/off
+					// To use depressing the mode button in to toggle RPi display on/off
 					update.status('hdmi.rpi.power_override', true);
 					hdmi_rpi.command('toggle');
 
@@ -82,7 +78,6 @@ function decode_button(data) {
 			}
 
 			break;
-
 		}
 
 		case 'release' : {

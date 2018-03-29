@@ -574,7 +574,7 @@ class IKE extends EventEmitter {
 		hud_strings.center = pad(string_temp, (6 + (7 - string_time.length)));
 
 		// Change left string to be load/CPU temp if over threshold
-		if (status.system.temperature > 65) hud_strings.left = hud_strings.load;
+		if (status.system.temperature > config.system.temperature.fan_enable) hud_strings.left = hud_strings.load;
 
 		// Change left string to be LCM terminal 30 voltage if under threshold
 		if (status.lcm.voltage.terminal_30 < 13) hud_strings.left = hud_strings.volt;
