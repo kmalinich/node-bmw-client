@@ -126,7 +126,7 @@ function decode_button(data) {
 				case 'depressmode' : {
 					// To use holding the phone button in to toggle RPi display on/off
 					update.status('hdmi.rpi.power_override', true);
-					hdmi_rpi.command('powertoggle');
+					hdmi_rpi.command('toggle');
 				}
 			}
 
