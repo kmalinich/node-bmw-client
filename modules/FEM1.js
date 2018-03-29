@@ -99,7 +99,7 @@ function init_listeners() {
 		let value;
 		switch (data.new) {
 			case 0xFF : value = 0x00; break;
-			default   : value = data.new;
+			default   : value = (data.new + 17);
 		}
 
 		backlight(value);

@@ -15,7 +15,7 @@ function decode_button(data) {
 			switch (mask.b7) {
 				case true : {
 					// Remove release bit from button value
-					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
+					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
 					action      = 'release';
 				}
 			}
@@ -70,21 +70,19 @@ function decode_button(data) {
 	// if (config.bmbt.media === false) return data;
 
 	switch (action) {
-		case 'hold' : {
-			switch (config.bmbt.media) {
-				case 'bluetooth' : break; // Bluetooth version
-
-				case 'kodi' : { // Kodi version
-					switch (button) {
-						case 'left'  : kodi.command('seek-rewind'); break;
-						case 'right' : kodi.command('seek-forward');
-					}
+		case 'depress' : {
+			switch (button) {
+				case 'mode' : {
+					// To use holding the phone button in to toggle RPi display on/off
+					update.status('hdmi.rpi.power_override', true);
+					hdmi_rpi.command('toggle');
 
 					break;
 				}
 			}
 
 			break;
+
 		}
 
 		case 'release' : {
@@ -131,6 +129,17 @@ function decode_button(data) {
 			}
 
 			break;
+		}
+
+		case 'hold' : {
+			switch (config.bmbt.media) {
+				case 'kodi' : { // Kodi version
+					switch (button) {
+						case 'left'  : kodi.command('seek-rewind'); break;
+						case 'right' : kodi.command('seek-forward');
+					}
+				}
+			}
 		}
 	}
 

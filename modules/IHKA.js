@@ -17,13 +17,13 @@ function parse_out(data) {
 
 		case 0xA0 : { // Reply to DIA: success
 			data.command = 'rep';
-			data.value   = data.msg;
+			data.value   = Buffer.from(data.msg);
 			break;
 		}
 
 		case 0xB0 : { // Reply: Something else
 			data.command = 'rep';
-			data.value   = data.msg;
+			data.value   = Buffer.from(data.msg);
 			break;
 		}
 

@@ -1,6 +1,5 @@
 // Parse data sent to DSPC module
 function parse_in(data) {
-	objfmt(data);
 	switch (data.msg[0]) {
 		case 0x35 : { // Broadcast: car memory
 			return; // This is handled inside of DSP
