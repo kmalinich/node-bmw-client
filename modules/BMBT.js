@@ -76,14 +76,8 @@ function decode_button(data) {
 
 				case 'kodi' : { // Kodi version
 					switch (button) {
-						case 'left'  : kodi.command('seek-rewind');  break;
-						case 'right' : kodi.command('seek-forward'); break;
-
-						case 'phone' : {
-							// To use holding the phone button in to toggle RPi display on/off
-							update.status('hdmi.rpi.power_override', true);
-							hdmi_rpi.command('powertoggle');
-						}
+						case 'left'  : kodi.command('seek-rewind'); break;
+						case 'right' : kodi.command('seek-forward');
 					}
 
 					break;
@@ -127,7 +121,13 @@ function decode_button(data) {
 				case 'depress5' : LCM.police(true); setTimeout(LCM.police, 500); break;
 
 				case 'depress3' : LCM.police(false); break;
-				case 'depress6' : LCM.police(true);
+				case 'depress6' : LCM.police(true);  break;
+
+				case 'depressmode' : {
+					// To use holding the phone button in to toggle RPi display on/off
+					update.status('hdmi.rpi.power_override', true);
+					hdmi_rpi.command('powertoggle');
+				}
 			}
 
 			break;
