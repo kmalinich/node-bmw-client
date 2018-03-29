@@ -67,7 +67,7 @@ function decode_button(data) {
 	data.value += action + ' ' + button;
 
 	// If media control is disabled, return here
-	if (config.bmbt.media === false) return data;
+	// if (config.bmbt.media === false) return data;
 
 	switch (action) {
 		case 'hold' : {
