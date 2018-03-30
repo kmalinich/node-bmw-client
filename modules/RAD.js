@@ -700,7 +700,9 @@ function audio_power(power_state, on_ignition = true) {
 function init_listeners() {
 	// Perform commands on power lib active event
 	update.on('status.power.active', (data) => {
-		audio_power(data.new, true);
+		setTimeout(() => {
+			audio_power(data.new, true);
+		}, 1500);
 	});
 
 	log.module('Initialized listeners');
