@@ -159,7 +159,8 @@ function init() {
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS/KBUS module node modules
 			json.reset(() => { // Reset vars (hack =/)
-				// Initialize event listeners for GM and IKE
+				// Initialize event listeners
+				ASC1.init_listeners();
 				BMBT.init_listeners();
 				CON1.init_listeners();
 				FEM1.init_listeners();

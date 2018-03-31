@@ -1,14 +1,14 @@
 const convert = require('node-unit-conversion');
 
+
 // This is dangerous and awesome if you can see what it does
 function encode_316(rpm) {
-	let rpm_encoded;
+	let rpm_encoded = Math.floor(rpm * 6.4).toString(16).padStart(0, 4);
 
-	rpm_encoded = Math.round(rpm * 6.4).toString(16);
+	let rpm_0 = parseInt('0x' + rpm_encoded.substring(2, 4)) || 0; // LSB
+	let rpm_1 = parseInt('0x' + rpm_encoded.substring(0, 2)) || 0; // MSB
 
-	if (rpm_encoded.length !== 4) rpm_encoded = '0' + rpm_encoded;
-
-	let msg = [ 0x05, 0x16, parseInt('0x' + rpm_encoded.substring(2, 4)), parseInt('0x' + rpm_encoded.substring(0, 2)), 0x16, 0x18, 0x00, 0x16 ];
+	let msg = [ 0x05, 0x16, rpm_0, rpm_1, 0x16, 0x18, 0x00, 0x16 ];
 
 	// Send packet 5000x
 	for (let i = 0; i < 5000; i++) {
@@ -30,7 +30,7 @@ function parse_316(data) {
 		ac_clutch : bitmask.test(data.msg[0], 0x40),
 		key       : {
 			acc   : bitmask.test(data.msg[0], 0x04), // This appears backwards,
-			run   : bitmask.test(data.msg[0], 0x01), // but is actually correct
+			run   : (bitmask.test(data.msg[0], 0x01) && bitmask.test(data.msg[0], 0x04)), // but is actually correct
 			start : bitmask.test(data.msg[0], 0x10),
 		},
 		torque : {
