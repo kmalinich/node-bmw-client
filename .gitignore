@@ -4,6 +4,7 @@
 *.swp
 .DS_Store
 ._*
+/*.sh
 /candump/
 /config.json
 /node_modules/

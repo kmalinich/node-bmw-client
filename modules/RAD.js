@@ -628,9 +628,6 @@ function audio_power(power_state, on_ignition = true) {
 			// Bounce if we're not configured to emulate the RAD module
 			if (config.emulate.rad !== true) return;
 
-			// Enable GPIO relay for amp power
-			gpio.set('amp', true); // Should be an emitted event
-
 			// Toggle media playback
 			if (on_ignition === false) {
 				setTimeout(() => {
@@ -644,7 +641,7 @@ function audio_power(power_state, on_ignition = true) {
 			bus.cmds.send_device_status(module_name);
 
 			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
-			let array_request = [ 'BMBT', 'CDC', 'DSP', 'DSPC', 'MID' ];
+			let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
 			array_request.forEach((module_request) => {
 				bus.cmds.request_device_status(module_name, module_request);
 			});
@@ -653,44 +650,60 @@ function audio_power(power_state, on_ignition = true) {
 			// I've looked at logs from three different DSP-equipped cars and it's always this sequence
 
 			// Set DSP source to off
+			// audio_control(false);
+
+			// // Send DSP functions 1 and 0
+			// setTimeout(() => { audio_control('dsp-1'); }, 250);
+			// setTimeout(() => { audio_control('dsp-0'); }, 500);
+
+			// Set DSP source to on (tuner/tape)
+			// setTimeout(() => { audio_control(true); }, 750);
+
+			// Turn on BMBT
+			// setTimeout(() => { cassette_control(true); }, 1000);
+
+
+			// Set DSP source to off
 			audio_control(false);
 
 			// Send DSP functions 1 and 0
-			setTimeout(() => { audio_control('dsp-1'); }, 250);
-			setTimeout(() => { audio_control('dsp-0'); }, 500);
-
-			// Set DSP source to on (tuner/tape)
-			setTimeout(() => { audio_control(true); }, 750);
+			audio_control('dsp-1');
+			audio_control('dsp-0');
 
 			// Turn on BMBT
-			setTimeout(() => { cassette_control(true); }, 1000);
+			cassette_control(true);
+
+			// Set DSP source to on (tuner/tape)
+			audio_control(true);
+
 
 			// Turn volume up ~30 points
 			setTimeout(() => {
 				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 2000);
+			}, 500);
 
 			setTimeout(() => {
 				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 2250);
+			}, 750);
 
 			setTimeout(() => {
 				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 2500);
+			}, 1000);
+
 
 			// Increase volume after power on
 			if (config.bmbt.vol_at_poweron === true) {
 				setTimeout(() => {
 					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 2750);
+				}, 1250);
 
 				setTimeout(() => {
 					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 3000);
+				}, 1500);
 
 				setTimeout(() => {
 					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 3250);
+				}, 1750);
 			}
 		}
 	}
@@ -700,9 +713,21 @@ function audio_power(power_state, on_ignition = true) {
 function init_listeners() {
 	// Perform commands on power lib active event
 	update.on('status.power.active', (data) => {
-		setTimeout(() => {
-			audio_power(data.new, true);
-		}, 1500);
+		if (data.new === false) {
+			audio_power(false, true);
+			return;
+		}
+
+		log.module('Waiting for DSP ready event');
+
+		// Enable GPIO relay for amp power
+		gpio.set('amp', true); // Should be an emitted event
+
+		update.once('status.dsp.reset', (data) => {
+			if (data.new === true) return;
+
+			audio_power(true, true);
+		});
 	});
 
 	log.module('Initialized listeners');
