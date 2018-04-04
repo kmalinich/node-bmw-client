@@ -104,14 +104,11 @@ function parse_1f0(data) {
 	// Calculate vehicle speed value in MPH
 	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
-	// Forward this to CAN1
-	encode_1a1(vehicle_speed_mph);
+	if (update.status('vehicle.speed.mph', vehicle_speed_mph, false)) {
+		// Forward this to CAN1
+		encode_1a1(vehicle_speed_mph);
+	}
 
-	// Trigger IKE speedometer refresh on value change
-	// This should really be event based, but fuck it, you write this shit
-	// if (update.status('vehicle.speed.mph', vehicle_speed_mph, false)) IKE.hud_refresh();
-
-	update.status('vehicle.speed.mph', vehicle_speed_mph, false);
 	update.status('vehicle.speed.kmh', vehicle_speed_kmh, false);
 }
 
