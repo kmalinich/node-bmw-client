@@ -663,15 +663,15 @@ function audio_power(power_state, on_ignition = true) {
 			// setTimeout(() => { cassette_control(true); }, 1000);
 
 
+			// Turn on BMBT
+			cassette_control(true);
+
 			// Set DSP source to off
 			audio_control(false);
 
 			// Send DSP functions 1 and 0
 			audio_control('dsp-1');
 			audio_control('dsp-0');
-
-			// Turn on BMBT
-			cassette_control(true);
 
 			// Set DSP source to on (tuner/tape)
 			audio_control(true);
@@ -713,6 +713,9 @@ function audio_power(power_state, on_ignition = true) {
 function init_listeners() {
 	// Perform commands on power lib active event
 	update.on('status.power.active', (data) => {
+		// Bounce if we're not configured to emulate the RAD module
+		if (config.emulate.rad !== true) return;
+
 		if (data.new === false) {
 			audio_power(false, true);
 			return;
@@ -726,7 +729,7 @@ function init_listeners() {
 		update.once('status.dsp.reset', (data) => {
 			if (data.new === true) return;
 
-			audio_power(true, true);
+			setTimeout(() => { audio_power(true, true); }, 1000);
 		});
 	});
 
