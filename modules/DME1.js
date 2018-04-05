@@ -23,15 +23,18 @@ function encode_316(rpm) {
 }
 
 function parse_316(data) {
+	let mask_0 = bitmask.check(data.msg[0]).mask;
+
 	let parse = {
 		arbid     : '0x316',
 		msg       : data.msg_f,
 		rpm       : parseFloat((parseInt('0x' + data.msg[3].toString(16) + data.msg[2].toString(16)) / 6.4).toFixed(0)),
-		ac_clutch : bitmask.test(data.msg[0], 0x40),
+		ac_clutch : mask_0.b7,
 		key       : {
-			acc   : bitmask.test(data.msg[0], 0x04), // This appears backwards,
-			run   : (bitmask.test(data.msg[0], 0x01) && bitmask.test(data.msg[0], 0x04)), // but is actually correct
-			start : bitmask.test(data.msg[0], 0x10),
+			off       : mask_0.b8,
+			accessory : !mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
+			run       : mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
+			start     : mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && mask_0.b4,
 		},
 		torque : {
 			after_interventions  : parseFloat((data.msg[1] / 2.54).toFixed(1)),
@@ -40,6 +43,7 @@ function parse_316(data) {
 			output               : parseFloat((data.msg[7] / 2.54).toFixed(1)),
 		},
 	};
+
 
 	// horsepower = (torque * RPM)/5252
 
@@ -257,7 +261,17 @@ function parse_613(data) {
 	// Byte 4 : Running Clock MSB minutes since last time battery power was lost
 
 	let parse = {
-		msg  : '0x613',
+		msg : '0x613',
+
+		vehicle : {
+			odometer : {
+				km : parseFloat((parseInt('0x' + data.msg[1].toString(16) + data.msg[0].toString(16)) * 10).toFixed(0)),
+				mi : null,
+			},
+
+			running_clock : parseFloat((parseInt('0x' + data.msg[4].toString(16) + data.msg[3].toString(16))).toFixed(0)),
+		},
+
 		fuel : {
 			level  : null,
 			liters : (data.msg[2] >= 0x80) && data.msg[2] - 0x80 || data.msg[2],
@@ -270,6 +284,13 @@ function parse_613(data) {
 
 	update.status('fuel.level',  parse.fuel.level);
 	update.status('fuel.liters', parse.fuel.liters);
+
+	parse.vehicle.odometer.mi = Math.round(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
+
+	update.status('vehicle.odometer.km', parse.vehicle.odometer.km);
+	update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi);
+
+	update.status('vehicle.running_clock', parse.vehicle.running_clock);
 }
 
 function parse_615(data) {
