@@ -157,6 +157,8 @@ function parse_out(data) {
 			break;
 
 		case 0x1F3:
+			// 00 00 05 FF 39 7D 5D 00
+			// byte2 bit3 : brake applied
 			data.value = 'Transverse acceleration';
 			break;
 

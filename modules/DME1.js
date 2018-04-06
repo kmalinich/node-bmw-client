@@ -307,7 +307,7 @@ function parse_615(data) {
 
 		engine : {
 			ac_request    : data.msg[0],
-			aux_fan_speed : data.msg[1],
+			aux_fan_speed : data.msg[0] - 0x80,
 		},
 
 		temperature : {
