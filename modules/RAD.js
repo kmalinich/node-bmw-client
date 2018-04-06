@@ -586,7 +586,14 @@ function audio_power(power_state, on_ignition = true) {
 
 		switch (status.rad.source_name) {
 			case 'off' : {
-				audio_power(true, on_ignition);
+				// Enable GPIO relay for amp power
+				gpio.set('amp', true); // Should be an emitted event
+
+				update.once('status.dsp.reset', (data) => {
+					if (data.new === true) return;
+
+					setTimeout(() => { audio_power(true, on_ignition); }, 1000);
+				});
 				break;
 			}
 
