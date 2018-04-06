@@ -598,7 +598,7 @@ function audio_power(power_state, on_ignition = true) {
 					update.once('status.dsp.reset', (data) => {
 						if (data.new === true) return;
 
-						setTimeout(() => { audio_power(true, on_ignition); }, 1000);
+						setTimeout(() => { audio_power(true, on_ignition); }, 2000);
 					});
 					break;
 				}
@@ -656,9 +656,6 @@ function audio_power(power_state, on_ignition = true) {
 			// Not really any good idea why it's this sequence of commands that turns the DSP amp on
 			// I've looked at logs from three different DSP-equipped cars and it's always this sequence
 
-			// Turn on BMBT
-			cassette_control(true);
-
 			// Set DSP source to off
 			// audio_control(false);
 
@@ -668,6 +665,9 @@ function audio_power(power_state, on_ignition = true) {
 
 			// Set DSP source to on (tuner/tape)
 			audio_control(true);
+
+			// Turn on BMBT
+			cassette_control(true);
 
 
 			// Turn volume up ~30 points
@@ -708,7 +708,7 @@ function init_listeners() {
 		update.once('status.dsp.reset', (data) => {
 			if (data.new === true) return;
 
-			setTimeout(() => { audio_power(true, true); }, 1000);
+			setTimeout(() => { audio_power(true, true); }, 2000);
 		});
 	});
 
