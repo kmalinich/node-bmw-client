@@ -22,7 +22,7 @@ function backlight(value = status.fem1.backlight.value) {
 	if (value < 0x00) value = 0xFF;
 
 	// Set status value
-	update.status('fem1.backlight.value', value);
+	update.status('fem1.backlight.value', value, false);
 
 	// Workarounds
 	switch (value) {
@@ -32,7 +32,7 @@ function backlight(value = status.fem1.backlight.value) {
 		default   : value--;             // Decrement value by one (see above)
 	}
 
-	update.status('fem1.backlight.real', value);
+	update.status('fem1.backlight.real', value, false);
 
 	bus.data.send({
 		bus  : 'can1',
@@ -55,7 +55,7 @@ function decode_backlight(data) {
 	let value = data.msg[0];
 
 	// Set status value
-	update.status('fem1.backlight.real', value);
+	update.status('fem1.backlight.real', value, false);
 
 	// Workarounds
 	switch (value) {
@@ -65,7 +65,7 @@ function decode_backlight(data) {
 		default   : value++;             // Increment value by one (see above)
 	}
 
-	update.status('fem1.backlight.value', value);
+	update.status('fem1.backlight.value', value, false);
 
 	return data;
 }
