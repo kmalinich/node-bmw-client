@@ -3,7 +3,7 @@ function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x1A: // Broadcast: check control message
 			data.command = 'bro';
-			data.value   = 'check control message TODO';
+			data.value   = 'check control message TODO ' + data.msg;
 			break;
 
 		case 0x51: // Broadcast: check control sensors
