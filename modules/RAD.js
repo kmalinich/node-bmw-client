@@ -626,6 +626,9 @@ function audio_power(power_state, on_ignition = true) {
 			audio_control(false);
 			cassette_control(false);
 
+			update.status('dsp.ready', false);
+			update.status('dsp.reset', true);
+
 			break;
 		}
 
