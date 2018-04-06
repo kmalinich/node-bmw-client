@@ -581,39 +581,39 @@ function volume_control(value = 1) {
 
 // Power on DSP amp and GPIO pin for amplifier
 function audio_power(power_state, on_ignition = true) {
-	if (power_state === 'toggle') {
-		log.module('Toggling audio power');
-
-		switch (status.rad.source_name) {
-			case 'off' : {
-				// Enable GPIO relay for amp power
-				gpio.set('amp', true); // Should be an emitted event
-
-				update.once('status.dsp.reset', (data) => {
-					if (data.new === true) return;
-
-					setTimeout(() => { audio_power(true, on_ignition); }, 1000);
-				});
-				break;
-			}
-
-			default : {
-				audio_power(false, on_ignition);
-			}
-		}
-
-		return;
-	}
+	// Bounce if we're not configured to emulate the RAD module
+	if (config.emulate.rad !== true) return;
 
 	log.module('Setting audio power to state : ' + power_state);
 
 	switch (power_state) {
+		case 'toggle' : {
+			log.module('Toggling audio power');
+
+			switch (status.rad.source_name) {
+				case 'off' : {
+					// Enable GPIO relay for amp power
+					gpio.set('amp', true); // Should be an emitted event
+
+					update.once('status.dsp.reset', (data) => {
+						if (data.new === true) return;
+
+						setTimeout(() => { audio_power(true, on_ignition); }, 1000);
+					});
+					break;
+				}
+
+				default : {
+					audio_power(false, on_ignition);
+				}
+			}
+
+			return;
+		}
+
 		case 0     :
 		case 'off' :
 		case false : {
-			// Bounce if we're not configured to emulate the RAD module
-			if (config.emulate.rad !== true) return;
-
 			// Disable GPIO relay for amp power
 			gpio.set('amp', false); // Should be an emitted event
 
@@ -635,9 +635,6 @@ function audio_power(power_state, on_ignition = true) {
 		case 1    :
 		case 'on' :
 		case true : {
-			// Bounce if we're not configured to emulate the RAD module
-			if (config.emulate.rad !== true) return;
-
 			// Toggle media playback
 			if (on_ignition === false) {
 				setTimeout(() => {
@@ -659,29 +656,15 @@ function audio_power(power_state, on_ignition = true) {
 			// Not really any good idea why it's this sequence of commands that turns the DSP amp on
 			// I've looked at logs from three different DSP-equipped cars and it's always this sequence
 
-			// Set DSP source to off
-			// audio_control(false);
-
-			// // Send DSP functions 1 and 0
-			// setTimeout(() => { audio_control('dsp-1'); }, 250);
-			// setTimeout(() => { audio_control('dsp-0'); }, 500);
-
-			// Set DSP source to on (tuner/tape)
-			// setTimeout(() => { audio_control(true); }, 750);
-
-			// Turn on BMBT
-			// setTimeout(() => { cassette_control(true); }, 1000);
-
-
 			// Turn on BMBT
 			cassette_control(true);
 
 			// Set DSP source to off
-			audio_control(false);
+			// audio_control(false);
 
 			// Send DSP functions 1 and 0
-			audio_control('dsp-1');
-			audio_control('dsp-0');
+			// audio_control('dsp-1');
+			// audio_control('dsp-0');
 
 			// Set DSP source to on (tuner/tape)
 			audio_control(true);
@@ -689,31 +672,17 @@ function audio_power(power_state, on_ignition = true) {
 
 			// Turn volume up ~30 points
 			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
+				for (let i = 0; i < 6; i++) {
+					setTimeout(() => { volume_control(5); }, (i * 150));
+				}
 			}, 500);
-
-			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 750);
-
-			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 1000);
 
 
 			// Increase volume after power on
-			if (config.bmbt.vol_at_poweron === true) {
-				setTimeout(() => {
-					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 1250);
+			if (config.bmbt.vol_at_poweron !== true) return;
 
-				setTimeout(() => {
-					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 1500);
-
-				setTimeout(() => {
-					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 1750);
+			for (let i = 0; i < 6; i++) {
+				setTimeout(() => { volume_control(5); }, (i * 150));
 			}
 		}
 	}

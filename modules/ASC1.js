@@ -105,8 +105,10 @@ function parse_1f0(data) {
 	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
 	if (update.status('vehicle.speed.mph', vehicle_speed_mph, false)) {
-		// Forward this to CAN1
-		encode_1a1(vehicle_speed_mph);
+		if (config.translate.dsc === true) {
+			// Forward this to CAN1
+			encode_1a1(vehicle_speed_mph);
+		}
 	}
 
 	update.status('vehicle.speed.kmh', vehicle_speed_kmh, false);
