@@ -504,7 +504,7 @@ function parse_out(data) {
 		case 0x277 : data = decode_ack(data);       break;
 
 		case 0x4E7 :
-		case 0x5E7 : data = decode_status(data); break;
+		case 0x5E7 : data = decode_status(data); return;
 
 		default : {
 			data.command = 'unk';

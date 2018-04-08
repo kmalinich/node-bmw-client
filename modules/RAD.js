@@ -584,11 +584,9 @@ function audio_power(power_state, on_ignition = true) {
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
-	log.module('Setting audio power to state : ' + power_state);
-
 	switch (power_state) {
 		case 'toggle' : {
-			log.module('Toggling audio power');
+			log.module('Toggling audio power, current source: ' + status.rad.source_name);
 
 			switch (status.rad.source_name) {
 				case 'off' : {
@@ -600,6 +598,8 @@ function audio_power(power_state, on_ignition = true) {
 
 						setTimeout(() => { audio_power(true, on_ignition); }, 2000);
 					});
+
+					setTimeout(() => { audio_power(true, true); }, 6000);
 					break;
 				}
 
@@ -614,6 +614,8 @@ function audio_power(power_state, on_ignition = true) {
 		case 0     :
 		case 'off' :
 		case false : {
+			log.module('Setting audio power to state : ' + power_state);
+
 			// Disable GPIO relay for amp power
 			gpio.set('amp', false); // Should be an emitted event
 
@@ -635,6 +637,8 @@ function audio_power(power_state, on_ignition = true) {
 		case 1    :
 		case 'on' :
 		case true : {
+			log.module('Setting audio power to state : ' + power_state);
+
 			// Toggle media playback
 			if (on_ignition === false) {
 				setTimeout(() => {
@@ -669,20 +673,21 @@ function audio_power(power_state, on_ignition = true) {
 			// Turn on BMBT
 			cassette_control(true);
 
-
-			// Turn volume up ~30 points
+			// Increase volume after power on
 			setTimeout(() => {
-				for (let i = 0; i < 10; i++) {
-					setTimeout(() => { volume_control(3); }, (i * 200));
+				let msg_vol;
+				switch (config.bmbt.vol_at_poweron) {
+					case false : msg_vol = [ 0x1C, 0x01, 0x01, 0x1A ]; break;
+					case true  : msg_vol = [ 0x1C, 0x01, 0x01, 0x00 ];
 				}
 
-				// Increase volume after power on
-				if (config.bmbt.vol_at_poweron !== true) return;
-
-				for (let i = 0; i < 10; i++) {
-					setTimeout(() => { volume_control(3); }, (i * 200));
-				}
-			}, 750);
+				volume_control(5);
+				bus.data.send({
+					src : 'DIA',
+					dst : 'DSP',
+					msg : msg_vol,
+				});
+			}, 250);
 		}
 	}
 }

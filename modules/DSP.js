@@ -240,13 +240,18 @@ function request(value) {
 
 
 module.exports = {
-	dsp_mode     : dsp_mode,
-	eq_decode    : eq_decode,
-	eq_delta     : eq_delta,
-	eq_encode    : eq_encode,
-	eq_send      : eq_send,
-	m_audio      : m_audio,
-	parse_out    : parse_out,
-	request      : request,
+	dsp_mode : dsp_mode,
+
+	eq_decode : eq_decode,
+	eq_delta  : eq_delta,
+	eq_encode : eq_encode,
+	eq_send   : eq_send,
+
+	m_audio : m_audio,
+
+	parse_out : parse_out,
+
+	request : request,
+
 	speaker_test : speaker_test,
 };

@@ -136,9 +136,9 @@ function parse_329(data) {
 	parse.temperature.coolant.f = Math.round(parse.temperature.coolant.f);
 
 	// Update status object
-	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar);
-	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
-	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi);
+	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar, false);
+	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg, false);
+	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi,  false);
 
 	update.status('vehicle.cruise.button.minus', parse.vehicle.cruise.button.minus);
 	update.status('vehicle.cruise.button.onoff', parse.vehicle.cruise.button.onoff);
