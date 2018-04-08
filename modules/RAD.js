@@ -581,31 +581,40 @@ function volume_control(value = 1) {
 
 // Power on DSP amp and GPIO pin for amplifier
 function audio_power(power_state, on_ignition = true) {
-	if (power_state === 'toggle') {
-		log.module('Toggling audio power');
-
-		switch (status.rad.source_name) {
-			case 'off' : {
-				audio_power(true, on_ignition);
-				break;
-			}
-
-			default : {
-				audio_power(false, on_ignition);
-			}
-		}
-
-		return;
-	}
-
-	log.module('Setting audio power to state : ' + power_state);
+	// Bounce if we're not configured to emulate the RAD module
+	if (config.emulate.rad !== true) return;
 
 	switch (power_state) {
+		case 'toggle' : {
+			log.module('Toggling audio power, current source: ' + status.rad.source_name);
+
+			switch (status.rad.source_name) {
+				case 'off' : {
+					// Enable GPIO relay for amp power
+					gpio.set('amp', true); // Should be an emitted event
+
+					update.once('status.dsp.reset', (data) => {
+						if (data.new === true) return;
+
+						setTimeout(() => { audio_power(true, on_ignition); }, 2000);
+					});
+
+					setTimeout(() => { audio_power(true, true); }, 6000);
+					break;
+				}
+
+				default : {
+					audio_power(false, on_ignition);
+				}
+			}
+
+			return;
+		}
+
 		case 0     :
 		case 'off' :
 		case false : {
-			// Bounce if we're not configured to emulate the RAD module
-			if (config.emulate.rad !== true) return;
+			log.module('Setting audio power to state : ' + power_state);
 
 			// Disable GPIO relay for amp power
 			gpio.set('amp', false); // Should be an emitted event
@@ -619,14 +628,16 @@ function audio_power(power_state, on_ignition = true) {
 			audio_control(false);
 			cassette_control(false);
 
+			update.status('dsp.ready', false);
+			update.status('dsp.reset', true);
+
 			break;
 		}
 
 		case 1    :
 		case 'on' :
 		case true : {
-			// Bounce if we're not configured to emulate the RAD module
-			if (config.emulate.rad !== true) return;
+			log.module('Setting audio power to state : ' + power_state);
 
 			// Toggle media playback
 			if (on_ignition === false) {
@@ -652,59 +663,31 @@ function audio_power(power_state, on_ignition = true) {
 			// Set DSP source to off
 			// audio_control(false);
 
-			// // Send DSP functions 1 and 0
-			// setTimeout(() => { audio_control('dsp-1'); }, 250);
-			// setTimeout(() => { audio_control('dsp-0'); }, 500);
-
-			// Set DSP source to on (tuner/tape)
-			// setTimeout(() => { audio_control(true); }, 750);
-
-			// Turn on BMBT
-			// setTimeout(() => { cassette_control(true); }, 1000);
-
-
-			// Set DSP source to off
-			audio_control(false);
-
 			// Send DSP functions 1 and 0
-			audio_control('dsp-1');
-			audio_control('dsp-0');
-
-			// Turn on BMBT
-			cassette_control(true);
+			// audio_control('dsp-1');
+			// audio_control('dsp-0');
 
 			// Set DSP source to on (tuner/tape)
 			audio_control(true);
 
-
-			// Turn volume up ~30 points
-			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 500);
-
-			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 750);
-
-			setTimeout(() => {
-				for (let i = 0; i < 2; i++) volume_control(5);
-			}, 1000);
-
+			// Turn on BMBT
+			cassette_control(true);
 
 			// Increase volume after power on
-			if (config.bmbt.vol_at_poweron === true) {
-				setTimeout(() => {
-					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 1250);
+			setTimeout(() => {
+				let msg_vol;
+				switch (config.bmbt.vol_at_poweron) {
+					case false : msg_vol = [ 0x1C, 0x01, 0x01, 0x1A ]; break;
+					case true  : msg_vol = [ 0x1C, 0x01, 0x01, 0x00 ];
+				}
 
-				setTimeout(() => {
-					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 1500);
-
-				setTimeout(() => {
-					for (let i = 0; i < 2; i++) volume_control(5);
-				}, 1750);
-			}
+				volume_control(5);
+				bus.data.send({
+					src : 'DIA',
+					dst : 'DSP',
+					msg : msg_vol,
+				});
+			}, 250);
 		}
 	}
 }
@@ -713,6 +696,9 @@ function audio_power(power_state, on_ignition = true) {
 function init_listeners() {
 	// Perform commands on power lib active event
 	update.on('status.power.active', (data) => {
+		// Bounce if we're not configured to emulate the RAD module
+		if (config.emulate.rad !== true) return;
+
 		if (data.new === false) {
 			audio_power(false, true);
 			return;
@@ -726,7 +712,7 @@ function init_listeners() {
 		update.once('status.dsp.reset', (data) => {
 			if (data.new === true) return;
 
-			audio_power(true, true);
+			setTimeout(() => { audio_power(true, true); }, 2000);
 		});
 	});
 

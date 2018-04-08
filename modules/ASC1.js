@@ -1,5 +1,35 @@
 const convert = require('node-unit-conversion');
 
+// Send 0x1A1 KCAN2 message for vehicle speed
+// BE DE 4A 12 91
+// - or -
+// 00 00 4A 12 00
+//
+// B2 : Speed LSB
+// B3 : Speed MSB
+
+// Example:
+// 124A (hex) = 4682 (dec) / 100 = 46.82 MPH
+//
+// (((18 * 256) + 74) / 100) = 46.82 MPH
+//
+// Input is in MPH
+function encode_1a1(speed = 0) {
+	let speed_encoded = Math.floor(speed * 100).toString(16).padStart(0, 4);
+
+	let speed_0 = parseInt('0x' + speed_encoded.substring(2, 4)) || 0; // LSB
+	let speed_1 = parseInt('0x' + speed_encoded.substring(0, 2)) || 0; // MSB
+
+	let msg = [ 0x00, 0x00, speed_0, speed_1, 0x00 ];
+
+	// Send packet
+	bus.data.send({
+		bus  : 'can1',
+		id   : 0x1A1,
+		data : Buffer.from(msg),
+	});
+}
+
 function parse_153(data) {
 	// DSC off (DSC light on) (b0/b1)
 	// 04 61 01 FF 00 FE FF 0
@@ -74,11 +104,13 @@ function parse_1f0(data) {
 	// Calculate vehicle speed value in MPH
 	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
-	// Trigger IKE speedometer refresh on value change
-	// This should really be event based, but fuck it, you write this shit
-	// if (update.status('vehicle.speed.mph', vehicle_speed_mph, false)) IKE.hud_refresh();
+	if (update.status('vehicle.speed.mph', vehicle_speed_mph, false)) {
+		if (config.translate.dsc === true) {
+			// Forward this to CAN1
+			encode_1a1(vehicle_speed_mph);
+		}
+	}
 
-	update.status('vehicle.speed.mph', vehicle_speed_mph, false);
 	update.status('vehicle.speed.kmh', vehicle_speed_kmh, false);
 }
 
@@ -127,6 +159,8 @@ function parse_out(data) {
 			break;
 
 		case 0x1F3:
+			// 00 00 05 FF 39 7D 5D 00
+			// byte2 bit3 : brake applied
 			data.value = 'Transverse acceleration';
 			break;
 
@@ -178,6 +212,20 @@ function parse_out(data) {
 	// log.bus(data);
 }
 
+
+function init_listeners() {
+	// Send vehicle speed 0 to CAN1 on power module events
+	// This is because vehicle speed isn't received via CAN0 when key is in accessory
+	update.on('status.power.active', () => { encode_1a1(0); });
+
+	log.msg('Initialized listeners');
+}
+
+
 module.exports = {
+	init_listeners : init_listeners,
+
+	encode_1a1 : encode_1a1,
+
 	parse_out : parse_out,
 };

@@ -317,7 +317,7 @@ function decode_rotation(data) {
 
 	// Update data in global status object
 	update.status('con1.rotation.absolute', data.msg[2], false);
-	update.status('con1.rotation.relative', data.msg[3]);
+	update.status('con1.rotation.relative', data.msg[3], false);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
@@ -504,7 +504,7 @@ function parse_out(data) {
 		case 0x277 : data = decode_ack(data);       break;
 
 		case 0x4E7 :
-		case 0x5E7 : data = decode_status(data); break;
+		case 0x5E7 : data = decode_status(data); return;
 
 		default : {
 			data.command = 'unk';

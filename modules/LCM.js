@@ -1014,6 +1014,8 @@ module.exports = {
 	},
 
 	// Functions
+	decode : decode,
+
 	auto_lights         : auto_lights,
 	auto_lights_process : auto_lights_process,
 	comfort_turn_flash  : comfort_turn_flash,
