@@ -436,6 +436,25 @@ class GM extends EventEmitter {
 			}
 		});
 
+		update.on('status.vehicle.locked', (data) => {
+			// Bounce if ignition is not off
+			if (status.vehicle.ignition_level !== 0) return;
+			switch (data.new) {
+				case false : {
+					// If the vehicle is newly unlocked, fold out mirrors
+					this.mirrors({ action : 'out', mirror : 'left'  });
+					this.mirrors({ action : 'out', mirror : 'right' });
+					break;
+				}
+
+				case true : {
+					// If the vehicle is newly locked, fold in mirrors
+					this.mirrors({ action : 'in', mirror : 'left'  });
+					this.mirrors({ action : 'in', mirror : 'right' });
+				}
+			}
+		});
+
 		log.module('Initialized listeners');
 	}
 
