@@ -42,7 +42,8 @@ function parse_153(data) {
 	let parse = {
 		vehicle : {
 			brake : bitmask.test(data.msg[1], 0x10),
-			dsc   : {
+
+			dsc : {
 				active             : !bitmask.test(data.msg[1], 0x01),
 				torque_reduction_1 : data.msg[3] / 2.54,
 				torque_reduction_2 : data.msg[6] / 2.54,
@@ -170,24 +171,35 @@ function parse_out(data) {
 			break;
 
 		case 0x1F8:
+			// Brake pressure messages observed in 2002 E39 M5
+			//
+			//                         XX
+			// 077F  14 14 00 00 00 00 82 01
+			//
+			//       XX XX    XX          XX
+			// 07B5  30 30 00 30 00 00 00 42
+			//
+			//
+			//
+			// 0xB8 = DME? KWP2000 protocol
 			// Status sensors (21 06):
 			// Positive pressure:
 			// B8 29 F1 02 21 06 45
+			//                               XX XX XX XX
 			// B8 F1 29 0F 61 06 00 00 C3 DC 14 8F 14 A4 00 00 00 00 11 06
 			//
 			// BrakeLinePressureFront = hex2dec('148F')/100 = 52.63 [bar]
-			// BrakeLinePressureRear = hex2dec('14A4')/100 = 52.84 [bar]
-			//
+			// BrakeLinePressureRear  = hex2dec('14A4')/100 = 52.84 [bar]
 			//
 			// BrakeLinePressureFront = hex2dec('1D31')/100 = 74.73 [bar]
-			// BrakeLinePressureRear = hex2dec('1D1C')/100 = 74.52 [bar]
+			// BrakeLinePressureRear  = hex2dec('1D1C')/100 = 74.52 [bar]
 			//
 			// Neg. pressure by twos complement:
 			// B8 29 F1 02 21 06 45
-			// B8 F1 29 0F 61 06 00 00 C3 DC F7ED F783 00 00 00 00 11 06
+			// B8 F1 29 0F 61 06 00 00 C3 DC F7 ED F7 83 00 00 00 00 11 06
 			//
 			// BrakeLinePressureFront = (hex2dec('F7ED')-65536)/100 = -20.67 [bar]
-			// BrakeLinePressureRear = (hex2dec('F783')-65536)/100 = -21.73 [bar]
+			// BrakeLinePressureRear  = (hex2dec('F783')-65536)/100 = -21.73 [bar]
 			// BrakeLinePressureFront = (hex2dec('FFA5')-65536)/100 = -0.91 [bar]
 			//
 			//
@@ -199,14 +211,17 @@ function parse_out(data) {
 			// xxxx = hex value in telegram of Offset Front
 			// yyyy = hex value in telegram of Offset Rear
 			// BrakeLinePressureFrontOffset = 0.000625*x + 2.3315e-15
-			// BrakeLinePressureRearOffset = 0.000625*y + 2.3315e-15
-			// where x is twos complement of xxxx (or yyyy) if neg value in xxxx (or yyyy) (msb set), otherwise pos value of xxxx (or yyyy)
-			// Example: 0xFA89 => neg value since msb=1. Twos complement of 0xFA89 = -1399 => -0.87438 [bar]
+			// BrakeLinePressureRearOffset  = 0.000625*y + 2.3315e-15
+			//
+			// where x is twos complement of xxxx (or yyyy)
+			// if neg value in xxxx (or yyyy) (msb set), otherwise pos value of xxxx (or yyyy)
+			//
+			// Example: 0xFA89 => neg value since msb=1
+			// Twos complement of 0xFA89 = -1399 => -0.87438 [bar]
 			data.value = 'Brake pressure';
 			break;
 
-		default:
-			data.value = data.src.id.toString(16);
+		default : data.value = data.src.id.toString(16);
 	}
 
 	// log.bus(data);

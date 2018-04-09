@@ -26,8 +26,6 @@ function parse_316(data) {
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
 	let parse = {
-		arbid     : '0x316',
-		msg       : data.msg_f,
 		rpm       : parseFloat((parseInt('0x' + data.msg[3].toString(16) + data.msg[2].toString(16)) / 6.4).toFixed(0)),
 		ac_clutch : mask_0.b7,
 		key       : {
@@ -59,21 +57,19 @@ function parse_316(data) {
 }
 
 function parse_329(data) {
-	// Byte 2
+	// byte2
 	// 0 = Sport on (request by SMG transmission)
 	// 1 = Sport off
 	// 2 = Sport on
 	// 3 = Sport error
 
-	// Byte 3
+	// byte3
 	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
 	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
 	// bit 4 - Possibly motor status (0 = on, 1 = off)
 	// bits 5, 6, 7 - MSS52 sport mode, tank evap duty cycle.. pfft
 
 	let parse = {
-		msg : '0x329',
-
 		engine : {
 			throttle : {
 				cruise : parseFloat((data.msg[4] / 2.54).toFixed(1)),
@@ -153,7 +149,7 @@ function parse_329(data) {
 	update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
 	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
-	update.status('temperature.coolant.f', parse.temperature.coolant.f);
+	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
 
 	update.status('vehicle.sport.active', parse.vehicle.sport.active);
 
@@ -187,18 +183,24 @@ function parse_338(data) {
 	return data;
 }
 
+// byte0, bit1 : Check engine
+// byte0, bit3 : Cruise
+// byte0, bit4 : EML
+// byte0, bit7 : Check gas cap
+//
+// byte3, bit0 : Oil level error, if motortype = S62
+// byte3, bit1 : Oil level warning
+// byte3, bit2 : Oil level error
+// byte3, bit3 : Overheat Light
+// byte3, bit4 : M3/M5 tachometer light
+// byte3, bit5 : M3/M5 tachometer light
+// byte3, bit6 : M3/M5 tachometer light
+//
+// byte4 : Oil temperature (ºC = X - 48)
+// byte5 : Charge light (0 = off, 1 = on; only used on some DMEs)
+// byte6 : CSL oil level (format unclear)
+// byte7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
-	// Byte 3
-	// bit 0 - Oil level error, if motortype = S62
-	// bit 1 - Oil level warning
-	// bit 2 - Oil level error
-	// bit 3 - Overheat Light
-	// bit 4, 5, 6 - M3/M5 RPM warning field (refer to tables below)
-	// Byte 4 - Oil temperature (ºC = X - 48)
-	// Byte 5 - Charge light (0 = off, 1 = on; only used on some DMEs)
-	// Byte 6 - CSL oil level (format unclear)
-	// Byte 7 - Possibly MSS54 TPM trigger
-
 	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
 
 	// Need at least one value first
@@ -207,24 +209,18 @@ function parse_545(data) {
 		return;
 	}
 
-	// if (consumption_current === DME1.consumption_last) return;
-
 	let parse = {
-		msg : '0x545',
+		fuel : {
+			consumption : consumption_current - DME1.consumption_last,
+		},
 
-		// Byte0, Bit1 : Check engine
-		// Byte0, Bit3 : Cruise
-		// Byte0, Bit4 : EML
-		// Byte0, Bit7 : Check gas cap
 		status : {
 			check_engine  : bitmask.test(data.msg[0], bitmask.b[1]),
 			check_gas_cap : bitmask.test(data.msg[0], bitmask.b[7]),
 			cruise        : bitmask.test(data.msg[0], bitmask.b[3]),
 			eml           : bitmask.test(data.msg[0], bitmask.b[4]),
 		},
-		fuel : {
-			consumption : consumption_current - DME1.consumption_last,
-		},
+
 		temperature : {
 			oil : {
 				c : parseFloat((data.msg[4] - 48.373).toFixed(2)),
@@ -246,23 +242,22 @@ function parse_545(data) {
 
 	update.status('fuel.consumption', parse.fuel.consumption, false);
 
-	update.status('temperature.oil.f', parse.temperature.oil.f);
+	update.status('temperature.oil.f', parse.temperature.oil.f, false);
 
 	// Trigger a HUD refresh if oil temp is updated
 	if (update.status('temperature.oil.c', parse.temperature.oil.c)) IKE.hud_refresh();
 }
 
 
+// byte0 : Odometer LSB
+// byte1 : Odometer MSB
+// byte2 : Fuel level
+// byte3 : Running clock LSB
+// byte4 : Running clock MSB
+//
+// Running clock = minutes since last time battery power was lost
 function parse_613(data) {
-	// Byte 0 : Odometer LSB
-	// Byte 1 : Odometer MSB [Convert from hex to decimal. multiply by 10 and that is odometer in km]
-	// Byte 2 : Fuel level : Full is hex 39, fuel light comes on at hex 8. Then values jump to hex 87 (or so) and then go down to hex 80 being empty
-	// Byte 3 : Running Clock LSB
-	// Byte 4 : Running Clock MSB minutes since last time battery power was lost
-
 	let parse = {
-		msg : '0x613',
-
 		vehicle : {
 			odometer : {
 				km : parseFloat((parseInt('0x' + data.msg[1].toString(16) + data.msg[0].toString(16)) * 10).toFixed(0)),
@@ -283,28 +278,26 @@ function parse_613(data) {
 	if (parse.fuel.level > 100) parse.fuel.level = 100;
 
 	update.status('fuel.level',  parse.fuel.level);
-	update.status('fuel.liters', parse.fuel.liters);
+	update.status('fuel.liters', parse.fuel.liters, false);
 
 	parse.vehicle.odometer.mi = Math.round(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
 
-	update.status('vehicle.odometer.km', parse.vehicle.odometer.km);
+	update.status('vehicle.odometer.km', parse.vehicle.odometer.km, false);
 	update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi);
 
 	update.status('vehicle.running_clock', parse.vehicle.running_clock);
 }
 
+// ARBID: 0x615 sent from the instrument cluster
 function parse_615(data) {
-	// ARBID: 0x615 sent from the instrument cluster
-	// Byte 0 : AC signal. Hex 80 when on (10000000) Other bits say something else (Load, Aux fan speed request? system pressure?)
-	// Byte 1 : 4 when headlights/parking lights on
-	// Byte 2 : ??
-	// Byte 3 : Outside Air Temperature: x being temperature in Deg C, (x>=0 deg C,DEC2HEX(x),DEC2HEX(-x)+128) x range min -40 C max 50 C
-	// Byte 4 : 1 = Driver door open; 2 = handbrake up
-	// Byte 5 : 2 = Left turn signal, 4 = Right turn signal, 6 = hazards
+	// byte0 : AC signal, 0x80 when on, other bits say something else (load, aux fan speed request? system pressure?)
+	// byte1 : 4 = headlights/parking lights on
+	// byte2 : ??
+	// byte3 : Outside air temperature
+	// byte4 : 1 = Driver door open, 2 = handbrake up
+	// byte5 : 2 = Left turn signal, 4 = Right turn signal, 6 = hazards
 
 	let parse = {
-		msg : '0x615',
-
 		engine : {
 			ac_request    : data.msg[0],
 			aux_fan_speed : data.msg[0] - 0x80,
@@ -343,12 +336,12 @@ function parse_615(data) {
 	update.status('engine.aux_fan_speed', parse.engine.aux_fan_speed);
 
 	update.status('temperature.exterior.c', parse.temperature.exterior.c);
-	update.status('temperature.exterior.f', parse.temperature.exterior.f);
+	update.status('temperature.exterior.f', parse.temperature.exterior.f, false);
 
 	update.status('vehicle.handbrake', parse.vehicle.handbrake);
 
 	update.status('temperature.intake.c', parse.temperature.intake.c);
-	update.status('temperature.intake.f', parse.temperature.intake.f);
+	update.status('temperature.intake.f', parse.temperature.intake.f, false);
 }
 
 
