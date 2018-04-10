@@ -1,8 +1,8 @@
 // Parse data sent to module
 function parse_in(data) {
-	if (DIA.last.cmd === 'con') {
-		return objfmt(data);
-	}
+	// if (DIA.last.cmd === 'con') return objfmt(data);
+
+	if (data.src.upper === 'LCM') LCM.parse_out(data);
 
 	switch (DIA.last.val) {
 		case 'coding-data' : {
@@ -17,10 +17,6 @@ function parse_in(data) {
 
 		case 'io-status' : {
 			log.msg(DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
-
-			if (data.src.upper === 'LCM') {
-				LCM.decode(data);
-			}
 			break;
 		}
 

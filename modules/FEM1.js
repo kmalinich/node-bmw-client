@@ -7,7 +7,7 @@ function backlight(value = status.fem1.backlight.value) {
 		value = 0xFF;
 	}
 
-	log.module('Setting backlight to value : ' + value);
+	// log.module('Setting backlight to value : ' + value);
 
 	// Bounce if not enabled
 	if (config.emulate.fem1 !== true) return;

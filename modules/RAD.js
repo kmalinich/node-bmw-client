@@ -593,8 +593,8 @@ function audio_power(power_state, on_ignition = true) {
 					// Enable GPIO relay for amp power
 					gpio.set('amp', true); // Should be an emitted event
 
-					update.once('status.dsp.reset', (data) => {
-						if (data.new === true) return;
+					update.once('status.dsp.ready', (data) => {
+						if (data.new === false) return;
 
 						setTimeout(() => { audio_power(true, on_ignition); }, 2000);
 					});
@@ -709,8 +709,8 @@ function init_listeners() {
 		// Enable GPIO relay for amp power
 		gpio.set('amp', true); // Should be an emitted event
 
-		update.once('status.dsp.reset', (data) => {
-			if (data.new === true) return;
+		update.once('status.dsp.ready', (data) => {
+			if (data.new === false) return;
 
 			setTimeout(() => { audio_power(true, true); }, 2000);
 		});

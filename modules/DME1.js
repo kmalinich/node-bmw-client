@@ -209,6 +209,9 @@ function parse_545(data) {
 		return;
 	}
 
+	// The amount of fuel being consumed isn't a flat number
+	// It's the difference between two numbers factoring in the time between the time both numbers were received
+
 	let parse = {
 		fuel : {
 			consumption : consumption_current - DME1.consumption_last,
