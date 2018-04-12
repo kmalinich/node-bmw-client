@@ -35,7 +35,7 @@ function init_listeners() {
 	update.on('status.power.active', status_module);
 	update.on('status.power.active', status_ignition);
 
-	log.module('Initialized listeners');
+	log.msg('Initialized listeners');
 }
 
 
@@ -123,14 +123,26 @@ function status_module() {
 	// Default is NBT1 message
 	let msg = {
 		bus  : 'can1',
-		id   : 0x563,
-		data : [ 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x63 ],
+		id   : null,
+		data : [ ],
 	};
 
 	switch (config.nbt1.mode.toLowerCase()) {
 		case 'cic' : {
 			msg.id   = 0x273;
 			msg.data = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
+			break;
+		}
+
+		case 'nbt' : {
+			msg.id   = 0x563;
+			msg.data = [ 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x63 ];
+			break;
+		}
+
+		default : {
+			log.module('config.nbt1.mode must be set to one of cic or nbt');
+			return;
 		}
 	}
 
@@ -144,14 +156,14 @@ function status_module() {
 	bus.data.send(msg);
 
 	// When this command fires, also update backlight value
-	FEM1.backlight();
+	// FEM1.backlight();
 }
 
 // Ignition status
 // TODO : Should be in CAS1 module
 function status_ignition() {
 	// Bounce if not enabled
-	if (config.retrofit.con1 !== true && config.retrofit.nbt1 !== true) return;
+	if (config.retrofit.nbt1 !== true) return;
 
 	// Handle setting/unsetting timeout
 	switch (status.power.active) {

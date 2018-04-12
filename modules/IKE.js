@@ -5,7 +5,6 @@ const convert      = require('node-unit-conversion');
 const moment       = require('moment');
 const now          = require('performance-now');
 const os           = require('os');
-const pad          = require('pad');
 
 
 // Clear check control messages, then refresh HUD
@@ -175,7 +174,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_consumption_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_consumption_1 = parseFloat(string_consumption_1.toString().trim().toLowerCase());
+				string_consumption_1 = parseFloat(string_consumption_1.toString().trim()) || 0;
 
 				// Perform appropriate conversions between units
 				switch (string_consumption_1_unit) {
@@ -212,7 +211,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_consumption_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_consumption_2 = parseFloat(string_consumption_2.toString().trim().toLowerCase());
+				string_consumption_2 = parseFloat(string_consumption_2.toString().trim()) || 0;
 
 				// Perform appropriate conversions between units and round to 2 decimals
 				switch (string_consumption_2_unit) {
@@ -240,7 +239,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_range = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_range = string_range.toString().trim();
+				string_range = parseFloat(string_range.toString().trim());
 
 				string_range_unit = Buffer.from([ data.msg[7], data.msg[8] ]);
 				string_range_unit = string_range_unit.toString().trim().toLowerCase();
@@ -249,18 +248,18 @@ class IKE extends EventEmitter {
 				switch (string_range_unit) {
 					case 'ml' : {
 						update.status('coding.unit.distance', 'mi');
-						update.status('obc.range.mi', parseFloat(string_range));
-						update.status('obc.range.km', parseFloat(convert(parseFloat(string_range)).from('kilometre').to('us mile').toFixed(2)));
+						update.status('obc.range.mi', string_range);
+						update.status('obc.range.km', parseFloat(convert(string_range).from('kilometre').to('us mile').toFixed(2)) || 0);
 						break;
 					}
 
 					case 'km' : {
 						update.status('coding.unit.distance', 'km');
-						update.status('obc.range.mi', parseFloat(convert(parseFloat(string_range)).from('us mile').to('kilometre').toFixed(2)));
-						update.status('obc.range.km', parseFloat(string_range));
-						break;
+						update.status('obc.range.mi', parseFloat(convert(string_range).from('us mile').to('kilometre').toFixed(2)) || 0);
+						update.status('obc.range.km', string_range);
 					}
 				}
+
 				break;
 			}
 
@@ -269,10 +268,10 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_distance = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_distance = string_distance.toString().trim().toLowerCase();
+				string_distance = parseFloat(string_distance.toString().trim().toLowerCase()) || 0;
 
 				// Update status variables
-				update.status('obc.distance', parseFloat(string_distance));
+				update.status('obc.distance', string_distance);
 				break;
 			}
 
@@ -293,10 +292,10 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_limit = Buffer.from([ data.msg[3], data.msg[4], data.msg[5] ]);
-				string_limit = parseFloat(string_limit.toString().trim().toLowerCase());
+				string_limit = parseFloat(string_limit.toString().trim().toLowerCase()) || 0;
 
 				// Update status variables
-				update.status('obc.limit', parseFloat(string_limit.toFixed(2)));
+				update.status('obc.limit', string_limit);
 				break;
 			}
 
@@ -310,7 +309,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_average_speed = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_average_speed = parseFloat(string_average_speed.toString().trim().toLowerCase());
+				string_average_speed = parseFloat(string_average_speed.toString().trim()) || 0;
 
 				// Convert values appropriately based on coding valueunits
 				switch (string_average_speed_unit) {
@@ -318,7 +317,7 @@ class IKE extends EventEmitter {
 						update.status('obc.coding.unit.speed', 'kmh');
 
 						// Update status variables
-						update.status('obc.average_speed.kmh', parseFloat(string_average_speed.toFixed(2)));
+						update.status('obc.average_speed.kmh', string_average_speed);
 						update.status('obc.average_speed.mph', parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2)));
 						break;
 					}
@@ -328,7 +327,7 @@ class IKE extends EventEmitter {
 
 						// Update status variables
 						update.status('obc.average_speed.kmh', parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2)));
-						update.status('obc.average_speed.mph', parseFloat(string_average_speed.toFixed(2)));
+						update.status('obc.average_speed.mph', string_average_speed);
 						break;
 					}
 				}
@@ -352,7 +351,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_stopwatch = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_stopwatch = parseFloat(string_stopwatch.toString().trim().toLowerCase()).toFixed(2);
+				string_stopwatch = parseFloat(string_stopwatch.toString().trim()) || 0;
 
 				// Update status variables
 				update.status('obc.stopwatch', string_stopwatch);
@@ -388,10 +387,10 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_interim = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_interim = parseFloat(string_interim.toString().trim().toLowerCase()).toFixed(2);
+				string_interim = parseFloat(string_interim.toString().trim().toFixed(2)) || 0;
 
 				// Update status variables
-				update.status('obc.interim', parseFloat(string_interim));
+				update.status('obc.interim', string_interim);
 				break;
 			}
 		}
@@ -536,54 +535,75 @@ class IKE extends EventEmitter {
 		});
 	}
 
-	// Refresh custom HUD
-	hud_refresh(override = false) {
-		if (override === false && !this.ok2hud()) return;
+	// Render custom HUD string
+	hud_render(hud_render_cb = null) {
+		// Determine Moment.js format string
+		let moment_format;
+		switch (config.hud.time.format) {
+			case '24h' : moment_format = 'H:mm'; break;
 
-		log.module('Refreshing HUD');
+			default : moment_format = 'h:mm';
+		}
 
-		// 1m sysload to percentage
-		let string_load = status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%';
-
-		let string_cons  = '';
-		let string_speed = '';
-		let string_temp  = '';
-		let string_time  = moment().format('h:mm'); // TODO add config option for 12h/24h
-		let string_volt  = '';
-
-		// Only add data to strings if it is populated
-		if (status.obc.consumption.c1.mpg !== null) string_cons  = pad(5, parseFloat(status.obc.consumption.c1.mpg).toFixed(1) + 'm', '0');
-		if (status.vehicle.speed.mph      !== null) string_speed = status.vehicle.speed.mph + 'mph';
-
-		if (status.temperature.coolant.c !== null) string_temp = Math.round(status.temperature.coolant.c) + '¨';
-		if (status.temperature.oil.c     !== null) string_temp = string_temp + '|' + Math.round(status.temperature.oil.c) + '¨';
-
-		if (status.lcm.voltage.terminal_30 !== null) string_volt = status.lcm.voltage.terminal_30 + 'v';
-
-		// Space-pad strings
 		let hud_strings = {
-			left   : pad(string_cons, 7),
-			center : pad(string_temp, 8),
-			right  : pad(string_time, 8),
+			left   : '',
+			center : '',
+			right  : '',
 
-			load  : pad(string_load,  7),
-			speed : pad(string_speed, 7),
-			volt  : pad(string_volt,  7),
+			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg', // TODO use unit from config
+			load  : status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%',
+			speed : status.vehicle.speed.mph + 'mph',
+			temp  : Math.round(status.temperature.coolant.c) + '¨',
+			time  : moment().format(moment_format),
+			volt  : status.lcm.voltage.terminal_30 + 'v',
+			range : Math.round(status.obc.range.mi) + 'mi',
 		};
 
-		hud_strings.center = pad(string_temp, (6 + (7 - string_time.length)));
+		// Add oil temp to temp string if configured
+		if (config.hud.temp.oil === true) {
+			hud_strings.temp += ' ' + Math.round(status.temperature.oil.c) + '¨';
+		}
 
-		// Change left string to be load/CPU temp if over threshold
-		if (status.system.temperature > config.system.temperature.fan_enable) hud_strings.left = hud_strings.load;
 
-		// Change left string to be LCM terminal 30 voltage if under threshold
-		if (status.lcm.voltage.terminal_30 < 13) hud_strings.left = hud_strings.volt;
+		// Space-pad strings
+		// Layout padding should be 7 + 5 + 8
 
-		// Assemble text string
-		let hud_string = hud_strings.left + hud_strings.center + hud_strings.right;
+		// TODO use layout from config
+		hud_strings.left   = hud_strings.temp.padEnd(8);
+		hud_strings.center = hud_strings.range.padEnd(4);
+		hud_strings.right  = hud_strings.cons.padStart(7);
 
-		// Send text to IKE and update this.last_hud_refresh value
-		this.text(hud_string, () => { this.last_hud_refresh = now(); });
+		// Change string to be load/CPU temp if over threshold
+		if (status.system.temperature > config.system.temperature.fan_enable) {
+			hud_strings.right = hud_strings.load.padStart(8);
+		}
+
+		// Change string to be LCM terminal 30 voltage if under threshold
+		if (status.lcm.voltage.terminal_30 <= config.hud.volt.threshold) {
+			hud_strings.center = hud_strings.volt.padEnd(4);
+		}
+
+		// Update hud string in status object
+		update.status('hud.string', hud_strings.left + hud_strings.center + hud_strings.right, false);
+
+		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
+		hud_render_cb = undefined;
+	}
+
+	// Refresh custom HUD
+	hud_refresh(override = false) {
+		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
+		if (override === false && !this.ok2hud()) {
+			this.hud_render();
+			return;
+		}
+
+		this.hud_render(() => {
+			// Send text to IKE and update this.last_hud_refresh value
+			this.text(status.hud.string, () => {
+				this.last_hud_refresh = now();
+			});
+		});
 	}
 
 	// OBC set clock
@@ -698,13 +718,13 @@ class IKE extends EventEmitter {
 		// Space-pad if pad === true
 		switch (pad) {
 			case false : {
-				log.module('Sending non-padded IKE text message: \'' + message + '\'');
+				// log.module('Sending non-padded IKE text message: \'' + message + '\'');
 				break;
 			}
 
 			case true : {
 				message = pad(message, this.max_len_text);
-				log.module('Sending space-padded IKE text message: \'' + message + '\'');
+				// log.module('Sending space-padded IKE text message: \'' + message + '\'');
 			}
 		}
 
@@ -719,8 +739,8 @@ class IKE extends EventEmitter {
 		// Bounce if override is active
 		if (this.hud_override === true) return false;
 
-		// Bounce if the last update was less than 1500ms ago
-		if (now() - this.last_hud_refresh <= 1500) return false;
+		// Bounce if the last update was less than the configured value in milliseconds ago
+		if (now() - this.last_hud_refresh <= config.hud.refresh_max) return false;
 
 		return true;
 	}
@@ -766,9 +786,16 @@ class IKE extends EventEmitter {
 
 		// Request fresh data
 		this.request('ignition');
-		this.request('temperature');
+
+		// Only request temperatures if not configured to get both from CANBUS or ignition is not in run
+		if (config.bus.canbus.coolant === false || config.bus.canbus.exterior === false || status.vehicle.ignition_level < 3) {
+			this.request('temperature');
+		}
 
 		LCM.request('io-status');
+
+		// Refresh HUD display
+		this.hud_refresh();
 
 		if (status.vehicle.ignition_level !== 0) {
 			if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
@@ -922,8 +949,11 @@ class IKE extends EventEmitter {
 
 	init_listeners() {
 		// Refresh data on interface connection
-		socket.on('accept', () => {
-			this.text_warning('   bmwcd restart', 5000);
+		socket.on('recv-host-connect', (data) => {
+			// Only refresh on new IBUS interface connection
+			if (data.intf !== 'ibus') return;
+
+			this.text_warning('    App restart!    ', 2500);
 
 			// Clear existing timeout if exists
 			if (this.timeout_accept_refresh !== null) {
@@ -936,7 +966,7 @@ class IKE extends EventEmitter {
 					case false : this.request('ignition'); break;
 					default    : this.obc_refresh();
 				}
-			}, 2500);
+			}, 250);
 		});
 
 		// Refresh data on GM keyfob unlock event
@@ -946,7 +976,7 @@ class IKE extends EventEmitter {
 			}
 		});
 
-		log.module('Initialized listeners');
+		log.msg('Initialized listeners');
 	}
 
 	// Refresh OBC data

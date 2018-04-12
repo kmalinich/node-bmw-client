@@ -716,7 +716,7 @@ function init_listeners() {
 		});
 	});
 
-	log.module('Initialized listeners');
+	log.msg('Initialized listeners');
 }
 
 

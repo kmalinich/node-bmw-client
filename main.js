@@ -159,41 +159,36 @@ function init() {
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS/KBUS module node modules
 			json.reset(() => { // Reset vars (hack =/)
-				// Initialize event listeners
-				ASC1.init_listeners();
-				BMBT.init_listeners();
-				CON1.init_listeners();
-				FEM1.init_listeners();
-				GM.init_listeners();
-				IKE.init_listeners();
-				LCM.init_listeners();
-				MID.init_listeners();
-				NBT1.init_listeners();
-				RAD.init_listeners();
-
-				bus.data.init_listeners();
-				gpio.init_listeners();
-				json.init_listeners();
-				kodi.init_listeners();
-				power.init_listeners();
-
-				host_data.init(() => { // Initialize host data object
-					weather.init(() => { // Initialize weather object
-						kodi.init(); // Start Kodi WebSocket client
+				socket.init(() => { // Start zeroMQ client
+					host_data.init(() => { // Initialize host data object
+						api.init();       // Start Express API server
 						bluetooth.init(); // Start Linux D-Bus Bluetooth handler
+						gpio.init();      // Initialize GPIO relays
+						hdmi_cec.init();  // Open HDMI-CEC
+						hdmi_rpi.init();  // Open HDMI (RPi)
+						kodi.init();      // Start Kodi WebSocket client
+						weather.init();   // Initialize weather object
 
-						gpio.init(() => { // Initialize GPIO relays
-							hdmi_cec.init(() => { // Open HDMI-CEC
-								hdmi_rpi.init(() => { // Open HDMI (RPi)
-									socket.init(() => { // Start zeroMQ client
-										api.init(() => { // Start Express API server
-											log.msg('Initialized');
-											// notify.notify('Started');
-										}, term);
-									}, term);
-								}, term);
-							}, term);
-						}, term);
+						// Initialize event listeners
+						ASC1.init_listeners();
+						BMBT.init_listeners();
+						CON1.init_listeners();
+						DME1.init_listeners();
+						FEM1.init_listeners();
+						GM.init_listeners();
+						IKE.init_listeners();
+						LCM.init_listeners();
+						MID.init_listeners();
+						NBT1.init_listeners();
+						RAD.init_listeners();
+
+						bus.data.init_listeners();
+						gpio.init_listeners();
+						json.init_listeners();
+						kodi.init_listeners();
+						power.init_listeners();
+
+						log.msg('Initialized');
 					}, term);
 				}, term);
 			}, term);

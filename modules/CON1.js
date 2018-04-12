@@ -447,7 +447,7 @@ function init_listeners() {
 		}, 250);
 	});
 
-	log.module('Initialized listeners');
+	log.msg('Initialized listeners');
 }
 
 // Initialize CON1 rotation counter
@@ -479,9 +479,9 @@ function init_rotation() {
 	}
 
 	// When CON1 receives this message, it resets it's relative rotation counter to -1
-	update.status('con1.rotation.relative', -1, false);
+	update.status('con1.rotation.relative', -1);
 
-	log.module('Sending CON1 rotation init');
+	// log.module('Sending CON1 rotation init');
 
 	// Send message
 	bus.data.send({
@@ -512,7 +512,7 @@ function parse_out(data) {
 		}
 	}
 
-	log.bus(data);
+	// log.bus(data);
 }
 
 

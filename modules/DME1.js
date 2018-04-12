@@ -2,38 +2,48 @@ const convert = require('node-unit-conversion');
 
 
 // This is dangerous and awesome if you can see what it does
-function encode_316(rpm) {
-	let rpm_encoded = Math.floor(rpm * 6.4).toString(16).padStart(0, 4);
+function encode_316(rpm = 10000) {
+	// Bounce if can0 is not enabled
+	if (config.bus.can0.enabled !== true) return;
+
+	let rpm_encoded = Math.floor(rpm * 6.4).toString(16).padStart(4, '0');
 
 	let rpm_0 = parseInt('0x' + rpm_encoded.substring(2, 4)) || 0; // LSB
 	let rpm_1 = parseInt('0x' + rpm_encoded.substring(0, 2)) || 0; // MSB
 
 	let msg = [ 0x05, 0x16, rpm_0, rpm_1, 0x16, 0x18, 0x00, 0x16 ];
 
-	// Send packet 5000x
-	for (let i = 0; i < 5000; i++) {
-		bus.data.send({
-			bus  : 'can0',
-			id   : 0x316,
-			data : Buffer.from(msg),
-		});
+	let count = 1000;
+
+	// Send packets
+	for (let i = 0; i < count; i++) {
+		setTimeout(() => {
+			bus.data.send({
+				bus  : 'can0',
+				id   : 0x316,
+				data : Buffer.from(msg),
+			});
+		}, (i / 100));
 	}
 
-	log.module('Sent 5000x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
+	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
 }
 
 function parse_316(data) {
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
 	let parse = {
-		rpm       : parseFloat((parseInt('0x' + data.msg[3].toString(16) + data.msg[2].toString(16)) / 6.4).toFixed(0)),
 		ac_clutch : mask_0.b7,
-		key       : {
+
+		rpm : parseFloat((parseInt('0x' + data.msg[3].toString(16).padStart(2, '0') + data.msg[2].toString(16).padStart(2, '0')) / 6.4).toFixed(0)),
+
+		key : {
 			off       : mask_0.b8,
 			accessory : !mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
 			run       : mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
 			start     : mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && mask_0.b4,
 		},
+
 		torque : {
 			after_interventions  : parseFloat((data.msg[1] / 2.54).toFixed(1)),
 			before_interventions : parseFloat((data.msg[4] / 2.54).toFixed(1)),
@@ -42,14 +52,16 @@ function parse_316(data) {
 		},
 	};
 
-
-	// horsepower = (torque * RPM)/5252
-
-	// Occasionally the RPM is parses as something less than 50.. no idea why
-	if (status.engine.speed - parse.rpm < 500 || parse.rpm === 0) update.status('engine.speed', parse.rpm, false);
-
 	update.status('engine.ac_clutch', parse.ac_clutch);
 
+	update.status('engine.speed', parse.rpm, false);
+
+	update.status('vehicle.key.off',       parse.key.off);
+	update.status('vehicle.key.accessory', parse.key.accessory);
+	update.status('vehicle.key.run',       parse.key.run);
+	update.status('vehicle.key.start',     parse.key.start);
+
+	// horsepower = (torque * RPM)/5252
 	update.status('engine.torque.after_interventions',  parse.torque.after_interventions,  false);
 	update.status('engine.torque.before_interventions', parse.torque.before_interventions, false);
 	update.status('engine.torque.loss',                 parse.torque.loss,                 false);
@@ -93,7 +105,7 @@ function parse_329(data) {
 		vehicle : {
 			brake    : bitmask.test(data.msg[6], 0x01),
 			clutch   : bitmask.test(data.msg[3], 0x01),
-			kickdown : bitmask.test(data.msg[6], 0x08),
+			kickdown : bitmask.test(data.msg[6], 0x04),
 
 			cruise : {
 				button : {
@@ -115,7 +127,7 @@ function parse_329(data) {
 			//                                 XX
 			// can0  329   [8]  40 51 C4 04 00 03 00 00
 			sport : {
-				active : data.msg[5] === 0x03,
+				active : bitmask.test(data.msg[5], 0x02),
 			},
 		},
 	};
@@ -201,7 +213,7 @@ function parse_338(data) {
 // byte6 : CSL oil level (format unclear)
 // byte7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
-	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16) + data.msg[1].toString(16))).toFixed(0));
+	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16).padStart(2, '0') + data.msg[1].toString(16).padStart(2, '0'))).toFixed(0));
 
 	// Need at least one value first
 	if (DME1.consumption_last === 0) {
@@ -259,15 +271,17 @@ function parse_545(data) {
 // byte4 : Running clock MSB
 //
 // Running clock = minutes since last time battery power was lost
+//
+// This is actually sent by IKE1
 function parse_613(data) {
 	let parse = {
 		vehicle : {
 			odometer : {
-				km : parseFloat((parseInt('0x' + data.msg[1].toString(16) + data.msg[0].toString(16)) * 10).toFixed(0)),
+				km : parseFloat((parseInt('0x' + data.msg[1].toString(16).padStart(2, '0') + data.msg[0].toString(16)) * 10).toFixed(0)),
 				mi : null,
 			},
 
-			running_clock : parseFloat((parseInt('0x' + data.msg[4].toString(16) + data.msg[3].toString(16))).toFixed(0)),
+			running_clock : parseFloat((parseInt('0x' + data.msg[4].toString(16).padStart(2, '0') + data.msg[3].toString(16))).toFixed(0)),
 		},
 
 		fuel : {
@@ -294,11 +308,11 @@ function parse_613(data) {
 // ARBID: 0x615 sent from the instrument cluster
 function parse_615(data) {
 	// byte0 : AC signal, 0x80 when on, other bits say something else (load, aux fan speed request? system pressure?)
-	// byte1 : 4 = headlights/parking lights on
+	// byte1 : 0x04 = headlights/parking lights on
 	// byte2 : ??
 	// byte3 : Outside air temperature
-	// byte4 : 1 = Driver door open, 2 = handbrake up
-	// byte5 : 2 = Left turn signal, 4 = Right turn signal, 6 = hazards
+	// byte4 : 0x01 = Driver door open, 0x02 = handbrake up
+	// byte5 : 0x02 = Left turn signal, 0x04 = Right turn signal, 0x06 = hazards
 
 	let parse = {
 		engine : {
@@ -395,6 +409,19 @@ function parse_out(data) {
 }
 
 
+function init_listeners() {
+	// If configured, send RPM 10000 on 0x316 on ignition in run
+	update.on('status.vehicle.ignition', (data) => {
+		if (data.new !== 'run') return;
+		if (config.ike.sweep !== true) return;
+
+		encode_316(10000);
+	});
+
+	log.msg('Initialized listeners');
+}
+
+
 module.exports = {
 	// Variables
 	consumption_last : 0,
@@ -403,4 +430,6 @@ module.exports = {
 	parse_out : parse_out,
 
 	encode_316 : encode_316,
+
+	init_listeners : init_listeners,
 };

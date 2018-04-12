@@ -996,7 +996,7 @@ function init_listeners() {
 		setTimeout(auto_lights_process, 1500);
 	});
 
-	log.module('Initialized listeners');
+	log.msg('Initialized listeners');
 }
 
 

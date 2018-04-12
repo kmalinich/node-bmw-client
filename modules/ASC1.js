@@ -15,7 +15,7 @@ const convert = require('node-unit-conversion');
 //
 // Input is in MPH
 function encode_1a1(speed = 0) {
-	let speed_encoded = Math.floor(speed * 100).toString(16).padStart(0, 4);
+	let speed_encoded = Math.floor(speed * 100).toString(16).padStart(4, '0');
 
 	let speed_0 = parseInt('0x' + speed_encoded.substring(2, 4)) || 0; // LSB
 	let speed_1 = parseInt('0x' + speed_encoded.substring(0, 2)) || 0; // MSB
@@ -173,8 +173,11 @@ function parse_out(data) {
 		case 0x1F8:
 			// Brake pressure messages observed in 2002 E39 M5
 			//
-			//                         XX
+			//       B0 B1 B2 B3 B4 B5 B6 B7
 			// 077F  14 14 00 00 00 00 82 01
+			//
+			// B6 : Pedal pressure LSB
+			// B7 : Pedal pressure MSB
 			//
 			//       XX XX    XX          XX
 			// 07B5  30 30 00 30 00 00 00 42

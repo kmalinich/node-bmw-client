@@ -105,7 +105,7 @@ function init_listeners() {
 		backlight(value);
 	});
 
-	log.module('Initialized listeners');
+	log.msg('Initialized listeners');
 }
 
 

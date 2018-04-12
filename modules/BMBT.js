@@ -404,7 +404,7 @@ function init_listeners() {
 		status_loop(data.new);
 	});
 
-	log.module('Initialized listeners');
+	log.msg('Initialized listeners');
 }
 
 

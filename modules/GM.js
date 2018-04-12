@@ -455,7 +455,7 @@ class GM extends EventEmitter {
 			}
 		});
 
-		log.module('Initialized listeners');
+		log.msg('Initialized listeners');
 	}
 
 
