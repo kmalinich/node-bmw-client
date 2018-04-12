@@ -325,12 +325,6 @@ function parse_615(data) {
 				c : (data.msg[3] >= 0x80) && data.msg[3] - 0x80 || data.msg[3],
 				f : null,
 			},
-
-			// This isn't right
-			intake : {
-				c : (data.msg[6] >= 0x80) && data.msg[6] - 0x80 || data.msg[6],
-				f : null,
-			},
 		},
 
 		vehicle : {
@@ -340,13 +334,10 @@ function parse_615(data) {
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
-	parse.temperature.intake.f   = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
 
 	// Round temperature values
 	parse.temperature.exterior.c = Math.round(parse.temperature.exterior.c);
 	parse.temperature.exterior.f = Math.round(parse.temperature.exterior.f);
-	parse.temperature.intake.c   = Math.round(parse.temperature.intake.c);
-	parse.temperature.intake.f   = Math.round(parse.temperature.intake.f);
 
 	// Update status object
 	update.status('engine.ac_request',    parse.engine.ac_request);
@@ -361,10 +352,50 @@ function parse_615(data) {
 	update.status('temperature.intake.f', parse.temperature.intake.f, false);
 }
 
+// ARBID: 0x720 sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
+// B0 = Coolant temp -48
+// B1 = Intake temp -48
+// B2 = Exhaust gas temp
+// B3 = Oil Temp -48
+// B4 = Voltage * 10
+// B5,B6 = Speed
+// B7 = Fuel pump duty cycle
+function parse_720(data) {
+	objfmt(data);
+
+	let parse = {
+		engine : {
+		},
+
+		temperature : {
+			intake : {
+				c : (data.msg[1] >= 0x80) && data.msg[1] - 0x80 || data.msg[1],
+				f : null,
+			},
+		},
+
+		vehicle : {
+		},
+	};
+
+	// Calculate fahrenheit temperature values
+	parse.temperature.intake.f = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
+
+	// Round temperature values
+	parse.temperature.intake.c = Math.round(parse.temperature.intake.c);
+	parse.temperature.intake.f = Math.round(parse.temperature.intake.f);
+
+	// Update status object
+	update.status('temperature.intake.c', parse.temperature.intake.c);
+	update.status('temperature.intake.f', parse.temperature.intake.f, false);
+}
+
 
 // Parse data sent from module
 function parse_out(data) {
 	data.command = 'bro';
+
+	objfmt(data);
 
 	switch (data.src.id) {
 		case 0x316:
@@ -397,8 +428,13 @@ function parse_out(data) {
 			break;
 
 		case 0x615:
-			data.value = 'A/C request/Outside air temp/Intake air temp/Parking brake/door contacts';
+			data.value = 'A/C request/Outside air temp/Parking brake/door contacts';
 			parse_615(data);
+			break;
+
+		case 0x720:
+			data.value = 'Coolant temp/Intake air temp/Exhaust gas temp/Oil temp/Voltage/Speed/Fuel pump duty';
+			parse_720(data);
 			break;
 
 		default:
