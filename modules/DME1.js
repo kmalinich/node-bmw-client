@@ -361,7 +361,7 @@ function parse_615(data) {
 // B5,B6 = Speed
 // B7 = Fuel pump duty cycle
 function parse_720(data) {
-	objfmt(data);
+	// objfmt(data);
 
 	let parse = {
 		engine : {
@@ -395,7 +395,7 @@ function parse_720(data) {
 function parse_out(data) {
 	data.command = 'bro';
 
-	objfmt(data);
+	// objfmt(data);
 
 	switch (data.src.id) {
 		case 0x316:
