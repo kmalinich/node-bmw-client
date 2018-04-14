@@ -97,7 +97,7 @@ function parse_329(data) {
 
 		temperature : {
 			coolant : {
-				c : parseFloat(((data.msg[1] * 0.75) - 48.373).toFixed(2)),
+				c : parseFloat(((data.msg[1] * 0.75) - 48).toFixed(2)),
 				f : null,
 			},
 		},
@@ -234,7 +234,7 @@ function parse_545(data) {
 
 		temperature : {
 			oil : {
-				c : parseFloat((data.msg[4] - 48.373).toFixed(2)),
+				c : data.msg[4] - 48,
 				f : null,
 			},
 		},
@@ -363,22 +363,22 @@ function parse_720(data) {
 
 		temperature : {
 			coolant : {
-				c : parseFloat((data.msg[0] - 48.373).toFixed(2)),
+				c : data.msg[0] - 48,
 				f : null,
 			},
 
 			exhaust : {
-				c : parseFloat((data.msg[3] - 48.373).toFixed(2)),
+				c : data.msg[3] - 48,
 				f : null,
 			},
 
 			oil : {
-				c : parseFloat((data.msg[3] - 48.373).toFixed(2)),
+				c : data.msg[3] - 48,
 				f : null,
 			},
 
 			intake : {
-				c : parseFloat((data.msg[1] - 48.373).toFixed(2)),
+				c : data.msg[1] - 48,
 				f : null,
 			},
 		},
