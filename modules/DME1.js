@@ -347,9 +347,6 @@ function parse_615(data) {
 	update.status('temperature.exterior.f', parse.temperature.exterior.f, false);
 
 	update.status('vehicle.handbrake', parse.vehicle.handbrake);
-
-	update.status('temperature.intake.c', parse.temperature.intake.c);
-	update.status('temperature.intake.f', parse.temperature.intake.f, false);
 }
 
 // ARBID: 0x720 sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
