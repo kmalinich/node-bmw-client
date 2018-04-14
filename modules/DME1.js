@@ -137,11 +137,7 @@ function parse_329(data) {
 	parse.engine.atmospheric_pressure.psi  = parseFloat((parse.engine.atmospheric_pressure.mbar * 0.01450377380072).toFixed(2));
 
 	// Calculate fahrenheit temperature values
-	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
-
-	// Round temperature values
-	parse.temperature.coolant.c = Math.round(parse.temperature.coolant.c);
-	parse.temperature.coolant.f = Math.round(parse.temperature.coolant.f);
+	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit').toFixed(2));
 
 	// Update status object
 	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar, false);
@@ -161,12 +157,12 @@ function parse_329(data) {
 	update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
 	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
-	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
-
 	update.status('vehicle.sport.active', parse.vehicle.sport.active);
 
 	// Trigger a HUD refresh if coolant temp is updated
 	if (update.status('temperature.coolant.c', parse.temperature.coolant.c)) IKE.hud_refresh();
+
+	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
 
 	update.status('vehicle.brake',  parse.vehicle.brake);
 	update.status('vehicle.clutch', parse.vehicle.clutch);
@@ -350,49 +346,67 @@ function parse_615(data) {
 }
 
 // ARBID: 0x720 sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
-// B0 = Coolant temp -48
-// B1 = Intake temp -48
+// B0 = Coolant temp
+// B1 = Intake temp
 // B2 = Exhaust gas temp
-// B3 = Oil Temp -48
+// B3 = Oil Temp
 // B4 = Voltage * 10
 // B5,B6 = Speed
 // B7 = Fuel pump duty cycle
+//
+// Example : [ 0x40, 0x4A, 0x03, 0x3E, 0x7C, 0x00, 0x00, 0x00 ]
 function parse_720(data) {
-	// objfmt(data);
-
 	let parse = {
-		engine : {
+		dme1 : {
+			voltage : parseFloat((data.msg[4] / 10).toFixed(2)),
 		},
 
 		temperature : {
-			intake : {
-				c : (data.msg[1] >= 0x80) && data.msg[1] - 0x80 || data.msg[1],
+			coolant : {
+				c : parseFloat((data.msg[0] - 48.373).toFixed(2)),
 				f : null,
 			},
-		},
 
-		vehicle : {
+			exhaust : {
+				c : parseFloat((data.msg[3] - 48.373).toFixed(2)),
+				f : null,
+			},
+
+			oil : {
+				c : parseFloat((data.msg[3] - 48.373).toFixed(2)),
+				f : null,
+			},
+
+			intake : {
+				c : parseFloat((data.msg[1] - 48.373).toFixed(2)),
+				f : null,
+			},
 		},
 	};
 
 	// Calculate fahrenheit temperature values
-	parse.temperature.intake.f = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
-
-	// Round temperature values
-	parse.temperature.intake.c = Math.round(parse.temperature.intake.c);
-	parse.temperature.intake.f = Math.round(parse.temperature.intake.f);
+	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
+	parse.temperature.exhaust.f = parseFloat(convert(parse.temperature.exhaust.c).from('celsius').to('fahrenheit'));
+	parse.temperature.intake.f  = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
+	parse.temperature.oil.f     = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
 
 	// Update status object
-	update.status('temperature.intake.c', parse.temperature.intake.c);
-	update.status('temperature.intake.f', parse.temperature.intake.f, false);
+	update.status('temperature.coolant.c', parse.temperature.coolant.c);
+	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
+	update.status('temperature.exhaust.c', parse.temperature.exhaust.c);
+	update.status('temperature.exhaust.f', parse.temperature.exhaust.f, false);
+	update.status('temperature.intake.c',  parse.temperature.intake.c);
+	update.status('temperature.intake.f',  parse.temperature.intake.f, false);
+	update.status('temperature.oil.c',     parse.temperature.oil.c);
+	update.status('temperature.oil.f',     parse.temperature.oil.f, false);
+
+	update.status('dme1.voltage', parse.dme1.voltage);
 }
 
 
 // Parse data sent from module
 function parse_out(data) {
 	data.command = 'bro';
-
-	// objfmt(data);
 
 	switch (data.src.id) {
 		case 0x316:

@@ -343,6 +343,13 @@ class GM extends EventEmitter {
 
 		// Switch for mirror and action
 		switch (request.mirror) {
+			case 'all'  :
+			case 'both' : {
+				this.mirrors({ action : request.action, mirror : 'left'  });
+				this.mirrors({ action : request.action, mirror : 'right' });
+				break;
+			}
+
 			case 0      :
 			case 'l'    :
 			case 'lf'   :
@@ -350,8 +357,7 @@ class GM extends EventEmitter {
 				switch (request.action) {
 					case 'in'  : msg = [ 0x01, 0x31, 0x01 ]; break;
 					case 'out' : msg = [ 0x01, 0x30, 0x01 ];
-				}
-				break;
+				} break;
 			}
 
 			case 1       :
@@ -382,32 +388,28 @@ class GM extends EventEmitter {
 					case 'dn' : msg = [ 0x03, 0x01, 0x01 ]; break;
 					case 'up' : msg = [ 0x03, 0x02, 0x01 ]; break;
 					case 'tt' : msg = [ 0x03, 0x00, 0x01 ];
-				}
-				break;
+				} break;
 			}
 
 			case 'lf' : { // Left front
 				switch (request.action) {
 					case 'dn' : msg = [ 0x01, 0x36, 0x01 ]; break;
 					case 'up' : msg = [ 0x01, 0x1A, 0x01 ];
-				}
-				break;
+				} break;
 			}
 
 			case 'rf' : { // Right front
 				switch (request.action) {
 					case 'dn' : msg = [ 0x02, 0x20, 0x01 ]; break;
 					case 'up' : msg = [ 0x02, 0x22, 0x01 ];
-				}
-				break;
+				} break;
 			}
 
 			case 'lr' : { // Left rear
 				switch (request.action) {
 					case 'dn' : msg = [ 0x00, 0x00, 0x01 ]; break;
 					case 'up' : msg = [ 0x42, 0x01 ];
-				}
-				break;
+				} break;
 			}
 
 			case 'rr' : { // Right rear
@@ -432,25 +434,6 @@ class GM extends EventEmitter {
 							if (status.vehicle.locked && status.doors.closed) this.locks();
 						}
 					}
-				}
-			}
-		});
-
-		update.on('status.vehicle.locked', (data) => {
-			// Bounce if ignition is not off
-			if (status.vehicle.ignition_level !== 0) return;
-			switch (data.new) {
-				case false : {
-					// If the vehicle is newly unlocked, fold out mirrors
-					this.mirrors({ action : 'out', mirror : 'left'  });
-					this.mirrors({ action : 'out', mirror : 'right' });
-					break;
-				}
-
-				case true : {
-					// If the vehicle is newly locked, fold in mirrors
-					this.mirrors({ action : 'in', mirror : 'left'  });
-					this.mirrors({ action : 'in', mirror : 'right' });
 				}
 			}
 		});
