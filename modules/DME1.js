@@ -364,7 +364,7 @@ function parse_720(data) {
 		fuel : {
 			pump : {
 				duty    : data.msg[7],
-				percent : parseFloat((data.msg[7] / 255).toFixed(2)),
+				percent : parseFloat((data.msg[7] / 255).toFixed(4)) * 100,
 			},
 		},
 
