@@ -313,7 +313,7 @@ function parse_615(data) {
 	let parse = {
 		engine : {
 			ac_request    : data.msg[0],
-			aux_fan_speed : data.msg[0] - 0x80,
+			aux_fan_speed : (data.msg[0] >= 0x80) && data.msg[0] - 0x80 || data.msg[0],
 		},
 
 		temperature : {
