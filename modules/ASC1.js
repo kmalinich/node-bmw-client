@@ -15,12 +15,12 @@ const convert = require('node-unit-conversion');
 //
 // Input is in MPH
 function encode_1a1(speed = 0) {
-	let speed_encoded = Math.floor(speed * 100).toString(16).padStart(4, '0');
+	speed = speed * 100;
 
-	let speed_0 = parseInt('0x' + speed_encoded.substring(2, 4)) || 0; // LSB
-	let speed_1 = parseInt('0x' + speed_encoded.substring(0, 2)) || 0; // MSB
+	let lsb = speed        & 0xFF || 0; // LSB
+	let msb = (speed >> 8) & 0xFF || 0; // MSB
 
-	let msg = [ 0x00, 0x00, speed_0, speed_1, 0x00 ];
+	let msg = [ 0x00, 0x00, lsb, msb, 0x00 ];
 
 	// Send packet
 	bus.data.send({
@@ -44,7 +44,8 @@ function parse_153(data) {
 			brake : bitmask.test(data.msg[1], 0x10),
 
 			dsc : {
-				active             : !bitmask.test(data.msg[1], 0x01),
+				active : !bitmask.test(data.msg[1], 0x01),
+
 				torque_reduction_1 : data.msg[3] / 2.54,
 				torque_reduction_2 : data.msg[6] / 2.54,
 			},
@@ -67,52 +68,48 @@ function parse_153(data) {
 	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
 }
 
+// Parse wheel speed LSB and MSB into kph value
+// rpm : ((data.msg[3] << 8) + data.msg[2]) / 6.4
+function parse_wheel(byte0, byte1) {
+	return (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16) - 2.75;
+}
+
 function parse_1f0(data) {
 	let wheel_speed = {
 		front : {
-			left  : Math.round((data.msg[0] + parseInt('0x' + data.msg[1].toString(16).slice(-1)) * 256) / 16),
-			right : Math.round((data.msg[2] + parseInt('0x' + data.msg[3].toString(16).slice(-1)) * 256) / 16),
+			left  : parse_wheel(data.msg[0], data.msg[1]),
+			right : parse_wheel(data.msg[2], data.msg[3]),
 		},
+
 		rear : {
-			left  : Math.round((data.msg[4] + parseInt('0x' + data.msg[5].toString(16).slice(-1)) * 256) / 16),
-			right : Math.round((data.msg[6] + parseInt('0x' + data.msg[7].toString(16).slice(-1)) * 256) / 16),
+			left  : parse_wheel(data.msg[4], data.msg[5]),
+			right : parse_wheel(data.msg[6], data.msg[7]),
 		},
 	};
-
-	// Calculated data bottoms out at 2.75, let's address that
-	// (lol, this is the same way the E38/E39/E53 cluster works - you can see it in the 'secret' menu)
-	if (wheel_speed.front.left  <= 3) wheel_speed.front.left  = 0;
-	if (wheel_speed.front.right <= 3) wheel_speed.front.right = 0;
-	if (wheel_speed.rear.left   <= 3) wheel_speed.rear.left   = 0;
-	if (wheel_speed.rear.right  <= 3) wheel_speed.rear.right  = 0;
 
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left,  false);
 	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right, false);
 	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left,   false);
 	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right,  false);
 
-	// Calculate vehicle speed from rear left wheel speed sensor
-	// This is identical to the actual speedometer signal on E39
-	// update.status('vehicle.speed.kmh', wheel_speed.rear.left, false);
-	// let vehicle_speed_mph = Math.round(convert(status.vehicle.wheel_speed.rear.left).from('kilometre').to('us mile'));
-
 	// Calculate vehicle speed from average of all 4 sensors
 	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
 
 	// Average all wheel speeds together and include accuracy offset multiplier
-	let vehicle_speed_kmh = Math.round((vehicle_speed_total / 4) * config.speedometer.offset);
+	// let vehicle_speed_kmh = Math.round((vehicle_speed_total / 4) * config.speedometer.offset);
+	let vehicle_speed_kmh = Math.round(vehicle_speed_total / 4);
 
 	// Calculate vehicle speed value in MPH
 	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
-	if (update.status('vehicle.speed.mph', vehicle_speed_mph, false)) {
+	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh, false)) {
 		if (config.translate.dsc === true) {
 			// Forward this to CAN1
 			encode_1a1(vehicle_speed_mph);
 		}
 	}
 
-	update.status('vehicle.speed.kmh', vehicle_speed_kmh, false);
+	update.status('vehicle.speed.mph', vehicle_speed_mph, false);
 }
 
 function parse_1f5(data) {

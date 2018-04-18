@@ -6,12 +6,14 @@ function encode_316(rpm = 10000) {
 	// Bounce if can0 is not enabled
 	if (config.bus.can0.enabled !== true) return;
 
-	let rpm_encoded = Math.floor(rpm * 6.4).toString(16).padStart(4, '0');
+	let rpm_orig = rpm;
 
-	let rpm_0 = parseInt('0x' + rpm_encoded.substring(2, 4)) || 0; // LSB
-	let rpm_1 = parseInt('0x' + rpm_encoded.substring(0, 2)) || 0; // MSB
+	rpm = Math.floor(rpm * 6.4);
 
-	let msg = [ 0x05, 0x16, rpm_0, rpm_1, 0x16, 0x18, 0x00, 0x16 ];
+	let lsb = rpm        & 0xFF || 0; // LSB
+	let msb = (rpm >> 8) & 0xFF || 0; // MSB
+
+	let msg = Buffer.from([ 0x05, 0x16, lsb, msb, 0x16, 0x18, 0x00, 0x16 ]);
 
 	let count = 1000;
 
@@ -21,12 +23,12 @@ function encode_316(rpm = 10000) {
 			bus.data.send({
 				bus  : 'can0',
 				id   : 0x316,
-				data : Buffer.from(msg),
+				data : msg,
 			});
 		}, (i / 100));
 	}
 
-	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm);
+	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm_orig);
 }
 
 function parse_316(data) {
@@ -35,7 +37,7 @@ function parse_316(data) {
 	let parse = {
 		ac_clutch : mask_0.b7,
 
-		rpm : parseFloat((parseInt('0x' + data.msg[3].toString(16).padStart(2, '0') + data.msg[2].toString(16).padStart(2, '0')) / 6.4).toFixed(0)),
+		rpm : ((data.msg[3] << 8) + data.msg[2]) / 6.4,
 
 		key : {
 			off       : mask_0.b8,
@@ -209,7 +211,7 @@ function parse_338(data) {
 // byte6 : CSL oil level (format unclear)
 // byte7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
-	let consumption_current = parseFloat((parseInt('0x' + data.msg[2].toString(16).padStart(2, '0') + data.msg[1].toString(16).padStart(2, '0'))).toFixed(0));
+	let consumption_current = ((data.msg[2] << 8) + data.msg[1]);
 
 	// Need at least one value first
 	if (DME1.consumption_last === 0) {
@@ -273,11 +275,11 @@ function parse_613(data) {
 	let parse = {
 		vehicle : {
 			odometer : {
-				km : parseFloat((parseInt('0x' + data.msg[1].toString(16).padStart(2, '0') + data.msg[0].toString(16)) * 10).toFixed(0)),
+				km : ((data.msg[1] << 8) + data.msg[0]) * 10,
 				mi : null,
 			},
 
-			running_clock : parseFloat((parseInt('0x' + data.msg[4].toString(16).padStart(2, '0') + data.msg[3].toString(16))).toFixed(0)),
+			running_clock : ((data.msg[4] << 8) + data.msg[3]),
 		},
 
 		fuel : {
@@ -349,7 +351,7 @@ function parse_615(data) {
 // B0 = Coolant temp
 // B1 = Intake temp
 // B2 = Exhaust gas temp
-// B3 = Oil Temp
+// B3 = Oil temp
 // B4 = Voltage * 10
 // B5,B6 = Speed
 // B7 = Fuel pump duty cycle
@@ -375,7 +377,7 @@ function parse_720(data) {
 			},
 
 			exhaust : {
-				c : data.msg[3] - 48,
+				c : data.msg[2] << 2,
 				f : null,
 			},
 
