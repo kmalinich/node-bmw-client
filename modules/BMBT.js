@@ -8,12 +8,32 @@ function decode_button(data) {
 	let action = 'depress';
 	let button;
 
+	// Depress
+	// [ 72, 5 ]
+	// BIT7 FALSE!
+	// BIT7 FALSE + BIT6 FALSE!
+
+	// Release
+	// [ 72, 133 ]
+	// BIT7 TRUE!
+	// BIT7 TRUE + BIT6 FALSE!
+
+	// Hold
+	// [ 72, 69 ]
+	// BIT7 FALSE!
+	// BIT7 FALSE + BIT6 TRUE!
+
 	// Determine action
 	let mask = bitmask.check(data.msg[1]).mask;
 	switch (mask.b7) {
 		case false : {
 			switch (mask.b6) {
 				case false : {
+					action = 'depress';
+					break;
+				}
+
+				case true : {
 					// Remove hold bit from button value
 					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
 					action      = 'hold';
@@ -24,9 +44,13 @@ function decode_button(data) {
 		}
 
 		case true : {
-			// Remove release bit from button value
-			data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
-			action      = 'release';
+			switch (mask.b6) {
+				case false : {
+					// Remove release bit from button value
+					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
+					action      = 'release';
+				}
+			}
 		}
 	}
 
@@ -93,6 +117,8 @@ function decode_button(data) {
 
 				case 'kodi' : { // Kodi version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
+						case 'depressphone'  : kodi.command('toggle'); break;
+
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 

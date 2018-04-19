@@ -16,13 +16,15 @@ function button_check(button) {
 	log.module('Button: ' + button.action + ' ' + button.button);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
-	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
+	// Instead of a fixed timeout, you have to leave the knob alone for <configured> milliseconds
 	let rotation_gap = time_now() - status.con1.rotation.last_msg;
 
 	if (rotation_gap >= config.con1.timeout.rotation_mode) {
 		update.status('con1.rotation.horizontal', false);
 		update.status('con1.rotation.volume',     false);
 	}
+
+	update.status('con1.last.event', 'button');
 
 	switch (button.action) {
 		case 'hold' : {
@@ -49,21 +51,26 @@ function button_check(button) {
 					switch (status.con1.last.button.button) {
 						case 'tel' : {
 							// To use the TEL button as a toggle for rotation = Kodi volume control
-							if (update.status('con1.rotation.volume', true)) {
-								kodi.notify('CON1', 'Rotation mode: volume');
-								update.status('con1.rotation.last_msg', time_now(), false);
-							}
+							// if (update.status('con1.rotation.volume', true)) {
+							// 	kodi.notify('CON1', 'Rotation mode: volume');
+							// 	update.status('con1.rotation.last_msg', time_now(), false);
+							// }
+
+							// To use the TEL button as Kodi play/pause
+							kodi.command('toggle');
 
 							break;
 						}
 
 						case 'nav' : {
 							// To use the NAV button as a toggle for left<->right or up<->down rotation
-							if (update.status('con1.rotation.horizontal', true)) {
-								kodi.notify('CON1', 'Rotation mode: horizontal');
-								update.status('con1.rotation.last_msg', time_now(), false);
-							}
+							// if (update.status('con1.rotation.horizontal', true)) {
+							// 	kodi.notify('CON1', 'Rotation mode: horizontal');
+							// 	update.status('con1.rotation.last_msg', time_now(), false);
+							// }
 
+							// To use the NAV button as a toggle for police lights
+							LCM.police((status.lcm.police_lights.on === false));
 							break;
 						}
 
@@ -330,17 +337,23 @@ function decode_rotation(data) {
 
 	// Create quick bitmask to ease switch statement processing
 	let mask_mode = bitmask.create({
-		b0 : status.con1.rotation.horizontal,
-		b1 : status.con1.rotation.volume,
+		// b0 : status.con1.rotation.horizontal,
+		// b1 : status.con1.rotation.volume,
+		b0 : (status.con1.touch.count === 1), // If 1 finger  on touchpad, do horizontal scroll
+		b1 : (status.con1.touch.count === 2), // If 2 fingers on touchpad, do volume control
 	});
 
 	switch (mask_mode) {
 		case 0x01 : { // Rotation mode: horizontal
+			update.status('con1.last.event', 'rotation');
+
 			for (let i = 0; i < change_abs; i++) kodi.input(status.con1.rotation.direction);
 			break;
 		}
 
 		case 0x02 : { // Rotation mode: volume
+			update.status('con1.last.event', 'rotation');
+
 			switch (status.con1.rotation.direction) {
 				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
 				case 'right' : for (let i = 0; i < change_abs; i++) kodi.volume('up');
@@ -395,11 +408,11 @@ function decode_status(data) {
 function decode_touch_count(value) {
 	switch (value) {
 		case 0x00 : return 2;
-		case 0x0F : return 4;
+		// case 0x0F : return 4; // This happens sometimes if you touch the pad and the ring
 		case 0x10 : return 1;
 		case 0x11 : return 0;
-		case 0x1F : return 3;
-		default   : return value;
+		// case 0x1F : return 3; // It can usually detect this but it's wonky
+		default   : return status.con1.touch.count;
 	}
 }
 
@@ -415,7 +428,9 @@ function decode_touchpad(data) {
 	let touch_count = decode_touch_count(data.msg[4]);
 
 	// Update status variables
-	update.status('con1.touch.count', touch_count);
+	if (update.status('con1.touch.count', touch_count)) {
+		update.status('con1.last.event', 'touch');
+	}
 
 	// Bounce if more than 1 digit on the touchpad
 	if (touch_count !== 1) return data;
@@ -442,9 +457,7 @@ function init_listeners() {
 
 	// Perform commands on power lib active event
 	update.on('status.power.active', () => {
-		setTimeout(() => {
-			init_rotation();
-		}, 250);
+		setTimeout(() => { init_rotation(); }, 250);
 	});
 
 	log.msg('Initialized listeners');

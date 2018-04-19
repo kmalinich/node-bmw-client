@@ -126,6 +126,20 @@ class GM extends EventEmitter {
 		// Emit keyfob event
 		this.emit('keyfob', keyfob);
 
+		// Fold/unfold mirrors on GM keyfob event
+		let action;
+		switch (keyfob.button) {
+			case 'lock' : action = 'in'; break;
+			default     : action = 'out';
+		}
+
+		if (keyfob.button !== 'none') {
+			this.mirrors({
+				action : action,
+				mirror : 'both',
+			});
+		}
+
 		// Assemble log string
 		data.value += keyfob.key_str + ', ' + keyfob.button_str + ', ' + keyfob.low_batt_str;
 
@@ -347,7 +361,7 @@ class GM extends EventEmitter {
 			case 'both' : {
 				this.mirrors({ action : request.action, mirror : 'left'  });
 				this.mirrors({ action : request.action, mirror : 'right' });
-				break;
+				return;
 			}
 
 			case 0      :

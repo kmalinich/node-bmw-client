@@ -99,7 +99,7 @@ function parse_329(data) {
 
 		temperature : {
 			coolant : {
-				c : parseFloat(((data.msg[1] * 0.75) - 48).toFixed(2)),
+				c : Math.floor((data.msg[1] * 0.75) - 48),
 				f : null,
 			},
 		},
@@ -139,7 +139,7 @@ function parse_329(data) {
 	parse.engine.atmospheric_pressure.psi  = parseFloat((parse.engine.atmospheric_pressure.mbar * 0.01450377380072).toFixed(2));
 
 	// Calculate fahrenheit temperature values
-	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit').toFixed(2));
+	parse.temperature.coolant.f = Math.floor(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 
 	// Update status object
 	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar, false);
@@ -360,7 +360,7 @@ function parse_615(data) {
 function parse_720(data) {
 	let parse = {
 		dme1 : {
-			voltage : parseFloat((data.msg[4] / 10).toFixed(2)),
+			voltage : data.msg[4] / 10,
 		},
 
 		fuel : {
@@ -412,7 +412,7 @@ function parse_720(data) {
 	// update.status('temperature.oil.c',     parse.temperature.oil.c);
 	// update.status('temperature.oil.f',     parse.temperature.oil.f, false);
 
-	update.status('dme1.voltage', parse.dme1.voltage);
+	update.status('dme1.voltage', parse.dme1.voltage, false);
 }
 
 

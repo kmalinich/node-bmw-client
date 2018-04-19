@@ -678,7 +678,7 @@ class IKE extends EventEmitter {
 		});
 
 		// Clear the message after 5 seconds
-		if (timeout !== 0) setTimeout(IKE.text_urgent_off, timeout);
+		if (timeout !== 0) setTimeout(this.text_urgent_off, timeout);
 	}
 
 	// Check control warnings
@@ -696,10 +696,11 @@ class IKE extends EventEmitter {
 		// 0x08 : arrow: none,  sound: 2 gongs, high
 		// 0x0C : arrow: none,  sound: 3 gongs, high
 		// 0x10 : arrow: none,  sound: 1 gong,  low
+		// 0x13 : arrow: flash, sound: 1 gong,  low
 		// 0x18 : arrow: none,  sound: 3 beeps
 
-		message_hex = [ 0x1A, 0x37, 0x10 ]; // 1 gong, low
-		message_hex = message_hex.concat(this.text_prepare(message));
+		message_hex = [ 0x1A, 0x37, 0x13 ]; // flash + 1 low gong
+		message_hex = message_hex.concat(this.text_prepare(message, true));
 
 		bus.data.send({
 			src : 'CCM',
@@ -723,7 +724,7 @@ class IKE extends EventEmitter {
 			}
 
 			case true : {
-				message = pad(message, this.max_len_text);
+				message = message.padEnd(this.max_len_text, ' ');
 				// log.module('Sending space-padded IKE text message: \'' + message + '\'');
 			}
 		}
@@ -758,7 +759,7 @@ class IKE extends EventEmitter {
 
 		let message_hex;
 
-		message_hex = [ 0x23, 0x42, 0x30 ];
+		message_hex = [ 0x23, 0x42, 0x04 ];
 		message_hex = message_hex.concat(this.text_prepare(message, false));
 
 		bus.data.send({
@@ -969,11 +970,16 @@ class IKE extends EventEmitter {
 			}, 250);
 		});
 
+
 		// Refresh data on GM keyfob unlock event
 		GM.on('keyfob', (keyfob) => {
 			switch (keyfob.button) {
 				case 'unlock' : this.data_refresh();
 			}
+		});
+
+		update.on('status.lcm.voltage.terminal_30', () => {
+			this.hud_refresh();
 		});
 
 		log.msg('Initialized listeners');

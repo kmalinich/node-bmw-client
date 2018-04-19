@@ -277,7 +277,7 @@ function decode_bm_button(data) {
 			switch (button) {
 				case 'power' : {
 					log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
-					audio_power('toggle', false);
+					audio_power('toggle');
 					break;
 				}
 			}
@@ -293,6 +293,12 @@ function decode_bm_button(data) {
 // Parse data sent to RAD module
 function parse_in(data) {
 	switch (data.msg[0]) {
+		case 0x01 : {
+			// When RAD receives a device status request, send DSP a device status request
+			bus.cmds.request_device_status('RAD', 'DSP');
+			break;
+		}
+
 		case 0x47 : { // Broadcast: BM status
 			return data;
 		}
@@ -580,34 +586,14 @@ function volume_control(value = 1) {
 
 
 // Power on DSP amp and GPIO pin for amplifier
-function audio_power(power_state, on_ignition = true) {
+function audio_power(power_state) {
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
 	switch (power_state) {
 		case 'toggle' : {
 			log.module('Toggling audio power, current source: ' + status.rad.source_name);
-
-			switch (status.rad.source_name) {
-				case 'off' : {
-					// Enable GPIO relay for amp power
-					gpio.set('amp', true); // Should be an emitted event
-
-					update.once('status.dsp.ready', (data) => {
-						if (data.new === false) return;
-
-						setTimeout(() => { audio_power(true, on_ignition); }, 2000);
-					});
-
-					setTimeout(() => { audio_power(true, true); }, 6000);
-					break;
-				}
-
-				default : {
-					audio_power(false, on_ignition);
-				}
-			}
-
+			audio_power((status.rad.source_name === 'off'));
 			return;
 		}
 
@@ -615,15 +601,6 @@ function audio_power(power_state, on_ignition = true) {
 		case 'off' :
 		case false : {
 			log.module('Setting audio power to state : ' + power_state);
-
-			// Disable GPIO relay for amp power
-			gpio.set('amp', false); // Should be an emitted event
-
-			// Pause BT/Kodi playback
-			if (on_ignition === false) {
-				bluetooth.command('pause'); // Should be an emitted event
-				kodi.command('pause');      // Should be an emitted event
-			}
 
 			audio_control(false);
 			cassette_control(false);
@@ -637,16 +614,9 @@ function audio_power(power_state, on_ignition = true) {
 		case 1    :
 		case 'on' :
 		case true : {
-			log.module('Setting audio power to state : ' + power_state);
+			if (status.power.active !== true) return;
 
-			// Toggle media playback
-			if (on_ignition === false) {
-				setTimeout(() => {
-					// Start BT/Kodi playback
-					bluetooth.command('play'); // Should be an emitted event
-					kodi.command('play');     // Should be an emitted event
-				}, config.media.kodi.timeout.powerup);
-			}
+			log.module('Setting audio power to state : ' + power_state);
 
 			// Send device status
 			bus.cmds.send_device_status(module_name);
@@ -673,21 +643,26 @@ function audio_power(power_state, on_ignition = true) {
 			// Turn on BMBT
 			cassette_control(true);
 
-			// Increase volume after power on
 			setTimeout(() => {
-				let msg_vol;
-				switch (config.bmbt.vol_at_poweron) {
-					case false : msg_vol = [ 0x1C, 0x01, 0x01, 0x1A ]; break;
-					case true  : msg_vol = [ 0x1C, 0x01, 0x01, 0x00 ];
+				for (let pass = 0; pass < 13; pass++) {
+					setTimeout(() => { volume_control(5); }, 5 * pass);
 				}
-
-				volume_control(5);
-				bus.data.send({
-					src : 'DIA',
-					dst : 'DSP',
-					msg : msg_vol,
-				});
 			}, 250);
+
+			// Increase volume after power on
+			// setTimeout(() => {
+			// 	let msg_vol;
+			// 	switch (config.bmbt.vol_at_poweron) {
+			// 		case false : msg_vol = [ 0x1C, 0x01, 0x01, 0x1A ]; break;
+			// 		case true  : msg_vol = [ 0x1C, 0x01, 0x01, 0x08 ];
+			// 	}
+
+			// 	bus.data.send({
+			// 		src : 'DIA',
+			// 		dst : 'DSP',
+			// 		msg : msg_vol,
+			// 	});
+			// }, 250);
 		}
 	}
 }
@@ -700,20 +675,16 @@ function init_listeners() {
 		if (config.emulate.rad !== true) return;
 
 		if (data.new === false) {
-			audio_power(false, true);
+			audio_power(false);
 			return;
 		}
 
-		log.module('Waiting for DSP ready event');
+		log.module('Waiting for DSP ready after reset event');
+	});
 
-		// Enable GPIO relay for amp power
-		gpio.set('amp', true); // Should be an emitted event
-
-		update.once('status.dsp.ready', (data) => {
-			if (data.new === false) return;
-
-			setTimeout(() => { audio_power(true, true); }, 2000);
-		});
+	update.on('status.dsp.reset', (data) => {
+		if (data.new === true) return;
+		setTimeout(() => { audio_power(true); }, 250);
 	});
 
 	log.msg('Initialized listeners');
