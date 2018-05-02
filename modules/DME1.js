@@ -56,7 +56,6 @@ function parse_316(data) {
 
 	update.status('engine.ac_clutch', parse.ac_clutch);
 
-	update.status('engine.speed', parse.rpm, false);
 
 	update.status('vehicle.key.off',       parse.key.off);
 	update.status('vehicle.key.accessory', parse.key.accessory);
@@ -85,10 +84,10 @@ function parse_329(data) {
 
 	let parse = {
 		engine : {
-			throttle : {
-				cruise : parseFloat((data.msg[4] / 2.54).toFixed(1)),
-				pedal  : parseFloat((data.msg[5] / 2.54).toFixed(1)),
-			},
+			// throttle : {
+			// 	cruise : parseFloat((data.msg[4] / 2.54).toFixed(1)),
+			// 	pedal  : parseFloat((data.msg[5] / 2.54).toFixed(1)),
+			// },
 
 			atmospheric_pressure : {
 				mbar : (data.msg[2] * 2) + 597,
@@ -156,8 +155,8 @@ function parse_329(data) {
 	update.status('vehicle.cruise.status.resume',     parse.vehicle.cruise.status.resume);
 	update.status('vehicle.cruise.status.unk1',       parse.vehicle.cruise.status.unk1);
 
-	update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
-	update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
+	// update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
+	// update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
 	update.status('vehicle.sport.active', parse.vehicle.sport.active);
 
