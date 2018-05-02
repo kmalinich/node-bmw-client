@@ -52,7 +52,6 @@ class GM extends EventEmitter {
 		switch (data.msg[1]) {
 			case 0x00 : data.value += 'no crash'; break;
 			case 0x02 : data.value += 'armed';    break; // A guess
-			default   : data.value += Buffer.from(data.msg[1]);
 		}
 
 		return data;
