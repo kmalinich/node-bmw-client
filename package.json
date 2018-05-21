@@ -11,7 +11,7 @@
 		"dark-sky": "^1.1.4",
 		"defaults-deep": "^0.2.4",
 		"express": "^4.16.3",
-		"json-colorizer": "^1.1.0",
+		"json-colorizer": "^1.1.1",
 		"jsonfile": "^4.0.0",
 		"kodi-ws": "^2.4.3",
 		"moment": "^2.22.1",
@@ -21,7 +21,7 @@
 		"os": "^0.1.1",
 		"pad": "^2.1.0",
 		"performance-now": "^2.1.0",
-		"socket.io": "^2.1.0",
+		"socket.io": "^2.1.1",
 		"suncalc": "^1.8.0",
 		"trucolor": "^0.6.6",
 		"zeromq": "^4.6.0"
@@ -47,7 +47,7 @@
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
 		"onoff": "^3.1.0",
 		"pi-temperature": "^2.0.0",
-		"pigpio": "^1.0.0",
+		"pigpio": "^1.1.0",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git",
 		"smc": "^2.0.0"
 	},
