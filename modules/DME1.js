@@ -31,6 +31,16 @@ function encode_316(rpm = 10000) {
 	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm_orig);
 }
 
+// For 0x316 byte 0
+//
+// Bit 0 - Something is pushed here, but I'm having a hard time tracing what it is. Appears it would always be set to 1 if everything is running normally
+// Bit 1 - Unused (in this DME)
+// Bit 2 - Set to 0 if ASC/DSC error, 1 otherwise
+// Bit 3 - Set to 0 if manual, Set to 1 if SMG (on this DME, I guess MS45 is different)
+// Bit 4 - Set to bit 0 of md_st_eingriff (torque intervention status)
+// Bit 5 - Set to bit 1 of md_st_eingriff
+// Bit 6 - Set to 1 AC engaged
+// Bit 7 - Set to 1 if MAF error
 function parse_316(data) {
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
@@ -81,6 +91,17 @@ function parse_329(data) {
 	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
 	// bit 4 - Possibly motor status (0 = on, 1 = off)
 	// bits 5, 6, 7 - MSS52 sport mode, tank evap duty cycle.. pfft
+	//
+	//
+	// ARBID: 0x329 (DME2)
+	// -B0
+	// -B1 is Temp [Temp in C = .75 * hex2dec(byte01) - 48.373]
+	// -B2 is atmospheric pressure -- not sure of conversion yet
+	// -B3 Clutch switch bit 0 (0 = engaged, 1 = disengage/neutral); Possibly Motor Status bit 4 (0 = on, 1 = off), Tank Evap duty cycle (possibly mislabeled, looks more like some sort of status byte) bits 5, 6, 7
+	// -B4 Driver desired torque, relative (00 - FE)
+	// -B5 Throttle position (00-FE).
+	// -B6 kickdown switch depressed is 4 (bit 2 = 1), Brake light switch error is 2 (bit 1 = 1), Brake pedal depressed is value 1 (bit 0 = 1)
+	// -B7
 
 	let parse = {
 		engine : {
@@ -169,7 +190,7 @@ function parse_329(data) {
 
 	if (update.status('vehicle.clutch', parse.vehicle.clutch)) {
 		if (parse.vehicle.clutch === false) {
-			update.status('vehicle.clutch_count', (parse.vehicle.clutch_count + 1));
+			update.status('vehicle.clutch_count', parseFloat((status.vehicle.clutch_count + 1)));
 			IKE.hud_refresh();
 		}
 	}

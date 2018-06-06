@@ -554,6 +554,7 @@ class IKE extends EventEmitter {
 			load  : status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%',
 			speed : status.vehicle.speed.mph + 'mph',
 			temp  : Math.round(status.temperature.coolant.c) + '¨',
+			egt   : Math.round(status.temperature.exhaust.c) + '¨',
 			time  : moment().format(moment_format),
 			volt  : status.lcm.voltage.terminal_30 + 'v',
 			range : Math.round(status.obc.range.mi) + 'mi',
@@ -573,7 +574,7 @@ class IKE extends EventEmitter {
 
 		// TODO use layout from config
 		hud_strings.left   = hud_strings.temp.padEnd(8);
-		hud_strings.center = hud_strings.range.padEnd(5);
+		hud_strings.center = hud_strings.egt.padEnd(5);
 		hud_strings.right  = hud_strings.cc.padStart(7);
 
 		// Change string to be load/CPU temp if over threshold
