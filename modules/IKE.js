@@ -20,7 +20,7 @@ function text_urgent_off() {
 	// ........
 	//
 	// .. Seriously, I'm nauseous, but as usual, it's late.....
-	new IKE().hud_refresh(true);
+	// new IKE().hud_refresh(true);
 }
 
 class IKE extends EventEmitter {
@@ -557,6 +557,9 @@ class IKE extends EventEmitter {
 			time  : moment().format(moment_format),
 			volt  : status.lcm.voltage.terminal_30 + 'v',
 			range : Math.round(status.obc.range.mi) + 'mi',
+
+			// Clutch count
+			cc : status.vehicle.clutch_count + 'gc',
 		};
 
 		// Add oil temp to temp string if configured
@@ -570,8 +573,8 @@ class IKE extends EventEmitter {
 
 		// TODO use layout from config
 		hud_strings.left   = hud_strings.temp.padEnd(8);
-		hud_strings.center = hud_strings.range.padEnd(4);
-		hud_strings.right  = hud_strings.cons.padStart(7);
+		hud_strings.center = hud_strings.range.padEnd(5);
+		hud_strings.right  = hud_strings.cc.padStart(7);
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {
@@ -580,7 +583,7 @@ class IKE extends EventEmitter {
 
 		// Change string to be LCM terminal 30 voltage if under threshold
 		if (status.lcm.voltage.terminal_30 <= config.hud.volt.threshold) {
-			hud_strings.center = hud_strings.volt.padEnd(4);
+			hud_strings.center = hud_strings.volt.padEnd(5);
 		}
 
 		// Update hud string in status object

@@ -166,7 +166,13 @@ function parse_329(data) {
 	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
 
 	update.status('vehicle.brake',  parse.vehicle.brake);
-	update.status('vehicle.clutch', parse.vehicle.clutch);
+
+	if (update.status('vehicle.clutch', parse.vehicle.clutch)) {
+		if (parse.vehicle.clutch === false) {
+			update.status('vehicle.clutch_count', (parse.vehicle.clutch_count + 1));
+			IKE.hud_refresh();
+		}
+	}
 }
 
 function parse_338(data) {
