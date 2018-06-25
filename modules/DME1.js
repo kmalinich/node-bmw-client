@@ -189,7 +189,7 @@ function parse_329(data) {
 	update.status('vehicle.brake',  parse.vehicle.brake);
 
 	if (update.status('vehicle.clutch', parse.vehicle.clutch)) {
-		if (parse.vehicle.clutch === false) {
+		if (parse.vehicle.clutch === false && status.engine.running === true) {
 			update.status('vehicle.clutch_count', parseFloat((status.vehicle.clutch_count + 1)));
 			IKE.hud_refresh();
 		}
