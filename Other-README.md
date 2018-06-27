@@ -19,11 +19,14 @@ Hardware needed (this is what I can gather thus far kind of depends on your depl
 	
 	
 	
-Things this software can do: 
-These are all user based assumptions from reading the code and using the app:
 
-First of all this app is really powerful. It does a lot of things that can damage your car. I do not take responsibility if you F something up with this guide or software and neither does the maintainer
+# These are all user based assumptions from reading the code and using the app:
 
+# First of all this app is really powerful. It does a lot of things that can damage your car. I do not take responsibility if  you F something up with this guide or software and neither does the maintainer
+
+
+# Things this software can do: 
+```
 Portions  of the car you can emulate and why this is cool:
 	BMBT: From what I can gather this is to emulate the stock BMW bluetooth interface of the vehicle.
 	CDC:  This app can emulate a CD Changer if you wanna pipe your audio in that way
@@ -34,6 +37,7 @@ Portions  of the car you can emulate and why this is cool:
 	MID: This will emulate your MID functions when you have removed your MID to put a screen in place
 	NBT1: Pretty self explanitory allows you to boot an NBT via canbus commands sent over PiCan
 	RAD: I think this is to announce to iBUS that there is a "radio" hooked up so the amp will turn on and allow playing of music / audio through speakers
+```
 	
 
 		
