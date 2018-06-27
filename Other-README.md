@@ -85,7 +85,7 @@ Steps to get running on your pi locally (yes its kind of convoluted deal with it
 												 
 if all went well you should have the interface daemon running .... oh wait no you dont its bitching about its config isnt it???? lets fix that
 
-10) run:    nano config.json
+10) run:    `nano config.json`
    10) once editing the config.json youll see tons of switches and options you can play with.... really what matters is defining the interfaces.
   
   10) Heres what my interface section looks like we will get to the wiring of things in a bit.....
@@ -99,10 +99,21 @@ if all went well you should have the interface daemon running .... oh wait no yo
                 "lcd": null
           },
 	
-11) now you can actually launch the interface half of the application. in your terminal (presuming you havent changed directories or closed it) run: ./helpers/node-bmw launch
-12) if you dont get any complaints move forward if you get complaints type : ./helpers/node-bmwi-units status and check the status of your newly defined interfaces
+11) now you can actually launch the interface half of the application. in your terminal (presuming you havent changed directories or closed it) run: `./helpers/node-bmw launch`
+12) if you dont get any complaints move forward if you get complaints type : `./helpers/node-bmwi-units status` and check the status of your newly defined interfaces
 13) Lets install the client portion of the program now  
   13) spawn a new instance of the terminal type: 
+              ```
+	      cd ~
+	      git clone --recursive https://github.com/kmalinich/node-bmw-client.git
+	      cd node-bmw-client
+	      npm install
+	      ./helpers/node-bmw launch
+	      ```
+	      then hit CTRL+C to canccel 
+	      
+	   then type `nano config`
+								```
 	
 14) toggle your configs for the client
   14)
