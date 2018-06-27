@@ -59,25 +59,25 @@ Steps to get running on your pi locally (yes its kind of convoluted deal with it
 1) setup your raspberry pi 3 with raspbian stretch lite sdcard boot it up and get hooked to your wifi run your updates and upgrades continue to step 2
 2) lets install some stuff well need to support our amazing BMWPiBUS thing lets hope you have 2x Reslers USB adapters and the Pican2 duo (btw you need to configure your pican) ........ open up your pi via ssh / keyboard and screen however youd like to interface.
 3) run some apt-get installs..... you need these packages :  
-	3b) run this in your terminal: sudo apt-get install pigpio libdbus-1-dev git-core nginx pulseaudio pulseaudio-module-bluetooth
+	...3b) run this in your terminal: `sudo apt-get install pigpio libdbus-1-dev git-core nginx pulseaudio pulseaudio-module-bluetooth`
 4) now we installed our binaries lets install node and npm so we can setup this cool app... navigate to nodejs.org and click the downloads tab at the top of the main page then select CURRENT (at time of writing version is 10.4.0)
 5) once you're on the current page right you need the link for nodejs current for armv7.... i used this : wget https://nodejs.org/dist/v10.4.0/node-v10.4.0-linux-armv7l.tar.xz
 6) unpack node .... 
-	6b) run this command in your terminal:  tar -xvf node-v*
+	...6b) run this command in your terminal:  `tar -xvf node-v*`
 7) lets install node!!! 
-	7b) run this command in your terminal: cd node-v* && sudo cp -R * /usr/local/
-8) lets check node is installed... run node --version ... you should get a return...   run : npm --version     you should get a return..
+	...7b) run this command in your terminal: `cd node-v* && sudo cp -R * /usr/local/`
+8) lets check node is installed... run `node --version` ... you should get a return...   run :` npm --version`     you should get a return..
 9) ok you've accomplished all the preliminary SOFTWARE downloads and setups and installs you need to clone the needed repositories
-	9b) in your terminal run these commands:     cd /usr/local
-												 sudo git clone --recursive https://github.com/kmalinich/node-bmw-interface.git bmwi
-												 cd bmwi
-												 sudo cp helpers/systemd/* /etc/systemd/system/
-												 sudo cp helpers/nginx/* /etc/nginx/
-												 sudo chown pi -R * . 
-												 npm install 
-												 ./helpers/node-bmwi-units enable
-												 ./helpers/node-bmwi-units start
-												 ./helpers/node-bmw launch
+	9b) in your terminal run these commands:     `cd /usr/local
+						     sudo git clone --recursive https://github.com/kmalinich/node-bmw-interface.git bmwi
+						      cd bmwi
+						      sudo cp helpers/systemd/* /etc/systemd/system/
+						      sudo cp helpers/nginx/* /etc/nginx/
+						      sudo chown pi -R * . 
+					              npm install 
+						      ./helpers/node-bmwi-units enable
+						      ./helpers/node-bmwi-units start
+						      ./helpers/node-bmw launch`
 																								 
 												 
 if all went well you should have the interface daemon running .... oh wait no you dont its bitching about its config isnt it???? lets fix that 
@@ -105,6 +105,9 @@ if all went well you should have the interface daemon running .... oh wait no yo
 14) toggle your configs for the client
 	14b)
 		Other config settings you should probably change:
+	
+	
+	
 	Bus:
 		in these entries you can set true the bus items you have defined in your walk through.
 		CANBUS:
