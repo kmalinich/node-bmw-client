@@ -75,7 +75,6 @@ Steps to get running on your pi locally (yes its kind of convoluted deal with it
 												 sudo cp helpers/nginx/* /etc/nginx/
 												 sudo chown pi -R * . 
 												 npm install 
-												 export NODE_PATH=/usr/local/bmwi/lib:/usr/local/bmwi/modules:/usr/local/bmwi/share:/usr/local/bmwi/node_modules:/usr/lib/node_modules
 												 ./helpers/node-bmwi-units enable
 												 ./helpers/node-bmwi-units start
 												 ./helpers/node-bmw launch
@@ -100,8 +99,7 @@ if all went well you should have the interface daemon running .... oh wait no yo
 								git clone --recursive https://github.com/kmalinich/node-bmw-client.git
 								cd node-bmw-client
 								npm install
-								export NODE_PATH=/home/pi/node-bmw-client/lib:/home/pi/node-bmw-client/modules:/home/pi/node-bmw-client/share:/home/pi/node-bmw-client/node_modules:/usr/lib/node_modules
-								node main.js
+								./helpers/node-bmw launch
 								then hit CTRL+C to cancel
 								nano config.json
 14) toggle your configs for the client
@@ -117,7 +115,7 @@ if all went well you should have the interface daemon running .... oh wait no yo
 			speed: calculate speed based on all 4 wheels instead of 1 wheel
 			
 	BMBT: 
-		media: 
+		media: you can toggle either "bluetooth" or "kodi" to tell it to control either your bluetooth device or a kodi interface
 		vol_atPoweron:
 		
 	Chassis:
@@ -159,7 +157,9 @@ if all went well you should have the interface daemon running .... oh wait no yo
 			or you can google that
 			
 	MFL:
-		This allows you to interact with kodi from your steering wheel and what functions it is allowed to control
+		media: you can set to "bluetooth" or "kodi"
+		voice:
+		volume:  you can set to "bluetooth" or "kodi"
 	
 	Tires:
 		Make this match your tire size matters for speedo calculation if using the CANBUS interface
@@ -189,3 +189,42 @@ The system.d scripts we enabled in step 9 will kick on the interface and the cro
 
 
 
+OPTIONAL SETUP INSTRUCTIONS:
+
+if you wanna use a DAC card and bluetooth with this you need to install some other items as well
+
+
+sudo apt-get install bluez bluez-tools pulseaudio pulseaudio-module-bluetooth
+
+
+you also have to start pulseaduio at boot now 
+
+
+nano /etc/systemd/system/pulseaudio.service
+
+then copy and paste this:
+
+
+[Unit]
+Description=Pulse Audio
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pulseaudio --system --disallow-exit --disable-shm --exit-idle-time=-1
+
+[Install]
+WantedBy=multi-user.target
+
+
+press ctrl + x and hit enter and type the letter Y to save
+
+
+then run these commands
+
+sudo systemctl enable pulseaudio
+sudo systemctl start pulseaudio
+
+
+if you have an iPhone volume control doesnt work without some extra hackery as well as some other quirks
+
+i blame apple
