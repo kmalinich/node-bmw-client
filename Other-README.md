@@ -103,17 +103,17 @@ if all went well you should have the interface daemon running .... oh wait no yo
 12) if you dont get any complaints move forward if you get complaints type : `./helpers/node-bmwi-units status` and check the status of your newly defined interfaces
 13) Lets install the client portion of the program now  
   13) spawn a new instance of the terminal type: 
-              ```
-	      cd ~
-	      git clone --recursive https://github.com/kmalinich/node-bmw-client.git
-	      cd node-bmw-client
-	      npm install
-	      ./helpers/node-bmw launch
-	      ```
-	      then hit CTRL+C to canccel 
+```
+cd ~
+git clone --recursive https://github.com/kmalinich/node-bmw-client.git
+cd node-bmw-client
+npm install
+./helpers/node-bmw launch
+```
+then hit CTRL+C to canccel 
 	      
-	   then type `nano config`
-								```
+then type `nano config`
+							
 	
 14) toggle your configs for the client
   14)
