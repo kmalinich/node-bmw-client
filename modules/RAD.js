@@ -637,8 +637,8 @@ function audio_power(power_state) {
 			// audio_control('dsp-1');
 			// audio_control('dsp-0');
 
-			// Set DSP source to on (tuner/tape)
-			audio_control(true);
+			// Set DSP source to on (source per config)
+			audio_control(config.media.dsp.default_source);
 
 			// Turn on BMBT
 			cassette_control(true);
