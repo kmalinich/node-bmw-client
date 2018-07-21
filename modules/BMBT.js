@@ -146,6 +146,13 @@ function decode_button(data) {
 					// To use holding the phone button in to toggle RPi display on/off
 					update.status('hdmi.rpi.power_override', true);
 					hdmi_rpi.command('toggle');
+
+					break;
+				}
+
+				case 'depressgt menu' : {
+					// To use pressing the BMBT menu button (right side) to force the DSP amp on
+					RAD.audio_power('on');
 				}
 			}
 
