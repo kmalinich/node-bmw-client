@@ -35,7 +35,7 @@ function backlight(value = status.fem1.backlight.value) {
 	update.status('fem1.backlight.real', value, false);
 
 	bus.data.send({
-		bus  : 'can1',
+		bus  : config.fem1.can_intf,
 		id   : 0x202,
 		data : Buffer.from([ value, 0x00 ]),
 	});

@@ -43,6 +43,7 @@ class IKE extends EventEmitter {
 		this.text_urgent_off = text_urgent_off;
 	}
 
+
 	// This actually is a bitmask but.. this is also a freetime project
 	decode_aux_heat_led(data) {
 		data.command = 'bro';
@@ -814,6 +815,8 @@ class IKE extends EventEmitter {
 	}
 
 	decode_ignition_status(data) {
+		let new_level_name;
+
 		// Save previous ignition status
 		let previous_level = status.vehicle.ignition_level;
 
@@ -824,24 +827,26 @@ class IKE extends EventEmitter {
 		}
 
 		switch (data.msg[1]) {
-			case 0  : update.status('vehicle.ignition', 'off');       break;
-			case 1  : update.status('vehicle.ignition', 'accessory'); break;
-			case 3  : update.status('vehicle.ignition', 'run');       break;
-			case 7  : update.status('vehicle.ignition', 'start');     break;
-			default : update.status('vehicle.ignition', 'unknown');
+			case 0  : new_level_name = 'off';       break;
+			case 1  : new_level_name = 'accessory'; break;
+			case 3  : new_level_name = 'run';       break;
+			case 7  : new_level_name = 'start';     break;
+			default : new_level_name = 'unknown';
 		}
 
-		// Ignition going up
-		if (data.msg[1] > previous_level) {
+		update.status('vehicle.ignition', new_level_name);
+
+		if (data.msg[1] > previous_level) { // Ignition going up
 			switch (data.msg[1]) { // Evaluate new ignition state
-				case 1: // Accessory
+				case 1 : { // Accessory
 					log.module('Powerup state');
 					this.emit('ignition-powerup');
 
 					bus.cmds.request_device_status(module_name, 'RAD');
 					break;
+				}
 
-				case 3: // Run
+				case 3 : { // Run
 					// If the accessory (1) ignition message wasn't caught
 					if (previous_level === 0) {
 						log.module('Powerup state');
@@ -855,7 +860,9 @@ class IKE extends EventEmitter {
 
 					// Refresh OBC data
 					if (config.options.obc_refresh_on_start === true) this.obc_refresh();
+
 					break;
+				}
 
 				case 7 : { // Start
 					switch (previous_level) {
@@ -884,9 +891,7 @@ class IKE extends EventEmitter {
 				}
 			}
 		}
-
-		// Ignition going down
-		else if (data.msg[1] < previous_level) {
+		else if (data.msg[1] < previous_level) { // Ignition going down
 			switch (data.msg[1]) { // Evaluate new ignition state
 				case 0 : { // Off
 					// If the accessory (1) ignition message wasn't caught

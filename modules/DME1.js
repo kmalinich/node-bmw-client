@@ -21,7 +21,7 @@ function encode_316(rpm = 10000) {
 	for (let i = 0; i < count; i++) {
 		setTimeout(() => {
 			bus.data.send({
-				bus  : 'can0',
+				bus  : config.dme1.can_intf,
 				id   : 0x316,
 				data : msg,
 			});

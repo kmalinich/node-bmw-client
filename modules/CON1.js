@@ -498,7 +498,7 @@ function init_rotation() {
 
 	// Send message
 	bus.data.send({
-		bus  : 'can1',
+		bus  : config.con1.can_intf,
 		id   : 0x273,
 		data : Buffer.from([ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x00 ]),
 	});
