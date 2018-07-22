@@ -47,7 +47,7 @@
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
 		"onoff": "^3.1.0",
 		"pi-temperature": "^2.0.0",
-		"pigpio": "^1.1.0",
+		"pigpio": "^1.1.1",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git",
 		"smc": "^2.0.0"
 	},
