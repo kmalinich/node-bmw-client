@@ -4,7 +4,7 @@ const convert = require('node-unit-conversion');
 // This is dangerous and awesome if you can see what it does
 function encode_316(rpm = 10000) {
 	// Bounce if can0 is not enabled
-	if (config.bus.can0.enabled !== true) return;
+	if (config.bus[config.dme1.can_intf].enabled !== true) return;
 
 	let rpm_orig = rpm;
 
@@ -15,7 +15,7 @@ function encode_316(rpm = 10000) {
 
 	let msg = Buffer.from([ 0x05, 0x16, lsb, msb, 0x16, 0x18, 0x00, 0x16 ]);
 
-	let count = 1000;
+	let count = 500;
 
 	// Send packets
 	for (let i = 0; i < count; i++) {
@@ -25,7 +25,7 @@ function encode_316(rpm = 10000) {
 				id   : 0x316,
 				data : msg,
 			});
-		}, (i / 100));
+		}, (i / 75));
 	}
 
 	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm_orig);
