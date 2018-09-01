@@ -172,7 +172,7 @@ function translate_button_media(unmask) {
 			switch (unmask.button) {
 				case 'left' : {
 					bus.data.send({
-						bus  : 'can1',
+						bus  : config.mfl.can_intf,
 						id   : src,
 						data : [ 0xE0, 0x00 ],
 					});
@@ -182,7 +182,7 @@ function translate_button_media(unmask) {
 
 				case 'right' : {
 					bus.data.send({
-						bus  : 'can1',
+						bus  : config.mfl.can_intf,
 						id   : src,
 						data : [ 0xD0, 0x00 ],
 					});
@@ -192,7 +192,7 @@ function translate_button_media(unmask) {
 
 				case 'volume -' : {
 					bus.data.send({
-						bus  : 'can1',
+						bus  : config.mfl.can_intf,
 						id   : src,
 						data : [ 0xC4, 0x00 ],
 					});
@@ -202,7 +202,7 @@ function translate_button_media(unmask) {
 
 				case 'volume +' : {
 					bus.data.send({
-						bus  : 'can1',
+						bus  : config.mfl.can_intf,
 						id   : src,
 						data : [ 0xC8, 0x00 ],
 					});
@@ -212,7 +212,7 @@ function translate_button_media(unmask) {
 
 				case 'voice' : {
 					bus.data.send({
-						bus  : 'can1',
+						bus  : config.mfl.can_intf,
 						id   : src,
 						data : [ 0xC0, 0x0D ],
 					});
@@ -234,7 +234,7 @@ function translate_button_media(unmask) {
 
 		case 'release' : {
 			bus.data.send({
-				bus  : 'can1',
+				bus  : config.mfl.can_intf,
 				id   : src,
 				data : [ 0xC0, 0x00 ],
 			});

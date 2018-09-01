@@ -178,7 +178,7 @@ class GM extends EventEmitter {
 		update.status('doors.open', (update_closed_doors === false));
 
 		// Set status.doors.sealed if all doors and flaps are closed
-		let update_sealed_doors = (!status.doors.closed && !status.doors.hood && !status.doors.trunk);
+		let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
 		update.status('doors.sealed', update_sealed_doors);
 
 

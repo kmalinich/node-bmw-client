@@ -4,7 +4,7 @@ const convert = require('node-unit-conversion');
 // This is dangerous and awesome if you can see what it does
 function encode_316(rpm = 10000) {
 	// Bounce if can0 is not enabled
-	if (config.bus.can0.enabled !== true) return;
+	if (config.bus[config.dme1.can_intf].enabled !== true) return;
 
 	let rpm_orig = rpm;
 
@@ -15,22 +15,32 @@ function encode_316(rpm = 10000) {
 
 	let msg = Buffer.from([ 0x05, 0x16, lsb, msb, 0x16, 0x18, 0x00, 0x16 ]);
 
-	let count = 1000;
+	let count = 500;
 
 	// Send packets
 	for (let i = 0; i < count; i++) {
 		setTimeout(() => {
 			bus.data.send({
-				bus  : 'can0',
+				bus  : config.dme1.can_intf,
 				id   : 0x316,
 				data : msg,
 			});
-		}, (i / 100));
+		}, (i / 75));
 	}
 
 	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm_orig);
 }
 
+// For 0x316 byte 0
+//
+// Bit 0 - Something is pushed here, but I'm having a hard time tracing what it is. Appears it would always be set to 1 if everything is running normally
+// Bit 1 - Unused (in this DME)
+// Bit 2 - Set to 0 if ASC/DSC error, 1 otherwise
+// Bit 3 - Set to 0 if manual, Set to 1 if SMG (on this DME, I guess MS45 is different)
+// Bit 4 - Set to bit 0 of md_st_eingriff (torque intervention status)
+// Bit 5 - Set to bit 1 of md_st_eingriff
+// Bit 6 - Set to 1 AC engaged
+// Bit 7 - Set to 1 if MAF error
 function parse_316(data) {
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
@@ -77,10 +87,26 @@ function parse_329(data) {
 	// 3 = Sport error
 
 	// byte3
-	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
-	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
-	// bit 4 - Possibly motor status (0 = on, 1 = off)
-	// bits 5, 6, 7 - MSS52 sport mode, tank evap duty cycle.. pfft
+	//
+	//
+	// ARBID: 0x329 (DME2)
+	// byte 0 : ??
+	// byte 1 : coolant temp
+	// byte 2 : atmospheric pressure
+	//
+	// byte 3, bit 0      : clutch switch (0 = engaged, 1 = disengage/neutral)
+	// byte 3, bit 2      : Hardcoded to 1 (on MSS54, could be used on other DMEs)
+	// byte 3, bit 4      : possibly motor status (0 = on, 1 = off)
+	// byte 3, bits 5+6+7 : MSS52 sport mode, tank evap duty cycle
+	//
+	// byte 4 : driver desired torque, relative (0x00 - 0xFE)
+	// byte 5 : throttle position               (0x00 - 0xFE)
+	//
+	// byte 6, bit 2 : kickdown switch depressed
+	// byte 6, bit 1 : brake light switch error
+	// byte 6, bit 0 : brake pedal depressed
+	//
+	// byte 7 : ??
 
 	let parse = {
 		engine : {
@@ -166,7 +192,13 @@ function parse_329(data) {
 	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
 
 	update.status('vehicle.brake',  parse.vehicle.brake);
-	update.status('vehicle.clutch', parse.vehicle.clutch);
+
+	if (update.status('vehicle.clutch', parse.vehicle.clutch)) {
+		if (parse.vehicle.clutch === false && status.engine.running === true) {
+			update.status('vehicle.clutch_count', parseFloat((status.vehicle.clutch_count + 1)));
+			IKE.hud_refresh();
+		}
+	}
 }
 
 function parse_338(data) {
@@ -186,7 +218,7 @@ function parse_338(data) {
 		},
 	};
 
-	update.status('vehicle.sport.active', parse.vehicle.sport.active);
+	// update.status('vehicle.sport.active', parse.vehicle.sport.active);
 	update.status('vehicle.sport.error',  parse.vehicle.sport.error);
 
 	return data;
@@ -210,12 +242,14 @@ function parse_338(data) {
 // byte6 : CSL oil level (format unclear)
 // byte7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
+	let process_consumption = true;
+
 	let consumption_current = ((data.msg[2] << 8) + data.msg[1]);
 
 	// Need at least one value first
 	if (DME1.consumption_last === 0) {
 		DME1.consumption_last = consumption_current;
-		return;
+		process_consumption = false;
 	}
 
 	// The amount of fuel being consumed isn't a flat number
@@ -241,7 +275,10 @@ function parse_545(data) {
 		},
 	};
 
-	DME1.consumption_last = consumption_current;
+	if (process_consumption === true) {
+		DME1.consumption_last = consumption_current;
+		update.status('fuel.consumption', parse.fuel.consumption, false);
+	}
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.oil.f = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
@@ -251,8 +288,6 @@ function parse_545(data) {
 	update.status('dme1.status.check_gas_cap', parse.status.check_gas_cap);
 	update.status('dme1.status.cruise',        parse.status.cruise);
 	update.status('dme1.status.eml',           parse.status.eml);
-
-	update.status('fuel.consumption', parse.fuel.consumption, false);
 
 	update.status('temperature.oil.f', parse.temperature.oil.f, false);
 
@@ -392,26 +427,27 @@ function parse_720(data) {
 		},
 	};
 
+	// Update status object
+
+	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
+	// update.status('temperature.oil.c',     parse.temperature.oil.c);
+	if (update.status('temperature.exhaust.c', parse.temperature.exhaust.c)) IKE.hud_refresh();
+	if (update.status('temperature.intake.c',  parse.temperature.intake.c))  IKE.hud_refresh();
+
+	update.status('dme1.voltage',      parse.dme1.voltage, false);
+	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
+	update.status('fuel.pump.percent', parse.fuel.pump.percent);
+
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 	parse.temperature.exhaust.f = parseFloat(convert(parse.temperature.exhaust.c).from('celsius').to('fahrenheit'));
 	parse.temperature.intake.f  = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
 	parse.temperature.oil.f     = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
 
-	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
-	update.status('fuel.pump.percent', parse.fuel.pump.percent);
-
-	// Update status object
-	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	// update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
-	update.status('temperature.exhaust.c', parse.temperature.exhaust.c);
-	update.status('temperature.exhaust.f', parse.temperature.exhaust.f, false);
-	update.status('temperature.intake.c',  parse.temperature.intake.c);
-	update.status('temperature.intake.f',  parse.temperature.intake.f, false);
-	// update.status('temperature.oil.c',     parse.temperature.oil.c);
 	// update.status('temperature.oil.f',     parse.temperature.oil.f, false);
-
-	update.status('dme1.voltage', parse.dme1.voltage, false);
+	update.status('temperature.exhaust.f', parse.temperature.exhaust.f, false);
+	update.status('temperature.intake.f',  parse.temperature.intake.f, false);
 }
 
 

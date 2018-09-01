@@ -20,7 +20,7 @@ function text_urgent_off() {
 	// ........
 	//
 	// .. Seriously, I'm nauseous, but as usual, it's late.....
-	new IKE().hud_refresh(true);
+	// new IKE().hud_refresh(true);
 }
 
 class IKE extends EventEmitter {
@@ -42,6 +42,7 @@ class IKE extends EventEmitter {
 
 		this.text_urgent_off = text_urgent_off;
 	}
+
 
 	// This actually is a bitmask but.. this is also a freetime project
 	decode_aux_heat_led(data) {
@@ -551,27 +552,32 @@ class IKE extends EventEmitter {
 			right  : '',
 
 			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg', // TODO use unit from config
+			egt   : Math.round(status.temperature.exhaust.c) + '¨',
+			iat   : Math.round(status.temperature.intake.c) + '¨',
 			load  : status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%',
+			range : Math.round(status.obc.range.mi) + 'mi',
 			speed : status.vehicle.speed.mph + 'mph',
 			temp  : Math.round(status.temperature.coolant.c) + '¨',
 			time  : moment().format(moment_format),
 			volt  : status.lcm.voltage.terminal_30 + 'v',
-			range : Math.round(status.obc.range.mi) + 'mi',
+
+			// Clutch count
+			cc : status.vehicle.clutch_count + 'gc',
 		};
 
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
-			hud_strings.temp += ' ' + Math.round(status.temperature.oil.c) + '¨';
+			hud_strings.temp += '  ' + Math.round(status.temperature.oil.c) + '¨';
 		}
 
 
 		// Space-pad strings
-		// Layout padding should be 7 + 5 + 8
+		// Layout padding should be
 
 		// TODO use layout from config
 		hud_strings.left   = hud_strings.temp.padEnd(8);
-		hud_strings.center = hud_strings.range.padEnd(4);
-		hud_strings.right  = hud_strings.cons.padStart(7);
+		hud_strings.center = hud_strings.egt.padEnd(6);
+		hud_strings.right  = hud_strings.iat.padStart(6);
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {
@@ -580,7 +586,7 @@ class IKE extends EventEmitter {
 
 		// Change string to be LCM terminal 30 voltage if under threshold
 		if (status.lcm.voltage.terminal_30 <= config.hud.volt.threshold) {
-			hud_strings.center = hud_strings.volt.padEnd(4);
+			hud_strings.center = hud_strings.volt.padEnd(5);
 		}
 
 		// Update hud string in status object
@@ -810,6 +816,8 @@ class IKE extends EventEmitter {
 	}
 
 	decode_ignition_status(data) {
+		let new_level_name;
+
 		// Save previous ignition status
 		let previous_level = status.vehicle.ignition_level;
 
@@ -820,24 +828,26 @@ class IKE extends EventEmitter {
 		}
 
 		switch (data.msg[1]) {
-			case 0  : update.status('vehicle.ignition', 'off');       break;
-			case 1  : update.status('vehicle.ignition', 'accessory'); break;
-			case 3  : update.status('vehicle.ignition', 'run');       break;
-			case 7  : update.status('vehicle.ignition', 'start');     break;
-			default : update.status('vehicle.ignition', 'unknown');
+			case 0  : new_level_name = 'off';       break;
+			case 1  : new_level_name = 'accessory'; break;
+			case 3  : new_level_name = 'run';       break;
+			case 7  : new_level_name = 'start';     break;
+			default : new_level_name = 'unknown';
 		}
 
-		// Ignition going up
-		if (data.msg[1] > previous_level) {
+		update.status('vehicle.ignition', new_level_name);
+
+		if (data.msg[1] > previous_level) { // Ignition going up
 			switch (data.msg[1]) { // Evaluate new ignition state
-				case 1: // Accessory
+				case 1 : { // Accessory
 					log.module('Powerup state');
 					this.emit('ignition-powerup');
 
 					bus.cmds.request_device_status(module_name, 'RAD');
 					break;
+				}
 
-				case 3: // Run
+				case 3 : { // Run
 					// If the accessory (1) ignition message wasn't caught
 					if (previous_level === 0) {
 						log.module('Powerup state');
@@ -851,7 +861,9 @@ class IKE extends EventEmitter {
 
 					// Refresh OBC data
 					if (config.options.obc_refresh_on_start === true) this.obc_refresh();
+
 					break;
+				}
 
 				case 7 : { // Start
 					switch (previous_level) {
@@ -880,9 +892,7 @@ class IKE extends EventEmitter {
 				}
 			}
 		}
-
-		// Ignition going down
-		else if (data.msg[1] < previous_level) {
+		else if (data.msg[1] < previous_level) { // Ignition going down
 			switch (data.msg[1]) { // Evaluate new ignition state
 				case 0 : { // Off
 					// If the accessory (1) ignition message wasn't caught
