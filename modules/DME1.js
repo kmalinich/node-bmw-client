@@ -186,9 +186,7 @@ function parse_329(data) {
 
 	update.status('vehicle.sport.active', parse.vehicle.sport.active);
 
-	// Trigger a HUD refresh if coolant temp is updated
-	if (update.status('temperature.coolant.c', parse.temperature.coolant.c)) IKE.hud_refresh();
-
+	update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
 
 	update.status('vehicle.brake',  parse.vehicle.brake);
@@ -196,7 +194,6 @@ function parse_329(data) {
 	if (update.status('vehicle.clutch', parse.vehicle.clutch)) {
 		if (parse.vehicle.clutch === false && status.engine.running === true) {
 			update.status('vehicle.clutch_count', parseFloat((status.vehicle.clutch_count + 1)));
-			IKE.hud_refresh();
 		}
 	}
 }
@@ -290,9 +287,7 @@ function parse_545(data) {
 	update.status('dme1.status.eml',           parse.status.eml);
 
 	update.status('temperature.oil.f', parse.temperature.oil.f, false);
-
-	// Trigger a HUD refresh if oil temp is updated
-	if (update.status('temperature.oil.c', parse.temperature.oil.c)) IKE.hud_refresh();
+	update.status('temperature.oil.c', parse.temperature.oil.c);
 }
 
 
@@ -431,8 +426,8 @@ function parse_720(data) {
 
 	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	// update.status('temperature.oil.c',     parse.temperature.oil.c);
-	if (update.status('temperature.exhaust.c', parse.temperature.exhaust.c)) IKE.hud_refresh();
-	if (update.status('temperature.intake.c',  parse.temperature.intake.c))  IKE.hud_refresh();
+	update.status('temperature.exhaust.c', parse.temperature.exhaust.c);
+	update.status('temperature.intake.c',  parse.temperature.intake.c);
 
 	update.status('dme1.voltage',      parse.dme1.voltage, false);
 	update.status('fuel.pump.duty',    parse.fuel.pump.duty);

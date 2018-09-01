@@ -664,7 +664,7 @@ function init_listeners() {
 	});
 
 
-	// Kick DSP on engine restart
+	// Kick DSP amp on engine restart
 	IKE.on('ignition-start-end', () => {
 		setTimeout(() => { audio_power(true); }, 350);
 	});

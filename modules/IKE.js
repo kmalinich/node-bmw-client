@@ -13,15 +13,8 @@ function text_urgent_off() {
 		src : 'CCM',
 		msg : [ 0x1A, 0x30, 0x00 ],
 	});
-
-	// Something about this is super-duper-extra-nasty-hacky
-	// ...
-	//
-	// ........
-	//
-	// .. Seriously, I'm nauseous, but as usual, it's late.....
-	// new IKE().hud_refresh(true);
 }
+
 
 class IKE extends EventEmitter {
 	constructor() {
@@ -559,7 +552,7 @@ class IKE extends EventEmitter {
 			speed : status.vehicle.speed.mph + 'mph',
 			temp  : Math.round(status.temperature.coolant.c) + '¨',
 			time  : moment().format(moment_format),
-			volt  : status.lcm.voltage.terminal_30 + 'v',
+			volt  : status.dme1.voltage + 'v',
 
 			// Clutch count
 			cc : status.vehicle.clutch_count + 'gc',
@@ -571,21 +564,20 @@ class IKE extends EventEmitter {
 		}
 
 
-		// Space-pad strings
-		// Layout padding should be
+		// Space-pad HUD strings
 
 		// TODO use layout from config
-		hud_strings.left   = hud_strings.temp.padEnd(8);
-		hud_strings.center = hud_strings.egt.padEnd(6);
-		hud_strings.right  = hud_strings.iat.padStart(6);
+		hud_strings.left   = hud_strings.temp.padEnd(10);
+		hud_strings.center = hud_strings.egt.padEnd(5);
+		hud_strings.right  = hud_strings.iat.padStart(4);
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {
-			hud_strings.right = hud_strings.load.padStart(8);
+			hud_strings.left = hud_strings.load.padEnd(10);
 		}
 
-		// Change string to be LCM terminal 30 voltage if under threshold
-		if (status.lcm.voltage.terminal_30 <= config.hud.volt.threshold) {
+		// Change string to be DME1 voltage if under threshold
+		if (status.dme1.voltage <= config.hud.volt.threshold) {
 			hud_strings.center = hud_strings.volt.padEnd(5);
 		}
 
@@ -778,7 +770,7 @@ class IKE extends EventEmitter {
 	}
 
 
-	// Refresh various values every 5 seconds
+	// Refresh various values every 15 seconds
 	data_refresh() {
 		if (status.vehicle.ignition_level === 0) {
 			if (this.timeout_data_refresh !== null) {
@@ -811,7 +803,7 @@ class IKE extends EventEmitter {
 			let self = this;
 			this.timeout_data_refresh = setTimeout(() => {
 				self.data_refresh();
-			}, 10000);
+			}, 15000);
 		}
 	}
 
@@ -917,6 +909,9 @@ class IKE extends EventEmitter {
 				case 3 : { // Run
 					log.module('Start-end state');
 					this.emit('ignition-start-end');
+
+					// Set OBC clock
+					this.obc_clock();
 				}
 			}
 		}
@@ -964,7 +959,7 @@ class IKE extends EventEmitter {
 			// Only refresh on new IBUS interface connection
 			if (data.intf !== 'ibus') return;
 
-			this.text_warning('    App restart!    ', 2500);
+			// this.text_warning('    App restart!    ', 2500);
 
 			// Clear existing timeout if exists
 			if (this.timeout_accept_refresh !== null) {
@@ -988,9 +983,18 @@ class IKE extends EventEmitter {
 			}
 		});
 
-		update.on('status.lcm.voltage.terminal_30', () => {
-			this.hud_refresh();
-		});
+		// Refresh HUD after certain data values update
+		update.on('status.dme1.voltage',            () => { this.hud_refresh(); });
+		// update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
+		update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
+		update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
+		update.on('status.system.temperature',      () => { this.hud_refresh(); });
+		update.on('status.temperature.coolant.c',   () => { this.hud_refresh(); });
+		update.on('status.temperature.exhaust.c',   () => { this.hud_refresh(); });
+		update.on('status.temperature.intake.c',    () => { this.hud_refresh(); });
+		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
+		update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
+		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
 
 		log.msg('Initialized listeners');
 	}
