@@ -552,14 +552,14 @@ class IKE extends EventEmitter {
 			right  : '',
 
 			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg', // TODO use unit from config
+			egt   : Math.round(status.temperature.exhaust.c) + '¨',
+			iat   : Math.round(status.temperature.intake.c) + '¨',
 			load  : status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%',
+			range : Math.round(status.obc.range.mi) + 'mi',
 			speed : status.vehicle.speed.mph + 'mph',
 			temp  : Math.round(status.temperature.coolant.c) + '¨',
-			iat   : Math.round(status.temperature.intake.c) + '¨',
-			egt   : Math.round(status.temperature.exhaust.c) + '¨',
 			time  : moment().format(moment_format),
 			volt  : status.lcm.voltage.terminal_30 + 'v',
-			range : Math.round(status.obc.range.mi) + 'mi',
 
 			// Clutch count
 			cc : status.vehicle.clutch_count + 'gc',
@@ -567,17 +567,17 @@ class IKE extends EventEmitter {
 
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
-			hud_strings.temp += ' ' + Math.round(status.temperature.oil.c) + '¨';
+			hud_strings.temp += '  ' + Math.round(status.temperature.oil.c) + '¨';
 		}
 
 
 		// Space-pad strings
-		// Layout padding should be 7 + 5 + 8
+		// Layout padding should be 
 
 		// TODO use layout from config
 		hud_strings.left   = hud_strings.temp.padEnd(8);
-		hud_strings.center = hud_strings.egt.padEnd(5);
-		hud_strings.right  = hud_strings.iat.padStart(7);
+		hud_strings.center = hud_strings.egt.padEnd(6);
+		hud_strings.right  = hud_strings.iat.padStart(6);
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {

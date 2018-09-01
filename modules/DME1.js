@@ -427,26 +427,27 @@ function parse_720(data) {
 		},
 	};
 
+	// Update status object
+
+	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
+	// update.status('temperature.oil.c',     parse.temperature.oil.c);
+	if (update.status('temperature.exhaust.c', parse.temperature.exhaust.c)) IKE.hud_refresh();
+	if (update.status('temperature.intake.c',  parse.temperature.intake.c))  IKE.hud_refresh();
+
+	update.status('dme1.voltage',      parse.dme1.voltage, false);
+	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
+	update.status('fuel.pump.percent', parse.fuel.pump.percent);
+
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 	parse.temperature.exhaust.f = parseFloat(convert(parse.temperature.exhaust.c).from('celsius').to('fahrenheit'));
 	parse.temperature.intake.f  = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
 	parse.temperature.oil.f     = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
 
-	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
-	update.status('fuel.pump.percent', parse.fuel.pump.percent);
-
-	// Update status object
-	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	// update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
-	update.status('temperature.exhaust.c', parse.temperature.exhaust.c);
-	update.status('temperature.exhaust.f', parse.temperature.exhaust.f, false);
-	update.status('temperature.intake.c',  parse.temperature.intake.c);
-	update.status('temperature.intake.f',  parse.temperature.intake.f, false);
-	// update.status('temperature.oil.c',     parse.temperature.oil.c);
 	// update.status('temperature.oil.f',     parse.temperature.oil.f, false);
-
-	update.status('dme1.voltage', parse.dme1.voltage, false);
+	update.status('temperature.exhaust.f', parse.temperature.exhaust.f, false);
+	update.status('temperature.intake.f',  parse.temperature.intake.f, false);
 }
 
 
