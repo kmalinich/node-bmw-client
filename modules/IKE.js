@@ -25,7 +25,6 @@ class IKE extends EventEmitter {
 
 		// HUD refresh vars
 		this.timeout_data_refresh = null;
-		this.last_hud_refresh     = now();
 		this.hud_override         = false;
 		this.hud_override_text    = null;
 
@@ -523,9 +522,10 @@ class IKE extends EventEmitter {
 	hud_refresh_speed() {
 		if (!this.ok2hud()) return;
 
-		// Send text to IKE and update this.last_hud_refresh value
+		// Send text to IKE and update status.hud.refresh_last value
 		this.text(status.vehicle.speed.mph + 'mph', () => {
-			this.last_hud_refresh = now();
+			// Bring up last HUD refresh time
+			update.status('hud.refresh_last', now(), false);
 		});
 	}
 
@@ -597,9 +597,10 @@ class IKE extends EventEmitter {
 		}
 
 		this.hud_render(() => {
-			// Send text to IKE and update this.last_hud_refresh value
+			// Send text to IKE and update status.hud.refresh_last value
 			this.text(status.hud.string, () => {
-				this.last_hud_refresh = now();
+				// Bring up last HUD refresh time
+				update.status('hud.refresh_last', now(), false);
 			});
 		});
 	}
@@ -739,7 +740,7 @@ class IKE extends EventEmitter {
 		if (this.hud_override === true) return false;
 
 		// Bounce if the last update was less than the configured value in milliseconds ago
-		if (now() - this.last_hud_refresh <= config.hud.refresh_max) return false;
+		if (now() - status.hud.refresh_last <= config.hud.refresh_max) return false;
 
 		return true;
 	}
@@ -954,6 +955,9 @@ class IKE extends EventEmitter {
 	}
 
 	init_listeners() {
+		// Bring up last HUD refresh time
+		update.status('hud.refresh_last', now(), false);
+
 		// Refresh data on interface connection
 		socket.on('recv-host-connect', (data) => {
 			// Only refresh on new IBUS interface connection
