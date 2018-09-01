@@ -1,3 +1,5 @@
+/* eslint key-spacing : 0 */
+
 const convert = require('node-unit-conversion');
 
 
@@ -136,11 +138,11 @@ function parse_329(data) {
 
 			cruise : {
 				button : {
-					resume : bitmask.test(data.msg[3], 0x40) && bitmask.test(data.msg[3], 0x20),
-					minus  : bitmask.test(data.msg[3], 0x40) && !bitmask.test(data.msg[3], 0x20),
-					onoff  : bitmask.test(data.msg[3], 0x80),
-					plus   : bitmask.test(data.msg[3], 0x20) && !bitmask.test(data.msg[3], 0x40),
-					unk1   : bitmask.test(data.msg[3], 0x01),
+					resume :  bitmask.test(data.msg[3], 0x20) &&  bitmask.test(data.msg[3], 0x40),
+					minus  : !bitmask.test(data.msg[3], 0x20) &&  bitmask.test(data.msg[3], 0x40),
+					plus   :  bitmask.test(data.msg[3], 0x20) && !bitmask.test(data.msg[3], 0x40),
+					onoff  :  bitmask.test(data.msg[3], 0x80),
+					unk1   :  bitmask.test(data.msg[3], 0x01),
 				},
 
 				status : {
@@ -171,10 +173,11 @@ function parse_329(data) {
 	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg, false);
 	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi,  false);
 
-	update.status('vehicle.cruise.button.minus', parse.vehicle.cruise.button.minus);
-	update.status('vehicle.cruise.button.onoff', parse.vehicle.cruise.button.onoff);
-	update.status('vehicle.cruise.button.plus',  parse.vehicle.cruise.button.plus);
-	update.status('vehicle.cruise.button.unk1',  parse.vehicle.cruise.button.unk1);
+	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus);
+	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff);
+	update.status('vehicle.cruise.button.plus',   parse.vehicle.cruise.button.plus);
+	update.status('vehicle.cruise.button.resume', parse.vehicle.cruise.button.resume);
+	update.status('vehicle.cruise.button.unk1',   parse.vehicle.cruise.button.unk1);
 
 	update.status('vehicle.cruise.status.activating', parse.vehicle.cruise.status.activating);
 	update.status('vehicle.cruise.status.active',     parse.vehicle.cruise.status.active);

@@ -567,18 +567,18 @@ class IKE extends EventEmitter {
 		// Space-pad HUD strings
 
 		// TODO use layout from config
-		hud_strings.left   = hud_strings.temp.padEnd(10);
+		hud_strings.left   = hud_strings.temp.padEnd(12);
 		hud_strings.center = hud_strings.egt.padEnd(5);
-		hud_strings.right  = hud_strings.iat.padStart(4);
+		hud_strings.right  = hud_strings.iat.padStart(3);
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {
-			hud_strings.left = hud_strings.load.padEnd(10);
+			hud_strings.left = hud_strings.load.padEnd(12);
 		}
 
 		// Change string to be DME1 voltage if under threshold
 		if (status.dme1.voltage <= config.hud.volt.threshold) {
-			hud_strings.center = hud_strings.volt.padEnd(5);
+			hud_strings.left = hud_strings.volt.padEnd(12);
 		}
 
 		// Update hud string in status object
@@ -986,14 +986,14 @@ class IKE extends EventEmitter {
 		// Refresh HUD after certain data values update
 		update.on('status.dme1.voltage',            () => { this.hud_refresh(); });
 		// update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
-		update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
-		update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
+		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
+		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
 		update.on('status.system.temperature',      () => { this.hud_refresh(); });
 		update.on('status.temperature.coolant.c',   () => { this.hud_refresh(); });
 		update.on('status.temperature.exhaust.c',   () => { this.hud_refresh(); });
 		update.on('status.temperature.intake.c',    () => { this.hud_refresh(); });
 		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
-		update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
+		// update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
 		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
 
 		log.msg('Initialized listeners');
