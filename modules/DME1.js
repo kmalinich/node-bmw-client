@@ -87,21 +87,26 @@ function parse_329(data) {
 	// 3 = Sport error
 
 	// byte3
-	// bit 0 - Clutch switch (0 = engaged, 1 = disengage/neutral);
-	// bit 2 - Hardcoded to 1 (on MSS54, could be used on other DMEs)
-	// bit 4 - Possibly motor status (0 = on, 1 = off)
-	// bits 5, 6, 7 - MSS52 sport mode, tank evap duty cycle.. pfft
 	//
 	//
 	// ARBID: 0x329 (DME2)
-	// -B0
-	// -B1 is Temp [Temp in C = .75 * hex2dec(byte01) - 48.373]
-	// -B2 is atmospheric pressure -- not sure of conversion yet
-	// -B3 Clutch switch bit 0 (0 = engaged, 1 = disengage/neutral); Possibly Motor Status bit 4 (0 = on, 1 = off), Tank Evap duty cycle (possibly mislabeled, looks more like some sort of status byte) bits 5, 6, 7
-	// -B4 Driver desired torque, relative (00 - FE)
-	// -B5 Throttle position (00-FE).
-	// -B6 kickdown switch depressed is 4 (bit 2 = 1), Brake light switch error is 2 (bit 1 = 1), Brake pedal depressed is value 1 (bit 0 = 1)
-	// -B7
+	// byte 0 : ??
+	// byte 1 : coolant temp
+	// byte 2 : atmospheric pressure
+	//
+	// byte 3, bit 0      : clutch switch (0 = engaged, 1 = disengage/neutral)
+	// byte 3, bit 2      : Hardcoded to 1 (on MSS54, could be used on other DMEs)
+	// byte 3, bit 4      : possibly motor status (0 = on, 1 = off)
+	// byte 3, bits 5+6+7 : MSS52 sport mode, tank evap duty cycle
+	//
+	// byte 4 : driver desired torque, relative (0x00 - 0xFE)
+	// byte 5 : throttle position               (0x00 - 0xFE)
+	//
+	// byte 6, bit 2 : kickdown switch depressed
+	// byte 6, bit 1 : brake light switch error
+	// byte 6, bit 0 : brake pedal depressed
+	//
+	// byte 7 : ??
 
 	let parse = {
 		engine : {
@@ -213,7 +218,7 @@ function parse_338(data) {
 		},
 	};
 
-	update.status('vehicle.sport.active', parse.vehicle.sport.active);
+	// update.status('vehicle.sport.active', parse.vehicle.sport.active);
 	update.status('vehicle.sport.error',  parse.vehicle.sport.error);
 
 	return data;
@@ -237,12 +242,14 @@ function parse_338(data) {
 // byte6 : CSL oil level (format unclear)
 // byte7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
+	let process_consumption = true;
+
 	let consumption_current = ((data.msg[2] << 8) + data.msg[1]);
 
 	// Need at least one value first
 	if (DME1.consumption_last === 0) {
 		DME1.consumption_last = consumption_current;
-		return;
+		process_consumption = false;
 	}
 
 	// The amount of fuel being consumed isn't a flat number
@@ -268,7 +275,10 @@ function parse_545(data) {
 		},
 	};
 
-	DME1.consumption_last = consumption_current;
+	if (process_consumption === true) {
+		DME1.consumption_last = consumption_current;
+		update.status('fuel.consumption', parse.fuel.consumption, false);
+	}
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.oil.f = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
@@ -278,8 +288,6 @@ function parse_545(data) {
 	update.status('dme1.status.check_gas_cap', parse.status.check_gas_cap);
 	update.status('dme1.status.cruise',        parse.status.cruise);
 	update.status('dme1.status.eml',           parse.status.eml);
-
-	update.status('fuel.consumption', parse.fuel.consumption, false);
 
 	update.status('temperature.oil.f', parse.temperature.oil.f, false);
 
