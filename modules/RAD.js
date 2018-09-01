@@ -687,6 +687,12 @@ function init_listeners() {
 		setTimeout(() => { audio_power(true); }, 250);
 	});
 
+
+	// Kick DSP on engine restart
+	IKE.on('ignition-start-end', () => {
+		setTimeout(() => { audio_power(true); }, 350);
+	});
+
 	log.msg('Initialized listeners');
 }
 
