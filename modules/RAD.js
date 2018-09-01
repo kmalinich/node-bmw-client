@@ -627,42 +627,18 @@ function audio_power(power_state) {
 				bus.cmds.request_device_status(module_name, module_request);
 			});
 
-			// Not really any good idea why it's this sequence of commands that turns the DSP amp on
-			// I've looked at logs from three different DSP-equipped cars and it's always this sequence
-
-			// Set DSP source to off
-			// audio_control(false);
-
-			// Send DSP functions 1 and 0
-			// audio_control('dsp-1');
-			// audio_control('dsp-0');
-
-			// Set DSP source to on (tuner/tape)
+			// Set DSP source to whatever is configured
 			audio_control(true);
 
 			// Turn on BMBT
 			cassette_control(true);
 
+			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			setTimeout(() => {
-				for (let pass = 0; pass < 13; pass++) {
+				for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
 					setTimeout(() => { volume_control(5); }, 5 * pass);
 				}
 			}, 250);
-
-			// Increase volume after power on
-			// setTimeout(() => {
-			// 	let msg_vol;
-			// 	switch (config.bmbt.vol_at_poweron) {
-			// 		case false : msg_vol = [ 0x1C, 0x01, 0x01, 0x1A ]; break;
-			// 		case true  : msg_vol = [ 0x1C, 0x01, 0x01, 0x08 ];
-			// 	}
-
-			// 	bus.data.send({
-			// 		src : 'DIA',
-			// 		dst : 'DSP',
-			// 		msg : msg_vol,
-			// 	});
-			// }, 250);
 		}
 	}
 }
@@ -684,7 +660,7 @@ function init_listeners() {
 
 	update.on('status.dsp.reset', (data) => {
 		if (data.new === true) return;
-		setTimeout(() => { audio_power(true); }, 250);
+		setTimeout(() => { audio_power(true); }, 100);
 	});
 
 	log.msg('Initialized listeners');
