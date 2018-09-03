@@ -631,7 +631,7 @@ function audio_power(power_state) {
 			audio_control(config.media.dsp.default_source);
 
 			// Turn on BMBT
-			cassette_control(true);
+			setTimeout(() => { cassette_control(true); }, 250);
 
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			setTimeout(() => {
@@ -666,7 +666,7 @@ function init_listeners() {
 
 	// Kick DSP amp on engine restart
 	IKE.on('ignition-start-end', () => {
-		setTimeout(() => { audio_power(true); }, 350);
+		setTimeout(() => { audio_power(true); }, 500);
 	});
 
 	log.msg('Initialized listeners');
