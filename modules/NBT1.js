@@ -122,7 +122,7 @@ function status_module() {
 
 	// Default is NBT1 message
 	let msg = {
-		bus  : 'can1',
+		bus  : config.nbt1.can_intf,
 		id   : null,
 		data : [ ],
 	};
@@ -191,7 +191,7 @@ function status_ignition() {
 
 	// Default is NBT1 message
 	let msg = {
-		bus  : 'can1',
+		bus  : config.nbt1.can_intf,
 		id   : 0x12F,
 		data : [ 0x37, 0x7C, 0x8A, 0xDD, 0xD4, 0x05, 0x33, 0x6B ],
 	};

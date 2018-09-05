@@ -70,7 +70,7 @@ function button_check(button) {
 							// }
 
 							// To use the NAV button as a toggle for police lights
-							LCM.police((status.lcm.police_lights.on === false));
+							// LCM.police((status.lcm.police_lights.on === false));
 							break;
 						}
 
@@ -440,8 +440,8 @@ function decode_touchpad(data) {
 	data.value += ' X: ' + x + ' Y: ' + y;
 
 	// Update status variables
-	update.status('con1.touch.x', x, false);
-	update.status('con1.touch.y', y, false);
+	// update.status('con1.touch.x', x, false);
+	// update.status('con1.touch.y', y, false);
 
 	// y-axis value maxes out at 30 - so we'll do a bit of multiplication
 	// let volume_level = Math.round(y * (3 + (1 / 3)));
@@ -498,7 +498,7 @@ function init_rotation() {
 
 	// Send message
 	bus.data.send({
-		bus  : 'can1',
+		bus  : config.con1.can_intf,
 		id   : 0x273,
 		data : Buffer.from([ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x00 ]),
 	});

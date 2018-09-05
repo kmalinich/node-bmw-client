@@ -13,15 +13,8 @@ function text_urgent_off() {
 		src : 'CCM',
 		msg : [ 0x1A, 0x30, 0x00 ],
 	});
-
-	// Something about this is super-duper-extra-nasty-hacky
-	// ...
-	//
-	// ........
-	//
-	// .. Seriously, I'm nauseous, but as usual, it's late.....
-	new IKE().hud_refresh(true);
 }
+
 
 class IKE extends EventEmitter {
 	constructor() {
@@ -32,7 +25,6 @@ class IKE extends EventEmitter {
 
 		// HUD refresh vars
 		this.timeout_data_refresh = null;
-		this.last_hud_refresh     = now();
 		this.hud_override         = false;
 		this.hud_override_text    = null;
 
@@ -42,6 +34,7 @@ class IKE extends EventEmitter {
 
 		this.text_urgent_off = text_urgent_off;
 	}
+
 
 	// This actually is a bitmask but.. this is also a freetime project
 	decode_aux_heat_led(data) {
@@ -529,9 +522,10 @@ class IKE extends EventEmitter {
 	hud_refresh_speed() {
 		if (!this.ok2hud()) return;
 
-		// Send text to IKE and update this.last_hud_refresh value
+		// Send text to IKE and update status.hud.refresh_last value
 		this.text(status.vehicle.speed.mph + 'mph', () => {
-			this.last_hud_refresh = now();
+			// Bring up last HUD refresh time
+			update.status('hud.refresh_last', now(), false);
 		});
 	}
 
@@ -551,36 +545,40 @@ class IKE extends EventEmitter {
 			right  : '',
 
 			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg', // TODO use unit from config
+			egt   : Math.round(status.temperature.exhaust.c) + '¨',
+			iat   : Math.round(status.temperature.intake.c) + '¨',
 			load  : status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%',
+			range : Math.round(status.obc.range.mi) + 'mi',
 			speed : status.vehicle.speed.mph + 'mph',
 			temp  : Math.round(status.temperature.coolant.c) + '¨',
 			time  : moment().format(moment_format),
-			volt  : status.lcm.voltage.terminal_30 + 'v',
-			range : Math.round(status.obc.range.mi) + 'mi',
+			volt  : status.dme1.voltage + 'v',
+
+			// Clutch count
+			cc : status.vehicle.clutch_count + 'gc',
 		};
 
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
-			hud_strings.temp += ' ' + Math.round(status.temperature.oil.c) + '¨';
+			hud_strings.temp += '  ' + Math.round(status.temperature.oil.c) + '¨';
 		}
 
 
-		// Space-pad strings
-		// Layout padding should be 7 + 5 + 8
+		// Space-pad HUD strings
 
 		// TODO use layout from config
-		hud_strings.left   = hud_strings.temp.padEnd(8);
-		hud_strings.center = hud_strings.range.padEnd(4);
-		hud_strings.right  = hud_strings.cons.padStart(7);
+		hud_strings.left   = hud_strings.temp.padEnd(12);
+		hud_strings.center = hud_strings.egt.padEnd(5);
+		hud_strings.right  = hud_strings.iat.padStart(3);
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {
-			hud_strings.right = hud_strings.load.padStart(8);
+			hud_strings.left = hud_strings.load.padEnd(12);
 		}
 
-		// Change string to be LCM terminal 30 voltage if under threshold
-		if (status.lcm.voltage.terminal_30 <= config.hud.volt.threshold) {
-			hud_strings.center = hud_strings.volt.padEnd(4);
+		// Change string to be DME1 voltage if under threshold
+		if (status.dme1.voltage <= config.hud.volt.threshold) {
+			hud_strings.left = hud_strings.volt.padEnd(12);
 		}
 
 		// Update hud string in status object
@@ -599,9 +597,10 @@ class IKE extends EventEmitter {
 		}
 
 		this.hud_render(() => {
-			// Send text to IKE and update this.last_hud_refresh value
+			// Send text to IKE and update status.hud.refresh_last value
 			this.text(status.hud.string, () => {
-				this.last_hud_refresh = now();
+				// Bring up last HUD refresh time
+				update.status('hud.refresh_last', now(), false);
 			});
 		});
 	}
@@ -741,7 +740,7 @@ class IKE extends EventEmitter {
 		if (this.hud_override === true) return false;
 
 		// Bounce if the last update was less than the configured value in milliseconds ago
-		if (now() - this.last_hud_refresh <= config.hud.refresh_max) return false;
+		if (now() - status.hud.refresh_last <= config.hud.refresh_max) return false;
 
 		return true;
 	}
@@ -772,7 +771,7 @@ class IKE extends EventEmitter {
 	}
 
 
-	// Refresh various values every 5 seconds
+	// Refresh various values every 15 seconds
 	data_refresh() {
 		if (status.vehicle.ignition_level === 0) {
 			if (this.timeout_data_refresh !== null) {
@@ -805,11 +804,13 @@ class IKE extends EventEmitter {
 			let self = this;
 			this.timeout_data_refresh = setTimeout(() => {
 				self.data_refresh();
-			}, 10000);
+			}, 15000);
 		}
 	}
 
 	decode_ignition_status(data) {
+		let new_level_name;
+
 		// Save previous ignition status
 		let previous_level = status.vehicle.ignition_level;
 
@@ -820,24 +821,26 @@ class IKE extends EventEmitter {
 		}
 
 		switch (data.msg[1]) {
-			case 0  : update.status('vehicle.ignition', 'off');       break;
-			case 1  : update.status('vehicle.ignition', 'accessory'); break;
-			case 3  : update.status('vehicle.ignition', 'run');       break;
-			case 7  : update.status('vehicle.ignition', 'start');     break;
-			default : update.status('vehicle.ignition', 'unknown');
+			case 0  : new_level_name = 'off';       break;
+			case 1  : new_level_name = 'accessory'; break;
+			case 3  : new_level_name = 'run';       break;
+			case 7  : new_level_name = 'start';     break;
+			default : new_level_name = 'unknown';
 		}
 
-		// Ignition going up
-		if (data.msg[1] > previous_level) {
+		update.status('vehicle.ignition', new_level_name);
+
+		if (data.msg[1] > previous_level) { // Ignition going up
 			switch (data.msg[1]) { // Evaluate new ignition state
-				case 1: // Accessory
+				case 1 : { // Accessory
 					log.module('Powerup state');
 					this.emit('ignition-powerup');
 
 					bus.cmds.request_device_status(module_name, 'RAD');
 					break;
+				}
 
-				case 3: // Run
+				case 3 : { // Run
 					// If the accessory (1) ignition message wasn't caught
 					if (previous_level === 0) {
 						log.module('Powerup state');
@@ -851,7 +854,9 @@ class IKE extends EventEmitter {
 
 					// Refresh OBC data
 					if (config.options.obc_refresh_on_start === true) this.obc_refresh();
+
 					break;
+				}
 
 				case 7 : { // Start
 					switch (previous_level) {
@@ -880,9 +885,7 @@ class IKE extends EventEmitter {
 				}
 			}
 		}
-
-		// Ignition going down
-		else if (data.msg[1] < previous_level) {
+		else if (data.msg[1] < previous_level) { // Ignition going down
 			switch (data.msg[1]) { // Evaluate new ignition state
 				case 0 : { // Off
 					// If the accessory (1) ignition message wasn't caught
@@ -907,6 +910,9 @@ class IKE extends EventEmitter {
 				case 3 : { // Run
 					log.module('Start-end state');
 					this.emit('ignition-start-end');
+
+					// Set OBC clock
+					this.obc_clock();
 				}
 			}
 		}
@@ -949,12 +955,15 @@ class IKE extends EventEmitter {
 	}
 
 	init_listeners() {
+		// Bring up last HUD refresh time
+		update.status('hud.refresh_last', now(), false);
+
 		// Refresh data on interface connection
 		socket.on('recv-host-connect', (data) => {
 			// Only refresh on new IBUS interface connection
 			if (data.intf !== 'ibus') return;
 
-			this.text_warning('    App restart!    ', 2500);
+			// this.text_warning('    App restart!    ', 2500);
 
 			// Clear existing timeout if exists
 			if (this.timeout_accept_refresh !== null) {
@@ -978,9 +987,18 @@ class IKE extends EventEmitter {
 			}
 		});
 
-		update.on('status.lcm.voltage.terminal_30', () => {
-			this.hud_refresh();
-		});
+		// Refresh HUD after certain data values update
+		update.on('status.dme1.voltage',            () => { this.hud_refresh(); });
+		// update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
+		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
+		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
+		update.on('status.system.temperature',      () => { this.hud_refresh(); });
+		update.on('status.temperature.coolant.c',   () => { this.hud_refresh(); });
+		update.on('status.temperature.exhaust.c',   () => { this.hud_refresh(); });
+		update.on('status.temperature.intake.c',    () => { this.hud_refresh(); });
+		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
+		// update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
+		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
 
 		log.msg('Initialized listeners');
 	}

@@ -144,7 +144,7 @@ function load_modules(pass) {
 	host_data = require('host-data');
 
 	// Push notification library
-	notify = require('notify');
+	// notify = require('notify');
 
 	log.msg('Loaded modules');
 
