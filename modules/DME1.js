@@ -37,7 +37,7 @@ function encode_316(rpm = 10000) {
 //
 // Bit 0 - Something is pushed here, but I'm having a hard time tracing what it is. Appears it would always be set to 1 if everything is running normally
 // Bit 1 - Unused (in this DME)
-// Bit 2 - Set to 0 if ASC/DSC error, 1 otherwise
+// Bit 2 - Set to 0 if DSC error, 1 otherwise
 // Bit 3 - Set to 0 if manual, Set to 1 if SMG (on this DME, I guess MS45 is different)
 // Bit 4 - Set to bit 0 of md_st_eingriff (torque intervention status)
 // Bit 5 - Set to bit 1 of md_st_eingriff
