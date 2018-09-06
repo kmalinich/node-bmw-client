@@ -69,7 +69,6 @@ function parse_153(data) {
 }
 
 // Parse wheel speed LSB and MSB into kph value
-// rpm : ((data.msg[3] << 8) + data.msg[2]) / 6.4
 function parse_wheel(byte0, byte1) {
 	return (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16) - 2.75;
 }
@@ -146,26 +145,13 @@ function parse_out(data) {
 	data.command = 'bro';
 
 	switch (data.src.id) {
-		case 0x153:
-			parse_153(data);
-			data.value = 'Speed/DSC light';
-			break;
+		case 0x153 : parse_153(data); data.value = 'Speed/DSC light'; break;
+		case 0x1F0 : parse_1f0(data); data.value = 'Wheel speeds';    break;
 
-		case 0x1F0:
-			parse_1f0(data);
-			data.value = 'Wheel speeds';
-			break;
-
-		case 0x1F3:
-			// 00 00 05 FF 39 7D 5D 00
-			// byte2 bit3 : brake applied
-			data.value = 'Transverse acceleration';
-			break;
-
-		case 0x1F5:
-			parse_1f5(data);
-			data.value = 'Steering angle';
-			break;
+		// 00 00 05 FF 39 7D 5D 00
+		// byte2 bit3 : brake applied
+		case 0x1F3 :                  data.value = 'Transverse acceleration'; break;
+		case 0x1F5 : parse_1f5(data); data.value = 'Steering angle';          break;
 
 		case 0x1F8:
 			// Brake pressure messages observed in 2002 E39 M5
