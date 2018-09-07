@@ -73,7 +73,7 @@ Steps to get running on your pi locally (yes its kind of convoluted deal with it
 8) lets check node is installed... run `node --version` ... you should get a return...   run :` npm --version`     you should get a return..
 9) ok you've accomplished all the preliminary SOFTWARE downloads and setups and installs you need to clone the needed repositories
   9) in your terminal run these commands:
-  ``` 
+``` 
   cd /usr/local/
   sudo git clone --recursive https://github.com/kmalinich/node-bmw-interface.git bmwi
   cd bmwi
@@ -83,8 +83,9 @@ Steps to get running on your pi locally (yes its kind of convoluted deal with it
   npm install
   ./helpers/node-bmwi-units enable
   ./helpers/node-bmwi-units start
+  sudo systemctl enable bmwcd
   ./helpers/node-bmw launch
-  ```
+```
 																								 
 												 
 if all went well you should have the interface daemon running .... oh wait no you dont its bitching about its config isnt it???? lets fix that
@@ -108,9 +109,11 @@ if all went well you should have the interface daemon running .... oh wait no yo
 13) Lets install the client portion of the program now  
   13) spawn a new instance of the terminal type: 
 ```
-cd ~
-git clone --recursive https://github.com/kmalinich/node-bmw-client.git
-cd node-bmw-client
+cd /usr/local
+git clone --recursive https://github.com/kmalinich/node-bmw-client.git bmwcd
+sudo chown -R pi bmwcd
+cd bmwcd
+sudo chown -R pi * .
 npm install
 ./helpers/node-bmw launch
 ```
@@ -189,18 +192,7 @@ then type `nano config`
 		
 			
 			
-15) rerun the client and append the command with &  so it runs in the background 
 
-theres  probably some more efficient way to make this happen
-
-
-I hacked a way together to run this on boot cuz i dont use a TON of the features yet (waiting on hardware)
-
-run this in your terminal
-sudo crontab -e
-
-then add this entry
-@reboot bash /home/pi/node-bmw-client/helpers/node-bmw launch &
 
 then exit and save the text file
 
