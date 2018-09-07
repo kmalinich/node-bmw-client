@@ -118,7 +118,7 @@ function decode_button(data) {
 				case 'kodi' : { // Kodi version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
 						case 'depressphone'  : kodi.command('toggle'); break;
-
+						case 'depressclock' : kodi.input('menu'); break;
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 
