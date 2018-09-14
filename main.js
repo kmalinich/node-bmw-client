@@ -125,9 +125,9 @@ function load_modules(pass) {
 	// TCU  = require('TCU');
 
 	// CANBUS modules
-	ASC1 = require('ASC1');
 	CON1 = require('CON1');
 	DME1 = require('DME1');
+	DSC1 = require('DSC1');
 	FEM1 = require('FEM1');
 	NBT1 = require('NBT1');
 
@@ -170,10 +170,10 @@ function init() {
 						weather.init();   // Initialize weather object
 
 						// Initialize event listeners
-						ASC1.init_listeners();
 						BMBT.init_listeners();
 						CON1.init_listeners();
 						DME1.init_listeners();
+						DSC1.init_listeners();
 						FEM1.init_listeners();
 						GM.init_listeners();
 						IKE.init_listeners();
