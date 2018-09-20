@@ -154,9 +154,9 @@ function decode_button(data) {
 					// To use pressing the BMBT menu button (right side) to force the DSP amp on
 					RAD.audio_power('on');
 				}
-			}
+			} break;
 
-			break;
+			
 		}
 
 		case 'hold' : {
