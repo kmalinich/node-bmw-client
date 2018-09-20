@@ -128,7 +128,7 @@ function decode_button(data) {
 						case 'holdright' : kodi.command('toggle');
 					}
 
-					break;
+					//break; this doesnt need a break? its switch is the config and ends here the any version does not rely on the config and is a diff switch statement
 				}
 			}
 
