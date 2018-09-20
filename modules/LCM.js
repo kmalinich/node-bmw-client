@@ -835,7 +835,25 @@ function welcome_lights(action, override = false) {
 		}
 	}
 }
+function drl_lights() {
+	if  (config.lights.drl !== true) return;
+		if (config.lights.drl == true){
+		switch (status.vehicle.ignition) {
+			case 'off' : drl_power_state = false; break;
+			default    : drl_power_state = true;
+		}
 
+		switch (drl_power_state) {
+			case false : {
+				io_encode({});
+			break;
+			}
+			case true : {
+				io_encode(config.lights.drl_lights);
+			}
+		} //break;
+	}
+}
 // Police lights!
 function pl() {
 	if (status.lcm.police_lights.counts.loop >= config.lights.police_lights.limit || status.lcm.police_lights.ok !== true) {
