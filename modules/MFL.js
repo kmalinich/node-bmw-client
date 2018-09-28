@@ -190,7 +190,8 @@ function translate_button_media(unmask) {
 					break;
 				}
 
-				case 'volume -' : {
+				case 'volumedown' :
+				case 'volume -'   : {
 					bus.data.send({
 						bus  : config.mfl.can_intf,
 						id   : src,
@@ -200,6 +201,7 @@ function translate_button_media(unmask) {
 					break;
 				}
 
+				case 'volumeup' :
 				case 'volume +' : {
 					bus.data.send({
 						bus  : config.mfl.can_intf,
