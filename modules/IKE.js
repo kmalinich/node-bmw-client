@@ -558,6 +558,12 @@ class IKE extends EventEmitter {
 			cc : status.vehicle.clutch_count + 'gc',
 		};
 
+		// Only use voltage from CANBUS if configured to do so, and ignition is in run
+		// CANBUS data is not broadcast when key is in accessory
+		if (config.bus.canbus.voltage === false || status.vehicle.ignition_level < 3) {
+			hud_strings.volt = parseFloat(status.lcm.voltage.terminal_30.toFixed(1));
+		}
+
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
 			hud_strings.temp += '  ' + Math.round(status.temperature.oil.c) + '¨';
@@ -576,13 +582,21 @@ class IKE extends EventEmitter {
 			hud_strings.left = hud_strings.load.padEnd(12);
 		}
 
-		// Change string to be DME1 voltage if under threshold
+		// Change string to be voltage if under threshold
 		if (status.dme1.voltage <= config.hud.volt.threshold) {
 			hud_strings.left = hud_strings.volt.padEnd(12);
 		}
 
 		// Update hud string in status object
-		update.status('hud.string', hud_strings.left + hud_strings.center + hud_strings.right, false);
+		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
+
+		// If the newly rendered string matches the existing string, bail out
+		if (status.hud.string === hud_string_rendered) {
+			// log.module('HUD string is already correct');
+			return;
+		}
+
+		update.status('hud.string', hud_string_rendered);
 
 		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
 		hud_render_cb = undefined;
