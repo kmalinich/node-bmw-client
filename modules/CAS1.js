@@ -92,6 +92,39 @@ function decode_ignition(data) {
 	return data;
 }
 
+
+// [0x2FC] Decode a door status message from CAS and act upon the results
+function decode_status_open(data) {
+	data.command = 'bro';
+	data.value   = 'door status';
+
+	// Set status from message by decoding bitmask
+	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x04));
+	update.status('doors.front_right', bitmask.test(data.msg[1], 0x01));
+	update.status('doors.hood',        bitmask.test(data.msg[2], 0x04));
+	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x40));
+	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x10));
+	update.status('doors.trunk',       bitmask.test(data.msg[2], 0x01));
+
+	// Set status.doors.closed if all doors are closed
+	let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
+	update.status('doors.closed', update_closed_doors);
+
+	// Set status.doors.open if any doors are open
+	update.status('doors.open', (update_closed_doors === false));
+
+	// Set status.doors.sealed if all doors and flaps are closed
+	let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
+	update.status('doors.sealed', update_sealed_doors);
+
+	// Emit open event
+	this.emit('open', {
+		doors : status.doors,
+	});
+
+	return data;
+}
+
 // Parse data sent to module
 function parse_in(data) {
 	// Bounce if not enabled
@@ -110,7 +143,8 @@ function parse_in(data) {
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.src.id) {
-		case 0x130 : data = decode_ignition(data); break;
+		case 0x130 : data = decode_ignition(data);    break;
+		case 0x2FC : data = decode_status_open(data); break;
 
 		default : {
 			data.command = 'unk';
