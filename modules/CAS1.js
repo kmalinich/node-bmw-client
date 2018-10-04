@@ -117,11 +117,6 @@ function decode_status_open(data) {
 	let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
 	update.status('doors.sealed', update_sealed_doors);
 
-	// Emit open event
-	this.emit('open', {
-		doors : status.doors,
-	});
-
 	return data;
 }
 
