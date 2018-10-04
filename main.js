@@ -125,6 +125,7 @@ function load_modules(pass) {
 	// TCU  = require('TCU');
 
 	// CANBUS modules
+	CAS1 = require('CAS1');
 	CON1 = require('CON1');
 	DME1 = require('DME1');
 	DSC1 = require('DSC1');
