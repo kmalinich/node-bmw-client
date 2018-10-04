@@ -3,8 +3,6 @@ function decode_ignition(data) {
 	data.command = 'bro';
 	data.value   = 'Ignition status';
 
-	log.module('Ignition message ' + Buffer.from(data.msg));
-
 	let new_level_name;
 
 	// Save previous ignition status
@@ -29,13 +27,14 @@ function decode_ignition(data) {
 
 	if (data.msg[0] > previous_level) { // Ignition going up
 		switch (data.msg[0]) { // Evaluate new ignition state
-			case 1 : { // Accessory
+			case 0x40 :
+			case 0x41 : { // Accessory
 				log.module('Powerup state');
 				this.emit('ignition-powerup');
 				break;
 			}
 
-			case 3 : { // Run
+			case 0x45 : { // Run
 				// If the accessory (1) ignition message wasn't caught
 				if (previous_level === 0) {
 					log.module('Powerup state');
@@ -48,15 +47,15 @@ function decode_ignition(data) {
 				break;
 			}
 
-			case 7 : { // Start
+			case 0x55 : { // Start
 				switch (previous_level) {
-					case 0 : { // If the accessory (1) ignition message wasn't caught
+					case 0x00 : { // If the accessory (1) ignition message wasn't caught
 						log.module('Powerup state');
 						this.emit('ignition-powerup');
 						break;
 					}
 
-					case 3 : { // If the run (3) ignition message wasn't caught
+					case 0x45 : { // If the run (3) ignition message wasn't caught
 						log.module('Run state');
 						this.emit('ignition-run');
 						break;
@@ -72,9 +71,9 @@ function decode_ignition(data) {
 	}
 	else if (data.msg[0] < previous_level) { // Ignition going down
 		switch (data.msg[0]) { // Evaluate new ignition state
-			case 0 : { // Off
+			case 0x00 : { // Off
 				// If the accessory (1) ignition message wasn't caught
-				if (previous_level === 3) {
+				if (previous_level === 0x45) {
 					log.module('Powerdown state');
 					this.emit('ignition-powerdown');
 				}
@@ -85,14 +84,15 @@ function decode_ignition(data) {
 				break;
 			}
 
-			case 1 : { // Accessory
+			case 0x40 :
+			case 0x41 : { // Accessory
 				log.module('Powerdown state');
 				this.emit('ignition-powerdown');
 
 				break;
 			}
 
-			case 3 : { // Run
+			case 0x45 : { // Run
 				log.module('Start-end state');
 				this.emit('ignition-start-end');
 			}
@@ -131,7 +131,7 @@ function parse_out(data) {
 		}
 	}
 
-	log.bus(data);
+	// log.bus(data);
 }
 
 
