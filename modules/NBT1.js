@@ -69,6 +69,23 @@ function parse_out(data) {
 			break;
 		}
 
+		case 0x34E : { // NBT1 navigation information
+			data.command = 'bro';
+			data.value   = 'Navigation system information';
+
+			// Bounce if this data is already on K-CAN (can1)
+			if (data.bus === 'can1') break;
+
+			// Forward to can1
+			bus.data.send({
+				bus  : 'can1',
+				id   : data.src.id,
+				data : Buffer.from(data.msg),
+			});
+
+			break;
+		}
+
 		case 0x12F :
 		case 0x4F8 : data = decode_ignition(data); break;
 
@@ -154,9 +171,6 @@ function status_module() {
 
 	// Send message
 	bus.data.send(msg);
-
-	// When this command fires, also update backlight value
-	// FEM1.backlight();
 }
 
 // Ignition status
