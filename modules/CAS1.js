@@ -99,11 +99,11 @@ function decode_status_open(data) {
 	data.value   = 'door status';
 
 	// Set status from message by decoding bitmask
-	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x04));
-	update.status('doors.front_right', bitmask.test(data.msg[1], 0x01));
+	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x01));
+	update.status('doors.front_right', bitmask.test(data.msg[1], 0x04));
 	update.status('doors.hood',        bitmask.test(data.msg[2], 0x04));
-	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x40));
-	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x10));
+	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x10));
+	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x40));
 	update.status('doors.trunk',       bitmask.test(data.msg[2], 0x01));
 
 	// Set status.doors.closed if all doors are closed
