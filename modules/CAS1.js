@@ -30,7 +30,6 @@ function decode_ignition(data) {
 			case 0x40 :
 			case 0x41 : { // Accessory
 				log.module('Powerup state');
-				this.emit('ignition-powerup');
 				break;
 			}
 
@@ -38,12 +37,9 @@ function decode_ignition(data) {
 				// If the accessory (1) ignition message wasn't caught
 				if (previous_level === 0) {
 					log.module('Powerup state');
-					this.emit('ignition-powerup');
 				}
 
 				log.module('Run state');
-				this.emit('ignition-run');
-
 				break;
 			}
 
@@ -51,19 +47,16 @@ function decode_ignition(data) {
 				switch (previous_level) {
 					case 0x00 : { // If the accessory (1) ignition message wasn't caught
 						log.module('Powerup state');
-						this.emit('ignition-powerup');
 						break;
 					}
 
 					case 0x45 : { // If the run (3) ignition message wasn't caught
 						log.module('Run state');
-						this.emit('ignition-run');
 						break;
 					}
 
 					default : {
 						log.module('Start-begin state');
-						this.emit('ignition-start-begin');
 					}
 				}
 			}
@@ -75,26 +68,20 @@ function decode_ignition(data) {
 				// If the accessory (1) ignition message wasn't caught
 				if (previous_level === 0x45) {
 					log.module('Powerdown state');
-					this.emit('ignition-powerdown');
 				}
 
 				log.module('Poweroff state');
-				this.emit('ignition-poweroff');
-
 				break;
 			}
 
 			case 0x40 :
 			case 0x41 : { // Accessory
 				log.module('Powerdown state');
-				this.emit('ignition-powerdown');
-
 				break;
 			}
 
 			case 0x45 : { // Run
 				log.module('Start-end state');
-				this.emit('ignition-start-end');
 			}
 		}
 	}
