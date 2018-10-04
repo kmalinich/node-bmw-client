@@ -1,8 +1,5 @@
 // Ignition status
 function decode_ignition(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
-
 	data.command = 'bro';
 	data.value   = 'Ignition status';
 
@@ -125,9 +122,6 @@ function parse_in(data) {
 
 // Parse data sent from module
 function parse_out(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
-
 	switch (data.src.id) {
 		case 0x130 : data = decode_ignition(data); break;
 
