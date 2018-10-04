@@ -74,15 +74,22 @@ function parse_out(data) {
 			data.value   = 'Navigation system information';
 
 			// Bounce if this data is already on K-CAN (can1)
-			if (data.bus === 'can1') break;
+			// if (data.bus === 'can1') break;
 
-			// Forward to can1
-			bus.data.send({
-				bus  : 'can1',
-				id   : data.src.id,
-				data : Buffer.from(data.msg),
-			});
+			// // Forward to can1
+			// bus.data.send({
+			// 	bus  : 'can1',
+			// 	id   : data.src.id,
+			// 	data : Buffer.from(data.msg),
+			// });
 
+			break;
+		}
+
+		case 0x38D : return;
+		case 0x5E3 : {
+			data.command = 'bro';
+			data.value   = 'Services';
 			break;
 		}
 
