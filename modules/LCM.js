@@ -125,6 +125,8 @@ function auto_lights_process() {
 
 // Cluster/interior backlight
 function set_backlight(value) {
+	if (config.chassis.model !== 'e39') return;
+
 	log.module('Setting backlight to ' + value);
 
 	bus.data.send({
@@ -136,6 +138,8 @@ function set_backlight(value) {
 
 // Get LCM coding data
 function coding_get() {
+	if (config.chassis.model !== 'e39') return;
+
 	// Get all 20 blocks of coding data
 	for (let byte = 0; byte < 21; byte++) {
 		bus.data.send({
@@ -147,6 +151,8 @@ function coding_get() {
 
 // Get LCM identity data
 function identity_get() {
+	if (config.chassis.model !== 'e39') return;
+
 	bus.data.send({
 		src : 'DIA',
 		msg : [ 0x00 ],
@@ -637,6 +643,8 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
+	if (config.chassis.model !== 'e39') return;
+
 	log.module('Setting IO status');
 
 	packet.unshift(0x0C);
@@ -687,6 +695,8 @@ function reset() {
 
 // Request various things from LCM
 function request(value) {
+	if (config.chassis.model !== 'e39') return;
+
 	let src;
 	let msg;
 
@@ -973,6 +983,8 @@ function police(action = false) {
 
 // Configure event listeners
 function init_listeners() {
+	if (config.chassis.model !== 'e39') return;
+
 	// Refresh data on IKE event
 	IKE.on('obc-refresh', () => {
 		request('dimmer');

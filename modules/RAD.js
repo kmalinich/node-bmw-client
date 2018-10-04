@@ -435,6 +435,8 @@ function parse_out(data) {
 
 // Send audio control commands
 function audio_control(command) {
+	if (config.chassis.model !== 'e39') return;
+
 	let cmd = 0x36;
 
 	let msgs = {
@@ -514,6 +516,8 @@ function audio_control(command) {
 }
 
 function cassette_control(command) {
+	if (config.chassis.model !== 'e39') return;
+
 	let cmd = 0x4A;
 
 	let msgs = {
@@ -558,6 +562,8 @@ function cassette_control(command) {
 }
 
 function volume_control(value = 1) {
+	if (config.chassis.model !== 'e39') return;
+
 	let msg_value;
 	switch (value) {
 		case 5 : msg_value = 0x51; break;
@@ -587,6 +593,8 @@ function volume_control(value = 1) {
 
 // Power on DSP amp and GPIO pin for amplifier
 function audio_power(power_state) {
+	if (config.chassis.model !== 'e39') return;
+
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
@@ -645,6 +653,8 @@ function audio_power(power_state) {
 
 
 function init_listeners() {
+	if (config.chassis.model !== 'e39') return;
+
 	// Perform commands on power lib active event
 	update.on('status.power.active', (data) => {
 		// Bounce if we're not configured to emulate the RAD module
