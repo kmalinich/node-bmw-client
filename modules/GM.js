@@ -74,7 +74,7 @@ class GM extends EventEmitter {
 				lock   :  mask.bit4 && !mask.bit5 && !mask.bit6 && !mask.bit8,
 				unlock : !mask.bit4 &&  mask.bit5 && !mask.bit6 && !mask.bit8,
 				trunk  : !mask.bit4 && !mask.bit5 &&  mask.bit6 && !mask.bit8,
-				none   : !mask.bit4 && !mask.bit5 && !mask.bit6 &&  mask.bit8,
+				none   : !mask.bit4 && !mask.bit5 && !mask.bit6,
 			},
 
 			key     : null,
