@@ -197,6 +197,13 @@ function status_ignition() {
 				log.module('Unset ignition status timeout');
 			}
 
+			// Send ignition off message
+			bus.data.send({
+				bus  : config.nbt1.can_intf,
+				id   : 0x12F,
+				data : Buffer.from([ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]),
+			});
+
 			// Return here since we're not re-sending again
 			return;
 		}
