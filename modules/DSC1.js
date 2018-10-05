@@ -217,7 +217,11 @@ function parse_out(data) {
 function init_listeners() {
 	// Send vehicle speed 0 to CAN1 on power module events
 	// This is because vehicle speed isn't received via CAN0 when key is in accessory
-	update.on('status.power.active', () => { encode_1a1(0); });
+	update.on('status.power.active', () => {
+		setTimeout(() => {
+			encode_1a1(0);
+		}, 250);
+	});
 
 	log.msg('Initialized listeners');
 }
