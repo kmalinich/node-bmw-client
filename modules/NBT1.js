@@ -213,7 +213,7 @@ function status_ignition() {
 				log.module('Set ignition status timeout');
 			}
 
-			NBT1.timeout.status_ignition = setTimeout(status_ignition, 200);
+			NBT1.timeout.status_ignition = setTimeout(status_ignition, 100);
 		}
 	}
 
