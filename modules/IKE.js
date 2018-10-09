@@ -576,22 +576,23 @@ class IKE extends EventEmitter {
 		}
 
 
-		// Space-pad HUD strings
-
 		// TODO use layout from config
-		hud_strings.left   = hud_strings.temp.padEnd(12);
-		hud_strings.center = hud_strings.egt.padEnd(5);
-		hud_strings.right  = hud_strings.iat.padStart(3);
+		hud_strings.left = hud_strings.temp;
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {
-			hud_strings.left = hud_strings.load.padEnd(12);
+			hud_strings.left = hud_strings.load;
 		}
 
 		// Change string to be voltage if under threshold
 		if (status.dme1.voltage <= config.hud.volt.threshold) {
-			hud_strings.left = hud_strings.volt.padEnd(12);
+			hud_strings.left = hud_strings.volt;
 		}
+
+		// Space-pad HUD strings
+		hud_strings.left   = hud_strings.left.padEnd(12);
+		hud_strings.center = hud_strings.egt.padEnd(5);
+		hud_strings.right  = hud_strings.iat.padStart(3);
 
 		// Update hud string in status object
 		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
