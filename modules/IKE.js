@@ -590,9 +590,9 @@ class IKE extends EventEmitter {
 		}
 
 		// Space-pad HUD strings
-		hud_strings.left   = hud_strings.left.padEnd(12);
-		hud_strings.center = hud_strings.egt.padEnd(5);
-		hud_strings.right  = hud_strings.iat.padStart(3);
+		if (typeof hud_strings.left.padEnd   === 'function') hud_strings.left   = hud_strings.left.padEnd(12);
+		if (typeof hud_strings.center.padEnd === 'function') hud_strings.center = hud_strings.egt.padEnd(5);
+		if (typeof hud_strings.right.padEnd  === 'function') hud_strings.right  = hud_strings.iat.padStart(3);
 
 		// Update hud string in status object
 		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
