@@ -644,9 +644,9 @@ function audio_power(power_state) {
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			setTimeout(() => {
 				for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
-					setTimeout(() => { volume_control(5); }, 5 * pass);
+					setTimeout(() => { volume_control(5); }, 6 * pass);
 				}
-			}, 250);
+			}, 350);
 		}
 	}
 }
@@ -660,17 +660,14 @@ function init_listeners() {
 		// Bounce if we're not configured to emulate the RAD module
 		if (config.emulate.rad !== true) return;
 
-		if (data.new === false) {
-			audio_power(false);
-			return;
-		}
+		setTimeout(() => { audio_power(data.new); }, 150);
 
-		log.module('Waiting for DSP ready after reset event');
+		// log.module('Waiting for DSP ready after reset event');
 	});
 
 	update.on('status.dsp.reset', (data) => {
 		if (data.new === true) return;
-		setTimeout(() => { audio_power(true); }, 100);
+		setTimeout(() => { audio_power(true); }, 150);
 	});
 
 
