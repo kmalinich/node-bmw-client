@@ -93,8 +93,9 @@ function auto_lights_process() {
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
-		new_reason  = 'wipers on';
-		new_lowbeam = true;
+		new_reason       = 'wipers on';
+		new_lowbeam      = true;
+		night_percentage = 1;
 	}
 	// Check time of day
 	else if (now_time < lights_off) {
