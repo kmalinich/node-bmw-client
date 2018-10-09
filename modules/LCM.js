@@ -4,6 +4,8 @@ const now     = require('performance-now');
 
 // Automatic lights handling
 function auto_lights() {
+	if (config.chassis.model !== 'e39') return;
+
 	// Default action is true (enable/process auto lights)
 	let action = true;
 
@@ -45,9 +47,12 @@ function auto_lights() {
 
 // Logic based on location and time of day, determine if the low beams should be on
 function auto_lights_process() {
+	if (config.chassis.model !== 'e39') return;
+
 	// Init variables
 	let new_reason;
 	let new_lowbeam;
+	let night_percentage;
 
 	let now_time  = Date.now();
 	let now_epoch = Math.floor(now_time / 1000);
@@ -93,23 +98,29 @@ function auto_lights_process() {
 	}
 	// Check time of day
 	else if (now_time < lights_off) {
-		new_reason  = 'before dawn';
-		new_lowbeam = true;
+		new_reason       = 'before dawn';
+		new_lowbeam      = true;
+		night_percentage = now_time / lights_off;
 	}
 	else if (now_time > lights_off && now_time < lights_on) {
-		new_reason  = 'after dawn, before dusk';
-		new_lowbeam = false;
+		new_reason       = 'after dawn, before dusk';
+		new_lowbeam      = false;
+		night_percentage = 0;
 	}
 	else if (now_time > lights_on) {
-		new_reason  = 'after dusk';
-		new_lowbeam = true;
+		new_reason       = 'after dusk';
+		new_lowbeam      = true;
+		night_percentage = lights_on / now_time;
 	}
 	else {
-		new_reason  = 'failsafe';
-		new_lowbeam = true;
+		new_reason       = 'failsafe';
+		new_lowbeam      = true;
+		night_percentage = 1;
 	}
 
 	update.status('lights.auto.reason', new_reason);
+
+	update.status('lights.auto.night_percentage', parseFloat(night_percentage.toFixed(2)) * 100);
 
 	if (update.status('lights.auto.lowbeam', new_lowbeam)) {
 		// Show autolights status in cluster
@@ -483,7 +494,6 @@ function decode(data) {
 			update.status('lcm.switch.hazard',         masks.m1.b4);
 			update.status('lcm.switch.highbeam_flash', masks.m1.b2);
 
-			// update.status('lcm.switch.auto', );
 			update.status('lcm.switch.brake',      masks.m2.b0);
 			update.status('lcm.switch.highbeam',   masks.m2.b1);
 			update.status('lcm.switch.fog_front',  masks.m2.b2);
@@ -661,24 +671,15 @@ function io_set(packet) {
 
 // Make things.. how they should be?
 function reset() {
-	// Determine dimmer value from config, depending if lowbeams are on
-	let reset_dimmer_val;
-	switch (status.lights.auto.lowbeam) {
-		case false : reset_dimmer_val = config.lights.dimmer.lights_off; break;
-		case true  : reset_dimmer_val = config.lights.dimmer.lights_on;
-	}
-
 	// Object of autolights related values
 	let io_object_auto_lights = {
-		dimmer_value_2                   : reset_dimmer_val,
-		output_standing_front_left       : true,
-		output_standing_front_right      : true,
-		output_standing_inner_rear_left  : true,
-		output_standing_inner_rear_right : true,
-		output_standing_rear_left        : true,
-		output_standing_rear_right       : true,
-		switch_fog_rear                  : true, // To leverage the IKE LED as a status indicator
-		switch_lowbeam_1                 : status.lights.auto.lowbeam,
+		dimmer_value_2              : Math.round(status.lights.auto.night_percentage * 254),
+		output_standing_front_left  : true,
+		output_standing_front_right : true,
+		output_standing_rear_left   : true,
+		output_standing_rear_right  : true,
+		switch_fog_rear             : true, // To leverage the IKE LED as a status indicator
+		switch_lowbeam_1            : status.lights.auto.lowbeam,
 	};
 
 	// Object of only comfort turn values
