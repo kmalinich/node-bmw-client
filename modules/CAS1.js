@@ -43,37 +43,41 @@ function decode_ignition(data) {
 
 				// Send gauge sweep messages to KOMBI if configured
 				if (config.kombi.sweep === true && config.chassis.model === 'e60') {
-					log.module('Executing KOMBI gauge sweep');
-
-					// Speedo
-					bus.data.send({
-						bus  : config.kombi.can_intf,
-						id   : 0x6F1,
-						data : Buffer.from([ 0x60, 0x05, 0x30, 0x20, 0x06, 0x12, 0x3B, 0xFF ]),
-					});
-
-					// Tach
-					bus.data.send({
-						bus  : config.kombi.can_intf,
-						id   : 0x6F1,
-						data : Buffer.from([ 0x60, 0x05, 0x30, 0x21, 0x06, 0x12, 0x0E, 0xFF ]),
-					});
-
 					setTimeout(() => {
-						// Reset speedo
+						log.module('Executing KOMBI gauge sweep');
+
+						// Speedo
 						bus.data.send({
 							bus  : config.kombi.can_intf,
 							id   : 0x6F1,
-							data : Buffer.from([ 0x60, 0x03, 0x30, 0x20, 0x00, 0xFF, 0xFF, 0xFF ]),
+							data : Buffer.from([ 0x60, 0x05, 0x30, 0x20, 0x06, 0x12, 0x3B, 0xFF ]),
 						});
 
-						// Reset tach
+						// Tach
 						bus.data.send({
 							bus  : config.kombi.can_intf,
 							id   : 0x6F1,
-							data : Buffer.from([ 0x60, 0x03, 0x30, 0x21, 0x00, 0xFF, 0xFF, 0xFF ]),
+							data : Buffer.from([ 0x60, 0x05, 0x30, 0x21, 0x06, 0x12, 0x0E, 0xFF ]),
 						});
-					}, 1500);
+
+						setTimeout(() => {
+							log.module('Executing KOMBI gauge reset');
+
+							// Reset speedo
+							bus.data.send({
+								bus  : config.kombi.can_intf,
+								id   : 0x6F1,
+								data : Buffer.from([ 0x60, 0x03, 0x30, 0x20, 0x00, 0xFF, 0xFF, 0xFF ]),
+							});
+
+							// Reset tach
+							bus.data.send({
+								bus  : config.kombi.can_intf,
+								id   : 0x6F1,
+								data : Buffer.from([ 0x60, 0x03, 0x30, 0x21, 0x00, 0xFF, 0xFF, 0xFF ]),
+							});
+						}, 1500);
+					}, 500);
 				}
 				break;
 			}
