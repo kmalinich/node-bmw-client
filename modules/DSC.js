@@ -24,7 +24,7 @@ function encode_1a1(speed = 0) {
 
 	// Send packet
 	bus.data.send({
-		bus  : config.dsc1.can_intf,
+		bus  : config.dsc.can_intf,
 		id   : 0x1A1,
 		data : Buffer.from(msg),
 	});

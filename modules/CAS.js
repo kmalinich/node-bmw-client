@@ -164,7 +164,7 @@ function decode_status_open(data) {
 // Parse data sent to module
 function parse_in(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true) return;
+	if (config.emulate.nbt !== true) return;
 
 	switch (data.msg[0]) {
 		default : {

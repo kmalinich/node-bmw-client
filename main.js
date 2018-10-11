@@ -62,7 +62,6 @@ function load_modules(pass) {
 	CCM  = require('CCM');
 	CDC  = require('CDC');
 	DIA  = require('DIA');
-	DME  = require('DME');
 	DMEK = require('DMEK');
 	DSP  = require('DSP');
 	DSPC = require('DSPC');
@@ -125,12 +124,14 @@ function load_modules(pass) {
 	// TCU  = require('TCU');
 
 	// CANBUS modules
-	CAS1 = require('CAS1');
-	CON1 = require('CON1');
-	DME1 = require('DME1');
-	DSC1 = require('DSC1');
-	FEM1 = require('FEM1');
-	NBT1 = require('NBT1');
+	CAS = require('CAS');
+	CON = require('CON');
+	DSC = require('DSC');
+	FEM = require('FEM');
+	NBT = require('NBT');
+
+	// Hybrid modules
+	DME = require('DME');
 
 	// Media libraries
 	bluetooth = require('bluetooth');
@@ -172,15 +173,15 @@ function init() {
 
 						// Initialize event listeners
 						BMBT.init_listeners();
-						CON1.init_listeners();
-						DME1.init_listeners();
-						DSC1.init_listeners();
-						FEM1.init_listeners();
+						CON.init_listeners();
+						DME.init_listeners();
+						DSC.init_listeners();
+						FEM.init_listeners();
 						GM.init_listeners();
 						IKE.init_listeners();
 						LCM.init_listeners();
 						MID.init_listeners();
-						NBT1.init_listeners();
+						NBT.init_listeners();
 						RAD.init_listeners();
 
 						bus.data.init_listeners();

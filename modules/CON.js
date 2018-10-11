@@ -6,25 +6,25 @@ const time_now = require('performance-now');
 function button_check(button) {
 	// Workaround for the last of a proper 'release' message when in 'joystick mode'
 	let joystick_release = (button.mode === 'joystick' && button.action === 'release' && button.button === 'none');
-	if (joystick_release === true) button.button = status.con1.last.button.button;
+	if (joystick_release === true) button.button = status.CON.last.button.button;
 
 	// Detect if there is a change from the last button message, bounce if not
-	// CON1 sends a lot of repeat messages (it's CANBUS)
-	let change = (status.con1.last.button.action !== button.action || status.con1.last.button.button !== button.button || status.con1.last.button.mode !== button.mode);
+	// CON sends a lot of repeat messages (it's CANBUS)
+	let change = (status.CON.last.button.action !== button.action || status.CON.last.button.button !== button.button || status.CON.last.button.mode !== button.mode);
 	if (change === false) return;
 
 	log.module('Button: ' + button.action + ' ' + button.button);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for <configured> milliseconds
-	let rotation_gap = time_now() - status.con1.rotation.last_msg;
+	let rotation_gap = time_now() - status.CON.rotation.last_msg;
 
-	if (rotation_gap >= config.con1.timeout.rotation_mode) {
-		update.status('con1.rotation.horizontal', false);
-		update.status('con1.rotation.volume',     false);
+	if (rotation_gap >= config.con.timeout.rotation_mode) {
+		update.status('con.rotation.horizontal', false);
+		update.status('con.rotation.volume',     false);
 	}
 
-	update.status('con1.last.event', 'button');
+	update.status('con.last.event', 'button');
 
 	switch (button.action) {
 		case 'hold' : {
@@ -46,14 +46,14 @@ function button_check(button) {
 		}
 
 		case 'release' : {
-			switch (status.con1.last.button.action) {
+			switch (status.CON.last.button.action) {
 				case 'depress' : {
-					switch (status.con1.last.button.button) {
+					switch (status.CON.last.button.button) {
 						case 'tel' : {
 							// To use the TEL button as a toggle for rotation = Kodi volume control
-							// if (update.status('con1.rotation.volume', true)) {
-							// 	kodi.notify('CON1', 'Rotation mode: volume');
-							// 	update.status('con1.rotation.last_msg', time_now(), false);
+							// if (update.status('con.rotation.volume', true)) {
+							// 	kodi.notify('CON', 'Rotation mode: volume');
+							// 	update.status('con.rotation.last_msg', time_now(), false);
 							// }
 
 							// To use the TEL button as Kodi play/pause
@@ -64,9 +64,9 @@ function button_check(button) {
 
 						case 'nav' : {
 							// To use the NAV button as a toggle for left<->right or up<->down rotation
-							// if (update.status('con1.rotation.horizontal', true)) {
-							// 	kodi.notify('CON1', 'Rotation mode: horizontal');
-							// 	update.status('con1.rotation.last_msg', time_now(), false);
+							// if (update.status('con.rotation.horizontal', true)) {
+							// 	kodi.notify('CON', 'Rotation mode: horizontal');
+							// 	update.status('con.rotation.last_msg', time_now(), false);
 							// }
 
 							// To use the NAV button as a toggle for police lights
@@ -75,7 +75,7 @@ function button_check(button) {
 						}
 
 						default : {
-							kodi.input(status.con1.last.button.button);
+							kodi.input(status.CON.last.button.button);
 						}
 					}
 				}
@@ -86,19 +86,19 @@ function button_check(button) {
 	}
 
 	// Store buttonpress data in 'last' object
-	update.status('con1.last.button.action', button.action);
-	update.status('con1.last.button.button', button.button);
+	update.status('con.last.button.action', button.action);
+	update.status('con.last.button.button', button.button);
 }
 
-// CON1 ACK to rotational initialization message
+// CON ACK to rotational initialization message
 function decode_ack(data) {
 	data.command = 'rep';
-	data.value   = 'CON1 ACK to NBT1 init';
+	data.value   = 'CON ACK to NBT init';
 
 	return data;
 }
 
-// CON1 button depress, length 6
+// CON button depress, length 6
 function decode_button(data) {
 	data.command = 'con';
 	data.value   = 'button depress';
@@ -293,7 +293,7 @@ function decode_rotation(data) {
 
 	let direction;
 
-	let change = data.msg[3] - status.con1.rotation.relative;
+	let change = data.msg[3] - status.CON.rotation.relative;
 
 	// If it hasn't rotated any notches
 	if (change === 0) return data;
@@ -320,41 +320,41 @@ function decode_rotation(data) {
 
 	log.module('Rotation: ' + direction + ' ' + change_abs + ' notches');
 
-	update.status('con1.rotation.direction', direction);
+	update.status('con.rotation.direction', direction);
 
 	// Update data in global status object
-	update.status('con1.rotation.absolute', data.msg[2], false);
-	update.status('con1.rotation.relative', data.msg[3], false);
+	update.status('con.rotation.absolute', data.msg[2], false);
+	update.status('con.rotation.relative', data.msg[3], false);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
-	let rotation_gap = time_now() - status.con1.rotation.last_msg;
+	let rotation_gap = time_now() - status.CON.rotation.last_msg;
 
-	if (rotation_gap >= config.con1.timeout.rotation_mode) {
-		update.status('con1.rotation.horizontal', false);
-		update.status('con1.rotation.volume',     false);
+	if (rotation_gap >= config.con.timeout.rotation_mode) {
+		update.status('con.rotation.horizontal', false);
+		update.status('con.rotation.volume',     false);
 	}
 
 	// Create quick bitmask to ease switch statement processing
 	let mask_mode = bitmask.create({
-		// b0 : status.con1.rotation.horizontal,
-		// b1 : status.con1.rotation.volume,
-		b0 : (status.con1.touch.count === 1), // If 1 finger  on touchpad, do horizontal scroll
-		b1 : (status.con1.touch.count === 2), // If 2 fingers on touchpad, do volume control
+		// b0 : status.CON.rotation.horizontal,
+		// b1 : status.CON.rotation.volume,
+		b0 : (status.CON.touch.count === 1), // If 1 finger  on touchpad, do horizontal scroll
+		b1 : (status.CON.touch.count === 2), // If 2 fingers on touchpad, do volume control
 	});
 
 	switch (mask_mode) {
 		case 0x01 : { // Rotation mode: horizontal
-			update.status('con1.last.event', 'rotation');
+			update.status('con.last.event', 'rotation');
 
-			for (let i = 0; i < change_abs; i++) kodi.input(status.con1.rotation.direction);
+			for (let i = 0; i < change_abs; i++) kodi.input(status.CON.rotation.direction);
 			break;
 		}
 
 		case 0x02 : { // Rotation mode: volume
-			update.status('con1.last.event', 'rotation');
+			update.status('con.last.event', 'rotation');
 
-			switch (status.con1.rotation.direction) {
+			switch (status.CON.rotation.direction) {
 				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
 				case 'right' : for (let i = 0; i < change_abs; i++) kodi.volume('up');
 			}
@@ -364,20 +364,20 @@ function decode_rotation(data) {
 		case 0x03 : { // Horizontal AND volume mode - error
 			log.module('Error: Horizontal and volume rotation modes simultaneously active, resetting');
 
-			update.status('con1.rotation.horizontal', false);
-			update.status('con1.rotation.volume',     false);
+			update.status('con.rotation.horizontal', false);
+			update.status('con.rotation.volume',     false);
 			break;
 		}
 
 		default : { // Rotation mode: normal
-			switch (status.con1.rotation.direction) {
+			switch (status.CON.rotation.direction) {
 				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up'); break;
 				case 'right' : for (let i = 0; i < change_abs; i++) kodi.input('down');
 			}
 		}
 	}
 
-	update.status('con1.rotation.last_msg', time_now(), false);
+	update.status('con.rotation.last_msg', time_now(), false);
 
 	return data;
 }
@@ -391,11 +391,11 @@ function decode_status(data) {
 	}
 
 	switch (data.msg[4]) {
-		case 0x06 : { // CON1 needs init
-			switch (config.nbt1.mode.toLowerCase()) {
+		case 0x06 : { // CON needs init
+			switch (config.nbt.mode.toLowerCase()) {
 				case 'cic' : {
 					log.module('Init triggered');
-					NBT1.status();
+					NBT.status();
 				}
 			}
 		}
@@ -404,7 +404,7 @@ function decode_status(data) {
 	return data;
 }
 
-// How many appendages are touching the CON1 touchpad
+// How many appendages are touching the CON touchpad
 function decode_touch_count(value) {
 	switch (value) {
 		case 0x00 : return 2;
@@ -412,7 +412,7 @@ function decode_touch_count(value) {
 		case 0x10 : return 1;
 		case 0x11 : return 0;
 		// case 0x1F : return 3; // It can usually detect this but it's wonky
-		default   : return status.con1.touch.count;
+		default   : return status.CON.touch.count;
 	}
 }
 
@@ -428,8 +428,8 @@ function decode_touchpad(data) {
 	let touch_count = decode_touch_count(data.msg[4]);
 
 	// Update status variables
-	if (update.status('con1.touch.count', touch_count)) {
-		update.status('con1.last.event', 'touch');
+	if (update.status('con.touch.count', touch_count)) {
+		update.status('con.last.event', 'touch');
 	}
 
 	// Bounce if more than 1 digit on the touchpad
@@ -440,8 +440,8 @@ function decode_touchpad(data) {
 	data.value += ' X: ' + x + ' Y: ' + y;
 
 	// Update status variables
-	// update.status('con1.touch.x', x, false);
-	// update.status('con1.touch.y', y, false);
+	// update.status('con.touch.x', x, false);
+	// update.status('con.touch.y', y, false);
 
 	// y-axis value maxes out at 30 - so we'll do a bit of multiplication
 	// let volume_level = Math.round(y * (3 + (1 / 3)));
@@ -453,7 +453,7 @@ function decode_touchpad(data) {
 
 function init_listeners() {
 	// Stamp last message time as now
-	update.status('con1.rotation.last_msg', time_now(), false);
+	update.status('con.rotation.last_msg', time_now(), false);
 
 	// Perform commands on power lib active event
 	update.on('status.power.active', () => {
@@ -463,19 +463,19 @@ function init_listeners() {
 	log.msg('Initialized listeners');
 }
 
-// Initialize CON1 rotation counter
+// Initialize CON rotation counter
 function init_rotation() {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true) return;
+	if (config.emulate.nbt !== true) return;
 
 	// Handle setting/unsetting timeout
 	switch (status.power.active) {
 		case false : {
-			if (CON1.timeout.init_rotation !== null) {
-				clearTimeout(CON1.timeout.init_rotation);
-				CON1.timeout.init_rotation = null;
+			if (CON.timeout.init_rotation !== null) {
+				clearTimeout(CON.timeout.init_rotation);
+				CON.timeout.init_rotation = null;
 
-				log.module('Unset CON1 rotation init timeout');
+				log.module('Unset CON rotation init timeout');
 			}
 
 			// Return here since we're not re-sending again
@@ -483,22 +483,22 @@ function init_rotation() {
 		}
 
 		case true : {
-			if (CON1.timeout.init_rotation === null) {
-				log.module('Set CON1 rotation init timeout');
+			if (CON.timeout.init_rotation === null) {
+				log.module('Set CON rotation init timeout');
 			}
 
-			CON1.timeout.init_rotation = setTimeout(init_rotation, 10000);
+			CON.timeout.init_rotation = setTimeout(init_rotation, 10000);
 		}
 	}
 
-	// When CON1 receives this message, it resets it's relative rotation counter to -1
-	update.status('con1.rotation.relative', -1);
+	// When CON receives this message, it resets it's relative rotation counter to -1
+	update.status('con.rotation.relative', -1);
 
-	// log.module('Sending CON1 rotation init');
+	// log.module('Sending CON rotation init');
 
 	// Send message
 	bus.data.send({
-		bus  : config.con1.can_intf,
+		bus  : config.con.can_intf,
 		id   : 0x273,
 		data : Buffer.from([ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x00 ]),
 	});
@@ -508,7 +508,7 @@ function init_rotation() {
 // Parse data sent from module
 function parse_out(data) {
 	// Bounce if not enabled
-	if (config.retrofit.con1 !== true) return;
+	if (config.retrofit.CON !== true) return;
 
 	switch (data.src.id) {
 		case 0x0BF : data = decode_touchpad(data);  break;

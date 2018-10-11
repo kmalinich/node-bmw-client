@@ -558,7 +558,7 @@ class IKE extends EventEmitter {
 			speed : status.vehicle.speed.mph + 'mph',
 			temp  : Math.round(status.temperature.coolant.c) + '¨',
 			time  : moment().format(moment_format),
-			volt  : status.dme1.voltage + 'v',
+			volt  : status.dme.voltage + 'v',
 
 			// Clutch count
 			cc : status.vehicle.clutch_count + 'gc',
@@ -585,7 +585,7 @@ class IKE extends EventEmitter {
 		}
 
 		// Change string to be voltage if under threshold
-		if (status.dme1.voltage <= config.hud.volt.threshold) {
+		if (status.dme.voltage <= config.hud.volt.threshold) {
 			hud_strings.left = hud_strings.volt;
 		}
 
@@ -1027,7 +1027,7 @@ class IKE extends EventEmitter {
 		});
 
 		// Refresh HUD after certain data values update
-		update.on('status.dme1.voltage',            () => { this.hud_refresh(); });
+		update.on('status.dme.voltage',             () => { this.hud_refresh(); });
 		// update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
 		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
 		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });

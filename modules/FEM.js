@@ -1,4 +1,4 @@
-function backlight(value = status.fem1.backlight.value) {
+function backlight(value = status.fem.backlight.value) {
 	// Bounce if the power's off
 	// if (status.power.active !== true) return;
 
@@ -10,7 +10,7 @@ function backlight(value = status.fem1.backlight.value) {
 	// log.module('Setting backlight to value : ' + value);
 
 	// Bounce if not enabled
-	if (config.emulate.fem1 !== true) return;
+	if (config.emulate.fem !== true) return;
 
 	// data.msg[0]: Backlight intensity
 	// 0xFE      : 0%
@@ -22,7 +22,7 @@ function backlight(value = status.fem1.backlight.value) {
 	if (value < 0x00) value = 0xFF;
 
 	// Set status value
-	update.status('fem1.backlight.value', value, false);
+	update.status('fem.backlight.value', value, false);
 
 	// Workarounds
 	switch (value) {
@@ -32,10 +32,10 @@ function backlight(value = status.fem1.backlight.value) {
 		default   : value--;             // Decrement value by one (see above)
 	}
 
-	update.status('fem1.backlight.real', value, false);
+	update.status('fem.backlight.real', value, false);
 
 	bus.data.send({
-		bus  : config.fem1.can_intf,
+		bus  : config.fem.can_intf,
 		id   : 0x202,
 		data : Buffer.from([ value, 0x00 ]),
 	});
@@ -55,7 +55,7 @@ function decode_backlight(data) {
 	let value = data.msg[0];
 
 	// Set status value
-	update.status('fem1.backlight.real', value, false);
+	update.status('fem.backlight.real', value, false);
 
 	// Workarounds
 	switch (value) {
@@ -65,7 +65,7 @@ function decode_backlight(data) {
 		default   : value++;             // Increment value by one (see above)
 	}
 
-	update.status('fem1.backlight.value', value, false);
+	update.status('fem.backlight.value', value, false);
 
 	return data;
 }
@@ -75,16 +75,16 @@ function init_listeners() {
 	update.on('status.power.active', (data) => {
 		switch (data.new) {
 			case false : { // Fade off backlight when power shuts off
-				for (let i = status.fem1.backlight.value; i >= 0; i--) {
+				for (let i = status.fem.backlight.value; i >= 0; i--) {
 					setTimeout(() => {
 						backlight(i);
-					}, ((status.fem1.backlight.value - i) * 2));
+					}, ((status.fem.backlight.value - i) * 2));
 				}
 				break;
 			}
 
 			case true : { // Fade on backlight when power turns on
-				for (let i = 0; i <= status.fem1.backlight.value; i++) {
+				for (let i = 0; i <= status.fem.backlight.value; i++) {
 					setTimeout(() => {
 						backlight(i);
 					}, (i * 2));

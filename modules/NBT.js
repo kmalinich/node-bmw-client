@@ -3,7 +3,7 @@
 // Fxx : 12F -> 37 7C 8A DD D4 05 33 6B
 function decode_ignition(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
 	data.command = 'bro';
 	data.value   = 'Ignition status';
@@ -16,12 +16,12 @@ function decode_ignition(data) {
 // Used for iDrive knob rotational initialization
 function decode_status_module(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
 	data.command = 'con';
-	data.value   = 'NBT1 init iDrive knob';
+	data.value   = 'NBT init iDrive knob';
 
-	// log.module('NBT1 status message ' + Buffer.from(data.msg));
+	// log.module('NBT status message ' + Buffer.from(data.msg));
 
 	return data;
 }
@@ -29,7 +29,7 @@ function decode_status_module(data) {
 
 function init_listeners() {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
 	// Perform commands on power lib active event
 	update.on('status.power.active', status_module);
@@ -42,7 +42,7 @@ function init_listeners() {
 // Parse data sent to module
 function parse_in(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true) return;
+	if (config.emulate.nbt !== true) return;
 
 	switch (data.msg[0]) {
 		default : {
@@ -57,19 +57,19 @@ function parse_in(data) {
 // Parse data sent from module
 function parse_out(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
 	switch (data.src.id) {
 		case 0x273 :
 		case 0x563 : data = decode_status_module(data); break;
 
-		case 0x277 : { // NBT1 ACK to rotational initialization message
+		case 0x277 : { // NBT ACK to rotational initialization message
 			data.command = 'rep';
-			data.value   = 'CON1 => NBT1 : ACK init';
+			data.value   = 'CON => NBT : ACK init';
 			break;
 		}
 
-		case 0x34E : { // NBT1 navigation information
+		case 0x34E : { // NBT navigation information
 			data.command = 'bro';
 			data.value   = 'Navigation system information';
 
@@ -106,25 +106,25 @@ function parse_out(data) {
 }
 
 
-// NBT1 status
+// NBT status
 // 273 -> 1D E1 00 F0 FF 7F DE 04
 function status_module() {
 	// Bounce if not enabled
-	if (config.emulate.nbt1 !== true && config.retrofit.nbt1 !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
-	switch (config.nbt1.mode.toLowerCase()) {
+	switch (config.nbt.mode.toLowerCase()) {
 		case 'cic' : {
-			// When CON1 receives this message, it resets it's relative rotation counter to -1
-			update.status('con1.rotation.relative', -1);
+			// When CON receives this message, it resets it's relative rotation counter to -1
+			update.status('con.rotation.relative', -1);
 			break;
 		}
 
 		case 'nbt' : {
 			switch (status.power.active) {
 				case false : {
-					if (NBT1.timeout.status_module !== null) {
-						clearTimeout(NBT1.timeout.status_module);
-						NBT1.timeout.status_module = null;
+					if (NBT.timeout.status_module !== null) {
+						clearTimeout(NBT.timeout.status_module);
+						NBT.timeout.status_module = null;
 
 						log.module('Unset module status timeout');
 					}
@@ -134,24 +134,24 @@ function status_module() {
 				}
 
 				case true : {
-					if (NBT1.timeout.status_module === null) {
+					if (NBT.timeout.status_module === null) {
 						log.module('Set module status timeout');
 					}
 
-					NBT1.timeout.status_module = setTimeout(status_module, 2000);
+					NBT.timeout.status_module = setTimeout(status_module, 2000);
 				}
 			}
 		}
 	}
 
-	// Default is NBT1 message
+	// Default is NBT message
 	let msg = {
-		bus  : config.nbt1.can_intf,
+		bus  : config.nbt.can_intf,
 		id   : null,
 		data : [ ],
 	};
 
-	switch (config.nbt1.mode.toLowerCase()) {
+	switch (config.nbt.mode.toLowerCase()) {
 		case 'cic' : {
 			msg.id   = 0x273;
 			msg.data = [ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x04 ];
@@ -165,7 +165,7 @@ function status_module() {
 		}
 
 		default : {
-			log.module('config.nbt1.mode must be set to one of cic or nbt');
+			log.module('config.nbt.mode must be set to one of cic or nbt');
 			return;
 		}
 	}
@@ -181,25 +181,25 @@ function status_module() {
 }
 
 // Ignition status
-// TODO : Should be in CAS1 module
+// TODO : Should be in CAS module
 function status_ignition() {
 	// Bounce if not enabled
-	if (config.retrofit.nbt1 !== true) return;
+	if (config.retrofit.nbt !== true) return;
 
 	// Handle setting/unsetting timeout
 	switch (status.power.active) {
 		case false : {
 			// Return here if timeout is already null
-			if (NBT1.timeout.status_ignition !== null) {
-				clearTimeout(NBT1.timeout.status_ignition);
-				NBT1.timeout.status_ignition = null;
+			if (NBT.timeout.status_ignition !== null) {
+				clearTimeout(NBT.timeout.status_ignition);
+				NBT.timeout.status_ignition = null;
 
 				log.module('Unset ignition status timeout');
 			}
 
 			// Send ignition off message
 			bus.data.send({
-				bus  : config.nbt1.can_intf,
+				bus  : config.nbt.can_intf,
 				id   : 0x12F,
 				data : Buffer.from([ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]),
 			});
@@ -209,22 +209,22 @@ function status_ignition() {
 		}
 
 		case true : {
-			if (NBT1.timeout.status_ignition === null) {
+			if (NBT.timeout.status_ignition === null) {
 				log.module('Set ignition status timeout');
 			}
 
-			NBT1.timeout.status_ignition = setTimeout(status_ignition, 100);
+			NBT.timeout.status_ignition = setTimeout(status_ignition, 100);
 		}
 	}
 
-	// Default is NBT1 message
+	// Default is NBT message
 	let msg = {
-		bus  : config.nbt1.can_intf,
+		bus  : config.nbt.can_intf,
 		id   : 0x12F,
 		data : [ 0x37, 0x7C, 0x8A, 0xDD, 0xD4, 0x05, 0x33, 0x6B ],
 	};
 
-	switch (config.nbt1.mode.toLowerCase()) {
+	switch (config.nbt.mode.toLowerCase()) {
 		case 'cic' : {
 			msg.id   = 0x4F8;
 			msg.data = [ 0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF ];
@@ -254,6 +254,6 @@ module.exports = {
 	parse_in  : parse_in,
 	parse_out : parse_out,
 
-	status_ignition : status_ignition, // Should be in CAS1 module
+	status_ignition : status_ignition, // Should be in CAS module
 	status_module   : status_module,
 };
