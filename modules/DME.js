@@ -99,7 +99,7 @@ function parse_329(data) {
 	// byte 3, bit 0      : clutch switch (0 = engaged, 1 = disengage/neutral)
 	// byte 3, bit 2      : Hardcoded to 1 (on MSS54, could be used on other DMEs)
 	// byte 3, bit 4      : possibly motor status (0 = on, 1 = off)
-	// byte 3, bits 5+6+7 : MSS52 sport mode, tank evap duty cycle
+	// byte 3, bits 5+6+7 : tank evap duty cycle?
 	//
 	// byte 4 : driver desired torque, relative (0x00 - 0xFE)
 	// byte 5 : throttle position               (0x00 - 0xFE)
@@ -153,8 +153,6 @@ function parse_329(data) {
 				},
 			},
 
-			//                                 XX
-			// can0  329   [8]  40 51 C4 04 00 03 00 00
 			sport : {
 				active : bitmask.test(data.msg[5], 0x02),
 			},
@@ -187,7 +185,7 @@ function parse_329(data) {
 	// update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
 	// update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
-	update.status('vehicle.sport.active', parse.vehicle.sport.active);
+	// update.status('vehicle.sport.active', parse.vehicle.sport.active);
 
 	update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
