@@ -6,18 +6,18 @@ const time_now = require('performance-now');
 function button_check(button) {
 	// Workaround for the last of a proper 'release' message when in 'joystick mode'
 	let joystick_release = (button.mode === 'joystick' && button.action === 'release' && button.button === 'none');
-	if (joystick_release === true) button.button = status.CON.last.button.button;
+	if (joystick_release === true) button.button = status.con.last.button.button;
 
 	// Detect if there is a change from the last button message, bounce if not
 	// CON sends a lot of repeat messages (it's CANBUS)
-	let change = (status.CON.last.button.action !== button.action || status.CON.last.button.button !== button.button || status.CON.last.button.mode !== button.mode);
+	let change = (status.con.last.button.action !== button.action || status.con.last.button.button !== button.button || status.con.last.button.mode !== button.mode);
 	if (change === false) return;
 
 	log.module('Button: ' + button.action + ' ' + button.button);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for <configured> milliseconds
-	let rotation_gap = time_now() - status.CON.rotation.last_msg;
+	let rotation_gap = time_now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
 		update.status('con.rotation.horizontal', false);
@@ -46,9 +46,9 @@ function button_check(button) {
 		}
 
 		case 'release' : {
-			switch (status.CON.last.button.action) {
+			switch (status.con.last.button.action) {
 				case 'depress' : {
-					switch (status.CON.last.button.button) {
+					switch (status.con.last.button.button) {
 						case 'tel' : {
 							// To use the TEL button as a toggle for rotation = Kodi volume control
 							// if (update.status('con.rotation.volume', true)) {
@@ -75,7 +75,7 @@ function button_check(button) {
 						}
 
 						default : {
-							kodi.input(status.CON.last.button.button);
+							kodi.input(status.con.last.button.button);
 						}
 					}
 				}
@@ -293,7 +293,7 @@ function decode_rotation(data) {
 
 	let direction;
 
-	let change = data.msg[3] - status.CON.rotation.relative;
+	let change = data.msg[3] - status.con.rotation.relative;
 
 	// If it hasn't rotated any notches
 	if (change === 0) return data;
@@ -328,7 +328,7 @@ function decode_rotation(data) {
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
-	let rotation_gap = time_now() - status.CON.rotation.last_msg;
+	let rotation_gap = time_now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
 		update.status('con.rotation.horizontal', false);
@@ -337,24 +337,24 @@ function decode_rotation(data) {
 
 	// Create quick bitmask to ease switch statement processing
 	let mask_mode = bitmask.create({
-		// b0 : status.CON.rotation.horizontal,
-		// b1 : status.CON.rotation.volume,
-		b0 : (status.CON.touch.count === 1), // If 1 finger  on touchpad, do horizontal scroll
-		b1 : (status.CON.touch.count === 2), // If 2 fingers on touchpad, do volume control
+		// b0 : status.con.rotation.horizontal,
+		// b1 : status.con.rotation.volume,
+		b0 : (status.con.touch.count === 1), // If 1 finger  on touchpad, do horizontal scroll
+		b1 : (status.con.touch.count === 2), // If 2 fingers on touchpad, do volume control
 	});
 
 	switch (mask_mode) {
 		case 0x01 : { // Rotation mode: horizontal
 			update.status('con.last.event', 'rotation');
 
-			for (let i = 0; i < change_abs; i++) kodi.input(status.CON.rotation.direction);
+			for (let i = 0; i < change_abs; i++) kodi.input(status.con.rotation.direction);
 			break;
 		}
 
 		case 0x02 : { // Rotation mode: volume
 			update.status('con.last.event', 'rotation');
 
-			switch (status.CON.rotation.direction) {
+			switch (status.con.rotation.direction) {
 				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
 				case 'right' : for (let i = 0; i < change_abs; i++) kodi.volume('up');
 			}
@@ -370,7 +370,7 @@ function decode_rotation(data) {
 		}
 
 		default : { // Rotation mode: normal
-			switch (status.CON.rotation.direction) {
+			switch (status.con.rotation.direction) {
 				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.input('up'); break;
 				case 'right' : for (let i = 0; i < change_abs; i++) kodi.input('down');
 			}
@@ -412,7 +412,7 @@ function decode_touch_count(value) {
 		case 0x10 : return 1;
 		case 0x11 : return 0;
 		// case 0x1F : return 3; // It can usually detect this but it's wonky
-		default   : return status.CON.touch.count;
+		default   : return status.con.touch.count;
 	}
 }
 
@@ -508,7 +508,7 @@ function init_rotation() {
 // Parse data sent from module
 function parse_out(data) {
 	// Bounce if not enabled
-	if (config.retrofit.CON !== true) return;
+	if (config.retrofit.con !== true) return;
 
 	switch (data.src.id) {
 		case 0x0BF : data = decode_touchpad(data);  break;
