@@ -39,8 +39,12 @@ function decode_ignition(data) {
 					log.module('Powerup state');
 				}
 
+				log.module('Run state');
+
 				// Send gauge sweep messages to KOMBI if configured
 				if (config.kombi.sweep === true && config.chassis.model === 'e60') {
+					log.module('Executing KOMBI gauge sweep');
+
 					// Speedo
 					bus.data.send({
 						bus  : config.kombi.can_intf,
@@ -71,8 +75,6 @@ function decode_ignition(data) {
 						});
 					}, 1500);
 				}
-
-				log.module('Run state');
 				break;
 			}
 
