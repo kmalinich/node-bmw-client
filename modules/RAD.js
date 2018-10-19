@@ -658,13 +658,15 @@ function init_listeners() {
 	if (config.emulate.rad   !== true)  return;
 
 	// Perform commands on power lib active event
+	// TODO: Make this a config value
 	update.on('status.power.active', (data) => {
 		setTimeout(() => { audio_power(data.new); }, 150);
 	});
 
-	// Kick DSP amp on engine restart
+	// Kick DSP amp 2 seconds after engine start
+	// TODO: Make this a config value
 	IKE.on('ignition-start-end', () => {
-		setTimeout(() => { audio_power(true); }, 500);
+		setTimeout(() => { audio_power(true); }, 2000);
 	});
 
 	log.msg('Initialized listeners');
