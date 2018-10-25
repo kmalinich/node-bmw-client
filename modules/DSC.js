@@ -9,11 +9,11 @@ const convert = require('node-unit-conversion');
 // B3 : Speed MSB
 
 // Example:
-// 124A (hex) = 4682 (dec) / 100 = 46.82 MPH
+// 124A (hex) = 4682 (dec) / 100 = 46.82 KPH
 //
-// (((18 * 256) + 74) / 100) = 46.82 MPH
+// (((18 * 256) + 74) / 100) = 46.82 KPH
 //
-// Input is in MPH
+// Input is in KPH
 function encode_1a1(speed = 0) {
 	speed = speed * 100;
 
@@ -24,7 +24,7 @@ function encode_1a1(speed = 0) {
 
 	// Send packet
 	bus.data.send({
-		bus  : config.dsc.can_intf,
+		bus  : config.nbt.can_intf,
 		id   : 0x1A1,
 		data : Buffer.from(msg),
 	});
@@ -68,7 +68,7 @@ function parse_153(data) {
 	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
 }
 
-// Parse wheel speed LSB and MSB into kph value
+// Parse wheel speed LSB and MSB into KPH value
 function parse_wheel(byte0, byte1) {
 	return (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16) - 2.75;
 }
@@ -86,11 +86,6 @@ function parse_1f0(data) {
 		},
 	};
 
-	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left,  false);
-	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right, false);
-	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left,   false);
-	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right,  false);
-
 	// Calculate vehicle speed from average of all 4 sensors
 	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
 
@@ -101,18 +96,27 @@ function parse_1f0(data) {
 	// Calculate vehicle speed value in MPH
 	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
+
+	// Update status object
+	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left,  false);
+	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right, false);
+	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left,   false);
+	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right,  false);
+
 	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh, false)) {
 		if (config.translate.dsc === true) {
-			// Forward this to CAN1
-			encode_1a1(vehicle_speed_mph);
+			// Re-encode this message as CANBUS ARBID 0x1A1
+			encode_1a1(vehicle_speed_kmh);
 		}
 	}
 
 	update.status('vehicle.speed.mph', vehicle_speed_mph, false);
 }
 
+// TODO: This.... needs help
 function parse_1f5(data) {
 	let angle = 0;
+	// Specifically these horrific if statements
 	if (data.msg[1] > 127) {
 		angle = -1 * (((data.msg[1] - 128) * 256) + data.msg[0]);
 	}
@@ -121,6 +125,7 @@ function parse_1f5(data) {
 	}
 
 	let velocity = 0;
+	// These are an embarrasment
 	if (data.msg[3] > 127) {
 		velocity = -1 * (((data.msg[3] - 128) * 256) + data.msg[2]);
 	}
@@ -135,6 +140,7 @@ function parse_1f5(data) {
 		angle    : Math.round(angle    * steering_multiplier) * -1, // Thanks babe
 		velocity : Math.round(velocity * steering_multiplier) * -1,
 	};
+
 
 	update.status('vehicle.steering.angle',    steering.angle,    false);
 	update.status('vehicle.steering.velocity', steering.velocity, false);

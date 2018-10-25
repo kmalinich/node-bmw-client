@@ -124,11 +124,12 @@ function load_modules(pass) {
 	// TCU  = require('TCU');
 
 	// CANBUS modules
-	CAS = require('CAS');
-	CON = require('CON');
-	DSC = require('DSC');
-	FEM = require('FEM');
-	NBT = require('NBT');
+	CAS   = require('CAS');
+	CON   = require('CON');
+	DSC   = require('DSC');
+	FEM   = require('FEM');
+	KOMBI = require('KOMBI');
+	NBT   = require('NBT');
 
 	// Hybrid modules
 	DME = require('DME');
