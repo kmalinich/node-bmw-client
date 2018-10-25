@@ -558,7 +558,7 @@ class IKE extends EventEmitter {
 			speed : status.vehicle.speed.mph + 'mph',
 			temp  : Math.round(status.temperature.coolant.c) + '¨',
 			time  : moment().format(moment_format),
-			volt  : status.dme.voltage + 'v',
+			volt  : status.dme.voltage,
 
 			// Clutch count
 			cc : status.vehicle.clutch_count + 'gc',
@@ -572,27 +572,33 @@ class IKE extends EventEmitter {
 
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
-			hud_strings.temp += '  ' + Math.round(status.temperature.oil.c) + '¨';
+			hud_strings.temp += ' ' + Math.round(status.temperature.oil.c) + '¨';
 		}
 
 
 		// TODO use layout from config
-		hud_strings.left = hud_strings.temp;
+		hud_strings.left   = hud_strings.temp;
+		hud_strings.center = hud_strings.egt;
+		hud_strings.right  = hud_strings.iat;
 
 		// Change string to be load/CPU temp if over threshold
 		if (status.system.temperature > config.system.temperature.fan_enable) {
 			hud_strings.left = hud_strings.load;
 		}
 
-		// Change string to be voltage if under threshold
+		// Change center string to be voltage if under threshold
 		if (status.dme.voltage <= config.hud.volt.threshold) {
-			hud_strings.left = hud_strings.volt;
+			hud_strings.center = hud_strings.volt + 'v';
 		}
 
 		// Space-pad HUD strings
-		if (typeof hud_strings.left.padEnd   === 'function') hud_strings.left   = hud_strings.left.padEnd(12);
-		if (typeof hud_strings.center.padEnd === 'function') hud_strings.center = hud_strings.egt.padEnd(5);
-		if (typeof hud_strings.right.padEnd  === 'function') hud_strings.right  = hud_strings.iat.padStart(3);
+		if (typeof hud_strings.left.padEnd    === 'function') hud_strings.left  = hud_strings.left.padEnd(9);
+		if (typeof hud_strings.right.padStart === 'function') hud_strings.right = hud_strings.right.padStart(4);
+
+		if (typeof hud_strings.center.padEnd  === 'function') {
+			hud_strings.center = hud_strings.center.padStart(6);
+			hud_strings.center = hud_strings.center.padEnd(7);
+		}
 
 		// Update hud string in status object
 		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;

@@ -679,7 +679,6 @@ function reset() {
 		output_standing_front_right : true,
 		output_standing_rear_left   : true,
 		output_standing_rear_right  : true,
-		switch_fog_rear             : true, // To leverage the IKE LED as a status indicator
 		switch_lowbeam_1            : status.lights.auto.lowbeam,
 	};
 
