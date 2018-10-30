@@ -778,8 +778,8 @@ class IKE extends EventEmitter {
 		// Bounce if override is active
 		if (this.hud_override === true) return false;
 
-		// Bounce if the last update was less than the configured value in milliseconds ago
-		if (now() - status.hud.refresh_last <= config.hud.refresh_max) return false;
+		// Bonce if the last update was less than the configured value in milliseconds ago
+		if ((now() - status.hud.refresh_last) <= config.hud.refresh_max) return false;
 
 		return true;
 	}

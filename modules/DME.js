@@ -430,9 +430,9 @@ function parse_720(data) {
 	update.status('temperature.exhaust.c', parse.temperature.exhaust.c);
 	update.status('temperature.intake.c',  parse.temperature.intake.c);
 
-	update.status('dme.voltage',       parse.dme.voltage, false);
-	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
-	update.status('fuel.pump.percent', parse.fuel.pump.percent);
+	update.status('dme.voltage',       parse.dme.voltage,       false);
+	update.status('fuel.pump.duty',    parse.fuel.pump.duty,    false);
+	update.status('fuel.pump.percent', parse.fuel.pump.percent, false);
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
