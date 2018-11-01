@@ -318,14 +318,14 @@ function parse_613(data) {
 		},
 	};
 
-	parse.fuel.level = Math.round((parse.fuel.liters / config.fuel.liters_max) * 100);
+	parse.fuel.level = Math.floor((parse.fuel.liters / config.fuel.liters_max) * 100);
 	if (parse.fuel.level < 0)   parse.fuel.level = 0;
 	if (parse.fuel.level > 100) parse.fuel.level = 100;
 
 	update.status('fuel.level',  parse.fuel.level);
 	update.status('fuel.liters', parse.fuel.liters, false);
 
-	parse.vehicle.odometer.mi = Math.round(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
+	parse.vehicle.odometer.mi = Math.floor(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
 
 	update.status('vehicle.odometer.km', parse.vehicle.odometer.km, false);
 	update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi);
@@ -364,8 +364,8 @@ function parse_615(data) {
 	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
 
 	// Round temperature values
-	parse.temperature.exterior.c = Math.round(parse.temperature.exterior.c);
-	parse.temperature.exterior.f = Math.round(parse.temperature.exterior.f);
+	parse.temperature.exterior.c = Math.floor(parse.temperature.exterior.c);
+	parse.temperature.exterior.f = Math.floor(parse.temperature.exterior.f);
 
 	// Update status object
 	update.status('engine.ac_request',    parse.engine.ac_request);
@@ -396,25 +396,25 @@ function parse_720(data) {
 		fuel : {
 			pump : {
 				duty    : data.msg[7],
-				percent : parseFloat((data.msg[7] / 255).toFixed(4)) * 100,
+				percent : Math.ceil(parseFloat((data.msg[7] / 255).toFixed(4)) * 100),
 			},
 		},
 
 		temperature : {
-			coolant : {
-				c : data.msg[0] - 48,
-				f : null,
-			},
+			// coolant : {
+			// 	c : data.msg[0] - 48,
+			// 	f : null,
+			// },
 
 			exhaust : {
 				c : data.msg[2] << 2,
 				f : null,
 			},
 
-			oil : {
-				c : data.msg[3] - 48,
-				f : null,
-			},
+			// oil : {
+			// 	c : data.msg[3] - 48,
+			// 	f : null,
+			// },
 
 			intake : {
 				c : data.msg[1] - 48,
@@ -435,10 +435,10 @@ function parse_720(data) {
 	update.status('fuel.pump.percent', parse.fuel.pump.percent, false);
 
 	// Calculate fahrenheit temperature values
-	parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
+	// parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 	parse.temperature.exhaust.f = parseFloat(convert(parse.temperature.exhaust.c).from('celsius').to('fahrenheit'));
 	parse.temperature.intake.f  = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
-	parse.temperature.oil.f     = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
+	// parse.temperature.oil.f     = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
 
 	// update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
 	// update.status('temperature.oil.f',     parse.temperature.oil.f, false);

@@ -444,7 +444,7 @@ function decode_touchpad(data) {
 	// update.status('con.touch.y', y, false);
 
 	// y-axis value maxes out at 30 - so we'll do a bit of multiplication
-	// let volume_level = Math.round(y * (3 + (1 / 3)));
+	// let volume_level = Math.floor(y * (3 + (1 / 3)));
 	// kodi.volume(volume_level);
 
 	return data;

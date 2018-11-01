@@ -674,7 +674,7 @@ function io_set(packet) {
 function reset() {
 	// Object of autolights related values
 	let io_object_auto_lights = {
-		dimmer_value_2              : Math.round(status.lights.auto.night_percentage * 254),
+		dimmer_value_2              : Math.ceil(status.lights.auto.night_percentage * 254),
 		output_standing_front_left  : true,
 		output_standing_front_right : true,
 		output_standing_rear_left   : true,

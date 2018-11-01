@@ -90,11 +90,11 @@ function parse_1f0(data) {
 	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
 
 	// Average all wheel speeds together and include accuracy offset multiplier
-	// let vehicle_speed_kmh = Math.round((vehicle_speed_total / 4) * config.speedometer.offset);
-	let vehicle_speed_kmh = Math.round(vehicle_speed_total / 4);
+	// let vehicle_speed_kmh = Math.floor((vehicle_speed_total / 4) * config.speedometer.offset);
+	let vehicle_speed_kmh = Math.floor(vehicle_speed_total / 4);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
+	let vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
 
 	// Update status object
@@ -137,8 +137,8 @@ function parse_1f5(data) {
 	let steering_multiplier = 0.043393;
 
 	let steering = {
-		angle    : Math.round(angle    * steering_multiplier) * -1, // Thanks babe
-		velocity : Math.round(velocity * steering_multiplier) * -1,
+		angle    : Math.floor(angle    * steering_multiplier) * -1, // Thanks babe
+		velocity : Math.floor(velocity * steering_multiplier) * -1,
 	};
 
 

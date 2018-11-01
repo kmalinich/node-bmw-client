@@ -11,7 +11,7 @@ function parse_1b4(data) {
 	let vehicle_speed_kmh = parse_speed(data.msg[0], data.msg[1]);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = Math.round(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
+	let vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
 	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh, false)) {
 		if (config.translate.kombi.speed === true) {

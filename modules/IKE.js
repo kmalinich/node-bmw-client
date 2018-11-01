@@ -142,15 +142,15 @@ class IKE extends EventEmitter {
 				switch (string_outside_temp_unit) {
 					case 'c' : {
 						update.status('coding.unit.temp',           'c');
-						update.status('temperature.exterior.obc.c', Math.round(parseFloat(string_outside_temp_value)));
-						update.status('temperature.exterior.obc.f', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))));
+						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(string_outside_temp_value)));
+						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))));
 						break;
 					}
 
 					case 'f' : {
 						update.status('coding.unit.temp',           'f');
-						update.status('temperature.exterior.obc.c', Math.round(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))));
-						update.status('temperature.exterior.obc.f', Math.round(parseFloat(string_outside_temp_value)));
+						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))));
+						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(string_outside_temp_value)));
 						break;
 					}
 				}
@@ -404,7 +404,7 @@ class IKE extends EventEmitter {
 		let odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
 		update.status('vehicle.odometer.km', odometer_value);
-		update.status('vehicle.odometer.mi', Math.round(convert(odometer_value).from('kilometre').to('us mile')));
+		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')));
 
 		return data;
 	}
@@ -439,8 +439,8 @@ class IKE extends EventEmitter {
 			// Signed value?
 			if (temp_coolant > 128) temp_coolant = temp_coolant - 256;
 
-			update.status('temperature.coolant.c', Math.round(temp_coolant));
-			update.status('temperature.coolant.f', Math.round(convert(temp_coolant).from('celsius').to('fahrenheit')));
+			update.status('temperature.coolant.c', Math.floor(temp_coolant));
+			update.status('temperature.coolant.f', Math.floor(convert(temp_coolant).from('celsius').to('fahrenheit')));
 		}
 
 		// Temperatures are not broadcast over CANBUS when ignition is not in run
@@ -450,8 +450,8 @@ class IKE extends EventEmitter {
 			// Signed value?
 			if (temp_exterior > 128) temp_exterior = temp_exterior - 256;
 
-			update.status('temperature.exterior.c', Math.round(temp_exterior));
-			update.status('temperature.exterior.f', Math.round(convert(temp_exterior).from('celsius').to('fahrenheit')));
+			update.status('temperature.exterior.c', Math.floor(temp_exterior));
+			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius').to('fahrenheit')));
 		}
 
 		this.hud_refresh();
@@ -551,12 +551,12 @@ class IKE extends EventEmitter {
 			right  : '',
 
 			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg', // TODO use unit from config
-			egt   : Math.round(status.temperature.exhaust.c) + '¨',
-			iat   : Math.round(status.temperature.intake.c) + '¨',
-			load  : status.system.temperature + '¨|' + Math.round(status.system.cpu.load_pct) + '%',
-			range : Math.round(status.obc.range.mi) + 'mi',
+			egt   : Math.floor(status.temperature.exhaust.c) + '¨',
+			iat   : Math.floor(status.temperature.intake.c) + '¨',
+			load  : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
+			range : Math.floor(status.obc.range.mi) + 'mi',
 			speed : status.vehicle.speed.mph + 'mph',
-			temp  : Math.round(status.temperature.coolant.c) + '¨',
+			temp  : Math.floor(status.temperature.coolant.c) + '¨',
 			time  : moment().format(moment_format),
 			volt  : status.dme.voltage,
 
@@ -572,7 +572,7 @@ class IKE extends EventEmitter {
 
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
-			hud_strings.temp += ' ' + Math.round(status.temperature.oil.c) + '¨';
+			hud_strings.temp += ' ' + Math.floor(status.temperature.oil.c) + '¨';
 		}
 
 
@@ -1339,7 +1339,7 @@ class IKE extends EventEmitter {
 	welcome_message() {
 		if (config.options.message_welcome !== true) return;
 
-		this.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.round((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
+		this.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.floor((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
 	}
 }
 
