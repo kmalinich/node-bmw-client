@@ -26,7 +26,7 @@ function parse_304(data) {
 				// Send message to NBT_HU to switch input to reverse camera
 				if (status.egs.gear !== 'reverse') {
 					bus.data.send({
-						bus  : config.nbt.can_intf,
+						bus  : config.kombi.can_intf,
 						id   : 0x6F1,
 						data : Buffer.from([ 0x63, 0x21, 0x00, 0x00, 0x04, 0x00, 0x00, 0xFF ]),
 					});
@@ -40,7 +40,7 @@ function parse_304(data) {
 				// Send message to NBT_HU to reset input switch
 				if (status.egs.gear === 'reverse') {
 					bus.data.send({
-						bus  : config.nbt.can_intf,
+						bus  : config.kombi.can_intf,
 						id   : 0x6F1,
 						data : Buffer.from([ 0x63, 0x21, 0x00, 0x00, 0x00, 0x00, 0x01, 0xFF ]),
 					});
