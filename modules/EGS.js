@@ -3,9 +3,15 @@ function parse_304(data) {
 
 	switch (data.msg[0]) {
 		case 0xC2 : gear = 'reverse'; break;
-		case 0xC7 : gear = 'drive';   break;
+		case 0xC3 : gear = 'reverse'; break;
+
+		case 0xC1 : gear = 'drive'; break;
+		case 0xC7 : gear = 'drive'; break;
+
 		case 0xD1 : gear = 'neutral'; break;
-		case 0xE3 : gear = 'park';    break;
+
+		case 0xE1 : gear = 'park'; break;
+		case 0xE3 : gear = 'park'; break;
 
 		default : {
 			gear = 'unknown';
