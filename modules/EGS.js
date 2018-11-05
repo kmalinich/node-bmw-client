@@ -25,6 +25,8 @@ function parse_304(data) {
 				// If we're now in reverse, but weren't before,
 				// Send message to NBT_HU to switch input to reverse camera
 				if (status.egs.gear !== 'reverse') {
+					log.module('Switching NBT video to RFK');
+
 					bus.data.send({
 						bus  : config.nbt.can_intf,
 						id   : 0x6F1,
@@ -39,6 +41,8 @@ function parse_304(data) {
 				// If we're now NOT reverse, but were before,
 				// Send message to NBT_HU to reset input switch
 				if (status.egs.gear === 'reverse') {
+					log.module('Resetting NBT video input');
+
 					bus.data.send({
 						bus  : config.nbt.can_intf,
 						id   : 0x6F1,
