@@ -92,7 +92,6 @@ function load_modules(pass) {
 	// CID  = require('CID');
 	// CSU  = require('CSU');
 	// CVM  = require('CVM');
-	// EGS  = require('EGS');
 	// EHC  = require('EHC');
 	// EKM  = require('EKM');
 	// EKP  = require('EKP');
@@ -127,6 +126,7 @@ function load_modules(pass) {
 	CAS   = require('CAS');
 	CON   = require('CON');
 	DSC   = require('DSC');
+	EGS   = require('EGS');
 	FEM   = require('FEM');
 	KOMBI = require('KOMBI');
 	NBT   = require('NBT');
