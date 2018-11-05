@@ -5,7 +5,8 @@ function parse_304(data) {
 		case 0xC2 : gear = 'reverse'; break;
 		case 0xC3 : gear = 'reverse'; break;
 
-		case 0xC1 : gear = 'drive'; break;
+		case 0xC1 : gear = 'shifting'; break;
+
 		case 0xC7 : gear = 'drive'; break;
 
 		case 0xD1 : gear = 'neutral'; break;
