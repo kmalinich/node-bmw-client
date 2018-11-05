@@ -30,8 +30,16 @@ function parse_304(data) {
 					bus.data.send({
 						bus  : config.nbt.can_intf,
 						id   : 0x6F1,
-						data : Buffer.from([ 0x63, 0x21, 0x00, 0x00, 0x04, 0x00, 0x01, 0xFF ]),
+						data : Buffer.from([ 0x63, 0x10, 0x0B, 0x31, 0x01, 0xA0, 0x1C, 0x00 ]),
 					});
+
+					setTimeout(() => {
+						bus.data.send({
+							bus  : config.nbt.can_intf,
+							id   : 0x6F1,
+							data : Buffer.from([ 0x63, 0x21, 0x00, 0x00, 0x04, 0x00, 0x01, 0xFF ]),
+						});
+					}, 100);
 				}
 
 				break;
@@ -46,8 +54,16 @@ function parse_304(data) {
 					bus.data.send({
 						bus  : config.nbt.can_intf,
 						id   : 0x6F1,
-						data : Buffer.from([ 0x63, 0x21, 0x00, 0x00, 0x01, 0x00, 0x01, 0xFF ]),
+						data : Buffer.from([ 0x63, 0x10, 0x0B, 0x31, 0x01, 0xA0, 0x1C, 0x00 ]),
 					});
+
+					setTimeout(() => {
+						bus.data.send({
+							bus  : config.nbt.can_intf,
+							id   : 0x6F1,
+							data : Buffer.from([ 0x63, 0x21, 0x00, 0x00, 0x01, 0x00, 0x01, 0xFF ]),
+						});
+					}, 100);
 				}
 			}
 		}
