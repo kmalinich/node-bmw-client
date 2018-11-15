@@ -393,16 +393,16 @@ function decode(data) {
 			update.status('lcm.io.12', data.msg[12]);
 			update.status('lcm.io.13', data.msg[13]);
 			update.status('lcm.io.14', data.msg[14]);
-			update.status('lcm.io.15', data.msg[15]);
-			update.status('lcm.io.16', data.msg[16]);
+			update.status('lcm.io.15', data.msg[15]); // Voltage: Potentiometer, dimmer
+			update.status('lcm.io.16', data.msg[16]); // Voltage: Potentiometer, LWR
 			update.status('lcm.io.17', data.msg[17]);
 			update.status('lcm.io.18', data.msg[18]); // Changes while running (autolevel?)
-			update.status('lcm.io.19', data.msg[19]); // Changes while running (autolevel?)
+			update.status('lcm.io.19', data.msg[19]); // Changes while running (autolevel?), or Voltage, photo cell
 			update.status('lcm.io.20', data.msg[20]);
 			update.status('lcm.io.21', data.msg[21]); // Changes while running (autolevel?)
 			update.status('lcm.io.22', data.msg[22]);
-			update.status('lcm.io.23', data.msg[23]);
-			update.status('lcm.io.24', data.msg[24]);
+			update.status('lcm.io.23', data.msg[23]); // Voltage: LWR sensor, front
+			update.status('lcm.io.24', data.msg[24]); // Voltage: LWR sensor, rear
 			update.status('lcm.io.25', data.msg[25]);
 			update.status('lcm.io.26', data.msg[26]);
 			update.status('lcm.io.27', data.msg[27]);
@@ -414,9 +414,17 @@ function decode(data) {
 			// Decode values
 			update.status('lcm.dimmer.value_2', data.msg[15]);
 
-			update.status('lcm.voltage.terminal_30',        parseFloat((data.msg[9] * 0.0708).toFixed(2)));
-			update.status('lcm.voltage.flash_to_pass',      parseFloat(data.msg[29] / 51));
-			update.status('lcm.voltage.turn_signal_switch', parseFloat(data.msg[30] / 51));
+			update.status('lcm.voltage.pot.dimmer', parseFloat((data.msg[15] * 5) / 255));
+			update.status('lcm.voltage.pot.lwr',    parseFloat((data.msg[16] * 5) / 255));
+
+			update.status('lcm.voltage.lwr.front', parseFloat((data.msg[23] * 5) / 255));
+			update.status('lcm.voltage.lwr.rear',  parseFloat((data.msg[24] * 5) / 255));
+
+			update.status('lcm.voltage.photo_cell',         parseFloat((data.msg[19] * 5) / 255));
+			update.status('lcm.voltage.flash_to_pass',      parseFloat((data.msg[29] * 5) / 255));
+			update.status('lcm.voltage.turn_signal_switch', parseFloat((data.msg[30] * 5) / 255));
+
+			update.status('lcm.voltage.terminal_30', parseFloat(((data.msg[9] * 18) / 255).toFixed(2)));
 
 			// Decode bitmasks
 			let masks = {
@@ -464,29 +472,30 @@ function decode(data) {
 			update.status('lcm.output.highbeam.front_right', masks.m4.b5);
 			update.status('lcm.output.highbeam.front_left',  masks.m4.b6);
 
-			update.status('lcm.output.standing.front_left',      masks.m5.b0);
-			update.status('lcm.output.standing.inner_rear_left', masks.m5.b1);
 			update.status('lcm.output.fog.front_left',           masks.m5.b2);
-			update.status('lcm.output.reverse.rear_left',        masks.m5.b3);
+			update.status('lcm.output.fog.front_right',          masks.m5.b6);
+			update.status('lcm.output.fog.rear_right',           masks.m5.b7);
+			update.status('lcm.output.fog.rear_trailer',         masks.m8.b4);
 			update.status('lcm.output.lowbeam.front_left',       masks.m5.b4);
 			update.status('lcm.output.lowbeam.front_right',      masks.m5.b5);
-			update.status('lcm.output.fog.front_right',          masks.m5.b6);
-			update.status('lcm.output.fog.rear_trailer',         masks.m5.b7);
+			update.status('lcm.output.reverse.rear_left',        masks.m5.b3);
+			update.status('lcm.output.standing.front_left',      masks.m5.b0);
+			update.status('lcm.output.standing.inner_rear_left', masks.m5.b1);
 
-			update.status('lcm.output.license.rear_right',   masks.m6.b2);
-			update.status('lcm.output.standing.rear_left',   masks.m6.b3);
 			update.status('lcm.output.brake.rear_middle',    masks.m6.b4);
+			update.status('lcm.output.license.rear_right',   masks.m6.b2);
 			update.status('lcm.output.standing.front_right', masks.m6.b5);
+			update.status('lcm.output.standing.rear_left',   masks.m6.b3);
 			update.status('lcm.output.turn.front_right',     masks.m6.b6);
 			update.status('lcm.output.turn.rear_left',       masks.m6.b7);
 
-			update.status('lcm.output.turn.rear_right',           masks.m7.b1);
 			update.status('lcm.output.fog.rear_left',             masks.m7.b2);
+			update.status('lcm.output.reverse.rear_right',        masks.m7.b7);
 			update.status('lcm.output.standing.inner_rear_right', masks.m7.b3);
 			update.status('lcm.output.standing.rear_right',       masks.m7.b4);
-			update.status('lcm.output.turn.side_left',            masks.m7.b5);
 			update.status('lcm.output.turn.front_left',           masks.m7.b6);
-			update.status('lcm.output.reverse.rear_right',        masks.m7.b7);
+			update.status('lcm.output.turn.rear_right',           masks.m7.b1);
+			update.status('lcm.output.turn.side_left',            masks.m7.b5);
 
 			update.status('lcm.output.led.switch_hazard',    masks.m8.b2);
 			update.status('lcm.output.led.switch_light',     masks.m8.b3);
@@ -517,7 +526,7 @@ function io_encode(object) {
 			b0 : object.clamp_30a,
 			b1 : object.input_fire_extinguisher,
 			b2 : object.input_preheating_fuel_injection,
-			b3 : false,
+			b3 : false, // VGLESP
 			b4 : object.input_carb,
 			b5 : false,
 			b6 : object.clamp_r,
@@ -576,7 +585,7 @@ function io_encode(object) {
 			b4 : object.output_lowbeam_front_left,
 			b5 : object.output_lowbeam_front_right,
 			b6 : object.output_fog_front_right,
-			b7 : object.output_fog_rear_trailer,
+			b7 : object.output_fog_rear_right,
 		}),
 
 		b6 : bitmask.create({
@@ -603,10 +612,10 @@ function io_encode(object) {
 
 		b8 : bitmask.create({
 			b0 : object.mode_failsafe,
-			b1 : false,
+			b1 : false, // KL58G on
 			b2 : object.output_led_switch_hazard,
 			b3 : object.output_led_switch_light,
-			b4 : false,
+			b4 : object.output_fog_rear_trailer,
 			b5 : object.output_reverse_rear_trailer,
 			b6 : object.mode_sleep,
 			b7 : false,
