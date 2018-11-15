@@ -538,7 +538,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Render custom HUD string
-	hud_render(hud_render_cb = null) {
+	hud_render(override = false, hud_render_cb = null) {
 		if (config.chassis.model !== 'e39') return;
 
 		// Determine Moment.js format string
@@ -608,7 +608,7 @@ class IKE extends EventEmitter {
 		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
 
 		// If the newly rendered string matches the existing string, bail out
-		if (status.hud.string === hud_string_rendered) {
+		if (override === false && status.hud.string === hud_string_rendered) {
 			// log.module('HUD string is already correct');
 			return;
 		}
@@ -625,11 +625,11 @@ class IKE extends EventEmitter {
 
 		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
 		if (override === false && !this.ok2hud()) {
-			this.hud_render();
+			this.hud_render(override);
 			return;
 		}
 
-		this.hud_render(() => {
+		this.hud_render(override, () => {
 			// Send text to IKE and update status.hud.refresh_last value
 			this.text(status.hud.string, () => {
 				// Bring up last HUD refresh time
