@@ -842,7 +842,7 @@ class IKE extends EventEmitter {
 		LCM.request('io-status');
 
 		// Refresh HUD display
-		this.hud_refresh();
+		this.hud_refresh(true);
 
 		if (status.vehicle.ignition_level !== 0) {
 			if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
@@ -851,7 +851,7 @@ class IKE extends EventEmitter {
 			let self = this;
 			this.timeout_data_refresh = setTimeout(() => {
 				self.data_refresh();
-			}, 15000);
+			}, 14000);
 		}
 	}
 
