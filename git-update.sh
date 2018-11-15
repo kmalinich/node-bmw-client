@@ -8,7 +8,7 @@ _out() {
 }
 
 _smf() {
-	git submodule foreach --recursive
+	git submodule foreach --recursive git ${*}
 }
 
 _out "Repo fetch"
@@ -24,7 +24,7 @@ _out "Submodule checkout master"
 _smf checkout master
 
 _out "Submodule pull"
-_smf pull --prune
+_smf pull
 
 _out "Submodule status"
 git submodule
