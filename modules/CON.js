@@ -20,18 +20,18 @@ function button_check(button) {
 	let rotation_gap = time_now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
-		update.status('con.rotation.horizontal', false);
-		update.status('con.rotation.volume',     false);
+		update.status('con.rotation.horizontal', false, false);
+		update.status('con.rotation.volume',     false, false);
 	}
 
-	update.status('con.last.event', 'button');
+	update.status('con.last.event', 'button', false);
 
 	switch (button.action) {
 		case 'hold' : {
 			switch (button.button) {
 				case 'in' : {
 					// To use holding the knob button in to toggle RPi display on/off
-					update.status('hdmi.rpi.power_override', true);
+					update.status('hdmi.rpi.power_override', true, false);
 					hdmi_rpi.command('toggle');
 					break;
 				}
@@ -50,27 +50,14 @@ function button_check(button) {
 				case 'depress' : {
 					switch (status.con.last.button.button) {
 						case 'tel' : {
-							// To use the TEL button as a toggle for rotation = Kodi volume control
-							// if (update.status('con.rotation.volume', true)) {
-							// 	kodi.notify('CON', 'Rotation mode: volume');
-							// 	update.status('con.rotation.last_msg', time_now(), false);
-							// }
-
 							// To use the TEL button as Kodi play/pause
 							kodi.command('toggle');
-
 							break;
 						}
 
 						case 'nav' : {
-							// To use the NAV button as a toggle for left<->right or up<->down rotation
-							// if (update.status('con.rotation.horizontal', true)) {
-							// 	kodi.notify('CON', 'Rotation mode: horizontal');
-							// 	update.status('con.rotation.last_msg', time_now(), false);
-							// }
-
 							// To use the NAV button as a toggle for police lights
-							// LCM.police((status.lcm.police_lights.on === false));
+							LCM.police((status.lcm.police_lights.on === false));
 							break;
 						}
 
@@ -86,8 +73,8 @@ function button_check(button) {
 	}
 
 	// Store buttonpress data in 'last' object
-	update.status('con.last.button.action', button.action);
-	update.status('con.last.button.button', button.button);
+	update.status('con.last.button.action', button.action, false);
+	update.status('con.last.button.button', button.button, false);
 }
 
 // CON ACK to rotational initialization message
@@ -320,19 +307,19 @@ function decode_rotation(data) {
 
 	log.module('Rotation: ' + direction + ' ' + change_abs + ' notches');
 
-	update.status('con.rotation.direction', direction);
+	update.status('con.rotation.direction', direction, false);
 
 	// Update data in global status object
-	update.status('con.rotation.absolute', data.msg[2], false);
-	update.status('con.rotation.relative', data.msg[3], false);
+	update.status('con.rotation.absolute', data.msg[2]);
+	update.status('con.rotation.relative', data.msg[3]);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
 	let rotation_gap = time_now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
-		update.status('con.rotation.horizontal', false);
-		update.status('con.rotation.volume',     false);
+		update.status('con.rotation.horizontal', false, false);
+		update.status('con.rotation.volume',     false, false);
 	}
 
 	// Create quick bitmask to ease switch statement processing
@@ -345,14 +332,14 @@ function decode_rotation(data) {
 
 	switch (mask_mode) {
 		case 0x01 : { // Rotation mode: horizontal
-			update.status('con.last.event', 'rotation');
+			update.status('con.last.event', 'rotation', false);
 
 			for (let i = 0; i < change_abs; i++) kodi.input(status.con.rotation.direction);
 			break;
 		}
 
 		case 0x02 : { // Rotation mode: volume
-			update.status('con.last.event', 'rotation');
+			update.status('con.last.event', 'rotation', false);
 
 			switch (status.con.rotation.direction) {
 				case 'left'  : for (let i = 0; i < change_abs; i++) kodi.volume('down'); break;
@@ -364,8 +351,8 @@ function decode_rotation(data) {
 		case 0x03 : { // Horizontal AND volume mode - error
 			log.module('Error: Horizontal and volume rotation modes simultaneously active, resetting');
 
-			update.status('con.rotation.horizontal', false);
-			update.status('con.rotation.volume',     false);
+			update.status('con.rotation.horizontal', false, false);
+			update.status('con.rotation.volume',     false, false);
 			break;
 		}
 
@@ -377,7 +364,7 @@ function decode_rotation(data) {
 		}
 	}
 
-	update.status('con.rotation.last_msg', time_now(), false);
+	update.status('con.rotation.last_msg', time_now());
 
 	return data;
 }
@@ -428,8 +415,8 @@ function decode_touchpad(data) {
 	let touch_count = decode_touch_count(data.msg[4]);
 
 	// Update status variables
-	if (update.status('con.touch.count', touch_count)) {
-		update.status('con.last.event', 'touch');
+	if (update.status('con.touch.count', touch_count, false)) {
+		update.status('con.last.event', 'touch', false);
 	}
 
 	// Bounce if more than 1 digit on the touchpad
@@ -440,8 +427,8 @@ function decode_touchpad(data) {
 	data.value += ' X: ' + x + ' Y: ' + y;
 
 	// Update status variables
-	// update.status('con.touch.x', x, false);
-	// update.status('con.touch.y', y, false);
+	// update.status('con.touch.x', x);
+	// update.status('con.touch.y', y);
 
 	// y-axis value maxes out at 30 - so we'll do a bit of multiplication
 	// let volume_level = Math.floor(y * (3 + (1 / 3)));
@@ -453,7 +440,7 @@ function decode_touchpad(data) {
 
 function init_listeners() {
 	// Stamp last message time as now
-	update.status('con.rotation.last_msg', time_now(), false);
+	update.status('con.rotation.last_msg', time_now());
 
 	// Perform commands on power lib active event
 	update.on('status.power.active', () => {

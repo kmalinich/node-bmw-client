@@ -25,7 +25,7 @@ function parse_control_dsp(data) {
 
 					// Not really the right place to set this var
 					// It should be in the status from DSP itself
-					update.status('dsp.m_audio', false);
+					update.status('dsp.m_audio', false, false);
 
 					break;
 				}
@@ -40,7 +40,7 @@ function parse_control_dsp(data) {
 
 					// Not really the right place to set this var
 					// It should be in the status from DSP itself
-					update.status('dsp.m_audio', true);
+					update.status('dsp.m_audio', true, false);
 
 					break;
 				}
@@ -169,11 +169,11 @@ function parse_control_lcd(data) {
 		default   : parse_m1.source_name = 'unknown \'' + Buffer.from([ data.msg[1] ]) + '\'';
 	}
 
-	update.status('gt.lcd.on',                 parse_m1.on);
-	update.status('gt.lcd.source.gt',          parse_m1.source.gt);
-	update.status('gt.lcd.source.source.navj', parse_m1.source.navj);
-	update.status('gt.lcd.source.tv',          parse_m1.source.tv);
-	update.status('gt.lcd.source_name',        parse_m1.source_name);
+	update.status('gt.lcd.on',                 parse_m1.on,          false);
+	update.status('gt.lcd.source.gt',          parse_m1.source.gt,   false);
+	update.status('gt.lcd.source.source.navj', parse_m1.source.navj, false);
+	update.status('gt.lcd.source.tv',          parse_m1.source.tv,   false);
+	update.status('gt.lcd.source_name',        parse_m1.source_name, false);
 
 	// Only if data.msg[2] is populated
 	if (data.msg.length >= 3) {
@@ -185,9 +185,9 @@ function parse_control_lcd(data) {
 		};
 
 		// Update status object
-		update.status('gt.lcd.aspect_ratio', parse_m2.aspect_ratio);
-		update.status('gt.lcd.refresh_rate', parse_m2.refresh_rate);
-		update.status('gt.lcd.zoom',         parse_m2.zoom);
+		update.status('gt.lcd.aspect_ratio', parse_m2.aspect_ratio, false);
+		update.status('gt.lcd.refresh_rate', parse_m2.refresh_rate, false);
+		update.status('gt.lcd.zoom',         parse_m2.zoom,         false);
 	}
 
 	data.value += 'status: ' + status.gt.lcd.on + ', aspect ratio: ' + status.gt.lcd.aspect_ratio + ', refresh rate: ' + status.gt.lcd.refresh_rate + ', zoom: ' + status.gt.lcd.zoom + ', source: ' + status.gt.lcd.source_name;

@@ -94,7 +94,7 @@ function decode_button(data) {
 			switch (button) {
 				case 'mode' : {
 					// To use depressing the mode button in to toggle RPi display on/off
-					update.status('hdmi.rpi.power_override', true);
+					update.status('hdmi.rpi.power_override', true, false);
 					hdmi_rpi.command('toggle');
 
 					break;
@@ -144,7 +144,7 @@ function decode_button(data) {
 
 				case 'depressmode' : {
 					// To use holding the phone button in to toggle RPi display on/off
-					update.status('hdmi.rpi.power_override', true);
+					update.status('hdmi.rpi.power_override', true, false);
 					hdmi_rpi.command('toggle');
 
 					break;
@@ -172,8 +172,8 @@ function decode_button(data) {
 	}
 
 	// Update status object with the new data
-	update.status('bmbt.last.action', action);
-	update.status('bmbt.last.button', button);
+	update.status('bmbt.last.action', action, false);
+	update.status('bmbt.last.button', button, false);
 
 	return data;
 }
@@ -241,14 +241,14 @@ function status_loop(action) {
 
 	switch (action) {
 		case false : {
-			update.status('rad.source_name', 'off');
+			update.status('rad.source_name', 'off', false);
 
-			update.status('dsp.reset',  true);
-			update.status('dsp.ready',  false);
-			update.status('dspc.reset', true);
-			update.status('dspc.ready', false);
-			update.status('rad.reset',  true);
-			update.status('rad.ready',  false);
+			update.status('dsp.reset',  true,  false);
+			update.status('dsp.ready',  false, false);
+			update.status('dspc.reset', true,  false);
+			update.status('dspc.ready', false, false);
+			update.status('rad.reset',  true,  false);
+			update.status('rad.ready',  false, false);
 
 			// Set status variable
 			BMBT.status_status_loop = false;

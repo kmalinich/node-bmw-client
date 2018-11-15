@@ -25,11 +25,11 @@ function parse_out(data) {
 				default   : parse_m1.source_name = 'unknown \'' + Buffer.from([ data.msg[1] ]) + '\'';
 			}
 
-			update.status('vid.lcd.on',                 parse_m1.on);
-			update.status('vid.lcd.source.gt',          parse_m1.source.gt);
-			update.status('vid.lcd.source.source.navj', parse_m1.source.navj);
-			update.status('vid.lcd.source.tv',          parse_m1.source.tv);
-			update.status('vid.lcd.source_name',        parse_m1.source_name);
+			update.status('vid.lcd.on',                 parse_m1.on,          false);
+			update.status('vid.lcd.source.gt',          parse_m1.source.gt,   false);
+			update.status('vid.lcd.source.source.navj', parse_m1.source.navj, false);
+			update.status('vid.lcd.source.tv',          parse_m1.source.tv,   false);
+			update.status('vid.lcd.source_name',        parse_m1.source_name, false);
 
 			// Only if data.msg[2] is populated
 			if (data.msg.length >= 3) {
@@ -41,9 +41,9 @@ function parse_out(data) {
 				};
 
 				// Update status object
-				update.status('vid.lcd.aspect_ratio', parse_m2.aspect_ratio);
-				update.status('vid.lcd.refresh_rate', parse_m2.refresh_rate);
-				update.status('vid.lcd.zoom',         parse_m2.zoom);
+				update.status('vid.lcd.aspect_ratio', parse_m2.aspect_ratio, false);
+				update.status('vid.lcd.refresh_rate', parse_m2.refresh_rate, false);
+				update.status('vid.lcd.zoom',         parse_m2.zoom,         false);
 			}
 
 			data.value += 'status: ' + status.vid.lcd.on + ', aspect ratio: ' + status.vid.lcd.aspect_ratio + ', refresh rate: ' + status.vid.lcd.refresh_rate + ', zoom: ' + status.vid.lcd.zoom + ', source: ' + status.vid.lcd.source_name;

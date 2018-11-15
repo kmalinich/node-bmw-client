@@ -35,21 +35,21 @@ class EWS extends EventEmitter {
 		switch (data.msg[1]) {
 			case 0x00 : {
 				data.value += 'no key';
-				update.status('immobilizer.key_present', false);
+				update.status('immobilizer.key_present', false, false);
 				break;
 			}
 
 			case 0x01 : {
 				data.value += 'immobilisation deactivated';
-				// update.status('immobilizer.key_present', null);
-				update.status('immobilizer.immobilized', false);
+				// update.status('immobilizer.key_present', null, false);
+				update.status('immobilizer.immobilized', false, false);
 				break;
 			}
 
 			case 0x04 : {
 				data.value += 'valid key';
-				update.status('immobilizer.key_present', true);
-				update.status('immobilizer.immobilized', false);
+				update.status('immobilizer.key_present', true,  false);
+				update.status('immobilizer.immobilized', false, false);
 				break;
 			}
 
@@ -61,12 +61,12 @@ class EWS extends EventEmitter {
 		// Key number 255/0xFF = no key
 		switch (data.msg[2]) {
 			case 0xFF : {
-				update.status('immobilizer.key_number', null);
+				update.status('immobilizer.key_number', null, false);
 				break;
 			}
 
 			default : {
-				update.status('immobilizer.key_number', data.msg[2]);
+				update.status('immobilizer.key_number', data.msg[2], false);
 			}
 		}
 

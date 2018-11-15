@@ -9,7 +9,7 @@ function decode_ignition(data) {
 	let previous_level = status.vehicle.ignition_level;
 
 	// Set ignition status value
-	update.status('vehicle.ignition_level', data.msg[0]);
+	update.status('vehicle.ignition_level', data.msg[0], false);
 
 	switch (data.msg[0]) {
 		case 0x00 : new_level_name = 'off'; break;
@@ -23,7 +23,7 @@ function decode_ignition(data) {
 		default : new_level_name = 'unknown';
 	}
 
-	update.status('vehicle.ignition', new_level_name);
+	update.status('vehicle.ignition', new_level_name, false);
 
 	if (data.msg[0] > previous_level) { // Ignition going up
 		switch (data.msg[0]) { // Evaluate new ignition state
@@ -140,23 +140,23 @@ function decode_status_open(data) {
 	data.value   = 'door status';
 
 	// Set status from message by decoding bitmask
-	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x01));
-	update.status('doors.front_right', bitmask.test(data.msg[1], 0x04));
-	update.status('doors.hood',        bitmask.test(data.msg[2], 0x04));
-	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x10));
-	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x40));
-	update.status('doors.trunk',       bitmask.test(data.msg[2], 0x01));
+	update.status('doors.front_left',  bitmask.test(data.msg[1], 0x01), false);
+	update.status('doors.front_right', bitmask.test(data.msg[1], 0x04), false);
+	update.status('doors.hood',        bitmask.test(data.msg[2], 0x04), false);
+	update.status('doors.rear_left',   bitmask.test(data.msg[1], 0x10), false);
+	update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x40), false);
+	update.status('doors.trunk',       bitmask.test(data.msg[2], 0x01), false);
 
 	// Set status.doors.closed if all doors are closed
 	let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
-	update.status('doors.closed', update_closed_doors);
+	update.status('doors.closed', update_closed_doors, false);
 
 	// Set status.doors.open if any doors are open
-	update.status('doors.open', (update_closed_doors === false));
+	update.status('doors.open', (update_closed_doors === false), false);
 
 	// Set status.doors.sealed if all doors and flaps are closed
 	let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
-	update.status('doors.sealed', update_sealed_doors);
+	update.status('doors.sealed', update_sealed_doors, false);
 
 	return data;
 }

@@ -33,12 +33,12 @@ function parse_out(data) {
 				},
 			};
 
-			update.status('tel.led.green.solid',  led.green.solid);
-			update.status('tel.led.green.flash',  led.green.flash);
-			update.status('tel.led.red.solid',    led.red.solid);
-			update.status('tel.led.red.flash',    led.red.flash);
-			update.status('tel.led.yellow.solid', led.yellow.solid);
-			update.status('tel.led.yellow.flash', led.yellow.flash);
+			update.status('tel.led.green.solid',  led.green.solid,  false);
+			update.status('tel.led.green.flash',  led.green.flash,  false);
+			update.status('tel.led.red.solid',    led.red.solid,    false);
+			update.status('tel.led.red.flash',    led.red.flash,    false);
+			update.status('tel.led.yellow.solid', led.yellow.solid, false);
+			update.status('tel.led.yellow.flash', led.yellow.flash, false);
 			break;
 		}
 

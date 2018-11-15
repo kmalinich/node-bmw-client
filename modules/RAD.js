@@ -183,13 +183,13 @@ function decode_audio_control(data) {
 		case 'source' : {
 			switch (cmd_value) {
 				case 0x00 :
-				case 0xA0 : update.status('rad.source_name', 'cd'); break;
+				case 0xA0 : update.status('rad.source_name', 'cd', false); break;
 
 				case 0x01 :
-				case 0xA1 : update.status('rad.source_name', 'tuner/tape'); break;
+				case 0xA1 : update.status('rad.source_name', 'tuner/tape', false); break;
 
 				case 0x0F :
-				case 0xAF : update.status('rad.source_name', 'off');
+				case 0xAF : update.status('rad.source_name', 'off', false);
 			}
 
 			// Technically not legit
@@ -204,7 +204,7 @@ function decode_audio_control(data) {
 	}
 
 	// Update status var with interpreted value
-	update.status('rad.' + cmd_type, cmd_value);
+	update.status('rad.' + cmd_type, cmd_value, false);
 
 	return data;
 }
@@ -345,19 +345,19 @@ function parse_out(data) {
 					data.value += 'EQ button: M-Audio off';
 					// Not really the right place to set this var
 					// It should be in the status from DSP itself
-					update.status('dsp.m_audio', false);
+					update.status('dsp.m_audio', false, false);
 					break;
 				}
 
 				case 0x91 : {
 					data.value += 'EQ button: M-Audio on';
-					update.status('dsp.m_audio', true);
+					update.status('dsp.m_audio', true, false);
 					break;
 				}
 
 				case 0x95 : {
 					data.value += 'memory set';
-					update.status('dsp.m_audio', false);
+					update.status('dsp.m_audio', false, false);
 					break;
 				}
 
@@ -613,8 +613,8 @@ function audio_power(power_state) {
 			audio_control(false);
 			cassette_control(false);
 
-			update.status('dsp.ready', false);
-			update.status('dsp.reset', true);
+			update.status('dsp.ready', false, false);
+			update.status('dsp.reset', true,  false);
 
 			break;
 		}

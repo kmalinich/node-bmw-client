@@ -1,3 +1,5 @@
+/* eslint no-unused-vars : 0 */
+
 const convert = require('node-unit-conversion');
 
 
@@ -111,7 +113,7 @@ function parse_153(data) {
 	};
 
 	// update.status('vehicle.brake',                  parse.vehicle.brake);
-	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active);
+	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active, false);
 	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);
 	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
 }

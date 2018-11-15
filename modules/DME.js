@@ -1,6 +1,24 @@
-/* eslint key-spacing : 0 */
+/* eslint key-spacing    : 0 */
+/* eslint no-unused-vars : 0 */
 
 const convert = require('node-unit-conversion');
+
+
+// Process to N decimal places
+function ceil2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.ceil(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+function floor2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.floor(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+function round2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.round(value * multiplier + Number.EPSILON) / multiplier;
+}
 
 
 // This is dangerous and awesome if you can see what it does
@@ -52,32 +70,32 @@ function parse_316(data) {
 		rpm : ((data.msg[3] << 8) + data.msg[2]) / 6.4,
 
 		key : {
-			off       : mask_0.b8,
+			off       :  mask_0.b8,
 			accessory : !mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
-			run       : mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
-			start     : mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && mask_0.b4,
+			run       :  mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
+			start     :  mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 &&  mask_0.b4,
 		},
 
 		torque : {
-			after_interventions  : parseFloat((data.msg[1] / 2.54).toFixed(1)),
-			before_interventions : parseFloat((data.msg[4] / 2.54).toFixed(1)),
-			loss                 : parseFloat((data.msg[5] / 2.54).toFixed(1)),
-			output               : parseFloat((data.msg[7] / 2.54).toFixed(1)),
+			after_interventions  : round2(data.msg[1] / 2.55),
+			before_interventions : round2(data.msg[4] / 2.55),
+			loss                 : round2(data.msg[5] / 2.55),
+			output               : round2(data.msg[7] / 2.55),
 		},
 	};
 
-	update.status('engine.ac_clutch', parse.ac_clutch);
+	update.status('engine.ac_clutch', parse.ac_clutch, false);
 
-	update.status('vehicle.key.off',       parse.key.off);
-	update.status('vehicle.key.accessory', parse.key.accessory);
-	update.status('vehicle.key.run',       parse.key.run);
-	update.status('vehicle.key.start',     parse.key.start);
+	update.status('vehicle.key.off',       parse.key.off,       false);
+	update.status('vehicle.key.accessory', parse.key.accessory, false);
+	update.status('vehicle.key.run',       parse.key.run,       false);
+	update.status('vehicle.key.start',     parse.key.start,     false);
 
 	// horsepower = (torque * RPM)/5252
-	update.status('engine.torque.after_interventions',  parse.torque.after_interventions,  false);
-	update.status('engine.torque.before_interventions', parse.torque.before_interventions, false);
-	update.status('engine.torque.loss',                 parse.torque.loss,                 false);
-	update.status('engine.torque.output',               parse.torque.output,               false);
+	update.status('engine.torque.after_interventions',  parse.torque.after_interventions);
+	update.status('engine.torque.before_interventions', parse.torque.before_interventions);
+	update.status('engine.torque.loss',                 parse.torque.loss);
+	update.status('engine.torque.output',               parse.torque.output);
 }
 
 function parse_329(data) {
@@ -159,85 +177,85 @@ function parse_329(data) {
 	};
 
 	// Calculate mmhg and psi atmospheric pressure values
-	parse.engine.atmospheric_pressure.mmhg = parseFloat((parse.engine.atmospheric_pressure.mbar * 0.75006157818041).toFixed(2));
-	parse.engine.atmospheric_pressure.psi  = parseFloat((parse.engine.atmospheric_pressure.mbar * 0.01450377380072).toFixed(2));
+	parse.engine.atmospheric_pressure.mmhg = round2(parse.engine.atmospheric_pressure.mbar * 0.75006157818041);
+	parse.engine.atmospheric_pressure.psi  = round2(parse.engine.atmospheric_pressure.mbar * 0.01450377380072);
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = Math.floor(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 
 	// Update status object
-	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar, false);
-	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg, false);
-	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi,  false);
+	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar);
+	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
+	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi);
 
-	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus);
-	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff);
-	update.status('vehicle.cruise.button.plus',   parse.vehicle.cruise.button.plus);
-	update.status('vehicle.cruise.button.resume', parse.vehicle.cruise.button.resume);
-	update.status('vehicle.cruise.button.unk1',   parse.vehicle.cruise.button.unk1);
+	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus,  false);
+	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff,  false);
+	update.status('vehicle.cruise.button.plus',   parse.vehicle.cruise.button.plus,   false);
+	update.status('vehicle.cruise.button.resume', parse.vehicle.cruise.button.resume, false);
+	update.status('vehicle.cruise.button.unk1',   parse.vehicle.cruise.button.unk1,   false);
 
-	update.status('vehicle.cruise.status.activating', parse.vehicle.cruise.status.activating);
-	update.status('vehicle.cruise.status.active',     parse.vehicle.cruise.status.active);
-	update.status('vehicle.cruise.status.resume',     parse.vehicle.cruise.status.resume);
-	update.status('vehicle.cruise.status.unk1',       parse.vehicle.cruise.status.unk1);
+	update.status('vehicle.cruise.status.activating', parse.vehicle.cruise.status.activating, false);
+	update.status('vehicle.cruise.status.active',     parse.vehicle.cruise.status.active,     false);
+	update.status('vehicle.cruise.status.resume',     parse.vehicle.cruise.status.resume,     false);
+	update.status('vehicle.cruise.status.unk1',       parse.vehicle.cruise.status.unk1,       false);
 
 	// update.status('engine.throttle.cruise', parse.engine.throttle.cruise);
 	// update.status('engine.throttle.pedal',  parse.engine.throttle.pedal);
 
-	// update.status('vehicle.sport.active', parse.vehicle.sport.active);
+	// update.status('vehicle.sport.active', parse.vehicle.sport.active, false);
 
-	update.status('temperature.coolant.c', parse.temperature.coolant.c);
-	update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
+	update.status('temperature.coolant.c', parse.temperature.coolant.c, false);
+	update.status('temperature.coolant.f', parse.temperature.coolant.f);
 
-	update.status('vehicle.brake',  parse.vehicle.brake);
+	update.status('vehicle.brake',  parse.vehicle.brake, false);
 
-	if (update.status('vehicle.clutch', parse.vehicle.clutch)) {
+	if (update.status('vehicle.clutch', parse.vehicle.clutch, false)) {
 		if (parse.vehicle.clutch === false && status.engine.running === true) {
-			update.status('vehicle.clutch_count', parseFloat((status.vehicle.clutch_count + 1)));
+			update.status('vehicle.clutch_count', parseFloat((status.vehicle.clutch_count + 1)), false);
 		}
 	}
 }
 
+// MS45/MSD80/MSV80 only
 function parse_338(data) {
-	// B2
-	// 0 = Sport on (request by SMG transmission)
-	// 1 = Sport off
-	// 2 = Sport on
-	// 3 = Sport error
+	// Byte 2, bit 0 : Sport on (request by SMG transmission)
+	// Byte 2, bit 1 : Sport off
+	// Byte 2, bit 2 : Sport on
+	// Byte 2, bit 3 : Sport error
 
-	let parse = {
-		msg     : '0x338',
-		vehicle : {
-			sport : {
-				active : ((data.msg[2] === 0x00 || data.msg[2] === 0x02) && (data.msg[2] !== 0x01 && data.msg[2] !== 0x03)),
-				error  : data.msg[2] === 0x03,
-			},
-		},
-	};
+	// let parse = {
+	// 	msg     : '0x338',
+	// 	vehicle : {
+	// 		sport : {
+	// 			active : ((data.msg[2] === 0x00 || data.msg[2] === 0x02) && (data.msg[2] !== 0x01 && data.msg[2] !== 0x03)),
+	// 			error  : data.msg[2] === 0x03,
+	// 		},
+	// 	},
+	// };
 
-	// update.status('vehicle.sport.active', parse.vehicle.sport.active);
-	update.status('vehicle.sport.error',  parse.vehicle.sport.error);
+	// update.status('vehicle.sport.active', parse.vehicle.sport.active, false);
+	// update.status('vehicle.sport.error',  parse.vehicle.sport.error,  false);
 
 	return data;
 }
 
-// byte0, bit1 : Check engine
-// byte0, bit3 : Cruise
-// byte0, bit4 : EML
-// byte0, bit7 : Check gas cap
+// Byte 0, bit 1 : Check engine
+// Byte 0, bit 3 : Cruise
+// Byte 0, bit 4 : EML
+// Byte 0, bit 7 : Check gas cap
 //
-// byte3, bit0 : Oil level error, if motortype = S62
-// byte3, bit1 : Oil level warning
-// byte3, bit2 : Oil level error
-// byte3, bit3 : Overheat Light
-// byte3, bit4 : M3/M5 tachometer light
-// byte3, bit5 : M3/M5 tachometer light
-// byte3, bit6 : M3/M5 tachometer light
+// Byte 3, bit 0 : Oil level error, if motortype = S62
+// Byte 3, bit 1 : Oil level warning
+// Byte 3, bit 2 : Oil level error
+// Byte 3, bit 3 : Overheat Light
+// Byte 3, bit 4 : M3/M5 tachometer light
+// Byte 3, bit 5 : M3/M5 tachometer light
+// Byte 3, bit 6 : M3/M5 tachometer light
 //
-// byte4 : Oil temperature (ºC = X - 48)
-// byte5 : Charge light (0 = off, 1 = on; only used on some DMEs)
-// byte6 : CSL oil level (format unclear)
-// byte7 : Possibly MSS54 TPM trigger
+// Byte 4 : Oil temperature (ºC = X - 48)
+// Byte 5 : Charge light (0 = off, 1 = on; only used on some DMEs)
+// Byte 6 : CSL oil level (format unclear)
+// Byte 7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
 	let process_consumption = true;
 
@@ -274,20 +292,20 @@ function parse_545(data) {
 
 	if (process_consumption === true) {
 		DME.consumption_last = consumption_current;
-		update.status('fuel.consumption', parse.fuel.consumption, false);
+		update.status('fuel.consumption', parse.fuel.consumption);
 	}
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.oil.f = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
 
 	// Update status object
-	update.status('dme.status.check_engine',  parse.status.check_engine);
-	update.status('dme.status.check_gas_cap', parse.status.check_gas_cap);
-	update.status('dme.status.cruise',        parse.status.cruise);
-	update.status('dme.status.eml',           parse.status.eml);
+	update.status('dme.status.check_engine',  parse.status.check_engine,  false);
+	update.status('dme.status.check_gas_cap', parse.status.check_gas_cap, false);
+	update.status('dme.status.cruise',        parse.status.cruise,        false);
+	update.status('dme.status.eml',           parse.status.eml,           false);
 
-	update.status('temperature.oil.f', parse.temperature.oil.f, false);
-	update.status('temperature.oil.c', parse.temperature.oil.c);
+	update.status('temperature.oil.f', parse.temperature.oil.f);
+	update.status('temperature.oil.c', parse.temperature.oil.c, false);
 }
 
 
@@ -299,7 +317,7 @@ function parse_545(data) {
 //
 // Running clock = minutes since last time battery power was lost
 //
-// This is actually sent by IKE1
+// This is actually sent by IKE
 function parse_613(data) {
 	let parse = {
 		vehicle : {
@@ -311,6 +329,7 @@ function parse_613(data) {
 			running_clock : ((data.msg[4] << 8) + data.msg[3]),
 		},
 
+		// Looks bad, I should feel bad
 		fuel : {
 			level  : null,
 			liters : (data.msg[2] >= 0x80) && data.msg[2] - 0x80 || data.msg[2],
@@ -321,15 +340,15 @@ function parse_613(data) {
 	if (parse.fuel.level < 0)   parse.fuel.level = 0;
 	if (parse.fuel.level > 100) parse.fuel.level = 100;
 
-	update.status('fuel.level',  parse.fuel.level);
-	update.status('fuel.liters', parse.fuel.liters, false);
+	update.status('fuel.level',  parse.fuel.level, false);
+	update.status('fuel.liters', parse.fuel.liters);
 
 	parse.vehicle.odometer.mi = Math.floor(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
 
-	update.status('vehicle.odometer.km', parse.vehicle.odometer.km, false);
-	update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi);
+	update.status('vehicle.odometer.km', parse.vehicle.odometer.km);
+	update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi, false);
 
-	update.status('vehicle.running_clock', parse.vehicle.running_clock);
+	update.status('vehicle.running_clock', parse.vehicle.running_clock, false);
 }
 
 // ARBID: 0x615 sent from the instrument cluster
@@ -367,13 +386,13 @@ function parse_615(data) {
 	parse.temperature.exterior.f = Math.floor(parse.temperature.exterior.f);
 
 	// Update status object
-	update.status('engine.ac_request',    parse.engine.ac_request);
-	update.status('engine.aux_fan_speed', parse.engine.aux_fan_speed);
+	update.status('engine.ac_request',    parse.engine.ac_request,    false);
+	update.status('engine.aux_fan_speed', parse.engine.aux_fan_speed, false);
 
-	update.status('temperature.exterior.c', parse.temperature.exterior.c);
-	update.status('temperature.exterior.f', parse.temperature.exterior.f, false);
+	update.status('temperature.exterior.c', parse.temperature.exterior.c, false);
+	update.status('temperature.exterior.f', parse.temperature.exterior.f);
 
-	update.status('vehicle.handbrake', parse.vehicle.handbrake);
+	update.status('vehicle.handbrake', parse.vehicle.handbrake, false);
 }
 
 // ARBID: 0x720 sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
@@ -395,7 +414,7 @@ function parse_720(data) {
 		fuel : {
 			pump : {
 				duty    : data.msg[7],
-				percent : Math.ceil(parseFloat((data.msg[7] / 255).toFixed(4)) * 100),
+				percent : floor2(data.msg[7] / 2.55),
 			},
 		},
 
@@ -426,12 +445,12 @@ function parse_720(data) {
 
 	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	// update.status('temperature.oil.c',     parse.temperature.oil.c);
-	update.status('temperature.exhaust.c', parse.temperature.exhaust.c);
-	update.status('temperature.intake.c',  parse.temperature.intake.c);
+	update.status('temperature.exhaust.c', parse.temperature.exhaust.c, false);
+	update.status('temperature.intake.c',  parse.temperature.intake.c,  false);
 
-	update.status('dme.voltage',       parse.dme.voltage,       false);
-	update.status('fuel.pump.duty',    parse.fuel.pump.duty,    false);
-	update.status('fuel.pump.percent', parse.fuel.pump.percent, false);
+	update.status('dme.voltage',       parse.dme.voltage);
+	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
+	update.status('fuel.pump.percent', parse.fuel.pump.percent);
 
 	// Calculate fahrenheit temperature values
 	// parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
@@ -439,10 +458,10 @@ function parse_720(data) {
 	parse.temperature.intake.f  = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
 	// parse.temperature.oil.f     = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
 
-	// update.status('temperature.coolant.f', parse.temperature.coolant.f, false);
-	// update.status('temperature.oil.f',     parse.temperature.oil.f, false);
-	update.status('temperature.exhaust.f', parse.temperature.exhaust.f, false);
-	update.status('temperature.intake.f',  parse.temperature.intake.f, false);
+	// update.status('temperature.coolant.f', parse.temperature.coolant.f);
+	// update.status('temperature.oil.f',     parse.temperature.oil.f);
+	update.status('temperature.exhaust.f', parse.temperature.exhaust.f);
+	update.status('temperature.intake.f',  parse.temperature.intake.f);
 }
 
 function parse_out_low(data) {

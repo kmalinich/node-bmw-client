@@ -85,9 +85,9 @@ function decode_light_control_status(data) {
 	parse.intensity_str = 'intensity: ' + parse.intensity;
 	parse.reason_str    = 'reason: '    + parse.reason;
 
-	update.status('rls.light.intensity', parse.intensity);
-	update.status('rls.light.lights',    parse.lights);
-	update.status('rls.light.reason',    parse.reason);
+	update.status('rls.light.intensity', parse.intensity, false);
+	update.status('rls.light.lights',    parse.lights,    false);
+	update.status('rls.light.reason',    parse.reason,    false);
 
 	// Assemble log string
 	data.value += parse.intensity_str + ', ' + parse.lights_str + ', ' + parse.reason_str;

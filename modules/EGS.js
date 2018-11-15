@@ -77,7 +77,7 @@ function parse_304(data) {
 		}
 	}
 
-	update.status('egs.gear', gear);
+	update.status('egs.gear', gear, false);
 }
 
 

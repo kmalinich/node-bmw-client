@@ -2,14 +2,16 @@
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x83 : { // Broadcast: AC compressor status
-			update.status('ihka.ac', bitmask.test(data.msg[1], 0x80));
+			update.status('ihka.ac', bitmask.test(data.msg[1], 0x80), false);
+
 			data.command = 'bro';
 			data.value   = 'AC compressor status ' + data.msg;
 			break;
 		}
 
 		case 0x86 : { // Broadcast: Rear defroster status
-			update.status('ihka.defroster', bitmask.test(data.msg[1], 0x01));
+			update.status('ihka.defroster', bitmask.test(data.msg[1], 0x01), false);
+
 			data.command = 'bro';
 			data.value   = 'defroster status ' + status.ihka.defroster;
 			break;

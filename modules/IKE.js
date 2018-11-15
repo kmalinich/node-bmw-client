@@ -51,7 +51,7 @@ class IKE extends EventEmitter {
 			default   :	aux_heat_led = Buffer.from(data.msg);
 		}
 
-		update.status('obc.aux_heat_led', aux_heat_led);
+		update.status('obc.aux_heat_led', aux_heat_led, false);
 		data.value = 'aux heat LED: ' + status.obc.aux_heat_led;
 
 		return data;
@@ -88,18 +88,18 @@ class IKE extends EventEmitter {
 
 				// Detect 12h or 24h time and parse value
 				if (string_time_unit === 'am' || string_time_unit === 'pm') {
-					update.status('coding.unit.time', '12h');
+					update.status('coding.unit.time', '12h', false);
 					string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 				}
 				else {
-					update.status('coding.unit.time', '24h');
+					update.status('coding.unit.time', '24h', false);
 					string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
 				}
 
 				string_time = string_time.toString().trim().toLowerCase();
 
 				// Update status variables
-				update.status('obc.time', string_time);
+				update.status('obc.time', string_time, false);
 				break;
 			}
 
@@ -111,7 +111,7 @@ class IKE extends EventEmitter {
 				string_date = string_date.toString().trim();
 
 				// Update status variables
-				update.status('obc.date', string_date);
+				update.status('obc.date', string_date, false);
 				break;
 			}
 
@@ -141,16 +141,18 @@ class IKE extends EventEmitter {
 				// Update status variables
 				switch (string_outside_temp_unit) {
 					case 'c' : {
-						update.status('coding.unit.temp',           'c');
-						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(string_outside_temp_value)));
-						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))));
+						update.status('coding.unit.temp', 'c', false);
+
+						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(string_outside_temp_value)),                                                       false);
+						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))), false);
 						break;
 					}
 
 					case 'f' : {
-						update.status('coding.unit.temp',           'f');
-						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))));
-						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(string_outside_temp_value)));
+						update.status('coding.unit.temp', 'f', false);
+
+						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))), false);
+						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(string_outside_temp_value)),                                                       false);
 						break;
 					}
 				}
@@ -174,14 +176,14 @@ class IKE extends EventEmitter {
 				// Perform appropriate conversions between units
 				switch (string_consumption_1_unit) {
 					case 'm' : {
-						update.status('coding.unit.cons', 'mpg');
+						update.status('coding.unit.cons', 'mpg', false);
 						consumption_mpg  = string_consumption_1;
 						consumption_l100 = 235.21 / string_consumption_1;
 						break;
 					}
 
 					default: {
-						update.status('coding.unit.cons', 'l100');
+						update.status('coding.unit.cons', 'l100', false);
 						consumption_mpg  = 235.21 / string_consumption_1;
 						consumption_l100 = string_consumption_1;
 						break;
@@ -189,8 +191,8 @@ class IKE extends EventEmitter {
 				}
 
 				// Update status variables
-				update.status('obc.consumption.c1.mpg',  parseFloat(consumption_mpg.toFixed(2)));
-				update.status('obc.consumption.c1.l100', parseFloat(consumption_l100.toFixed(2)));
+				update.status('obc.consumption.c1.mpg',  parseFloat(consumption_mpg.toFixed(2)),  false);
+				update.status('obc.consumption.c1.l100', parseFloat(consumption_l100.toFixed(2)), false);
 				break;
 			}
 
@@ -223,8 +225,8 @@ class IKE extends EventEmitter {
 				}
 
 				// Update status variables
-				update.status('obc.consumption.c2.mpg',  parseFloat(consumption_mpg.toFixed(2)));
-				update.status('obc.consumption.c2.l100', parseFloat(consumption_l100.toFixed(2)));
+				update.status('obc.consumption.c2.mpg',  parseFloat(consumption_mpg.toFixed(2)),  false);
+				update.status('obc.consumption.c2.l100', parseFloat(consumption_l100.toFixed(2)), false);
 				break;
 			}
 
@@ -242,16 +244,18 @@ class IKE extends EventEmitter {
 				// Update status variables
 				switch (string_range_unit) {
 					case 'ml' : {
-						update.status('coding.unit.distance', 'mi');
-						update.status('obc.range.mi', string_range);
-						update.status('obc.range.km', parseFloat(convert(string_range).from('kilometre').to('us mile').toFixed(2)) || 0);
+						update.status('coding.unit.distance', 'mi', false);
+
+						update.status('obc.range.mi', string_range,                                                                      false);
+						update.status('obc.range.km', parseFloat(convert(string_range).from('kilometre').to('us mile').toFixed(2)) || 0, false);
 						break;
 					}
 
 					case 'km' : {
-						update.status('coding.unit.distance', 'km');
-						update.status('obc.range.mi', parseFloat(convert(string_range).from('us mile').to('kilometre').toFixed(2)) || 0);
-						update.status('obc.range.km', string_range);
+						update.status('coding.unit.distance', 'km', false);
+
+						update.status('obc.range.mi', parseFloat(convert(string_range).from('us mile').to('kilometre').toFixed(2)) || 0, false);
+						update.status('obc.range.km', string_range,                                                                      false);
 					}
 				}
 
@@ -266,7 +270,7 @@ class IKE extends EventEmitter {
 				string_distance = parseFloat(string_distance.toString().trim().toLowerCase()) || 0;
 
 				// Update status variables
-				update.status('obc.distance', string_distance);
+				update.status('obc.distance', string_distance, false);
 				break;
 			}
 
@@ -278,7 +282,7 @@ class IKE extends EventEmitter {
 				string_arrival = string_arrival.toString().trim().toLowerCase();
 
 				// Update status variables
-				update.status('obc.arrival', string_arrival);
+				update.status('obc.arrival', string_arrival, false);
 				break;
 			}
 
@@ -290,7 +294,7 @@ class IKE extends EventEmitter {
 				string_limit = parseFloat(string_limit.toString().trim().toLowerCase()) || 0;
 
 				// Update status variables
-				update.status('obc.limit', string_limit);
+				update.status('obc.limit', string_limit, false);
 				break;
 			}
 
@@ -309,20 +313,20 @@ class IKE extends EventEmitter {
 				// Convert values appropriately based on coding valueunits
 				switch (string_average_speed_unit) {
 					case 'k' : {
-						update.status('obc.coding.unit.speed', 'kmh');
+						update.status('obc.coding.unit.speed', 'kmh', false);
 
 						// Update status variables
-						update.status('obc.average_speed.kmh', string_average_speed);
-						update.status('obc.average_speed.mph', parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2)));
+						update.status('obc.average_speed.kmh', string_average_speed,                                                                 false);
+						update.status('obc.average_speed.mph', parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2)), false);
 						break;
 					}
 
 					case 'm' : {
-						update.status('obc.coding.unit.speed', 'mph');
+						update.status('obc.coding.unit.speed', 'mph', false);
 
 						// Update status variables
-						update.status('obc.average_speed.kmh', parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2)));
-						update.status('obc.average_speed.mph', string_average_speed);
+						update.status('obc.average_speed.kmh', parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2)), false);
+						update.status('obc.average_speed.mph', string_average_speed,                                                                 false);
 						break;
 					}
 				}
@@ -337,7 +341,7 @@ class IKE extends EventEmitter {
 				string_code = string_code.toString().trim().toLowerCase();
 
 				// Update status variable
-				update.status('obc.code', string_code);
+				update.status('obc.code', string_code, false);
 				break;
 			}
 
@@ -349,7 +353,7 @@ class IKE extends EventEmitter {
 				string_stopwatch = parseFloat(string_stopwatch.toString().trim()) || 0;
 
 				// Update status variables
-				update.status('obc.stopwatch', string_stopwatch);
+				update.status('obc.stopwatch', string_stopwatch, false);
 				break;
 			}
 
@@ -361,7 +365,7 @@ class IKE extends EventEmitter {
 				string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
 
 				// Update status variables
-				update.status('obc.aux_heat_timer.t1', string_aux_heat_timer_1);
+				update.status('obc.aux_heat_timer.t1', string_aux_heat_timer_1, false);
 				break;
 			}
 
@@ -373,7 +377,7 @@ class IKE extends EventEmitter {
 				string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
 
 				// Update status variables
-				update.status('obc.aux_heat_timer.t2', string_aux_heat_timer_2);
+				update.status('obc.aux_heat_timer.t2', string_aux_heat_timer_2, false);
 				break;
 			}
 
@@ -385,7 +389,7 @@ class IKE extends EventEmitter {
 				string_interim = parseFloat(string_interim.toString().trim().toFixed(2)) || 0;
 
 				// Update status variables
-				update.status('obc.interim', string_interim);
+				update.status('obc.interim', string_interim, false);
 				break;
 			}
 		}
@@ -403,8 +407,8 @@ class IKE extends EventEmitter {
 		let odometer_value2 = data.msg[2] << 8;
 		let odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
-		update.status('vehicle.odometer.km', odometer_value);
-		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')));
+		update.status('vehicle.odometer.km', odometer_value,                                                      false);
+		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')), false);
 
 		return data;
 	}
@@ -439,7 +443,7 @@ class IKE extends EventEmitter {
 			// Signed value?
 			if (temp_coolant > 128) temp_coolant = temp_coolant - 256;
 
-			update.status('temperature.coolant.c', Math.floor(temp_coolant));
+			update.status('temperature.coolant.c', Math.floor(temp_coolant), false);
 			update.status('temperature.coolant.f', Math.floor(convert(temp_coolant).from('celsius').to('fahrenheit')));
 		}
 
@@ -450,7 +454,7 @@ class IKE extends EventEmitter {
 			// Signed value?
 			if (temp_exterior > 128) temp_exterior = temp_exterior - 256;
 
-			update.status('temperature.exterior.c', Math.floor(temp_exterior));
+			update.status('temperature.exterior.c', Math.floor(temp_exterior), false);
 			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius').to('fahrenheit')));
 		}
 
@@ -529,7 +533,7 @@ class IKE extends EventEmitter {
 		// Send text to IKE and update status.hud.refresh_last value
 		this.text(status.vehicle.speed.mph + 'mph', () => {
 			// Bring up last HUD refresh time
-			update.status('hud.refresh_last', now(), false);
+			update.status('hud.refresh_last', now());
 		});
 	}
 
@@ -609,7 +613,7 @@ class IKE extends EventEmitter {
 			return;
 		}
 
-		update.status('hud.string', hud_string_rendered);
+		update.status('hud.string', hud_string_rendered, false);
 
 		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
 		hud_render_cb = undefined;
@@ -629,7 +633,7 @@ class IKE extends EventEmitter {
 			// Send text to IKE and update status.hud.refresh_last value
 			this.text(status.hud.string, () => {
 				// Bring up last HUD refresh time
-				update.status('hud.refresh_last', now(), false);
+				update.status('hud.refresh_last', now());
 			});
 		});
 	}
@@ -858,7 +862,7 @@ class IKE extends EventEmitter {
 		let previous_level = status.vehicle.ignition_level;
 
 		// Set ignition status value
-		if (update.status('vehicle.ignition_level', data.msg[1])) {
+		if (update.status('vehicle.ignition_level', data.msg[1], false)) {
 			// Disable/enable HUD refresh
 			this.data_refresh();
 		}
@@ -871,7 +875,7 @@ class IKE extends EventEmitter {
 			default : new_level_name = 'unknown';
 		}
 
-		update.status('vehicle.ignition', new_level_name);
+		update.status('vehicle.ignition', new_level_name, false);
 
 		if (data.msg[1] > previous_level) { // Ignition going up
 			switch (data.msg[1]) { // Evaluate new ignition state
@@ -980,16 +984,16 @@ class IKE extends EventEmitter {
 		// 192 = 4 (6+7)
 		// 208 = 3 (4+6+7)
 
-		update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]));
+		update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]), false);
 
 		// If the engine is newly running
-		if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]))) {
+		if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]), false)) {
 			this.emit('engine-running');
 		}
 
 		// If the vehicle is newly in reverse, show IKE message if configured to do so
 		if (config.options.message_reverse === true) {
-			if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]))) {
+			if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]), false)) {
 				if (status.vehicle.reverse === true) this.text_override('you\'re in reverse..');
 			}
 		}
@@ -1001,7 +1005,7 @@ class IKE extends EventEmitter {
 		if (config.chassis.model !== 'e39') return;
 
 		// Bring up last HUD refresh time
-		update.status('hud.refresh_last', now(), false);
+		update.status('hud.refresh_last', now());
 
 		// Refresh data on interface connection
 		socket.on('recv-host-connect', (data) => {

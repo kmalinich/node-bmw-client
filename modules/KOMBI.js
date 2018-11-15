@@ -13,14 +13,14 @@ function parse_1b4(data) {
 	// Calculate vehicle speed value in MPH
 	let vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
-	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh, false)) {
+	update.status('vehicle.speed.mph', vehicle_speed_mph);
+
+	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh)) {
 		if (config.translate.kombi.speed === true) {
 			// Re-encode this message as CANBUS ARBID 0x1A1
 			DSC.encode_1a1(vehicle_speed_kmh);
 		}
 	}
-
-	update.status('vehicle.speed.mph', vehicle_speed_mph, false);
 }
 
 
