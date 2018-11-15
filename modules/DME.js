@@ -68,7 +68,6 @@ function parse_316(data) {
 
 	update.status('engine.ac_clutch', parse.ac_clutch);
 
-
 	update.status('vehicle.key.off',       parse.key.off);
 	update.status('vehicle.key.accessory', parse.key.accessory);
 	update.status('vehicle.key.run',       parse.key.run);

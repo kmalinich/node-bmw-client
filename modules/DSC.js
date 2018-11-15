@@ -1,5 +1,23 @@
 const convert = require('node-unit-conversion');
 
+
+// Process to N decimal places
+function ceil2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.ceil(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+function floor2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.floor(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+function round2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.round(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+
 // Send 0x1A1 KCAN2 message for vehicle speed
 // BE DE 4A 12 91
 // - or -
@@ -30,11 +48,51 @@ function encode_1a1(speed = 0) {
 	});
 }
 
+// 0x153
+//
+// Example
+// B0 B1 B2 B3 B4 B5 B6 B7
+// 00 E0 3D FF 00 FE FF 08
+//
+// Logged values
+// B0 B1 B2 B3 B4 B5 B6 B7
+// 00 00 01 5F 00 FE 5F 00
+// 01 02 .. ..       .. ..
+// 10 08 45 FF       FF 0F
+// 00 0A
+//    0B
+//    ..
+//    F0
+//    F2
+//    F8
+//    FA
+//    FB
+//
+// Byte 0, bit 0 :
+// Byte 0, bit 1 :
+// Byte 0, bit 2 :
+// Byte 0, bit 3 :
+// Byte 0, bit 4 :
+// Byte 0, bit 5 :
+// Byte 0, bit 6 :
+// Byte 0, bit 7 :
+//
+// Byte 1, bit 0 : DSC off
+// Byte 1, bit 1 :
+// Byte 1, bit 2 :
+// Byte 1, bit 3 :
+// Byte 1, bit 4 : Brake applied (unconfirmed)
+// Byte 1, bit 5 : Speed LSB
+// Byte 1, bit 6 : Speed LSB
+// Byte 1, bit 7 : Speed LSB
+
+// Byte 2 : Speed MSB [Signal startbit: 12, Bit length: 12, 0x0008 = 1 km/hr]
+// Byte 3 : Torque reduction 1
+// Byte 4 :
+// Byte 5 :
+// Byte 6 : Torque reduction 2
+// Byte 7 :
 function parse_153(data) {
-	// DSC off (DSC light on) (b0/b1)
-	// 04 61 01 FF 00 FE FF 0
-	// DSC on (DSC light off) (b0/b1)
-	// 00 60 01 FF 00 FE FF 0C
 	// ~5 sec on initial key in run
 	// A4 61 01 FF 00 FE FF 0B
 	//
@@ -46,21 +104,11 @@ function parse_153(data) {
 			dsc : {
 				active : !bitmask.test(data.msg[1], 0x01),
 
-				torque_reduction_1 : data.msg[3] / 2.54,
-				torque_reduction_2 : data.msg[6] / 2.54,
+				torque_reduction_1 : round2(100 - (data.msg[3] / 2.55)),
+				torque_reduction_2 : round2(100 - (data.msg[6] / 2.55)),
 			},
 		},
 	};
-
-	// Clean up torque reduction figures a bit
-	if (parse.vehicle.dsc.torque_reduction_1 > 100) parse.vehicle.dsc.torque_reduction_1 = 100;
-	if (parse.vehicle.dsc.torque_reduction_2 > 100) parse.vehicle.dsc.torque_reduction_2 = 100;
-	if (parse.vehicle.dsc.torque_reduction_1 < 0)   parse.vehicle.dsc.torque_reduction_1 = 0;
-	if (parse.vehicle.dsc.torque_reduction_2 < 0)   parse.vehicle.dsc.torque_reduction_2 = 0;
-
-	// Apply maths
-	parse.vehicle.dsc.torque_reduction_1 = parseFloat((100 - parse.vehicle.dsc.torque_reduction_1).toFixed(1));
-	parse.vehicle.dsc.torque_reduction_2 = parseFloat((100 - parse.vehicle.dsc.torque_reduction_2).toFixed(1));
 
 	// update.status('vehicle.brake',                  parse.vehicle.brake);
 	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active);
@@ -90,27 +138,27 @@ function parse_1f0(data) {
 	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
 
 	// Average all wheel speeds together and include accuracy offset multiplier
-	// let vehicle_speed_kmh = Math.floor((vehicle_speed_total / 4) * config.speedometer.offset);
-	let vehicle_speed_kmh = Math.floor(vehicle_speed_total / 4);
+	// let vehicle_speed_kmh = round2((vehicle_speed_total / 4) * config.speedometer.offset);
+	let vehicle_speed_kmh = round2(vehicle_speed_total / 4);
 
 	// Calculate vehicle speed value in MPH
 	let vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
 
 	// Update status object
-	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left,  false);
-	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right, false);
-	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left,   false);
-	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right,  false);
+	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
+	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
+	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
+	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right);
 
-	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh, false)) {
+	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh)) {
 		if (config.translate.dsc === true) {
 			// Re-encode this message as CANBUS ARBID 0x1A1
 			encode_1a1(vehicle_speed_kmh);
 		}
 	}
 
-	update.status('vehicle.speed.mph', vehicle_speed_mph, false);
+	update.status('vehicle.speed.mph', vehicle_speed_mph);
 }
 
 // TODO: This.... needs help
@@ -142,8 +190,8 @@ function parse_1f5(data) {
 	};
 
 
-	update.status('vehicle.steering.angle',    steering.angle,    false);
-	update.status('vehicle.steering.velocity', steering.velocity, false);
+	update.status('vehicle.steering.angle',    steering.angle);
+	update.status('vehicle.steering.velocity', steering.velocity);
 }
 
 // Parse data sent from module
@@ -215,8 +263,6 @@ function parse_out(data) {
 
 		default : data.value = data.src.id.toString(16);
 	}
-
-	// log.bus(data);
 }
 
 
