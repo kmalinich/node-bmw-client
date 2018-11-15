@@ -831,18 +831,19 @@ class IKE extends EventEmitter {
 			}
 		}
 
+		log.module('Refreshing');
+
 		// Request fresh data
 		this.request('ignition');
+		LCM.request('io-status');
+
+		// Refresh HUD display
+		this.hud_refresh(true);
 
 		// Only request temperatures if not configured to get both from CANBUS or ignition is not in run
 		if (config.bus.canbus.coolant === false || config.bus.canbus.exterior === false || status.vehicle.ignition_level < 3) {
 			this.request('temperature');
 		}
-
-		LCM.request('io-status');
-
-		// Refresh HUD display
-		this.hud_refresh(true);
 
 		if (status.vehicle.ignition_level !== 0) {
 			if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
