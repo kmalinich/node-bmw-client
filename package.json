@@ -11,7 +11,7 @@
 		"dark-sky": "^1.1.4",
 		"defaults-deep": "^0.2.4",
 		"express": "^4.16.4",
-		"json-colorizer": "^1.1.1",
+		"json-colorizer": "^2.1.0",
 		"jsonfile": "^5.0.0",
 		"kodi-ws": "^2.4.3",
 		"moment": "^2.22.2",
@@ -21,7 +21,7 @@
 		"os": "^0.1.1",
 		"pad": "^2.2.1",
 		"performance-now": "^2.1.0",
-		"socket.io": "^2.1.1",
+		"socket.io": "^2.2.0",
 		"suncalc": "^1.8.0",
 		"trucolor": "^0.7.1",
 		"zeromq": "^5.1.0"
@@ -42,12 +42,12 @@
 	"optionalDependencies": {
 		"bluez": "git+https://github.com/kmalinich/node-bluez.git",
 		"dbus": "git+https://github.com/Shouqun/node-dbus.git",
-		"dbus-native": "^0.2.5",
+		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
 		"onoff": "^3.2.2",
 		"pi-temperature": "^2.0.0",
-		"pigpio": "^1.1.4",
+		"pigpio": "^1.2.0",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git",
 		"smc": "^2.0.0"
 	},

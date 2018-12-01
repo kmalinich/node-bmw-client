@@ -130,6 +130,7 @@ function load_modules(pass) {
 	FEM   = require('FEM');
 	KOMBI = require('KOMBI');
 	NBT   = require('NBT');
+	SZM   = require('SZM');
 
 	// Hybrid modules
 	DME = require('DME');
