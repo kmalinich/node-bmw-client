@@ -106,7 +106,7 @@ class GM extends EventEmitter {
 		}
 
 
-		// Update status variables
+		// Update status object
 		update.status('gm.keyfob.low_batt', keyfob.low_batt, false);
 
 		update.status('gm.keyfob.button',         keyfob.button,         false);

@@ -25,7 +25,7 @@ function auto_lights() {
 				log.module('Unset autolights timeout');
 			}
 
-			// Set status variables
+			// Update status object
 			update.status('lights.auto.active',  false, false);
 			update.status('lights.auto.lowbeam', false, false);
 			update.status('lights.auto.reason',  null,  false);
@@ -37,7 +37,7 @@ function auto_lights() {
 				log.module('Set autolights timeout');
 			}
 
-			// Set status variable
+			// Update status object
 			update.status('lights.auto.active', true, false);
 
 			auto_lights_process();
@@ -247,18 +247,18 @@ function comfort_turn_flash(action) {
 
 	log.module('Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed);
 
-	// Update status variables, and prepare cluster message
+	// Update status object, and prepare cluster message
 	let cluster_msg_outer;
 	switch (action) {
 		case 'left' :
-			// Set status variables
+			// Update status object
 			update.status('lights.turn.left.comfort',  true,  false);
 			update.status('lights.turn.right.comfort', false, false);
 			cluster_msg_outer = '< < < < < < <';
 			break;
 
 		case 'right' :
-			// Set status variables
+			// Update status object
 			update.status('lights.turn.left.comfort',  false, false);
 			update.status('lights.turn.right.comfort', true,  false);
 			cluster_msg_outer = '> > > > > > >';
@@ -286,7 +286,7 @@ function comfort_turn_flash(action) {
 
 	// Timeout for turning off the comfort turn signal
 	setTimeout(() => {
-		// Update status variables
+		// Update status object
 		update.status('lights.turn.left.comfort',  false, false);
 		update.status('lights.turn.right.comfort', false, false);
 		reset();

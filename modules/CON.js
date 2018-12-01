@@ -414,7 +414,7 @@ function decode_touchpad(data) {
 
 	let touch_count = decode_touch_count(data.msg[4]);
 
-	// Update status variables
+	// Update status object
 	if (update.status('con.touch.count', touch_count, false)) {
 		update.status('con.last.event', 'touch', false);
 	}
@@ -426,7 +426,7 @@ function decode_touchpad(data) {
 
 	data.value += ' X: ' + x + ' Y: ' + y;
 
-	// Update status variables
+	// Update status object
 	// update.status('con.touch.x', x);
 	// update.status('con.touch.y', y);
 

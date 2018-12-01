@@ -79,7 +79,7 @@ function load_modules(pass) {
 	TEL  = require('TEL');
 	VID  = require('VID');
 
-	// Class/event-based modules
+	// Class/event-based DBUS/KBUS/IBUS modules
 	GM  = new (require('GM'))();
 	EWS = new (require('EWS'))();
 	IKE = new (require('IKE'))();
@@ -126,11 +126,13 @@ function load_modules(pass) {
 	CAS   = require('CAS');
 	CON   = require('CON');
 	DSC   = require('DSC');
-	EGS   = require('EGS');
 	FEM   = require('FEM');
 	KOMBI = require('KOMBI');
 	NBT   = require('NBT');
 	SZM   = require('SZM');
+
+	// Class/event-based CANBUS modules
+	EGS = new (require('EGS'))();
 
 	// Hybrid modules
 	DME = require('DME');

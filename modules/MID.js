@@ -119,7 +119,7 @@ function status_loop(action) {
 		case false : {
 			clearInterval(MID.interval.status_loop);
 
-			// Set status variables
+			// Update status object
 			MID.status.status_loop = false;
 
 			update.status('rad.source_name', 'off', false);
@@ -135,7 +135,7 @@ function status_loop(action) {
 		}
 
 		case true : {
-			// Set status variable
+			// Update status object
 			MID.status.status_loop = true;
 
 			// Send a couple through to prime the pumps

@@ -171,7 +171,7 @@ function decode_button(data) {
 		}
 	}
 
-	// Update status object with the new data
+	// Update status object
 	update.status('bmbt.last.action', action, false);
 	update.status('bmbt.last.button', button, false);
 
@@ -250,7 +250,7 @@ function status_loop(action) {
 			update.status('rad.reset',  true,  false);
 			update.status('rad.ready',  false, false);
 
-			// Set status variable
+			// Update status object
 			BMBT.status_status_loop = false;
 
 			if (BMBT.timeout.status_loop !== null) {
@@ -265,7 +265,7 @@ function status_loop(action) {
 			// Send a couple through to prime the pumps
 			refresh_status();
 
-			// Set status variable
+			// Update status object
 			BMBT.status_status_loop = true;
 
 			log.module('Set status refresh timeout');

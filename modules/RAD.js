@@ -203,7 +203,7 @@ function decode_audio_control(data) {
 		}
 	}
 
-	// Update status var with interpreted value
+	// Update status object with interpreted value
 	update.status('rad.' + cmd_type, cmd_value, false);
 
 	return data;

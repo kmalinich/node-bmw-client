@@ -103,7 +103,7 @@ function decode_button_media(data) {
 		}
 	}
 
-	// Update status object with the new data
+	// Update status object
 	update.status('mfl.last.action', unmask.action, false);
 	update.status('mfl.last.button', unmask.button, false);
 

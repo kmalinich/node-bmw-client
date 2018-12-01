@@ -202,7 +202,9 @@ function parse_out(data) {
 
 	switch (data.src.id) {
 		case 0x153 : parse_153(data); data.value = 'Speed/DSC light'; break;
-		case 0x1F0 : parse_1f0(data); data.value = 'Wheel speeds';    break;
+
+		case 0x0CE :
+		case 0x1F0 : parse_1f0(data); data.value = 'Wheel speeds'; break;
 
 		// 00 00 05 FF 39 7D 5D 00
 		// byte2 bit3 : brake applied
