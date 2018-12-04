@@ -849,10 +849,11 @@ class IKE extends EventEmitter {
 			if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
 
 			// setTimeout for next update
+			// TODO: Make this setTimeout delay value a config param
 			let self = this;
 			this.timeout_data_refresh = setTimeout(() => {
 				self.data_refresh();
-			}, 14000);
+			}, 4000);
 		}
 	}
 

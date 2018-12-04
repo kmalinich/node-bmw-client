@@ -414,12 +414,34 @@ function decode(data) {
 			// Decode values
 			update.status('lcm.dimmer.value_2', data.msg[15], false);
 
-			update.status('lcm.voltage.pot.dimmer', parseFloat((data.msg[15] * 5) / 255), false);
-			update.status('lcm.voltage.pot.lwr',    parseFloat((data.msg[16] * 5) / 255), false);
+			let voltages = {
+				pot : {
+					dimmer : parseFloat((data.msg[15] * 5) / 255),
+					lwr    : parseFloat((data.msg[16] * 5) / 255),
+				},
 
-			update.status('lcm.voltage.lwr.front', parseFloat((data.msg[23] * 5) / 255), false);
-			update.status('lcm.voltage.lwr.rear',  parseFloat((data.msg[24] * 5) / 255), false);
+				lwr : {
+					front : parseFloat((data.msg[23] * 5) / 255),
+					rear  : parseFloat((data.msg[24] * 5) / 255),
+				},
+			};
 
+			update.status('lcm.voltage.lwr.front.current',  voltages.lwr.front,  false);
+			update.status('lcm.voltage.lwr.rear.current',   voltages.lwr.rear,   false);
+			update.status('lcm.voltage.pot.dimmer.current', voltages.pot.dimmer, false);
+			update.status('lcm.voltage.pot.lwr.current',    voltages.pot.lwr,    false);
+
+			// Set min/max values
+			if (voltages.lwr.front  < status.lcm.voltage.lwr.front.minimum)  update.status('lcm.voltage.lwr.front.minimum',  voltages.lwr.front);
+			if (voltages.lwr.front  > status.lcm.voltage.lwr.front.maximum)  update.status('lcm.voltage.lwr.front.maximum',  voltages.lwr.front);
+			if (voltages.lwr.rear   < status.lcm.voltage.lwr.rear.minimum)   update.status('lcm.voltage.lwr.rear.minimum',   voltages.lwr.rear);
+			if (voltages.lwr.rear   > status.lcm.voltage.lwr.rear.maximum)   update.status('lcm.voltage.lwr.rear.maximum',   voltages.lwr.rear);
+			if (voltages.pot.dimmer < status.lcm.voltage.pot.dimmer.minimum) update.status('lcm.voltage.pot.dimmer.minimum', voltages.pot.dimmer);
+			if (voltages.pot.dimmer > status.lcm.voltage.pot.dimmer.maximum) update.status('lcm.voltage.pot.dimmer.maximum', voltages.pot.dimmer);
+			if (voltages.pot.lwr    < status.lcm.voltage.pot.lwr.minimum)    update.status('lcm.voltage.pot.lwr.minimum',    voltages.pot.lwr);
+			if (voltages.pot.lwr    > status.lcm.voltage.pot.lwr.maximum)    update.status('lcm.voltage.pot.lwr.maximum',    voltages.pot.lwr);
+
+			// TODO: Move up to voltages object
 			update.status('lcm.voltage.photo_cell',         parseFloat((data.msg[19] * 5) / 255), false);
 			update.status('lcm.voltage.flash_to_pass',      parseFloat((data.msg[29] * 5) / 255), false);
 			update.status('lcm.voltage.turn_signal_switch', parseFloat((data.msg[30] * 5) / 255), false);
