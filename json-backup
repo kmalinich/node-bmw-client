@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+DIR_BASE="/usr/local"
+DIR_BMWCD="${DIR_BASE}/bmwcd"
+
+DATE_STR="$(date '+%Y%m%d')"
+
+cd "${DIR_BMWCD}" || return 1
+
+mkdir -p json.bak
+
+for JSON_FILE in config status; do
+	cp -v ${JSON_FILE}.json "json.bak/${JSON_FILE}.json.${DATE_STR}"
+done

@@ -12,9 +12,4 @@ done
 
 cd .. || exit 1
 
-if grep -q pi /etc/passwd > /dev/null 2>&1; then
-	echo "Fixing permissions (pi:pi)"
-	chown -R pi: .
-fi
-
 exit 0
