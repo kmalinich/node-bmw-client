@@ -22,7 +22,7 @@ function backlight(value = status.fem.backlight.value) {
 	if (value < 0x00) value = 0xFF;
 
 	// Set status value
-	update.status('fem.backlight.value', value, false);
+	update.status('fem.backlight.value', value);
 
 	// Workarounds
 	switch (value) {
@@ -32,7 +32,7 @@ function backlight(value = status.fem.backlight.value) {
 		default   : value--;             // Decrement value by one (see above)
 	}
 
-	update.status('fem.backlight.real', value, false);
+	update.status('fem.backlight.real', value);
 
 	bus.data.send({
 		bus  : config.fem.can_intf,
@@ -55,7 +55,7 @@ function decode_backlight(data) {
 	let value = data.msg[0];
 
 	// Set status value
-	update.status('fem.backlight.real', value, false);
+	update.status('fem.backlight.real', value);
 
 	// Workarounds
 	switch (value) {
@@ -65,21 +65,22 @@ function decode_backlight(data) {
 		default   : value++;             // Increment value by one (see above)
 	}
 
-	update.status('fem.backlight.value', value, false);
+	update.status('fem.backlight.value', value);
 
 	return data;
 }
 
 
 function init_listeners() {
-	update.on('status.power.active', (data) => {
-		switch (data.new) {
+	power.on('active', (power_state) => {
+		switch (power_state) {
 			case false : { // Fade off backlight when power shuts off
 				for (let i = status.fem.backlight.value; i >= 0; i--) {
 					setTimeout(() => {
 						backlight(i);
 					}, ((status.fem.backlight.value - i) * 2));
 				}
+
 				break;
 			}
 

@@ -117,8 +117,8 @@ function init_listeners() {
 	EGS.on('gear', reverse_camera);
 
 	// Perform commands on power lib active event
-	update.on('status.power.active', status_module);
-	update.on('status.power.active', status_ignition);
+	power.on('active', status_module);
+	power.on('active', status_ignition);
 
 	log.msg('Initialized listeners');
 }
@@ -193,7 +193,7 @@ function parse_out(data) {
 
 // NBT status
 // 273 -> 1D E1 00 F0 FF 7F DE 04
-function status_module() {
+function status_module(action = false) {
 	// Bounce if not enabled
 	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
@@ -205,7 +205,7 @@ function status_module() {
 		}
 
 		case 'nbt' : {
-			switch (status.power.active) {
+			switch (action) {
 				case false : {
 					if (NBT.timeout.status_module !== null) {
 						clearTimeout(NBT.timeout.status_module);

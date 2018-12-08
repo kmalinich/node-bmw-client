@@ -442,21 +442,23 @@ function init_listeners() {
 	// Stamp last message time as now
 	update.status('con.rotation.last_msg', time_now());
 
+	// Bounce if not enabled
+	if (config.emulate.nbt !== true) return;
+
 	// Perform commands on power lib active event
-	update.on('status.power.active', () => {
-		setTimeout(() => { init_rotation(); }, 250);
-	});
+	power.on('active', init_rotation);
 
 	log.msg('Initialized listeners');
 }
 
 // Initialize CON rotation counter
-function init_rotation() {
+// TODO: This should be in modules/NBT.js (it's emulating a real NBT module)
+function init_rotation(action = false) {
 	// Bounce if not enabled
 	if (config.emulate.nbt !== true) return;
 
 	// Handle setting/unsetting timeout
-	switch (status.power.active) {
+	switch (action) {
 		case false : {
 			if (CON.timeout.init_rotation !== null) {
 				clearTimeout(CON.timeout.init_rotation);

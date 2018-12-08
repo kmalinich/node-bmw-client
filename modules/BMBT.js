@@ -1,5 +1,6 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+
 // Decode various BMBT button presses
 function decode_button(data) {
 	data.command = 'bro';
@@ -445,8 +446,8 @@ function init_listeners() {
 	if (config.chassis.model !== 'e39') return;
 
 	// Perform commands on power lib active event
-	update.on('status.power.active', (data) => {
-		status_loop(data.new);
+	power.on('active', (power_state) => {
+		status_loop(power_state);
 	});
 
 	log.msg('Initialized listeners');
@@ -461,11 +462,17 @@ module.exports = {
 		status_loop : null,
 	},
 
-	button                : button,
-	cassette_status       : cassette_status,
-	init_listeners        : init_listeners,
-	parse_in              : parse_in,
-	parse_out             : parse_out,
-	status_loop           : status_loop,
+
+	button : button,
+
+	cassette_status : cassette_status,
+
+	init_listeners : init_listeners,
+
+	parse_in  : parse_in,
+	parse_out : parse_out,
+
+	status_loop : status_loop,
+
 	toggle_power_if_ready : toggle_power_if_ready,
 };

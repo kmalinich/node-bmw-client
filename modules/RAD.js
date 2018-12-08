@@ -2,6 +2,7 @@
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+
 // Decode type of audio control command
 function decode_audio_control_command(data) {
 	// Base units
@@ -659,8 +660,8 @@ function init_listeners() {
 
 	// Perform commands on power lib active event
 	// TODO: Make this a config value
-	update.on('status.power.active', (data) => {
-		setTimeout(() => { audio_power(data.new); }, 150);
+	power.on('active', (power_state) => {
+		setTimeout(() => { audio_power(power_state); }, 150);
 	});
 
 	// Kick DSP amp 2 seconds after engine start

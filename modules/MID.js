@@ -380,9 +380,9 @@ function init_listeners() {
 	if (config.chassis.model !== 'e39') return;
 
 	// Perform commands on power lib active event
-	update.on('status.power.active', (data) => {
-		status_loop(data.new);
-		text_loop(data.new);
+	power.on('active', (power_state) => {
+		status_loop(power_state);
+		text_loop(power_state);
 	});
 
 	log.msg('Initialized listeners');
