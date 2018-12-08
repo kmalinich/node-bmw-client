@@ -21,7 +21,7 @@ function refresh_text() {
 
 	// Upper left - 11 char radio display
 	message_hex = [ 0x23, 0x40, 0x20 ];
-	message_hex = message_hex.concat(hex.a2h(pad(status.mid.text_left, 11).substring(0, 11)));
+	message_hex = message_hex.concat(hex.a2h(pad(status.mid.text.left, 11).substring(0, 11)));
 
 	bus.data.send({
 		src : 'RAD',
@@ -30,7 +30,7 @@ function refresh_text() {
 
 	// Upper right - 20 char OBC display
 	message_hex = [ 0x23, 0x40, 0x20 ];
-	message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text_right.substring(0, 20))));
+	message_hex = message_hex.concat(hex.a2h(pad(20, status.mid.text.right.substring(0, 20))));
 
 	bus.data.send({
 		src : 'IKE',
@@ -78,9 +78,9 @@ function refresh_text() {
 
 // Set or unset the text interval
 function text_loop(action) {
-	if (config.media.mid              !==   true) return;
-	if (status.vehicle.ignition_level  <       1) action = false;
-	if (MID.status.text_loop          === action) return;
+	if (status.vehicle.ignition_level < 1) action = false;
+
+	if (config.media.mid !== true || MID.status.text_loop === action) return;
 
 	log.module('Text loop ' + action);
 
@@ -400,12 +400,18 @@ module.exports = {
 		text_loop   : false,
 	},
 
-	button                : button,
-	init_listeners        : init_listeners,
-	parse_in              : parse_in,
-	parse_out             : parse_out,
-	refresh_text          : refresh_text,
-	status_loop           : status_loop,
-	text_loop             : text_loop,
+
+	button : button,
+
+	init_listeners : init_listeners,
+
+	parse_in  : parse_in,
+	parse_out : parse_out,
+
+	refresh_text : refresh_text,
+
+	status_loop : status_loop,
+	text_loop   : text_loop,
+
 	toggle_power_if_ready : toggle_power_if_ready,
 };

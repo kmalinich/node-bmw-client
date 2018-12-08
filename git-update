@@ -11,6 +11,10 @@ _smf() {
 	git submodule foreach --recursive git ${*}
 }
 
+
+_out "JSON backup"
+./json-backup
+
 _out "Repo fetch"
 git fetch --all --prune
 

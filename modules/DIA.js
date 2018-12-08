@@ -1,7 +1,5 @@
 // Parse data sent to module
 function parse_in(data) {
-	// if (DIA.last.cmd === 'con') return objfmt(data);
-
 	if (data.src.upper === 'LCM') LCM.parse_out(data);
 
 	switch (DIA.last.val) {
