@@ -580,12 +580,21 @@ function request(value) {
 
 
 function init_listeners() {
-	// If configured, send RPM 10000 on 0x316 on ignition in run
-	update.on('status.vehicle.ignition', (data) => {
-		if (data.new         !== 'run') return;
-		if (config.ike.sweep !== true) return;
+	update.on('status.engine.running', (data) => {
+		switch (data.new) {
+			case true : {
+				// If configured, send RPM 10000 on 0x316 on ignition in run
+				if (config.ike.sweep === true) encode_316(10000);
+				break;
+			}
 
-		encode_316(10000);
+			case false : {
+				update.status('engine.torque.after_interventions',  0);
+				update.status('engine.torque.before_interventions', 0);
+				update.status('engine.torque.loss',                 0);
+				update.status('engine.torque.output',               0);
+			}
+		}
 	});
 
 	log.msg('Initialized listeners');

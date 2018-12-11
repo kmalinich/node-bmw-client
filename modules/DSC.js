@@ -206,8 +206,8 @@ function parse_out(data) {
 		case 0x0CE :
 		case 0x1F0 : parse_1f0(data); data.value = 'Wheel speeds'; break;
 
-		// 00 00 05 FF 39 7D 5D 00
-		// byte2 bit3 : brake applied
+			// 00 00 05 FF 39 7D 5D 00
+			// byte2 bit3 : brake applied
 		case 0x1F3 :                  data.value = 'Transverse acceleration'; break;
 		case 0x1F5 : parse_1f5(data); data.value = 'Steering angle';          break;
 
@@ -277,6 +277,15 @@ function init_listeners() {
 		setTimeout(() => {
 			encode_1a1(0);
 		}, 250);
+	});
+
+	update.on('status.engine.running', (data) => {
+		switch (data.new) {
+			case false : {
+				update.status('vehicle.dsc.torque_reduction_1', 0);
+				update.status('vehicle.dsc.torque_reduction_2', 0);
+			}
+		}
 	});
 
 	log.msg('Initialized listeners');
