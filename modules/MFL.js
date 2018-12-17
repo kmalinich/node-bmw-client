@@ -1,5 +1,19 @@
 /* eslint key-spacing : 0 */
 
+
+// Decode R/T button message (just a status request if you don't have the module)
+function decode_button_com(data) {
+	data.command = 'con';
+	data.value   = 'r/t button - ';
+
+	switch (data.msg[0]) {
+		case 0x01 : data.value += 'depress'; break;
+		default   : data.value += 'unknown';
+	}
+
+	return data;
+}
+
 // Decode media button action message
 function decode_button_media(data) {
 	data.command = 'con';
@@ -130,15 +144,9 @@ function parse_out(data) {
 	// 50 C8 01,MFL --> TEL: Device status request
 
 	switch (data.msg[0]) {
-		case 0x3A : { // Button: Recirculation
-			data = decode_button_recirc(data);
-			break;
-		}
-
-		case 0x3B : { // Button: Media
-			data = decode_button_media(data);
-			break;
-		}
+		case 0x01 : data = decode_button_com(data);    break; // Button: R/T
+		case 0x3A : data = decode_button_recirc(data); break; // Button: Recirculation
+		case 0x3B : data = decode_button_media(data);  break; // Button: Media
 
 		default : {
 			data.command = 'unk';
@@ -246,6 +254,10 @@ function translate_button_media(unmask) {
 
 
 module.exports = {
+	decode_button_com    : decode_button_com,
+	decode_button_media  : decode_button_media,
+	decode_button_recirc : decode_button_recirc,
+
 	parse_out : parse_out,
 
 	translate_button_media : translate_button_media,
