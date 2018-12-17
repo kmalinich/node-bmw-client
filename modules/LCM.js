@@ -298,8 +298,8 @@ function comfort_turn_flash(action) {
 
 
 function ok2minmax(value) {
-	if (value < 0.5) return false;
-	if (value > 4.5) return false;
+	if (value < 0.4) return false;
+	if (value > 4.6) return false;
 	return true;
 }
 
