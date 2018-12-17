@@ -5,7 +5,11 @@ DIR_BMWCD="${DIR_BASE}/bmwcd"
 
 DATE_STR="$(date '+%Y%m%d')"
 
-cd "${DIR_BMWCD}" || return 1
+if [[ ! -f "${DIR_BMWCD}" ]]; then
+	exit 0;
+fi
+
+cd "${DIR_BMWCD}" || exit 1
 
 mkdir -p json.bak
 

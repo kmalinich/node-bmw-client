@@ -296,6 +296,13 @@ function comfort_turn_flash(action) {
 	setTimeout(() => { update.status('lights.turn.comfort_cool', true, false); }, timer_cool);
 }
 
+
+function ok2minmax(value) {
+	if (value < 0.5) return false;
+	if (value > 4.5) return false;
+	return true;
+}
+
 // Decode various bits of data into usable information
 function decode(data) {
 	switch (data.msg[0]) {
@@ -432,14 +439,25 @@ function decode(data) {
 			update.status('lcm.voltage.pot.lwr.current',    voltages.pot.lwr,    false);
 
 			// Set min/max values
-			if (voltages.lwr.front  < status.lcm.voltage.lwr.front.minimum)  update.status('lcm.voltage.lwr.front.minimum',  voltages.lwr.front);
-			if (voltages.lwr.front  > status.lcm.voltage.lwr.front.maximum)  update.status('lcm.voltage.lwr.front.maximum',  voltages.lwr.front);
-			if (voltages.lwr.rear   < status.lcm.voltage.lwr.rear.minimum)   update.status('lcm.voltage.lwr.rear.minimum',   voltages.lwr.rear);
-			if (voltages.lwr.rear   > status.lcm.voltage.lwr.rear.maximum)   update.status('lcm.voltage.lwr.rear.maximum',   voltages.lwr.rear);
-			if (voltages.pot.dimmer < status.lcm.voltage.pot.dimmer.minimum) update.status('lcm.voltage.pot.dimmer.minimum', voltages.pot.dimmer);
-			if (voltages.pot.dimmer > status.lcm.voltage.pot.dimmer.maximum) update.status('lcm.voltage.pot.dimmer.maximum', voltages.pot.dimmer);
-			if (voltages.pot.lwr    < status.lcm.voltage.pot.lwr.minimum)    update.status('lcm.voltage.pot.lwr.minimum',    voltages.pot.lwr);
-			if (voltages.pot.lwr    > status.lcm.voltage.pot.lwr.maximum)    update.status('lcm.voltage.pot.lwr.maximum',    voltages.pot.lwr);
+			if (ok2minmax(voltages.lwr.front)) {
+				if (voltages.lwr.front < status.lcm.voltage.lwr.front.minimum) update.status('lcm.voltage.lwr.front.minimum', voltages.lwr.front);
+				if (voltages.lwr.front > status.lcm.voltage.lwr.front.maximum) update.status('lcm.voltage.lwr.front.maximum', voltages.lwr.front);
+			}
+
+			if (ok2minmax(voltages.lwr.rear)) {
+				if (voltages.lwr.rear < status.lcm.voltage.lwr.rear.minimum) update.status('lcm.voltage.lwr.rear.minimum', voltages.lwr.rear);
+				if (voltages.lwr.rear > status.lcm.voltage.lwr.rear.maximum) update.status('lcm.voltage.lwr.rear.maximum', voltages.lwr.rear);
+			}
+
+			if (ok2minmax(voltages.pot.dimmer)) {
+				if (voltages.pot.dimmer < status.lcm.voltage.pot.dimmer.minimum) update.status('lcm.voltage.pot.dimmer.minimum', voltages.pot.dimmer);
+				if (voltages.pot.dimmer > status.lcm.voltage.pot.dimmer.maximum) update.status('lcm.voltage.pot.dimmer.maximum', voltages.pot.dimmer);
+			}
+
+			if (ok2minmax(voltages.pot.lwr)) {
+				if (voltages.pot.lwr < status.lcm.voltage.pot.lwr.minimum) update.status('lcm.voltage.pot.lwr.minimum', voltages.pot.lwr);
+				if (voltages.pot.lwr > status.lcm.voltage.pot.lwr.maximum) update.status('lcm.voltage.pot.lwr.maximum', voltages.pot.lwr);
+			}
 
 			// TODO: Move up to voltages object
 			update.status('lcm.voltage.photo_cell',         parseFloat((data.msg[19] * 5) / 255), false);
@@ -694,11 +712,6 @@ function io_set(packet) {
 		src : 'DIA',
 		msg : packet,
 	});
-
-	// Request the IO status after
-	// setImmediate(() => {
-	// 	LCM.request('io-status');
-	// });
 }
 
 // Make things.. how they should be?

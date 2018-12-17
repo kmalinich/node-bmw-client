@@ -119,8 +119,13 @@ function parse_153(data) {
 }
 
 // Parse wheel speed LSB and MSB into KPH value
+// TODO: Add kmh and mph objects
 function parse_wheel(byte0, byte1) {
-	return (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16) - 2.75;
+	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
+
+	if (parsed_wheel_speed < 3) return 0;
+
+	return round2(parsed_wheel_speed, 1);
 }
 
 function parse_1f0(data) {
@@ -139,19 +144,17 @@ function parse_1f0(data) {
 	// Calculate vehicle speed from average of all 4 sensors
 	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
 
-	// Average all wheel speeds together and include accuracy offset multiplier
-	// let vehicle_speed_kmh = round2((vehicle_speed_total / 4) * config.speedometer.offset);
-	let vehicle_speed_kmh = round2(vehicle_speed_total / 4);
+	// Average all wheel speeds together
+	let vehicle_speed_kmh = round2(vehicle_speed_total / 4, 1);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
-
+	let vehicle_speed_mph = round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
-	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
-	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
-	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
-	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right);
+	update.status('vehicle.wheel_speed.front.left',  round2(convert(wheel_speed.front.left).from('kilometre').to('us mile'), 1));
+	update.status('vehicle.wheel_speed.front.right', round2(convert(wheel_speed.front.right).from('kilometre').to('us mile'), 1));
+	update.status('vehicle.wheel_speed.rear.left',   round2(convert(wheel_speed.rear.left).from('kilometre').to('us mile'), 1));
+	update.status('vehicle.wheel_speed.rear.right',  round2(convert(wheel_speed.rear.right).from('kilometre').to('us mile'), 1));
 
 	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh)) {
 		if (config.translate.dsc === true) {
@@ -174,26 +177,26 @@ function parse_1f5(data) {
 		angle = (data.msg[1] * 256) + data.msg[0];
 	}
 
-	let velocity = 0;
-	// These are an embarrasment
-	if (data.msg[3] > 127) {
-		velocity = -1 * (((data.msg[3] - 128) * 256) + data.msg[2]);
-	}
-	else {
-		velocity = (data.msg[3] * 256) + data.msg[2];
-	}
+	// let velocity = 0;
+	// // These are an embarrasment
+	// if (data.msg[3] > 127) {
+	// 	velocity = -1 * (((data.msg[3] - 128) * 256) + data.msg[2]);
+	// }
+	// else {
+	// 	velocity = (data.msg[3] * 256) + data.msg[2];
+	// }
 
 	// 0.043393 : 3.75 turns, lock to lock (1350 degrees of total rotation)
 	let steering_multiplier = 0.043393;
 
 	let steering = {
-		angle    : Math.floor(angle    * steering_multiplier) * -1, // Thanks babe
-		velocity : Math.floor(velocity * steering_multiplier) * -1,
+		angle : Math.floor(angle    * steering_multiplier) * -1, // Thanks babe
+		// velocity : Math.floor(velocity * steering_multiplier) * -1,
 	};
 
 
 	update.status('vehicle.steering.angle',    steering.angle);
-	update.status('vehicle.steering.velocity', steering.velocity);
+	// update.status('vehicle.steering.velocity', steering.velocity);
 }
 
 // Parse data sent from module
