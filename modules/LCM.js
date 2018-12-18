@@ -2,29 +2,6 @@ const suncalc = require('suncalc');
 const now     = require('performance-now');
 
 
-// Process to N decimal places
-function ceil2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.ceil(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function floor2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.floor(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function round2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.round(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function ok2minmax(value) {
-	if (value < 0.4) return false;
-	if (value > 4.6) return false;
-	return true;
-}
-
-
 // Automatic lights handling
 function auto_lights() {
 	if (config.chassis.model !== 'e39') return;
@@ -433,13 +410,13 @@ function decode(data) {
 
 			let voltages = {
 				pot : {
-					dimmer : round2((data.msg[15] * 5) / 255),
-					lwr    : round2((data.msg[16] * 5) / 255),
+					dimmer : num.round2((data.msg[15] * 5) / 255),
+					lwr    : num.round2((data.msg[16] * 5) / 255),
 				},
 
 				lwr : {
-					front : round2((data.msg[23] * 5) / 255),
-					rear  : round2((data.msg[24] * 5) / 255),
+					front : num.round2((data.msg[23] * 5) / 255),
+					rear  : num.round2((data.msg[24] * 5) / 255),
 				},
 			};
 
@@ -449,22 +426,22 @@ function decode(data) {
 			update.status('lcm.voltage.pot.lwr.current',    voltages.pot.lwr,    false);
 
 			// Set min/max values
-			if (ok2minmax(voltages.lwr.front)) {
+			if (num.ok2minmax(voltages.lwr.front)) {
 				if (voltages.lwr.front < status.lcm.voltage.lwr.front.minimum) update.status('lcm.voltage.lwr.front.minimum', voltages.lwr.front);
 				if (voltages.lwr.front > status.lcm.voltage.lwr.front.maximum) update.status('lcm.voltage.lwr.front.maximum', voltages.lwr.front);
 			}
 
-			if (ok2minmax(voltages.lwr.rear)) {
+			if (num.ok2minmax(voltages.lwr.rear)) {
 				if (voltages.lwr.rear < status.lcm.voltage.lwr.rear.minimum) update.status('lcm.voltage.lwr.rear.minimum', voltages.lwr.rear);
 				if (voltages.lwr.rear > status.lcm.voltage.lwr.rear.maximum) update.status('lcm.voltage.lwr.rear.maximum', voltages.lwr.rear);
 			}
 
-			if (ok2minmax(voltages.pot.dimmer)) {
+			if (num.ok2minmax(voltages.pot.dimmer)) {
 				if (voltages.pot.dimmer < status.lcm.voltage.pot.dimmer.minimum) update.status('lcm.voltage.pot.dimmer.minimum', voltages.pot.dimmer);
 				if (voltages.pot.dimmer > status.lcm.voltage.pot.dimmer.maximum) update.status('lcm.voltage.pot.dimmer.maximum', voltages.pot.dimmer);
 			}
 
-			if (ok2minmax(voltages.pot.lwr)) {
+			if (num.ok2minmax(voltages.pot.lwr)) {
 				if (voltages.pot.lwr < status.lcm.voltage.pot.lwr.minimum) update.status('lcm.voltage.pot.lwr.minimum', voltages.pot.lwr);
 				if (voltages.pot.lwr > status.lcm.voltage.pot.lwr.maximum) update.status('lcm.voltage.pot.lwr.maximum', voltages.pot.lwr);
 			}

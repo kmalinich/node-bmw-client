@@ -1,23 +1,4 @@
-/* eslint no-unused-vars : 0 */
-
 const convert = require('node-unit-conversion');
-
-
-// Process to N decimal places
-function ceil2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.ceil(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function floor2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.floor(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function round2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.round(value * multiplier + Number.EPSILON) / multiplier;
-}
 
 
 // Send 0x1A1 KCAN2 message for vehicle speed
@@ -106,8 +87,8 @@ function parse_153(data) {
 			dsc : {
 				active : !bitmask.test(data.msg[1], 0x01),
 
-				torque_reduction_1 : round2(100 - (data.msg[3] / 2.55)),
-				torque_reduction_2 : round2(100 - (data.msg[6] / 2.55)),
+				torque_reduction_1 : num.round2(100 - (data.msg[3] / 2.55)),
+				torque_reduction_2 : num.round2(100 - (data.msg[6] / 2.55)),
 			},
 		},
 	};
@@ -125,7 +106,7 @@ function parse_wheel(byte0, byte1) {
 
 	if (parsed_wheel_speed < 3) return 0;
 
-	return round2(parsed_wheel_speed, 1);
+	return num.round2(parsed_wheel_speed, 1);
 }
 
 function parse_1f0(data) {
@@ -145,10 +126,10 @@ function parse_1f0(data) {
 	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
 
 	// Average all wheel speeds together
-	let vehicle_speed_kmh = round2(vehicle_speed_total / 4, 1);
+	let vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
+	let vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
 	update.status('vehicle.wheel_speed.front.left',  Math.round(convert(wheel_speed.front.left).from('kilometre').to('us mile')));

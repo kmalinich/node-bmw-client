@@ -1,24 +1,6 @@
-/* eslint key-spacing    : 0 */
-/* eslint no-unused-vars : 0 */
+/* eslint key-spacing : 0 */
 
 const convert = require('node-unit-conversion');
-
-
-// Process to N decimal places
-function ceil2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.ceil(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function floor2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.floor(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function round2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.round(value * multiplier + Number.EPSILON) / multiplier;
-}
 
 
 // This is dangerous and awesome if you can see what it does
@@ -77,10 +59,10 @@ function parse_316(data) {
 		},
 
 		torque : {
-			after_interventions  : round2(data.msg[1] / 2.55),
-			before_interventions : round2(data.msg[4] / 2.55),
-			loss                 : round2(data.msg[5] / 2.55),
-			output               : round2(data.msg[7] / 2.55),
+			after_interventions  : num.round2(data.msg[1] / 2.55),
+			before_interventions : num.round2(data.msg[4] / 2.55),
+			loss                 : num.round2(data.msg[5] / 2.55),
+			output               : num.round2(data.msg[7] / 2.55),
 		},
 	};
 
@@ -177,8 +159,8 @@ function parse_329(data) {
 	};
 
 	// Calculate mmhg and psi atmospheric pressure values
-	parse.engine.atmospheric_pressure.mmhg = round2(parse.engine.atmospheric_pressure.mbar * 0.75006157818041);
-	parse.engine.atmospheric_pressure.psi  = round2(parse.engine.atmospheric_pressure.mbar * 0.01450377380072);
+	parse.engine.atmospheric_pressure.mmhg = num.round2(parse.engine.atmospheric_pressure.mbar * 0.75006157818041);
+	parse.engine.atmospheric_pressure.psi  = num.round2(parse.engine.atmospheric_pressure.mbar * 0.01450377380072);
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = Math.floor(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
@@ -414,7 +396,7 @@ function parse_720(data) {
 		fuel : {
 			pump : {
 				duty    : data.msg[7],
-				percent : floor2(data.msg[7] / 2.55),
+				percent : num.floor2(data.msg[7] / 2.55),
 			},
 		},
 
