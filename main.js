@@ -12,13 +12,14 @@ process.title = app_name;
 
 terminating = false;
 
-// node-bmw libraries
+// node-bmw shared libraries
 api        = require('api');
 bitmask    = require('bitmask');
 gpio       = require('gpio');
 hex        = require('hex');
 json       = require('json');
 log        = require('log-output');
+num        = require('num');
 obc_values = require('obc-values');
 weather    = require('weather');
 

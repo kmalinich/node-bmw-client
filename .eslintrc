@@ -144,6 +144,7 @@
 		"kodi": false,
 		"log": false,
 		"notify": false,
+		"num": false,
 		"obc_values": false,
 		"objfmt": false,
 		"power": false,
