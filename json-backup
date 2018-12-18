@@ -5,7 +5,7 @@ DIR_BMWCD="${DIR_BASE}/bmwcd"
 
 DATE_STR="$(date '+%Y%m%d')"
 
-if [[ ! -f "${DIR_BMWCD}" ]]; then
+if [[ ! -d "${DIR_BMWCD}" ]]; then
 	exit 0;
 fi
 
