@@ -151,10 +151,10 @@ function parse_1f0(data) {
 	let vehicle_speed_mph = round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
-	update.status('vehicle.wheel_speed.front.left',  round2(convert(wheel_speed.front.left).from('kilometre').to('us mile'), 1));
-	update.status('vehicle.wheel_speed.front.right', round2(convert(wheel_speed.front.right).from('kilometre').to('us mile'), 1));
-	update.status('vehicle.wheel_speed.rear.left',   round2(convert(wheel_speed.rear.left).from('kilometre').to('us mile'), 1));
-	update.status('vehicle.wheel_speed.rear.right',  round2(convert(wheel_speed.rear.right).from('kilometre').to('us mile'), 1));
+	update.status('vehicle.wheel_speed.front.left',  Math.round(convert(wheel_speed.front.left).from('kilometre').to('us mile')));
+	update.status('vehicle.wheel_speed.front.right', Math.round(convert(wheel_speed.front.right).from('kilometre').to('us mile')));
+	update.status('vehicle.wheel_speed.rear.left',   Math.round(convert(wheel_speed.rear.left).from('kilometre').to('us mile')));
+	update.status('vehicle.wheel_speed.rear.right',  Math.round(convert(wheel_speed.rear.right).from('kilometre').to('us mile')));
 
 	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh)) {
 		if (config.translate.dsc === true) {

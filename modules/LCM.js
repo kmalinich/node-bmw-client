@@ -2,6 +2,29 @@ const suncalc = require('suncalc');
 const now     = require('performance-now');
 
 
+// Process to N decimal places
+function ceil2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.ceil(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+function floor2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.floor(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+function round2(value, places = 2) {
+	let multiplier = Number((1).toString().padEnd((places + 1), 0));
+	return Math.round(value * multiplier + Number.EPSILON) / multiplier;
+}
+
+function ok2minmax(value) {
+	if (value < 0.4) return false;
+	if (value > 4.6) return false;
+	return true;
+}
+
+
 // Automatic lights handling
 function auto_lights() {
 	if (config.chassis.model !== 'e39') return;
@@ -77,19 +100,12 @@ function auto_lights_process() {
 	let lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
 	let lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
 
-	// Debug logging
-	// log.module('   current : \''+now_time+'\'' });
-	// log.module(' lights_on : \''+lights_on+'\''    });
-	// log.module('lights_off : \''+lights_off+'\''   });
-
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
 	if (status.vehicle.ignition_level < 3 || config.lights.auto !== true) {
 		auto_lights();
 		return;
 	}
-
-	// log.module('Processing auto lights' });
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
@@ -132,6 +148,7 @@ function auto_lights_process() {
 
 	// Process/send LCM data on 5 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
+	// TODO: Move this value into config object
 	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 5000);
 }
 
@@ -296,13 +313,6 @@ function comfort_turn_flash(action) {
 	setTimeout(() => { update.status('lights.turn.comfort_cool', true, false); }, timer_cool);
 }
 
-
-function ok2minmax(value) {
-	if (value < 0.4) return false;
-	if (value > 4.6) return false;
-	return true;
-}
-
 // Decode various bits of data into usable information
 function decode(data) {
 	switch (data.msg[0]) {
@@ -423,13 +433,13 @@ function decode(data) {
 
 			let voltages = {
 				pot : {
-					dimmer : parseFloat((data.msg[15] * 5) / 255),
-					lwr    : parseFloat((data.msg[16] * 5) / 255),
+					dimmer : round2((data.msg[15] * 5) / 255),
+					lwr    : round2((data.msg[16] * 5) / 255),
 				},
 
 				lwr : {
-					front : parseFloat((data.msg[23] * 5) / 255),
-					rear  : parseFloat((data.msg[24] * 5) / 255),
+					front : round2((data.msg[23] * 5) / 255),
+					rear  : round2((data.msg[24] * 5) / 255),
 				},
 			};
 

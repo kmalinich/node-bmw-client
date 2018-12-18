@@ -530,11 +530,8 @@ class IKE extends EventEmitter {
 	hud_refresh_speed() {
 		if (!this.ok2hud()) return;
 
-		// Send text to IKE and update status.hud.refresh_last value
-		this.text(status.vehicle.speed.mph + 'mph', () => {
-			// Bring up last HUD refresh time
-			update.status('hud.refresh_last', now());
-		});
+		// Send text to IKE
+		this.text(status.vehicle.speed.mph + 'mph');
 	}
 
 	// Render custom HUD string
@@ -608,12 +605,9 @@ class IKE extends EventEmitter {
 		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
 
 		// If the newly rendered string matches the existing string, bail out
-		if (override === false && status.hud.string === hud_string_rendered) {
-			// log.module('HUD string is already correct');
-			return;
-		}
+		if (override === false && status.hud.string === hud_string_rendered) return;
 
-		update.status('hud.string', hud_string_rendered, false);
+		update.status('hud.string', hud_string_rendered);
 
 		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
 		hud_render_cb = undefined;
@@ -630,11 +624,8 @@ class IKE extends EventEmitter {
 		}
 
 		this.hud_render(override, () => {
-			// Send text to IKE and update status.hud.refresh_last value
-			this.text(status.hud.string, () => {
-				// Bring up last HUD refresh time
-				update.status('hud.refresh_last', now());
-			});
+			// Send text to IKE
+			this.text(status.hud.string);
 		});
 	}
 
@@ -782,8 +773,13 @@ class IKE extends EventEmitter {
 		// Bounce if override is active
 		if (this.hud_override === true) return false;
 
+		let time_now = now();
+		let refresh_delta = time_now - status.hud.refresh_last;
+
 		// Bonce if the last update was less than the configured value in milliseconds ago
-		if ((now() - status.hud.refresh_last) <= config.hud.refresh_max) return false;
+		if (refresh_delta <= config.hud.refresh_max) return false;
+
+		update.status('hud.refresh_last', time_now);
 
 		return true;
 	}
