@@ -645,7 +645,7 @@ function audio_power(power_state) {
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			setTimeout(() => {
 				for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
-					setTimeout(() => { volume_control(5); }, 6 * pass);
+					setTimeout(() => { volume_control(5); }, 10 * pass);
 				}
 			}, 350);
 		}
@@ -664,11 +664,17 @@ function init_listeners() {
 		setTimeout(() => { audio_power(power_state); }, 150);
 	});
 
+	// Shut off audio power when engine start begins
+	IKE.on('ignition-start-begin', () => {
+		audio_power(false);
+	});
+
 	// Kick DSP amp 2 seconds after engine start
 	// TODO: Make this a config value
 	IKE.on('ignition-start-end', () => {
 		setTimeout(() => { audio_power(true); }, 2000);
 	});
+
 
 	log.msg('Initialized listeners');
 }
