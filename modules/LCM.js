@@ -901,7 +901,8 @@ function pl() {
 		front : {
 			left : {
 				fog      : false,
-				highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+				highbeam : false,
+				// highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				lowbeam  : false,
 				standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
@@ -910,7 +911,8 @@ function pl() {
 			},
 			right : {
 				fog      : false,
-				highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+				highbeam : false,
+				// highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				lowbeam  : false,
 				standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
@@ -955,8 +957,8 @@ function pl() {
 		output_standing_inner_rear_left  : object.rear.left.standing,
 		output_standing_inner_rear_right : object.rear.right.standing,
 
-		output_standing_rear_left  : object.rear.left.standing,
-		output_standing_rear_right : object.rear.right.standing,
+		output_standing_rear_left  : object.rear.right.standing,
+		output_standing_rear_right : object.rear.left.standing,
 
 		output_brake_rear_left   : object.rear.left.brake,
 		output_brake_rear_middle : object.rear.middle.brake,
