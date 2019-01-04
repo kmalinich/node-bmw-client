@@ -219,11 +219,13 @@ function status_module(action = false) {
 				}
 
 				case true : {
+					NBT.timeout.status_module = setTimeout(() => {
+						status_module(true);
+					}, 2000);
+
 					if (NBT.timeout.status_module === null) {
 						log.module('Set module status timeout');
 					}
-
-					NBT.timeout.status_module = setTimeout(status_module, 2000);
 				}
 			}
 		}
