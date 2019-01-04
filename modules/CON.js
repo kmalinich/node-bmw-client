@@ -472,11 +472,13 @@ function init_rotation(action = false) {
 		}
 
 		case true : {
+			CON.timeout.init_rotation = setTimeout(() => {
+				init_rotation(true);
+			}, 10000);
+
 			if (CON.timeout.init_rotation === null) {
 				log.module('Set CON rotation init timeout');
 			}
-
-			CON.timeout.init_rotation = setTimeout(init_rotation, 10000);
 		}
 	}
 
