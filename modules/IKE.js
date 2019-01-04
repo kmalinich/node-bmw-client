@@ -849,7 +849,7 @@ class IKE extends EventEmitter {
 			let self = this;
 			this.timeout_data_refresh = setTimeout(() => {
 				self.data_refresh();
-			}, 4000);
+			}, 12000);
 		}
 	}
 
