@@ -2,6 +2,7 @@
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
+
 // Decode type of audio control command
 function decode_audio_control_command(data) {
 	// Base units
@@ -203,7 +204,7 @@ function decode_audio_control(data) {
 		}
 	}
 
-	// Update status var with interpreted value
+	// Update status object with interpreted value
 	update.status('rad.' + cmd_type, cmd_value, false);
 
 	return data;
@@ -644,7 +645,7 @@ function audio_power(power_state) {
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			setTimeout(() => {
 				for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
-					setTimeout(() => { volume_control(5); }, 6 * pass);
+					setTimeout(() => { volume_control(5); }, 10 * pass);
 				}
 			}, 350);
 		}
@@ -659,8 +660,13 @@ function init_listeners() {
 
 	// Perform commands on power lib active event
 	// TODO: Make this a config value
-	update.on('status.power.active', (data) => {
-		setTimeout(() => { audio_power(data.new); }, 150);
+	power.on('active', (power_state) => {
+		setTimeout(() => { audio_power(power_state); }, 150);
+	});
+
+	// Shut off audio power when engine start begins
+	IKE.on('ignition-start-begin', () => {
+		audio_power(false);
 	});
 
 	// Kick DSP amp 2 seconds after engine start
@@ -668,6 +674,7 @@ function init_listeners() {
 	IKE.on('ignition-start-end', () => {
 		setTimeout(() => { audio_power(true); }, 2000);
 	});
+
 
 	log.msg('Initialized listeners');
 }

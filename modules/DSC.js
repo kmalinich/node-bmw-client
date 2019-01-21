@@ -1,23 +1,4 @@
-/* eslint no-unused-vars : 0 */
-
 const convert = require('node-unit-conversion');
-
-
-// Process to N decimal places
-function ceil2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.ceil(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function floor2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.floor(value * multiplier + Number.EPSILON) / multiplier;
-}
-
-function round2(value, places = 2) {
-	let multiplier = Number((1).toString().padEnd((places + 1), 0));
-	return Math.round(value * multiplier + Number.EPSILON) / multiplier;
-}
 
 
 // Send 0x1A1 KCAN2 message for vehicle speed
@@ -106,8 +87,8 @@ function parse_153(data) {
 			dsc : {
 				active : !bitmask.test(data.msg[1], 0x01),
 
-				torque_reduction_1 : round2(100 - (data.msg[3] / 2.55)),
-				torque_reduction_2 : round2(100 - (data.msg[6] / 2.55)),
+				torque_reduction_1 : num.round2(100 - (data.msg[3] / 2.55)),
+				torque_reduction_2 : num.round2(100 - (data.msg[6] / 2.55)),
 			},
 		},
 	};
@@ -119,8 +100,13 @@ function parse_153(data) {
 }
 
 // Parse wheel speed LSB and MSB into KPH value
+// TODO: Add kmh and mph objects
 function parse_wheel(byte0, byte1) {
-	return (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16) - 2.75;
+	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
+
+	if (parsed_wheel_speed < 3) return 0;
+
+	return num.round2(parsed_wheel_speed, 1);
 }
 
 function parse_1f0(data) {
@@ -139,19 +125,17 @@ function parse_1f0(data) {
 	// Calculate vehicle speed from average of all 4 sensors
 	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
 
-	// Average all wheel speeds together and include accuracy offset multiplier
-	// let vehicle_speed_kmh = round2((vehicle_speed_total / 4) * config.speedometer.offset);
-	let vehicle_speed_kmh = round2(vehicle_speed_total / 4);
+	// Average all wheel speeds together
+	let vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
-
+	let vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
-	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
-	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
-	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
-	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right);
+	update.status('vehicle.wheel_speed.front.left',  Math.round(convert(wheel_speed.front.left).from('kilometre').to('us mile')));
+	update.status('vehicle.wheel_speed.front.right', Math.round(convert(wheel_speed.front.right).from('kilometre').to('us mile')));
+	update.status('vehicle.wheel_speed.rear.left',   Math.round(convert(wheel_speed.rear.left).from('kilometre').to('us mile')));
+	update.status('vehicle.wheel_speed.rear.right',  Math.round(convert(wheel_speed.rear.right).from('kilometre').to('us mile')));
 
 	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh)) {
 		if (config.translate.dsc === true) {
@@ -174,26 +158,26 @@ function parse_1f5(data) {
 		angle = (data.msg[1] * 256) + data.msg[0];
 	}
 
-	let velocity = 0;
-	// These are an embarrasment
-	if (data.msg[3] > 127) {
-		velocity = -1 * (((data.msg[3] - 128) * 256) + data.msg[2]);
-	}
-	else {
-		velocity = (data.msg[3] * 256) + data.msg[2];
-	}
+	// let velocity = 0;
+	// // These are an embarrasment
+	// if (data.msg[3] > 127) {
+	// 	velocity = -1 * (((data.msg[3] - 128) * 256) + data.msg[2]);
+	// }
+	// else {
+	// 	velocity = (data.msg[3] * 256) + data.msg[2];
+	// }
 
 	// 0.043393 : 3.75 turns, lock to lock (1350 degrees of total rotation)
 	let steering_multiplier = 0.043393;
 
 	let steering = {
-		angle    : Math.floor(angle    * steering_multiplier) * -1, // Thanks babe
-		velocity : Math.floor(velocity * steering_multiplier) * -1,
+		angle : Math.floor(angle    * steering_multiplier) * -1, // Thanks babe
+		// velocity : Math.floor(velocity * steering_multiplier) * -1,
 	};
 
 
 	update.status('vehicle.steering.angle',    steering.angle);
-	update.status('vehicle.steering.velocity', steering.velocity);
+	// update.status('vehicle.steering.velocity', steering.velocity);
 }
 
 // Parse data sent from module
@@ -202,10 +186,12 @@ function parse_out(data) {
 
 	switch (data.src.id) {
 		case 0x153 : parse_153(data); data.value = 'Speed/DSC light'; break;
-		case 0x1F0 : parse_1f0(data); data.value = 'Wheel speeds';    break;
 
-		// 00 00 05 FF 39 7D 5D 00
-		// byte2 bit3 : brake applied
+		case 0x0CE :
+		case 0x1F0 : parse_1f0(data); data.value = 'Wheel speeds'; break;
+
+			// 00 00 05 FF 39 7D 5D 00
+			// byte2 bit3 : brake applied
 		case 0x1F3 :                  data.value = 'Transverse acceleration'; break;
 		case 0x1F5 : parse_1f5(data); data.value = 'Steering angle';          break;
 
@@ -271,10 +257,19 @@ function parse_out(data) {
 function init_listeners() {
 	// Send vehicle speed 0 to CAN1 on power module events
 	// This is because vehicle speed isn't received via CAN0 when key is in accessory
-	update.on('status.power.active', () => {
+	power.on('active', () => {
 		setTimeout(() => {
 			encode_1a1(0);
 		}, 250);
+	});
+
+	update.on('status.engine.running', (data) => {
+		switch (data.new) {
+			case false : {
+				update.status('vehicle.dsc.torque_reduction_1', 0);
+				update.status('vehicle.dsc.torque_reduction_2', 0);
+			}
+		}
 	});
 
 	log.msg('Initialized listeners');

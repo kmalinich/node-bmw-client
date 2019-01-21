@@ -12,15 +12,15 @@ process.title = app_name;
 
 terminating = false;
 
-// node-bmw libraries
+// node-bmw shared libraries
 api        = require('api');
 bitmask    = require('bitmask');
-gpio       = require('gpio');          // GPIO library
+gpio       = require('gpio');
 hex        = require('hex');
 json       = require('json');
 log        = require('log-output');
+num        = require('num');
 obc_values = require('obc-values');
-objfmt     = require('object-format'); // JSON/object formatter
 weather    = require('weather');
 
 // Class/event-based modules
@@ -62,7 +62,6 @@ function load_modules(pass) {
 	CCM  = require('CCM');
 	CDC  = require('CDC');
 	DIA  = require('DIA');
-	DMEK = require('DMEK');
 	DSP  = require('DSP');
 	DSPC = require('DSPC');
 	GT   = require('GT');
@@ -71,7 +70,6 @@ function load_modules(pass) {
 	MFL  = require('MFL');
 	MID  = require('MID');
 	NAV  = require('NAV');
-	NAVE = require('NAVE');
 	PDC  = require('PDC');
 	RAD  = require('RAD');
 	RDC  = require('RDC');
@@ -79,57 +77,22 @@ function load_modules(pass) {
 	TEL  = require('TEL');
 	VID  = require('VID');
 
-	// Class/event-based modules
+	// Class/event-based DBUS/KBUS/IBUS modules
 	GM  = new (require('GM'))();
 	EWS = new (require('EWS'))();
 	IKE = new (require('IKE'))();
-
-	// Not-yet-utilized DBUS/KBUS/IBUS modules
-	// AHL  = require('AHL');
-	// ANZV = require('ANZV');
-	// ASST = require('ASST');
-	// CDCD = require('CDCD');
-	// CID  = require('CID');
-	// CSU  = require('CSU');
-	// CVM  = require('CVM');
-	// EHC  = require('EHC');
-	// EKM  = require('EKM');
-	// EKP  = require('EKP');
-	// FBZV = require('FBZV');
-	// FHK  = require('FHK');
-	// FID  = require('FID');
-	// FMBT = require('FMBT');
-	// GR   = require('GR');
-	// GTF  = require('GTF');
-	// HAC  = require('HAC');
-	// HKM  = require('HKM');
-	// IRIS = require('IRIS');
-	// LWS  = require('LWS');
-	// MM3  = require('MM3');
-	// MML  = require('MML');
-	// MMR  = require('MMR');
-	// NAVC = require('NAVC');
-	// NAVJ = require('NAVJ');
-	// PIC  = require('PIC');
-	// RCC  = require('RCC');
-	// RCSC = require('RCSC');
-	// SDRS = require('SDRS');
-	// SES  = require('SES');
-	// SHD  = require('SHD');
-	// SM   = require('SM');
-	// SMAD = require('SMAD');
-	// SOR  = require('SOR');
-	// STH  = require('STH');
-	// TCU  = require('TCU');
 
 	// CANBUS modules
 	CAS   = require('CAS');
 	CON   = require('CON');
 	DSC   = require('DSC');
-	EGS   = require('EGS');
 	FEM   = require('FEM');
 	KOMBI = require('KOMBI');
 	NBT   = require('NBT');
+	SZM   = require('SZM');
+
+	// Class/event-based CANBUS modules
+	EGS = new (require('EGS'))();
 
 	// Hybrid modules
 	DME = require('DME');

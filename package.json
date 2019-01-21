@@ -8,22 +8,22 @@
 		"body-parser": "^1.18.3",
 		"callers-path": "^1.0.5",
 		"chump": "git+https://github.com/kmalinich/chump.git",
-		"dark-sky": "^1.1.4",
+		"dark-sky": "^1.1.5",
 		"defaults-deep": "^0.2.4",
 		"express": "^4.16.4",
-		"json-colorizer": "^1.1.1",
+		"json-colorizer": "^2.1.2",
 		"jsonfile": "^5.0.0",
 		"kodi-ws": "^2.4.3",
-		"moment": "^2.22.2",
+		"moment": "^2.23.0",
 		"multipad": "^1.1.1",
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.4",
 		"os": "^0.1.1",
 		"pad": "^2.2.1",
 		"performance-now": "^2.1.0",
-		"socket.io": "^2.1.1",
+		"socket.io": "^2.2.0",
 		"suncalc": "^1.8.0",
-		"trucolor": "^0.7.1",
+		"trucolor": "^0.7.2",
 		"zeromq": "^5.1.0"
 	},
 	"description": "NodeJS-powered BMW IBUS client interface",
@@ -42,12 +42,12 @@
 	"optionalDependencies": {
 		"bluez": "git+https://github.com/kmalinich/node-bluez.git",
 		"dbus": "git+https://github.com/Shouqun/node-dbus.git",
-		"dbus-native": "^0.2.5",
+		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
 		"onoff": "^3.2.2",
 		"pi-temperature": "^2.0.0",
-		"pigpio": "^1.1.4",
+		"pigpio": "^1.2.1",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git",
 		"smc": "^2.0.0"
 	},
@@ -56,7 +56,7 @@
 		"url": "git+https://github.com/kmalinich/node-bmw-client.git"
 	},
 	"scripts": {
-		"postinstall": "/usr/bin/env bash ./cp-index.sh"
+		"postinstall": "/usr/bin/env bash ./postinstall"
 	},
 	"version": "0.0.1"
 }

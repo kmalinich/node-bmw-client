@@ -26,14 +26,99 @@ function decode_status_module(data) {
 	return data;
 }
 
+function video_source(source = 'default') {
+	// Controlled by cmd_data.msg1[4], set to normal video output by default
+	let cmd_data = {
+		id   : 0x6F1,
+		msg0 : [ 0x63, 0x10, 0x0B, 0x31, 0x01, 0xA0, 0x1C, 0x00 ],
+		msg1 : [ 0x63, 0x21, 0x00, 0x00, 0x01, 0x00, 0x01, 0xFF ],
+	};
+
+	// Support toggling video input
+	switch (source) {
+		case 'toggle' : {
+			log.module('Toggling video input');
+
+			switch (status.nbt.video.source) {
+				case 'default' : source = 'RFK'; break;
+				case 'RFK'     : source = 'default';
+			}
+
+			break;
+		}
+	}
+
+	switch (source) {
+		case 'default' : cmd_data.msg1[4] = 0x01; break;
+		case 'RFK'     : cmd_data.msg1[4] = 0x04; break;
+
+		default : {
+			log.module('Video source ' + source + ' is not valid');
+			return;
+		}
+	}
+
+	log.module('Setting NBT video source to ' + source);
+
+	// Send 1st half of message
+	bus.data.send({
+		bus  : config.nbt.can_intf,
+		id   : cmd_data.id,
+		data : Buffer.from(cmd_data.msg0),
+	});
+
+	// 2nd half of message sent 100ms later
+	setTimeout(() => {
+		bus.data.send({
+			bus  : config.nbt.can_intf,
+			id   : cmd_data.id,
+			data : Buffer.from(cmd_data.msg1),
+		});
+
+		update.status('nbt.video.source', source);
+	}, 100);
+}
+
+function reverse_camera(gear) {
+	if (config.retrofit.nbt !== true) return;
+
+	switch (gear) {
+		case 'reverse' : {
+			// If now in reverse, and were NOT before,
+			// Send message to NBT to switch input to reverse camera
+			if (status.egs.gear !== 'reverse') {
+				// Wait 250ms, then check if we're still in reverse
+				setTimeout(() => {
+					if (status.egs.gear === 'reverse') video_source('RFK');
+				}, 250);
+			}
+
+			break;
+		}
+
+		default : {
+			// If now NOT in reverse, and were before
+			// Send message to NBT to switch input to default
+			if (status.egs.gear === 'reverse') {
+				setTimeout(() => {
+					if (status.egs.gear !== 'reverse') video_source();
+				}, 250);
+			}
+		}
+	}
+}
+
 
 function init_listeners() {
 	// Bounce if not enabled
 	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
+	// Perform commands on EGS gear changes
+	EGS.on('gear', reverse_camera);
+
 	// Perform commands on power lib active event
-	update.on('status.power.active', status_module);
-	update.on('status.power.active', status_ignition);
+	power.on('active', status_module);
+	power.on('active', status_ignition);
 
 	log.msg('Initialized listeners');
 }
@@ -108,7 +193,7 @@ function parse_out(data) {
 
 // NBT status
 // 273 -> 1D E1 00 F0 FF 7F DE 04
-function status_module() {
+function status_module(action = false) {
 	// Bounce if not enabled
 	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
@@ -120,7 +205,7 @@ function status_module() {
 		}
 
 		case 'nbt' : {
-			switch (status.power.active) {
+			switch (action) {
 				case false : {
 					if (NBT.timeout.status_module !== null) {
 						clearTimeout(NBT.timeout.status_module);
@@ -134,11 +219,13 @@ function status_module() {
 				}
 
 				case true : {
+					NBT.timeout.status_module = setTimeout(() => {
+						status_module(true);
+					}, 2000);
+
 					if (NBT.timeout.status_module === null) {
 						log.module('Set module status timeout');
 					}
-
-					NBT.timeout.status_module = setTimeout(status_module, 2000);
 				}
 			}
 		}
@@ -231,9 +318,6 @@ function status_ignition() {
 		}
 	}
 
-	// This is pretty noisy due to 200ms timeout
-	// log.module('Sending ignition status');
-
 	// Convert data array to Buffer
 	msg.data = Buffer.from(msg.data);
 
@@ -250,6 +334,8 @@ module.exports = {
 
 	// Functions
 	init_listeners : init_listeners,
+
+	video_source : video_source,
 
 	parse_in  : parse_in,
 	parse_out : parse_out,

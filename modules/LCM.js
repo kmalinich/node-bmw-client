@@ -25,7 +25,7 @@ function auto_lights() {
 				log.module('Unset autolights timeout');
 			}
 
-			// Set status variables
+			// Update status object
 			update.status('lights.auto.active',  false, false);
 			update.status('lights.auto.lowbeam', false, false);
 			update.status('lights.auto.reason',  null,  false);
@@ -37,7 +37,7 @@ function auto_lights() {
 				log.module('Set autolights timeout');
 			}
 
-			// Set status variable
+			// Update status object
 			update.status('lights.auto.active', true, false);
 
 			auto_lights_process();
@@ -77,19 +77,12 @@ function auto_lights_process() {
 	let lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
 	let lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
 
-	// Debug logging
-	// log.module('   current : \''+now_time+'\'' });
-	// log.module(' lights_on : \''+lights_on+'\''    });
-	// log.module('lights_off : \''+lights_off+'\''   });
-
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
 	if (status.vehicle.ignition_level < 3 || config.lights.auto !== true) {
 		auto_lights();
 		return;
 	}
-
-	// log.module('Processing auto lights' });
 
 	// Check wipers
 	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
@@ -132,6 +125,7 @@ function auto_lights_process() {
 
 	// Process/send LCM data on 5 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
+	// TODO: Move this value into config object
 	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 5000);
 }
 
@@ -247,18 +241,18 @@ function comfort_turn_flash(action) {
 
 	log.module('Comfort turn action: ' + action + ', elapsed: ' + status.lights.turn.depress_elapsed);
 
-	// Update status variables, and prepare cluster message
+	// Update status object, and prepare cluster message
 	let cluster_msg_outer;
 	switch (action) {
 		case 'left' :
-			// Set status variables
+			// Update status object
 			update.status('lights.turn.left.comfort',  true,  false);
 			update.status('lights.turn.right.comfort', false, false);
 			cluster_msg_outer = '< < < < < < <';
 			break;
 
 		case 'right' :
-			// Set status variables
+			// Update status object
 			update.status('lights.turn.left.comfort',  false, false);
 			update.status('lights.turn.right.comfort', true,  false);
 			cluster_msg_outer = '> > > > > > >';
@@ -286,7 +280,7 @@ function comfort_turn_flash(action) {
 
 	// Timeout for turning off the comfort turn signal
 	setTimeout(() => {
-		// Update status variables
+		// Update status object
 		update.status('lights.turn.left.comfort',  false, false);
 		update.status('lights.turn.right.comfort', false, false);
 		reset();
@@ -414,12 +408,45 @@ function decode(data) {
 			// Decode values
 			update.status('lcm.dimmer.value_2', data.msg[15], false);
 
-			update.status('lcm.voltage.pot.dimmer', parseFloat((data.msg[15] * 5) / 255), false);
-			update.status('lcm.voltage.pot.lwr',    parseFloat((data.msg[16] * 5) / 255), false);
+			let voltages = {
+				pot : {
+					dimmer : num.round2((data.msg[15] * 5) / 255),
+					lwr    : num.round2((data.msg[16] * 5) / 255),
+				},
 
-			update.status('lcm.voltage.lwr.front', parseFloat((data.msg[23] * 5) / 255), false);
-			update.status('lcm.voltage.lwr.rear',  parseFloat((data.msg[24] * 5) / 255), false);
+				lwr : {
+					front : num.round2((data.msg[23] * 5) / 255),
+					rear  : num.round2((data.msg[24] * 5) / 255),
+				},
+			};
 
+			update.status('lcm.voltage.lwr.front.current',  voltages.lwr.front,  false);
+			update.status('lcm.voltage.lwr.rear.current',   voltages.lwr.rear,   false);
+			update.status('lcm.voltage.pot.dimmer.current', voltages.pot.dimmer, false);
+			update.status('lcm.voltage.pot.lwr.current',    voltages.pot.lwr,    false);
+
+			// Set min/max values
+			if (num.ok2minmax(voltages.lwr.front)) {
+				if (voltages.lwr.front < status.lcm.voltage.lwr.front.minimum) update.status('lcm.voltage.lwr.front.minimum', voltages.lwr.front);
+				if (voltages.lwr.front > status.lcm.voltage.lwr.front.maximum) update.status('lcm.voltage.lwr.front.maximum', voltages.lwr.front);
+			}
+
+			if (num.ok2minmax(voltages.lwr.rear)) {
+				if (voltages.lwr.rear < status.lcm.voltage.lwr.rear.minimum) update.status('lcm.voltage.lwr.rear.minimum', voltages.lwr.rear);
+				if (voltages.lwr.rear > status.lcm.voltage.lwr.rear.maximum) update.status('lcm.voltage.lwr.rear.maximum', voltages.lwr.rear);
+			}
+
+			if (num.ok2minmax(voltages.pot.dimmer)) {
+				if (voltages.pot.dimmer < status.lcm.voltage.pot.dimmer.minimum) update.status('lcm.voltage.pot.dimmer.minimum', voltages.pot.dimmer);
+				if (voltages.pot.dimmer > status.lcm.voltage.pot.dimmer.maximum) update.status('lcm.voltage.pot.dimmer.maximum', voltages.pot.dimmer);
+			}
+
+			if (num.ok2minmax(voltages.pot.lwr)) {
+				if (voltages.pot.lwr < status.lcm.voltage.pot.lwr.minimum) update.status('lcm.voltage.pot.lwr.minimum', voltages.pot.lwr);
+				if (voltages.pot.lwr > status.lcm.voltage.pot.lwr.maximum) update.status('lcm.voltage.pot.lwr.maximum', voltages.pot.lwr);
+			}
+
+			// TODO: Move up to voltages object
 			update.status('lcm.voltage.photo_cell',         parseFloat((data.msg[19] * 5) / 255), false);
 			update.status('lcm.voltage.flash_to_pass',      parseFloat((data.msg[29] * 5) / 255), false);
 			update.status('lcm.voltage.turn_signal_switch', parseFloat((data.msg[30] * 5) / 255), false);
@@ -672,11 +699,6 @@ function io_set(packet) {
 		src : 'DIA',
 		msg : packet,
 	});
-
-	// Request the IO status after
-	// setImmediate(() => {
-	// 	LCM.request('io-status');
-	// });
 }
 
 // Make things.. how they should be?
@@ -879,7 +901,8 @@ function pl() {
 		front : {
 			left : {
 				fog      : false,
-				highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+				highbeam : false,
+				// highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				lowbeam  : false,
 				standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
@@ -888,7 +911,8 @@ function pl() {
 			},
 			right : {
 				fog      : false,
-				highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+				highbeam : false,
+				// highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				lowbeam  : false,
 				standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
@@ -933,8 +957,8 @@ function pl() {
 		output_standing_inner_rear_left  : object.rear.left.standing,
 		output_standing_inner_rear_right : object.rear.right.standing,
 
-		output_standing_rear_left  : object.rear.left.standing,
-		output_standing_rear_right : object.rear.right.standing,
+		output_standing_rear_left  : object.rear.right.standing,
+		output_standing_rear_right : object.rear.left.standing,
 
 		output_brake_rear_left   : object.rear.left.brake,
 		output_brake_rear_middle : object.rear.middle.brake,

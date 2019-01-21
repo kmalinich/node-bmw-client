@@ -98,7 +98,7 @@ class IKE extends EventEmitter {
 
 				string_time = string_time.toString().trim().toLowerCase();
 
-				// Update status variables
+				// Update status object
 				update.status('obc.time', string_time, false);
 				break;
 			}
@@ -110,7 +110,7 @@ class IKE extends EventEmitter {
 				string_date = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9], data.msg[10], data.msg[11], data.msg[12] ]);
 				string_date = string_date.toString().trim();
 
-				// Update status variables
+				// Update status object
 				update.status('obc.date', string_date, false);
 				break;
 			}
@@ -138,7 +138,7 @@ class IKE extends EventEmitter {
 					string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
 				}
 
-				// Update status variables
+				// Update status object
 				switch (string_outside_temp_unit) {
 					case 'c' : {
 						update.status('coding.unit.temp', 'c', false);
@@ -190,7 +190,7 @@ class IKE extends EventEmitter {
 					}
 				}
 
-				// Update status variables
+				// Update status object
 				update.status('obc.consumption.c1.mpg',  parseFloat(consumption_mpg.toFixed(2)),  false);
 				update.status('obc.consumption.c1.l100', parseFloat(consumption_l100.toFixed(2)), false);
 				break;
@@ -224,7 +224,7 @@ class IKE extends EventEmitter {
 					}
 				}
 
-				// Update status variables
+				// Update status object
 				update.status('obc.consumption.c2.mpg',  parseFloat(consumption_mpg.toFixed(2)),  false);
 				update.status('obc.consumption.c2.l100', parseFloat(consumption_l100.toFixed(2)), false);
 				break;
@@ -241,7 +241,7 @@ class IKE extends EventEmitter {
 				string_range_unit = Buffer.from([ data.msg[7], data.msg[8] ]);
 				string_range_unit = string_range_unit.toString().trim().toLowerCase();
 
-				// Update status variables
+				// Update status object
 				switch (string_range_unit) {
 					case 'ml' : {
 						update.status('coding.unit.distance', 'mi', false);
@@ -269,7 +269,7 @@ class IKE extends EventEmitter {
 				string_distance = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 				string_distance = parseFloat(string_distance.toString().trim().toLowerCase()) || 0;
 
-				// Update status variables
+				// Update status object
 				update.status('obc.distance', string_distance, false);
 				break;
 			}
@@ -281,7 +281,7 @@ class IKE extends EventEmitter {
 				string_arrival = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 				string_arrival = string_arrival.toString().trim().toLowerCase();
 
-				// Update status variables
+				// Update status object
 				update.status('obc.arrival', string_arrival, false);
 				break;
 			}
@@ -293,7 +293,7 @@ class IKE extends EventEmitter {
 				string_limit = Buffer.from([ data.msg[3], data.msg[4], data.msg[5] ]);
 				string_limit = parseFloat(string_limit.toString().trim().toLowerCase()) || 0;
 
-				// Update status variables
+				// Update status object
 				update.status('obc.limit', string_limit, false);
 				break;
 			}
@@ -315,7 +315,7 @@ class IKE extends EventEmitter {
 					case 'k' : {
 						update.status('obc.coding.unit.speed', 'kmh', false);
 
-						// Update status variables
+						// Update status object
 						update.status('obc.average_speed.kmh', string_average_speed,                                                                 false);
 						update.status('obc.average_speed.mph', parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2)), false);
 						break;
@@ -324,7 +324,7 @@ class IKE extends EventEmitter {
 					case 'm' : {
 						update.status('obc.coding.unit.speed', 'mph', false);
 
-						// Update status variables
+						// Update status object
 						update.status('obc.average_speed.kmh', parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2)), false);
 						update.status('obc.average_speed.mph', string_average_speed,                                                                 false);
 						break;
@@ -340,7 +340,7 @@ class IKE extends EventEmitter {
 				string_code = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 				string_code = string_code.toString().trim().toLowerCase();
 
-				// Update status variable
+				// Update status object
 				update.status('obc.code', string_code, false);
 				break;
 			}
@@ -352,7 +352,7 @@ class IKE extends EventEmitter {
 				string_stopwatch = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 				string_stopwatch = parseFloat(string_stopwatch.toString().trim()) || 0;
 
-				// Update status variables
+				// Update status object
 				update.status('obc.stopwatch', string_stopwatch, false);
 				break;
 			}
@@ -364,7 +364,7 @@ class IKE extends EventEmitter {
 				string_aux_heat_timer_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 				string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
 
-				// Update status variables
+				// Update status object
 				update.status('obc.aux_heat_timer.t1', string_aux_heat_timer_1, false);
 				break;
 			}
@@ -376,7 +376,7 @@ class IKE extends EventEmitter {
 				string_aux_heat_timer_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
 				string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
 
-				// Update status variables
+				// Update status object
 				update.status('obc.aux_heat_timer.t2', string_aux_heat_timer_2, false);
 				break;
 			}
@@ -388,7 +388,7 @@ class IKE extends EventEmitter {
 				string_interim = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
 				string_interim = parseFloat(string_interim.toString().trim().toFixed(2)) || 0;
 
-				// Update status variables
+				// Update status object
 				update.status('obc.interim', string_interim, false);
 				break;
 			}
@@ -530,11 +530,8 @@ class IKE extends EventEmitter {
 	hud_refresh_speed() {
 		if (!this.ok2hud()) return;
 
-		// Send text to IKE and update status.hud.refresh_last value
-		this.text(status.vehicle.speed.mph + 'mph', () => {
-			// Bring up last HUD refresh time
-			update.status('hud.refresh_last', now());
-		});
+		// Send text to IKE
+		this.text(status.vehicle.speed.mph + 'mph');
 	}
 
 	// Render custom HUD string
@@ -608,12 +605,9 @@ class IKE extends EventEmitter {
 		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
 
 		// If the newly rendered string matches the existing string, bail out
-		if (override === false && status.hud.string === hud_string_rendered) {
-			// log.module('HUD string is already correct');
-			return;
-		}
+		if (override === false && status.hud.string === hud_string_rendered) return;
 
-		update.status('hud.string', hud_string_rendered, false);
+		update.status('hud.string', hud_string_rendered);
 
 		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
 		hud_render_cb = undefined;
@@ -630,11 +624,8 @@ class IKE extends EventEmitter {
 		}
 
 		this.hud_render(override, () => {
-			// Send text to IKE and update status.hud.refresh_last value
-			this.text(status.hud.string, () => {
-				// Bring up last HUD refresh time
-				update.status('hud.refresh_last', now());
-			});
+			// Send text to IKE
+			this.text(status.hud.string);
 		});
 	}
 
@@ -782,8 +773,13 @@ class IKE extends EventEmitter {
 		// Bounce if override is active
 		if (this.hud_override === true) return false;
 
+		let time_now = now();
+		let refresh_delta = time_now - status.hud.refresh_last;
+
 		// Bonce if the last update was less than the configured value in milliseconds ago
-		if ((now() - status.hud.refresh_last) <= config.hud.refresh_max) return false;
+		if (refresh_delta <= config.hud.refresh_max) return false;
+
+		update.status('hud.refresh_last', time_now);
 
 		return true;
 	}
@@ -849,10 +845,11 @@ class IKE extends EventEmitter {
 			if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
 
 			// setTimeout for next update
+			// TODO: Make this setTimeout delay value a config param
 			let self = this;
 			this.timeout_data_refresh = setTimeout(() => {
 				self.data_refresh();
-			}, 14000);
+			}, 12000);
 		}
 	}
 

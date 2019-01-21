@@ -25,11 +25,41 @@ function parse_gps_time(data) {
 	return data;
 }
 
-// Parse data sent from NAV module
+
+// Parse data sent from module
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x1F : { // Broadcast: Time and date
 			data = parse_gps_time(data);
+			break;
+		}
+
+		case 0xA2 : { // Broadcast: Current GPS position
+			data.command = 'bro';
+			data.value   = 'current GPS position TODO';
+			// data.msg[1] = 0x01 : GPS fix
+			break;
+		}
+
+		case 0xA4 : { // Broadcast: Current location name
+			data.command = 'bro';
+			data.value   = 'current location name TODO';
+			// data.msg[2] = 0x01 : Town
+			// data.msg[2] = 0x02 : Street
+			break;
+		}
+
+		case 0xA7 : { // Request: TMC status
+			data.command = 'req';
+			data.value   = 'TMC status, update class: ' + hex.i2s(data.msg[1]);
+			break;
+		}
+
+		case 0xA9 : { // Broadcast: Telephone data
+			data.command = 'bro';
+			data.value   = 'Telephone data TODO';
+			// A9 03 30 30,NAV,TEL,Telephone data Current_network_request Count_0
+			// A9 0A 30 30,NAV,TEL,Telephone data Current_phone_status    Count_0
 			break;
 		}
 
