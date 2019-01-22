@@ -1,6 +1,4 @@
-/.git
-/bitmasks
-/candump
-/node_modules
-/protocol/test*
-/test/*
+/.git/
+/candump/
+/node_modules/
+/test/
