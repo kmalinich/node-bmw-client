@@ -23,7 +23,7 @@
 		"performance-now": "^2.1.0",
 		"socket.io": "^2.2.0",
 		"suncalc": "^1.8.0",
-		"trucolor": "^0.7.2",
+		"trucolor": "^1.0.0",
 		"zeromq": "^5.1.0"
 	},
 	"description": "NodeJS-powered BMW IBUS client interface",
@@ -45,7 +45,7 @@
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
-		"onoff": "^3.2.2",
+		"onoff": "^3.2.7",
 		"pi-temperature": "^2.0.0",
 		"pigpio": "^1.2.1",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git",
