@@ -593,7 +593,7 @@ function volume_control(value = 1) {
 
 
 // Power on DSP amp and GPIO pin for amplifier
-function audio_power(power_state) {
+function audio_power(power_state = false) {
 	if (config.chassis.model !== 'e39') return;
 
 	// Bounce if we're not configured to emulate the RAD module
@@ -664,15 +664,14 @@ function init_listeners() {
 		setTimeout(() => { audio_power(power_state); }, 150);
 	});
 
-	// Shut off audio power when engine start begins
-	IKE.on('ignition-start-begin', () => {
-		audio_power(false);
-	});
-
 	// Kick DSP amp 2 seconds after engine start
 	// TODO: Make this a config value
 	IKE.on('ignition-start-end', () => {
-		setTimeout(() => { audio_power(true); }, 2000);
+		setTimeout(() => {
+			audio_power(false);
+
+			setTimeout(() => { audio_power(true); }, 1000);
+		}, 1000);
 	});
 
 

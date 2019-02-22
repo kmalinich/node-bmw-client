@@ -87,9 +87,6 @@ function decode_button(data) {
 
 	data.value += action + ' ' + button;
 
-	// If media control is disabled, return here
-	if (config.bmbt.media === false) return data;
-
 	switch (action) {
 		case 'depress' : {
 			switch (button) {
@@ -133,7 +130,7 @@ function decode_button(data) {
 				}
 			}
 
-			// Any version
+			// Controls not dependent on Bluetooth or Kodi being enabled
 			switch (status.bmbt.last.action + status.bmbt.last.button) {
 				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 200); break;
 				case 'depress2' : LCM.police(true); setTimeout(LCM.police, 300); break;
