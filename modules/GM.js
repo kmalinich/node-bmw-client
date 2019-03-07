@@ -306,7 +306,9 @@ class GM extends EventEmitter {
 		// Send the notification to the log and the cluster
 		let notify_message = 'Toggling door locks';
 		log.module(notify_message);
-		IKE.text_override(notify_message);
+
+		// TODO: Add MID message
+		if (config.gm.text.ike) IKE.text_override(notify_message);
 
 		// Hex:
 		// 01 3A 01 : LF unlock (CL)

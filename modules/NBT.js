@@ -268,7 +268,7 @@ function status_module(action = false) {
 }
 
 // Ignition status
-// TODO : Should be in CAS module
+// TODO: Should be in CAS module
 function status_ignition() {
 	// Bounce if not enabled
 	if (config.retrofit.nbt !== true) return;
