@@ -664,14 +664,13 @@ function init_listeners() {
 		setTimeout(() => { audio_power(power_state); }, 150);
 	});
 
-	// Kick DSP amp 2 seconds after engine start
-	// TODO: Make this a config value
+	// Kick DSP amp config.rad.after_start_delay ms after engine start
 	IKE.on('ignition-start-end', () => {
 		setTimeout(() => {
 			audio_power(false);
 
-			setTimeout(() => { audio_power(true); }, 1000);
-		}, 1000);
+			setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
+		}, config.rad.after_start_delay);
 	});
 
 

@@ -526,13 +526,49 @@ class IKE extends EventEmitter {
 		}
 	}
 
+
+	ok2hud() {
+		// Bounce if the ignition is off
+		if (status.vehicle.ignition_level < 1) return false;
+
+		// Bounce if override is active
+		if (this.hud_override === true) return false;
+
+		let time_now = now();
+		let refresh_delta = time_now - status.hud.refresh_last;
+
+		// Bonce if the last update was less than the configured value in milliseconds ago
+		if (refresh_delta <= config.hud.refresh_max) return false;
+
+		update.status('hud.refresh_last', time_now);
+
+		return true;
+	}
+
+	// Refresh custom HUD
+	hud_refresh(override = false) {
+		if (config.chassis.model !== 'e39') return;
+
+		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
+		if (override === false && !this.ok2hud()) return;
+
+		this.hud_render(override, () => {
+			// Send text to IKE
+			this.text(status.hud.string);
+		});
+	}
+
 	// Refresh custom HUD speed
 	hud_refresh_speed() {
+		if (config.chassis.model !== 'e39') return;
+
+		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
 
 		// Send text to IKE
 		this.text(status.vehicle.speed.mph + 'mph');
 	}
+
 
 	// Render custom HUD string
 	hud_render(override = false, hud_render_cb = null) {
@@ -551,7 +587,8 @@ class IKE extends EventEmitter {
 			center : '',
 			right  : '',
 
-			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg', // TODO use unit from config
+			// TODO: Use unit from config
+			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg',
 			egt   : Math.floor(status.temperature.exhaust.c) + '¨',
 			iat   : Math.floor(status.temperature.intake.c) + '¨',
 			load  : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
@@ -577,7 +614,7 @@ class IKE extends EventEmitter {
 		}
 
 
-		// TODO use layout from config
+		// TODO: Use layout from config
 		hud_strings.left   = hud_strings.temp;
 		hud_strings.center = hud_strings.egt;
 		hud_strings.right  = hud_strings.iat;
@@ -613,21 +650,6 @@ class IKE extends EventEmitter {
 		hud_render_cb = undefined;
 	}
 
-	// Refresh custom HUD
-	hud_refresh(override = false) {
-		if (config.chassis.model !== 'e39') return;
-
-		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
-		if (override === false && !this.ok2hud()) {
-			this.hud_render(override);
-			return;
-		}
-
-		this.hud_render(override, () => {
-			// Send text to IKE
-			this.text(status.hud.string);
-		});
-	}
 
 	// OBC set clock
 	obc_clock() {
@@ -764,24 +786,6 @@ class IKE extends EventEmitter {
 
 		// Convert ASCII to hex and return
 		return hex.a2h(message);
-	}
-
-	ok2hud() {
-		// Bounce if the ignition is off
-		if (status.vehicle.ignition_level < 1) return false;
-
-		// Bounce if override is active
-		if (this.hud_override === true) return false;
-
-		let time_now = now();
-		let refresh_delta = time_now - status.hud.refresh_last;
-
-		// Bonce if the last update was less than the configured value in milliseconds ago
-		if (refresh_delta <= config.hud.refresh_max) return false;
-
-		update.status('hud.refresh_last', time_now);
-
-		return true;
 	}
 
 	// IKE cluster text send message - without space padding
