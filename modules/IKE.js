@@ -458,8 +458,6 @@ class IKE extends EventEmitter {
 			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius').to('fahrenheit')));
 		}
 
-		this.hud_refresh();
-
 		return data;
 	}
 
@@ -1151,6 +1149,14 @@ class IKE extends EventEmitter {
 			case 0x57: // Broadcast: BC button press (MFL BC stalk button)
 				data.command = 'bro';
 				data.value   = 'BC button';
+
+				// Extend cluster HUD refresh by 5 seconds, so you can read what's on the screen
+				update.status('hud.refresh_last', (status.hud.refresh_last + 5000));
+
+				// 5 seconds later, re-refresh it
+				setTimeout(() => {
+					this.hud_refresh();
+				}, 5000);
 				break;
 
 			default:
