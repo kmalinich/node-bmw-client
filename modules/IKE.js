@@ -1023,7 +1023,7 @@ class IKE extends EventEmitter {
 			this.timeout_accept_refresh = setTimeout(() => {
 				switch (config.options.obc_refresh_on_start) {
 					case false : this.request('ignition'); break;
-					default    : this.obc_refresh();
+					case true  : this.obc_refresh();
 				}
 			}, 250);
 		});
@@ -1048,6 +1048,14 @@ class IKE extends EventEmitter {
 		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
 		// update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
 		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
+
+		// DSC off CC message
+		update.on('status.vehicle.dsc.active', (value) => {
+			switch (value) {
+				case false : this.text_urgent('DSC deactivated!'); break;
+				case true  : this.text_urgent('DSC reactivated');
+			}
+		});
 
 		log.msg('Initialized listeners');
 	}
