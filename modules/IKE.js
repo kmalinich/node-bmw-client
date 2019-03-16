@@ -1051,9 +1051,8 @@ class IKE extends EventEmitter {
 
 		// DSC off CC message
 		update.on('status.vehicle.dsc.active', (value) => {
-			switch (value) {
-				case false : this.text_urgent('DSC deactivated!'); break;
-				case true  : this.text_urgent('DSC reactivated');
+			switch (value.new) {
+				case false : this.text_warning('  DSC deactivated!  '); break;
 			}
 		});
 
