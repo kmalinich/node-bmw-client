@@ -139,10 +139,10 @@ function parse_1f0(data) {
 	let vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
-	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left);
-	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right);
-	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left);
-	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right);
+	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left.mph);
+	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right.mph);
+	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left.mph);
+	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right.mph);
 
 	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh)) {
 		if (config.translate.dsc === true) {
