@@ -1038,7 +1038,7 @@ class IKE extends EventEmitter {
 
 		// Refresh HUD after certain data values update
 		update.on('status.dme.voltage',             () => { this.hud_refresh(); });
-		// update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
+		update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
 		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
 		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
 		update.on('status.system.temperature',      () => { this.hud_refresh(); });
@@ -1050,11 +1050,11 @@ class IKE extends EventEmitter {
 		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
 
 		// DSC off CC message
-		update.on('status.vehicle.dsc.active', (value) => {
-			switch (value.new) {
-				case false : this.text_warning('  DSC deactivated!  '); break;
-			}
-		});
+		// update.on('status.vehicle.dsc.active', (value) => {
+		// 	switch (value.new) {
+		// 		case false : this.text_warning('  DSC deactivated!  '); break;
+		// 	}
+		// });
 
 		log.msg('Initialized listeners');
 	}
