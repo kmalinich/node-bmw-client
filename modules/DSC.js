@@ -94,19 +94,26 @@ function parse_153(data) {
 	};
 
 	// update.status('vehicle.brake',                  parse.vehicle.brake);
-	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active, false);
 	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);
 	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
+	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active, false);
 }
 
 // Parse wheel speed LSB and MSB into KPH value
-// TODO: Add kmh and mph objects
 function parse_wheel(byte0, byte1) {
 	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
 
-	if (parsed_wheel_speed < 3) return 0;
+	if (parsed_wheel_speed < 3) {
+		return {
+			kmh : 0,
+			mph : 0,
+		};
+	}
 
-	return num.round2(parsed_wheel_speed, 1);
+	return {
+		kmh : num.round2(parsed_wheel_speed, 1),
+		mph : num.round2(convert(parsed_wheel_speed).from('kilometre').to('us mile'), 1),
+	};
 }
 
 function parse_1f0(data) {
@@ -123,7 +130,7 @@ function parse_1f0(data) {
 	};
 
 	// Calculate vehicle speed from average of all 4 sensors
-	let vehicle_speed_total = wheel_speed.front.left + wheel_speed.front.right + wheel_speed.rear.left + wheel_speed.rear.right;
+	let vehicle_speed_total = wheel_speed.front.left.kmh + wheel_speed.front.right.kmh + wheel_speed.rear.left.kmh + wheel_speed.rear.right.kmh;
 
 	// Average all wheel speeds together
 	let vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
@@ -132,10 +139,10 @@ function parse_1f0(data) {
 	let vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
-	update.status('vehicle.wheel_speed.front.left',  Math.round(convert(wheel_speed.front.left).from('kilometre').to('us mile')));
-	update.status('vehicle.wheel_speed.front.right', Math.round(convert(wheel_speed.front.right).from('kilometre').to('us mile')));
-	update.status('vehicle.wheel_speed.rear.left',   Math.round(convert(wheel_speed.rear.left).from('kilometre').to('us mile')));
-	update.status('vehicle.wheel_speed.rear.right',  Math.round(convert(wheel_speed.rear.right).from('kilometre').to('us mile')));
+	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left.mph);
+	update.status('vehicle.wheel_speed.front.right', wheel_speed.front.right.mph);
+	update.status('vehicle.wheel_speed.rear.left',   wheel_speed.rear.left.mph);
+	update.status('vehicle.wheel_speed.rear.right',  wheel_speed.rear.right.mph);
 
 	if (update.status('vehicle.speed.kmh', vehicle_speed_kmh)) {
 		if (config.translate.dsc === true) {
@@ -150,6 +157,7 @@ function parse_1f0(data) {
 // TODO: This.... needs help
 function parse_1f5(data) {
 	let angle = 0;
+
 	// Specifically these horrific if statements
 	if (data.msg[1] > 127) {
 		angle = -1 * (((data.msg[1] - 128) * 256) + data.msg[0]);

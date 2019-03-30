@@ -458,8 +458,6 @@ class IKE extends EventEmitter {
 			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius').to('fahrenheit')));
 		}
 
-		this.hud_refresh();
-
 		return data;
 	}
 
@@ -1025,7 +1023,7 @@ class IKE extends EventEmitter {
 			this.timeout_accept_refresh = setTimeout(() => {
 				switch (config.options.obc_refresh_on_start) {
 					case false : this.request('ignition'); break;
-					default    : this.obc_refresh();
+					case true  : this.obc_refresh();
 				}
 			}, 250);
 		});
@@ -1040,7 +1038,7 @@ class IKE extends EventEmitter {
 
 		// Refresh HUD after certain data values update
 		update.on('status.dme.voltage',             () => { this.hud_refresh(); });
-		// update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
+		update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
 		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
 		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
 		update.on('status.system.temperature',      () => { this.hud_refresh(); });
@@ -1050,6 +1048,13 @@ class IKE extends EventEmitter {
 		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
 		// update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
 		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
+
+		// DSC off CC message
+		// update.on('status.vehicle.dsc.active', (value) => {
+		// 	switch (value.new) {
+		// 		case false : this.text_warning('  DSC deactivated!  '); break;
+		// 	}
+		// });
 
 		log.msg('Initialized listeners');
 	}
@@ -1151,6 +1156,14 @@ class IKE extends EventEmitter {
 			case 0x57: // Broadcast: BC button press (MFL BC stalk button)
 				data.command = 'bro';
 				data.value   = 'BC button';
+
+				// Extend cluster HUD refresh by 5 seconds, so you can read what's on the screen
+				update.status('hud.refresh_last', (status.hud.refresh_last + 5000));
+
+				// 5 seconds later, re-refresh it
+				setTimeout(() => {
+					this.hud_refresh();
+				}, 5000);
 				break;
 
 			default:
