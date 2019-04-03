@@ -614,7 +614,7 @@ function init_listeners() {
 
 	// Reset torque values to 0 if key is not in run
 	update.on('status.vehicle.ignition_level', (data) => {
-		if (data.new !== 3) return;
+		if (data.new === 3) return;
 
 		update.status('engine.torque.after_interventions',  0);
 		update.status('engine.torque.before_interventions', 0);
