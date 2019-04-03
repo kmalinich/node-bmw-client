@@ -47,7 +47,7 @@ function encode_316(rpm = 10000) {
 // byte 1 : md_ind_ne_ist -- current engine torque after interventions (in %)
 // byte 4 : md_ind_ist    -- current engine torque before interventions (in %)
 // byte 5 : md_reib       -- torque loss of consumers (alternator, ac, oil pump, etc) (in %)
-// byte 7 : md_ind_lm_ist -- theoretical engine torque from air mass, excluding igntion angle (in %)
+// byte 7 : md_ind_lm_ist -- theoretical engine torque from air mass, excluding ignition angle (in %)
 function parse_316(data) {
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
@@ -608,16 +608,18 @@ function init_listeners() {
 			case true : {
 				// If configured, send RPM 10000 on 0x316 on ignition in run
 				if (config.ike.sweep === true) encode_316(10000);
-				break;
-			}
-
-			case false : {
-				update.status('engine.torque.after_interventions',  0);
-				update.status('engine.torque.before_interventions', 0);
-				update.status('engine.torque.loss',                 0);
-				update.status('engine.torque.output',               0);
 			}
 		}
+	});
+
+	// Reset torque values to 0 if key is not in run
+	update.on('status.vehicle.ignition_level', (data) => {
+		if (data.new !== 3) return;
+
+		update.status('engine.torque.after_interventions',  0);
+		update.status('engine.torque.before_interventions', 0);
+		update.status('engine.torque.loss',                 0);
+		update.status('engine.torque.output',               0);
 	});
 
 	log.msg('Initialized listeners');
