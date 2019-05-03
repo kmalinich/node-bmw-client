@@ -627,6 +627,9 @@ function audio_power(power_state = false) {
 
 			log.module('Setting audio power to state : ' + power_state);
 
+			// Send configured DSP EQ (it seems to forget over time)
+			DSP.eq_encode(config.media.dsp.eq);
+
 			// Send device status
 			bus.cmds.send_device_status(module_name);
 
@@ -641,6 +644,9 @@ function audio_power(power_state = false) {
 
 			// Turn on BMBT
 			setTimeout(() => { cassette_control(true); }, 250);
+
+			// Send configured DSP EQ once more (just in case)
+			DSP.eq_encode(config.media.dsp.eq);
 
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			setTimeout(() => {
