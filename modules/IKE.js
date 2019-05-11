@@ -814,7 +814,7 @@ class IKE extends EventEmitter {
 	}
 
 
-	// Refresh various values every 15 seconds
+	// Refresh various values every 12 seconds
 	data_refresh() {
 		if (config.chassis.model !== 'e39') return;
 
@@ -843,16 +843,16 @@ class IKE extends EventEmitter {
 			this.request('temperature');
 		}
 
-		if (status.vehicle.ignition_level !== 0) {
-			if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
+		if (status.vehicle.ignition_level === 0) return;
 
-			// setTimeout for next update
-			// TODO: Make this setTimeout delay value a config param
-			let self = this;
-			this.timeout_data_refresh = setTimeout(() => {
-				self.data_refresh();
-			}, 12000);
-		}
+		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
+
+		// setTimeout for next update
+		// TODO: Make this setTimeout delay value a config param
+		let self = this;
+		this.timeout_data_refresh = setTimeout(() => {
+			self.data_refresh();
+		}, 12000);
 	}
 
 	decode_ignition_status(data) {
@@ -1009,10 +1009,13 @@ class IKE extends EventEmitter {
 
 		// Refresh data on interface connection
 		socket.on('recv-host-connect', (data) => {
+			// Show warning message in cluster if app running for longer than 30 seconds
+			if (now() > 30000) {
+				this.text_urgent('    ' + data.intf + ' restart    ');
+			}
+
 			// Only refresh on new IBUS interface connection
 			if (data.intf !== 'ibus') return;
-
-			// this.text_warning('    App restart!    ', 2500);
 
 			// Clear existing timeout if exists
 			if (this.timeout_accept_refresh !== null) {
@@ -1050,11 +1053,11 @@ class IKE extends EventEmitter {
 		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
 
 		// DSC off CC message
-		// update.on('status.vehicle.dsc.active', (value) => {
-		// 	switch (value.new) {
-		// 		case false : this.text_warning('  DSC deactivated!  '); break;
-		// 	}
-		// });
+		update.on('status.vehicle.dsc.active', (value) => {
+			switch (value.new) {
+				case false : this.text_warning('  DSC deactivated!  '); break;
+			}
+		});
 
 		log.msg('Initialized listeners');
 	}

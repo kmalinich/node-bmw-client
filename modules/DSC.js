@@ -85,7 +85,7 @@ function parse_153(data) {
 			brake : bitmask.test(data.msg[1], 0x10),
 
 			dsc : {
-				active : !bitmask.test(data.msg[1], 0x01),
+				active : !(bitmask.test(data.msg[1], 0x01) && bitmask.test(data.msg[0], 0x04)),
 
 				torque_reduction_1 : num.round2(100 - (data.msg[3] / 2.55)),
 				torque_reduction_2 : num.round2(100 - (data.msg[6] / 2.55)),
