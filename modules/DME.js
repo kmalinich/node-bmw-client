@@ -6,7 +6,7 @@ const convert = require('node-unit-conversion');
 // This is dangerous and awesome if you can see what it does
 function encode_316(rpm = 10000) {
 	// Bounce if can0 is not enabled
-	if (config.bus[config.dme.can_intf].enabled !== true) return;
+	if (config.intf[config.dme.can_intf].enabled !== true) return;
 
 	let rpm_orig = rpm;
 
