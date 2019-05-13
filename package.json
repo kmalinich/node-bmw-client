@@ -37,7 +37,6 @@
 	"main": "launch.sh",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
-		"bluez": "git+https://github.com/kmalinich/node-bluez.git",
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
