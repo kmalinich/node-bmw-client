@@ -17,13 +17,11 @@
 		"moment": "^2.24.0",
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.4",
-		"os": "^0.1.1",
 		"pad": "^3.1.0",
 		"performance-now": "^2.1.0",
 		"socket.io": "^2.2.0",
 		"suncalc": "^1.8.0",
-		"trucolor": "^1.0.2",
-		"zeromq": "^5.1.0"
+		"trucolor": "^1.0.2"
 	},
 	"description": "NodeJS-powered BMW IBUS client interface",
 	"devDependencies": {},
