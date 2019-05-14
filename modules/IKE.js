@@ -9,7 +9,7 @@ const os           = require('os');
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	bus.data.send({
 		src : 'CCM',
@@ -464,7 +464,7 @@ class IKE extends EventEmitter {
 	// Pretend to be IKE saying the car is on
 	// Note - this can and WILL set the alarm off - kudos to the Germans
 	ignition(state) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Format state name
 		switch (state) {
@@ -545,7 +545,7 @@ class IKE extends EventEmitter {
 
 	// Refresh custom HUD
 	hud_refresh(override = false) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
 		if (override === false && !this.ok2hud()) return;
@@ -558,7 +558,7 @@ class IKE extends EventEmitter {
 
 	// Refresh custom HUD speed
 	hud_refresh_speed() {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
@@ -570,7 +570,7 @@ class IKE extends EventEmitter {
 
 	// Render custom HUD string
 	hud_render(override = false, hud_render_cb = null) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Determine Moment.js format string
 		let moment_format;
@@ -651,7 +651,7 @@ class IKE extends EventEmitter {
 
 	// OBC set clock
 	obc_clock() {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		log.module('Setting OBC clock to current time');
 
@@ -670,7 +670,7 @@ class IKE extends EventEmitter {
 
 	// OBC data request
 	obc_data(action, value, target) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		let cmd = 0x41; // OBC data request
 
@@ -710,7 +710,7 @@ class IKE extends EventEmitter {
 
 	// Check control messages
 	text_urgent(message, timeout = 5000) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		log.module('Sending urgent IKE text message: \'' + message + '\'');
 
@@ -732,7 +732,7 @@ class IKE extends EventEmitter {
 
 	// Check control warnings
 	text_warning(message, timeout = 10000) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		log.module('Sending warning IKE text message: \'' + message + '\'');
 
@@ -764,7 +764,7 @@ class IKE extends EventEmitter {
 
 	// Trim IKE text string and potentially space-pad
 	text_prepare(message, pad = false) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Trim string to max length
 		message = message.substring(0, this.max_len_text);
@@ -788,7 +788,7 @@ class IKE extends EventEmitter {
 
 	// IKE cluster text send message - without space padding
 	text_nopad(message, cb = null, override = false) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
@@ -816,7 +816,7 @@ class IKE extends EventEmitter {
 
 	// Refresh various values every 12 seconds
 	data_refresh() {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		if (status.vehicle.ignition_level === 0) {
 			if (this.timeout_data_refresh !== null) {
@@ -1002,7 +1002,7 @@ class IKE extends EventEmitter {
 	}
 
 	init_listeners() {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Bring up last HUD refresh time
 		update.status('hud.refresh_last', now());
@@ -1064,7 +1064,7 @@ class IKE extends EventEmitter {
 
 	// Refresh OBC data
 	obc_refresh() {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		this.emit('obc-refresh');
 
@@ -1180,7 +1180,7 @@ class IKE extends EventEmitter {
 
 	// Request various things from IKE
 	request(value) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		let cmd = null;
 		let src = 'VID';
@@ -1253,7 +1253,7 @@ class IKE extends EventEmitter {
 
 	// IKE cluster text send message
 	text(message, cb = null, override = false) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
@@ -1286,7 +1286,7 @@ class IKE extends EventEmitter {
 
 	// IKE cluster text send message, override other messages
 	text_override(message, timeout = 2500, direction = 'left', turn = false) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// kodi.notify(module_name, message);
 		let scroll_delay         = 300;

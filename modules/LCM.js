@@ -4,7 +4,7 @@ const now     = require('performance-now');
 
 // Automatic lights handling
 function auto_lights() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Default action is true (enable/process auto lights)
 	let action = true;
@@ -47,7 +47,7 @@ function auto_lights() {
 
 // Logic based on location and time of day, determine if the low beams should be on
 function auto_lights_process() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Init variables
 	let new_reason;
@@ -131,7 +131,7 @@ function auto_lights_process() {
 
 // Cluster/interior backlight
 function set_backlight(value) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	log.module('Setting backlight to ' + value);
 
@@ -144,7 +144,7 @@ function set_backlight(value) {
 
 // Get LCM coding data
 function coding_get() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Get all 20 blocks of coding data
 	for (let byte = 0; byte < 21; byte++) {
@@ -157,7 +157,7 @@ function coding_get() {
 
 // Get LCM identity data
 function identity_get() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	bus.data.send({
 		src : 'DIA',
@@ -690,7 +690,7 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	log.module('Setting IO status');
 
@@ -727,7 +727,7 @@ function reset() {
 
 // Request various things from LCM
 function request(value) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	let src;
 	let msg;
@@ -1016,7 +1016,7 @@ function police(action = false) {
 
 // Configure event listeners
 function init_listeners() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Refresh data on IKE event
 	IKE.on('obc-refresh', () => {

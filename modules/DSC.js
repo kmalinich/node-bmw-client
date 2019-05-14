@@ -271,6 +271,7 @@ function init_listeners() {
 		}, 250);
 	});
 
+	// Reset torque reduction values when engine not running
 	update.on('status.engine.running', (data) => {
 		switch (data.new) {
 			case false : {
@@ -278,6 +279,14 @@ function init_listeners() {
 				update.status('vehicle.dsc.torque_reduction_2', 0);
 			}
 		}
+	});
+
+	// Reset torque reduction values when ignition not in run
+	update.on('status.vehicle.ignition', (data) => {
+		if (data.new === 'run') return;
+
+		update.status('vehicle.dsc.torque_reduction_1', 0);
+		update.status('vehicle.dsc.torque_reduction_2', 0);
 	});
 
 	log.msg('Initialized listeners');

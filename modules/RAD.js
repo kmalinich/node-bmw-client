@@ -436,7 +436,7 @@ function parse_out(data) {
 
 // Send audio control commands
 function audio_control(command) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	let cmd = 0x36;
 
@@ -517,7 +517,7 @@ function audio_control(command) {
 }
 
 function cassette_control(command) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	let cmd = 0x4A;
 
@@ -563,7 +563,7 @@ function cassette_control(command) {
 }
 
 function volume_control(value = 1) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	let msg_value;
 	switch (value) {
@@ -594,7 +594,7 @@ function volume_control(value = 1) {
 
 // Power on DSP amp and GPIO pin for amplifier
 function audio_power(power_state = false) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
@@ -661,8 +661,8 @@ function audio_power(power_state = false) {
 
 function init_listeners() {
 	// Bounce if we're not configured to emulate the RAD module or not in an E39
-	if (config.chassis.model !== 'e39') return;
-	if (config.emulate.rad   !== true)  return;
+	if (config.intf.ibus.enabled !== true) return;
+	if (config.emulate.rad       !== true)  return;
 
 	// Perform commands on power lib active event
 	// TODO: Make this a config value

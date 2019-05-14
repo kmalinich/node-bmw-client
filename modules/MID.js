@@ -11,7 +11,7 @@ const pad = require('pad');
 // 68 C0 21 00 15 06 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
 
 function refresh_text() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
@@ -333,7 +333,7 @@ function parse_out(data) {
 
 // Emulate button presses
 function button(button) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	let button_down = 0x00;
 	let button_hold;
@@ -377,7 +377,7 @@ function button(button) {
 }
 
 function init_listeners() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Perform commands on power lib active event
 	power.on('active', (power_state) => {

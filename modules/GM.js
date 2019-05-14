@@ -287,7 +287,7 @@ class GM extends EventEmitter {
 
 	// Send message to GM
 	io_set(packet) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		log.module('Setting IO status');
 
@@ -325,7 +325,7 @@ class GM extends EventEmitter {
 
 	// Request various things from GM
 	request(value) {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		// Init variables
 		let src;
@@ -447,7 +447,7 @@ class GM extends EventEmitter {
 
 
 	init_listeners() {
-		if (config.chassis.model !== 'e39') return;
+		if (config.intf.ibus.enabled !== true) return;
 
 		update.on('status.vehicle.ignition', (data) => {
 			switch (data.new) {

@@ -163,9 +163,9 @@ function parse_329(data) {
 	parse.temperature.coolant.f = Math.floor(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 
 	// Update status object
-	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar);
-	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
-	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi);
+	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar, false);
+	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg, false);
+	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi,  false);
 
 	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus,  false);
 	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff,  false);
@@ -612,9 +612,9 @@ function init_listeners() {
 		}
 	});
 
-	// Reset torque values to 0 if key is not in run
-	update.on('status.vehicle.ignition_level', (data) => {
-		if (data.new === 3) return;
+	// Reset torque output values when ignition not in run
+	update.on('status.vehicle.ignition', (data) => {
+		if (data.new === 'run') return;
 
 		update.status('engine.torque.after_interventions',  0);
 		update.status('engine.torque.before_interventions', 0);
