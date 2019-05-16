@@ -455,7 +455,28 @@ class GM extends EventEmitter {
 					switch (data.old) {
 						case 'run' : {
 							// If the doors are closed and locked, toggle door locks
-							if (status.vehicle.locked && status.doors.closed) this.locks();
+							if (!status.vehicle.locked) return;
+							if (!status.doors.closed)   return;
+
+							setTimeout(() => {
+								this.locks();
+							}, 500);
+						}
+					}
+
+					break;
+				}
+
+				case 'run' : {
+					switch (data.old) {
+						case 'start' : {
+							// If the doors are closed and unlocked, toggle door locks
+							if (status.vehicle.locked) return;
+							if (!status.doors.closed)  return;
+
+							setTimeout(() => {
+								this.locks();
+							}, 500);
 						}
 					}
 				}
