@@ -76,6 +76,9 @@ function encode_1a1(speed = 0) {
 // Byte 6 : Torque reduction 2
 // Byte 7 :
 function parse_153(data) {
+	// Bounce if ignition is not in run
+	if (status.vehicle.ignition !== 'run') return;
+
 	// ~5 sec on initial key in run
 	// A4 61 01 FF 00 FE FF 0B
 	//
