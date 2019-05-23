@@ -10,14 +10,14 @@
 		"chump": "git+https://github.com/kmalinich/chump.git",
 		"dark-sky": "^1.1.5",
 		"defaults-deep": "^0.2.4",
-		"express": "^4.16.4",
+		"express": "^4.17.0",
 		"json-colorizer": "^2.2.1",
 		"jsonfile": "^5.0.0",
 		"kodi-ws": "^2.4.3",
 		"moment": "^2.24.0",
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.4",
-		"pad": "^3.1.0",
+		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
 		"socket.io": "^2.2.0",
 		"suncalc": "^1.8.0",
@@ -42,8 +42,7 @@
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
 		"onoff": "^4.1.1",
 		"pi-temperature": "^2.0.0",
-		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git",
-		"smc": "^2.0.0"
+		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git"
 	},
 	"repository": {
 		"type": "git",

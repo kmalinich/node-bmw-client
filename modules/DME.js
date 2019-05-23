@@ -49,6 +49,9 @@ function encode_316(rpm = 10000) {
 // byte 5 : md_reib       -- torque loss of consumers (alternator, ac, oil pump, etc) (in %)
 // byte 7 : md_ind_lm_ist -- theoretical engine torque from air mass, excluding ignition angle (in %)
 function parse_316(data) {
+	// Bounce if ignition is not in run
+	if (status.vehicle.ignition !== 'run') return;
+
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
 	let parse = {
@@ -69,7 +72,30 @@ function parse_316(data) {
 			loss                 : num.round2(data.msg[5] / 2.55),
 			output               : num.round2(data.msg[7] / 2.55),
 		},
+
+		torque_value : {
+			after_interventions  : Math.round(config.engine.torque_max * (data.msg[1] / 255)),
+			before_interventions : Math.round(config.engine.torque_max * (data.msg[4] / 255)),
+			loss                 : Math.round(config.engine.torque_max * (data.msg[5] / 255)),
+			output               : Math.round(config.engine.torque_max * (data.msg[7] / 255)),
+		},
+
+		horsepower : {
+			after_interventions  : 0,
+			before_interventions : 0,
+			loss                 : 0,
+			output               : 0,
+		},
 	};
+
+	// Horsepower = (torque * RPM)/5252
+	parse.horsepower = {
+		after_interventions  : Math.round((parse.torque_value.after_interventions  * status.engine.speed) / 5252),
+		before_interventions : Math.round((parse.torque_value.before_interventions * status.engine.speed) / 5252),
+		loss                 : Math.round((parse.torque_value.loss                 * status.engine.speed) / 5252),
+		output               : Math.round((parse.torque_value.output               * status.engine.speed) / 5252),
+	};
+
 
 	update.status('engine.ac_clutch', parse.ac_clutch, false);
 
@@ -79,11 +105,20 @@ function parse_316(data) {
 	update.status('vehicle.key.run',       parse.key.run,       false);
 	update.status('vehicle.key.start',     parse.key.start,     false);
 
-	// horsepower = (torque * RPM)/5252
 	update.status('engine.torque.after_interventions',  parse.torque.after_interventions);
 	update.status('engine.torque.before_interventions', parse.torque.before_interventions);
 	update.status('engine.torque.loss',                 parse.torque.loss);
 	update.status('engine.torque.output',               parse.torque.output);
+
+	update.status('engine.torque_value.after_interventions',  parse.torque_value.after_interventions);
+	update.status('engine.torque_value.before_interventions', parse.torque_value.before_interventions);
+	update.status('engine.torque_value.loss',                 parse.torque_value.loss);
+	update.status('engine.torque_value.output',               parse.torque_value.output);
+
+	update.status('engine.horsepower.after_interventions',  parse.horsepower.after_interventions);
+	update.status('engine.horsepower.before_interventions', parse.horsepower.before_interventions);
+	update.status('engine.horsepower.loss',                 parse.horsepower.loss);
+	update.status('engine.horsepower.output',               parse.horsepower.output);
 }
 
 // CAN ARBID 0x329 (DME2)
@@ -109,8 +144,8 @@ function parse_329(data) {
 	let parse = {
 		engine : {
 			// throttle : {
-			// 	cruise : parseFloat((data.msg[4] / 2.54).toFixed(1)),
-			// 	pedal  : parseFloat((data.msg[5] / 2.54).toFixed(1)),
+			// 	cruise : num.round2(data.msg[4] / 2.54),
+			// 	pedal  : num.round2(data.msg[5] / 2.54),
 			// },
 
 			atmospheric_pressure : {
@@ -419,13 +454,13 @@ function parse_615(data) {
 }
 
 // ARBID: 0x720 sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
-// B0 = Coolant temp
-// B1 = Intake temp
-// B2 = Exhaust gas temp
-// B3 = Oil temp
-// B4 = Voltage * 10
+// B0    = Coolant temp
+// B1    = Intake temp
+// B2    = Exhaust gas temp
+// B3    = Oil temp
+// B4    = Voltage*10
 // B5,B6 = Speed
-// B7 = Fuel pump duty cycle
+// B7    = Fuel pump duty cycle
 //
 // Example : [ 0x40, 0x4A, 0x03, 0x3E, 0x7C, 0x00, 0x00, 0x00 ]
 function parse_720(data) {
@@ -620,6 +655,16 @@ function init_listeners() {
 		update.status('engine.torque.before_interventions', 0);
 		update.status('engine.torque.loss',                 0);
 		update.status('engine.torque.output',               0);
+
+		update.status('engine.torque_value.after_interventions',  0);
+		update.status('engine.torque_value.before_interventions', 0);
+		update.status('engine.torque_value.loss',                 0);
+		update.status('engine.torque_value.output',               0);
+
+		update.status('engine.horsepower.after_interventions',  0);
+		update.status('engine.horsepower.before_interventions', 0);
+		update.status('engine.horsepower.loss',                 0);
+		update.status('engine.horsepower.output',               0);
 	});
 
 	log.msg('Initialized listeners');

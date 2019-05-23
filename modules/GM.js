@@ -458,9 +458,7 @@ class GM extends EventEmitter {
 							if (!status.vehicle.locked) return;
 							if (!status.doors.closed)   return;
 
-							setTimeout(() => {
-								this.locks();
-							}, 500);
+							setTimeout(this.locks, 500);
 						}
 					}
 
@@ -474,9 +472,7 @@ class GM extends EventEmitter {
 							if (status.vehicle.locked) return;
 							if (!status.doors.closed)  return;
 
-							setTimeout(() => {
-								this.locks();
-							}, 500);
+							setTimeout(this.locks, 500);
 						}
 					}
 				}
