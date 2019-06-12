@@ -450,31 +450,74 @@ class GM extends EventEmitter {
 		if (config.intf.ibus.enabled !== true) return;
 
 		update.on('status.vehicle.ignition', (data) => {
-			switch (data.new) {
-				case 'accessory' : {
-					switch (data.old) {
-						case 'run' : {
-							// If the doors are closed and locked, toggle door locks
-							if (!status.vehicle.locked) return;
-							if (!status.doors.closed)   return;
+			log.module('DEBUG DEBUG data.old: \'' + data.old + '\'');
+			log.module('DEBUG DEBUG data.new: \'' + data.new + '\'');
 
-							setTimeout(this.locks, 500);
-						}
+			switch (data.new) {
+				case 'off' : {
+					log.module('DEBUG DEBUG Acting on new ignition state \'off\'');
+
+					// If the doors are closed and locked, toggle door locks
+					// if (!status.vehicle.locked) return;
+					// if (!status.doors.closed)   return;
+					// setTimeout(() => { this.locks(); }, 500);
+
+					if (data.old !== 'accessory') {
+						log.module('DEBUG DEBUG data.old is not accessory, returning');
+						return;
 					}
+
+					if (!status.vehicle.locked) {
+						log.module('DEBUG DEBUG Doors are not locked, returning');
+						return;
+					}
+
+					if (!status.doors.closed) {
+						log.module('DEBUG DEBUG Doors are not closed, returning');
+						return;
+					}
+
+					log.module('DEBUG DEBUG Doors are locked and closed, locks() in 500ms');
+
+					setTimeout(() => {
+						log.module('DEBUG DEBUG [setTimeout] locks()');
+						this.locks();
+					}, 500);
 
 					break;
 				}
 
 				case 'run' : {
-					switch (data.old) {
-						case 'start' : {
-							// If the doors are closed and unlocked, toggle door locks
-							if (status.vehicle.locked) return;
-							if (!status.doors.closed)  return;
+					log.module('DEBUG DEBUG Acting on new ignition state \'run\'');
 
-							setTimeout(this.locks, 500);
-						}
+					// If the doors are closed and unlocked, toggle door locks
+					// if (status.vehicle.locked) return;
+					// if (!status.doors.closed)  return;
+					// setTimeout(() => { this.locks(); }, 500);
+
+					if (data.old !== 'start') {
+						log.module('DEBUG DEBUG data.old is not start, returning');
+						return;
 					}
+
+					log.module('DEBUG DEBUG Acting on old ignition state \'start\'');
+
+					if (status.vehicle.locked) {
+						log.module('DEBUG DEBUG Doors ARE ALREADY locked, returning');
+						return;
+					}
+
+					if (!status.doors.closed) {
+						log.module('DEBUG DEBUG Doors are not closed, returning');
+						return;
+					}
+
+					log.module('DEBUG DEBUG Doors are UNlocked and closed, locks() in 500ms');
+
+					setTimeout(() => {
+						log.module('DEBUG DEBUG [setTimeout] locks()');
+						this.locks();
+					}, 500);
 				}
 			}
 		});
