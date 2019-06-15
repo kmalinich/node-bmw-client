@@ -45,6 +45,24 @@ const EventEmitter = require('events');
 
 
 class GM extends EventEmitter {
+	// Reply: Diagnostic command acknowledged
+	decode_dia_reply(data) {
+		data.command = 'rep';
+		data.value   = 'TODO diagnostic command ack';
+
+		return data;
+	}
+
+	// Broadcast: Seat memory data
+	decode_seat_memory(data) {
+		data.command = 'bro';
+		data.value   = 'TODO seat memory data';
+
+		return data;
+	}
+
+
+	// Broadcast: 'Crash alarm'
 	decode_status_crash_alarm(data) {
 		data.command = 'bro';
 		data.value   = 'crash alarm - ';
@@ -57,6 +75,7 @@ class GM extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: Key fob status
 	// [0x72] Decode a key fob bitmask message, and act upon the results
 	decode_status_keyfob(data) {
 		data.command = 'bro';
@@ -145,6 +164,7 @@ class GM extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: Open doors (flaps)/windows status
 	// [0x7A] Decode a door status message from GM and act upon the results
 	decode_status_open(data) {
 		data.command = 'bro';
@@ -204,6 +224,7 @@ class GM extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: Wiper status
 	decode_status_wiper(data) {
 		data.command = 'bro';
 		data.value   = 'wiper status';
@@ -449,75 +470,35 @@ class GM extends EventEmitter {
 	init_listeners() {
 		if (config.intf.ibus.enabled !== true) return;
 
+		// Lock and unlock doors automatically on ignition events
 		update.on('status.vehicle.ignition', (data) => {
-			log.module('DEBUG DEBUG data.old: \'' + data.old + '\'');
-			log.module('DEBUG DEBUG data.new: \'' + data.new + '\'');
+			// Return if doors are not closed
+			if (!status.doors.closed) return;
 
 			switch (data.new) {
 				case 'off' : {
-					log.module('DEBUG DEBUG Acting on new ignition state \'off\'');
+					// Return if not previously in accessory position
+					if (data.old !== 'accessory') return;
 
-					// If the doors are closed and locked, toggle door locks
-					// if (!status.vehicle.locked) return;
-					// if (!status.doors.closed)   return;
-					// setTimeout(() => { this.locks(); }, 500);
+					// Return if doors are NOT locked
+					if (!status.vehicle.locked) return;
 
-					if (data.old !== 'accessory') {
-						log.module('DEBUG DEBUG data.old is not accessory, returning');
-						return;
-					}
+					log.module('Doors are locked and closed, toggling door locks');
 
-					if (!status.vehicle.locked) {
-						log.module('DEBUG DEBUG Doors are not locked, returning');
-						return;
-					}
-
-					if (!status.doors.closed) {
-						log.module('DEBUG DEBUG Doors are not closed, returning');
-						return;
-					}
-
-					log.module('DEBUG DEBUG Doors are locked and closed, locks() in 500ms');
-
-					setTimeout(() => {
-						log.module('DEBUG DEBUG [setTimeout] locks()');
-						this.locks();
-					}, 500);
-
+					setTimeout(() => { this.locks(); }, 500);
 					break;
 				}
 
 				case 'run' : {
-					log.module('DEBUG DEBUG Acting on new ignition state \'run\'');
+					// Return if not previously in start position
+					if (data.old !== 'start') return;
 
-					// If the doors are closed and unlocked, toggle door locks
-					// if (status.vehicle.locked) return;
-					// if (!status.doors.closed)  return;
-					// setTimeout(() => { this.locks(); }, 500);
+					// Return if doors are locked
+					if (status.vehicle.locked) return;
 
-					if (data.old !== 'start') {
-						log.module('DEBUG DEBUG data.old is not start, returning');
-						return;
-					}
+					log.module('Doors are unlocked and closed, toggling door locks');
 
-					log.module('DEBUG DEBUG Acting on old ignition state \'start\'');
-
-					if (status.vehicle.locked) {
-						log.module('DEBUG DEBUG Doors ARE ALREADY locked, returning');
-						return;
-					}
-
-					if (!status.doors.closed) {
-						log.module('DEBUG DEBUG Doors are not closed, returning');
-						return;
-					}
-
-					log.module('DEBUG DEBUG Doors are UNlocked and closed, locks() in 500ms');
-
-					setTimeout(() => {
-						log.module('DEBUG DEBUG [setTimeout] locks()');
-						this.locks();
-					}, 500);
+					setTimeout(() => { this.locks(); }, 500);
 				}
 			}
 		});
@@ -529,46 +510,17 @@ class GM extends EventEmitter {
 	// Parse data sent from GM module
 	parse_out(data) {
 		switch (data.msg[0]) {
-			case 0x72 : { // Broadcast: Key fob status
-				data = this.decode_status_keyfob(data);
-				break;
-			}
-
-			case 0x76 : { // Broadcast: 'Crash alarm'
-				data = this.decode_status_crash_alarm(data);
-				break;
-			}
-
-			case 0x77 : { // Broadcast: Wiper status
-				data = this.decode_status_wiper(data);
-				break;
-			}
-
-			case 0x78 : { // Broadcast: Seat memory data
-				data.command = 'bro';
-				data.value   = 'TODO seat memory data';
-				break;
-			}
-
-			case 0x7A : { // Broadcast: Open doors (flaps)/windows status
-				data = this.decode_status_open(data);
-				break;
-			}
-
-			case 0xA0 : { // Reply: Diagnostic command acknowledged
-				data.command = 'rep';
-				data.value   = 'TODO diagnostic command ack';
-				break;
-			}
-
-			default : {
-				data.command = 'unk';
-				data.value   = Buffer.from(data.msg);
-			}
+			case 0x72 : return this.decode_status_keyfob(data);
+			case 0x76 : return this.decode_status_crash_alarm(data);
+			case 0x77 : return this.decode_status_wiper(data);
+			case 0x78 : return this.decode_seat_memory(data);
+			case 0x7A : return this.decode_status_open(data);
+			case 0xA0 : return this.decode_dia_reply(data);
 		}
 
-		log.bus(data);
+		return data;
 	}
 }
+
 
 module.exports = GM;
