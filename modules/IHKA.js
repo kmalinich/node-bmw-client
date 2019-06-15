@@ -28,14 +28,9 @@ function parse_out(data) {
 			data.value   = Buffer.from(data.msg);
 			break;
 		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // Enable/disable aux heat/vent

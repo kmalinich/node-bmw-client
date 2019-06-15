@@ -5,12 +5,12 @@
 // function decode_button_com(data) {
 // 	data.command = 'con';
 // 	data.value   = 'r/t button - ';
-// 
+//
 // 	switch (data.msg[0]) {
 // 		case 0x01 : data.value += 'depress'; break;
 // 		default   : data.value += 'unknown';
 // 	}
-// 
+//
 // 	return data;
 // }
 
@@ -144,17 +144,12 @@ function parse_out(data) {
 	// 50 C8 01,MFL --> TEL: Device status request
 
 	switch (data.msg[0]) {
-		// case 0x01 : data = decode_button_com(data);    break; // Button: R/T
-		case 0x3A : data = decode_button_recirc(data); break; // Button: Recirculation
-		case 0x3B : data = decode_button_media(data);  break; // Button: Media
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		// case 0x01 : return decode_button_com(data);    // Button: R/T
+		case 0x3A : return decode_button_recirc(data); // Button: Recirculation
+		case 0x3B : return decode_button_media(data);  // Button: Media
 	}
 
-	log.bus(data);
+	return data;
 }
 
 

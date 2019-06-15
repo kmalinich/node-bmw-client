@@ -136,7 +136,7 @@ function parse_in(data) {
 		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // Parse data sent from module
@@ -187,7 +187,7 @@ function parse_out(data) {
 		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 

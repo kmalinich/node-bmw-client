@@ -250,7 +250,7 @@ function parse_out(data) {
 		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 function loudness(state = true) {

@@ -502,21 +502,16 @@ function parse_out(data) {
 	if (config.retrofit.con !== true) return;
 
 	switch (data.src.id) {
-		case 0x0BF : data = decode_touchpad(data);  break;
-		case 0x264 : data = decode_rotation(data);  break;
-		case 0x267 : data = decode_button(data);    break;
-		case 0x277 : data = decode_ack(data);       break;
+		case 0x0BF : return decode_touchpad(data);
+		case 0x264 : return decode_rotation(data);
+		case 0x267 : return decode_button(data);
+		case 0x277 : return decode_ack(data);
 
 		case 0x4E7 :
-		case 0x5E7 : data = decode_status(data); return;
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		case 0x5E7 : return decode_status(data);
 	}
 
-	// log.bus(data);
+	return data;
 }
 
 

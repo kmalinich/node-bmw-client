@@ -8,6 +8,8 @@ function parse_speed(byte0, byte1) {
 
 
 function parse_1b4(data) {
+	data.value = 'Vehicle speed';
+
 	let vehicle_speed_kmh = parse_speed(data.msg[0], data.msg[1]);
 
 	// Calculate vehicle speed value in MPH
@@ -21,6 +23,8 @@ function parse_1b4(data) {
 			DSC.encode_1a1(vehicle_speed_kmh);
 		}
 	}
+
+	return data;
 }
 
 
@@ -29,10 +33,12 @@ function parse_out(data) {
 	data.command = 'bro';
 
 	switch (data.src.id) {
-		case 0x1B4 : parse_1b4(data); data.value = 'Vehicle speed'; break;
+		case 0x1B4 : return parse_1b4(data);
 
 		default : data.value = data.src.id.toString(16);
 	}
+
+	return data;
 }
 
 

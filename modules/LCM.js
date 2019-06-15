@@ -825,7 +825,7 @@ function parse_out(data) {
 		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // Welcome lights on unlocking/locking

@@ -3,6 +3,7 @@
 // This module.. can get confused with the AIC module
 // (AIC module is the rain-only sensor)
 
+// Broadcast: Light control status
 function decode_light_control_status(data) {
 	data.command = 'bro';
 	data.value   = 'light control status - ';
@@ -145,6 +146,7 @@ function light_control_status(data) {
 	});
 }
 
+// Broadcast: Headlight wipe interval
 function decode_headlight_wipe_interval(data) {
 	data.command = 'bro';
 	data.value   = 'headlight wipe interval';
@@ -159,26 +161,15 @@ function decode_headlight_wipe_interval(data) {
 	return data;
 }
 
+
 // Parse data sent from RLS module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x58: { // Broadcast: Headlight wipe interval
-			data = decode_headlight_wipe_interval(data);
-			break;
-		}
-
-		case 0x59: { // Broadcast: Light control status
-			data = decode_light_control_status(data);
-			break;
-		}
-
-		default: {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		case 0x58 : return decode_headlight_wipe_interval(data);
+		case 0x59 : return decode_light_control_status(data);
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // Request various things from RLS
@@ -188,10 +179,11 @@ function request(value) {
 	let cmd;
 
 	switch (value) {
-		case 'rain-sensor-status' :
+		case 'rain-sensor-status' : {
 			src = 'IHKA';
 			cmd = [ 0x71 ]; // Get IO status
 			break;
+		}
 	}
 
 	bus.data.send({
@@ -200,6 +192,7 @@ function request(value) {
 		msg : cmd,
 	});
 }
+
 
 module.exports = {
 	light_control_status : light_control_status,

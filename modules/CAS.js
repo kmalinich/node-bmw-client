@@ -164,7 +164,7 @@ function decode_status_open(data) {
 // Parse data sent to module
 function parse_in(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt !== true) return;
+	if (config.emulate.cas !== true) return;
 
 	switch (data.msg[0]) {
 		default : {
@@ -173,22 +173,17 @@ function parse_in(data) {
 		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.src.id) {
-		case 0x130 : data = decode_ignition(data);    break;
-		case 0x2FC : data = decode_status_open(data); break;
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		case 0x130 : return decode_ignition(data);
+		case 0x2FC : return decode_status_open(data);
 	}
 
-	// log.bus(data);
+	return data;
 }
 
 
