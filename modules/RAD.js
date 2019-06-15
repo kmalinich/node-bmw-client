@@ -627,9 +627,6 @@ function audio_power(power_state = false) {
 
 			log.module('Setting audio power to state : ' + power_state);
 
-			// Send configured DSP EQ (it seems to forget over time)
-			DSP.eq_encode(config.media.dsp.eq);
-
 			// Send device status
 			bus.cmds.send_device_status(module_name);
 
@@ -645,15 +642,20 @@ function audio_power(power_state = false) {
 			// Turn on BMBT
 			setTimeout(() => { cassette_control(true); }, 250);
 
-			// Send configured DSP EQ once more (just in case)
-			DSP.eq_encode(config.media.dsp.eq);
-
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			setTimeout(() => {
 				for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
 					setTimeout(() => { volume_control(5); }, 10 * pass);
 				}
-			}, 350);
+			}, 500);
+
+			// Delay sending EQ command 750ms + 12ms per volume step
+			let dsp_eq_delay = (750 + (12 * config.rad.power_on_volume));
+
+			// Send configured DSP EQ (it seems to forget over time)
+			setTimeout(() => {
+				DSP.eq_encode(config.media.dsp.eq);
+			}, dsp_eq_delay);
 		}
 	}
 }
@@ -667,7 +669,7 @@ function init_listeners() {
 	// Perform commands on power lib active event
 	// TODO: Make this a config value
 	power.on('active', (power_state) => {
-		setTimeout(() => { audio_power(power_state); }, 150);
+		setTimeout(() => { audio_power(power_state); }, 200);
 	});
 
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
