@@ -262,6 +262,8 @@ function parse_out(data) {
 
 		default : data.value = data.src.id.toString(16);
 	}
+
+	return data;
 }
 
 
