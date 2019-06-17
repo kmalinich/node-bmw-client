@@ -1,6 +1,54 @@
 const convert = require('node-unit-conversion');
 
 
+function init_listeners() {
+	// Send vehicle speed 0 to CAN1 on power module events
+	// This is because vehicle speed isn't received via CAN0 when key is in accessory
+	power.on('active', () => {
+		setTimeout(() => {
+			encode_1a1(0);
+		}, 250);
+	});
+
+	// Reset torque reduction values when engine not running
+	update.on('status.engine.running', (data) => {
+		switch (data.new) {
+			case false : {
+				update.status('vehicle.dsc.torque_reduction_1', 0);
+				update.status('vehicle.dsc.torque_reduction_2', 0);
+			}
+		}
+	});
+
+	// Reset torque reduction values when ignition not in run
+	update.on('status.vehicle.ignition', (data) => {
+		if (data.new === 'run') return;
+
+		update.status('vehicle.dsc.torque_reduction_1', 0);
+		update.status('vehicle.dsc.torque_reduction_2', 0);
+	});
+
+	log.msg('Initialized listeners');
+}
+
+
+// Parse wheel speed LSB and MSB into KPH value
+function parse_wheel(byte0, byte1) {
+	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
+
+	if (parsed_wheel_speed < 3) {
+		return {
+			kmh : 0,
+			mph : 0,
+		};
+	}
+
+	return {
+		kmh : num.round2(parsed_wheel_speed, 1),
+		mph : num.round2(convert(parsed_wheel_speed).from('kilometre').to('us mile'), 1),
+	};
+}
+
 // Send 0x1A1 KCAN2 message for vehicle speed
 // BE DE 4A 12 91
 // - or -
@@ -29,7 +77,10 @@ function encode_1a1(speed = 0) {
 		id   : 0x1A1,
 		data : Buffer.from(msg),
 	});
+
+	log.module('Send CAN 0x1A1 packet for ' + speed + ' KPH');
 }
+
 
 // 0x153
 //
@@ -76,8 +127,11 @@ function encode_1a1(speed = 0) {
 // Byte 6 : Torque reduction 2
 // Byte 7 :
 function parse_153(data) {
+	data.command = 'bro';
+	data.value   = 'Speed/DSC light';
+
 	// Bounce if ignition is not in run
-	if (status.vehicle.ignition !== 'run') return;
+	if (status.vehicle.ignition !== 'run') return data;
 
 	// ~5 sec on initial key in run
 	// A4 61 01 FF 00 FE FF 0B
@@ -100,26 +154,14 @@ function parse_153(data) {
 	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);
 	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
 	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active, false);
-}
 
-// Parse wheel speed LSB and MSB into KPH value
-function parse_wheel(byte0, byte1) {
-	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
-
-	if (parsed_wheel_speed < 3) {
-		return {
-			kmh : 0,
-			mph : 0,
-		};
-	}
-
-	return {
-		kmh : num.round2(parsed_wheel_speed, 1),
-		mph : num.round2(convert(parsed_wheel_speed).from('kilometre').to('us mile'), 1),
-	};
+	return data;
 }
 
 function parse_1f0(data) {
+	data.command = 'bro';
+	data.value   = 'Wheel speeds';
+
 	let wheel_speed = {
 		front : {
 			left  : parse_wheel(data.msg[0], data.msg[1]),
@@ -155,10 +197,24 @@ function parse_1f0(data) {
 	}
 
 	update.status('vehicle.speed.mph', vehicle_speed_mph);
+
+	return data;
+}
+
+// 00 00 05 FF 39 7D 5D 00
+// byte2 bit3 : brake applied
+function parse_1f3(data) {
+	data.command = 'bro';
+	data.value   = 'Transverse acceleration';
+
+	return data;
 }
 
 // TODO: This.... needs help
 function parse_1f5(data) {
+	data.command = 'bro';
+	data.value   = 'Steering angle';
+
 	let angle = 0;
 
 	// Specifically these horrific if statements
@@ -189,112 +245,84 @@ function parse_1f5(data) {
 
 	update.status('vehicle.steering.angle',    steering.angle);
 	// update.status('vehicle.steering.velocity', steering.velocity);
+
+	return data;
 }
 
-// Parse data sent from module
-function parse_out(data) {
+function parse_1f8(data) {
 	data.command = 'bro';
 
-	switch (data.src.id) {
-		case 0x153 : parse_153(data); data.value = 'Speed/DSC light'; break;
-
-		case 0x0CE :
-		case 0x1F0 : parse_1f0(data); data.value = 'Wheel speeds'; break;
-
-			// 00 00 05 FF 39 7D 5D 00
-			// byte2 bit3 : brake applied
-		case 0x1F3 :                  data.value = 'Transverse acceleration'; break;
-		case 0x1F5 : parse_1f5(data); data.value = 'Steering angle';          break;
-
-		case 0x1F8:
-			// Brake pressure messages observed in 2002 E39 M5
-			//
-			//       B0 B1 B2 B3 B4 B5 B6 B7
-			// 077F  14 14 00 00 00 00 82 01
-			//
-			// B6 : Pedal pressure LSB
-			// B7 : Pedal pressure MSB
-			//
-			//       XX XX    XX          XX
-			// 07B5  30 30 00 30 00 00 00 42
-			//
-			//
-			//
-			// 0xB8 = DME? KWP2000 protocol
-			// Status sensors (21 06):
-			// Positive pressure:
-			// B8 29 F1 02 21 06 45
-			//                               XX XX XX XX
-			// B8 F1 29 0F 61 06 00 00 C3 DC 14 8F 14 A4 00 00 00 00 11 06
-			//
-			// BrakeLinePressureFront = hex2dec('148F')/100 = 52.63 [bar]
-			// BrakeLinePressureRear  = hex2dec('14A4')/100 = 52.84 [bar]
-			//
-			// BrakeLinePressureFront = hex2dec('1D31')/100 = 74.73 [bar]
-			// BrakeLinePressureRear  = hex2dec('1D1C')/100 = 74.52 [bar]
-			//
-			// Neg. pressure by twos complement:
-			// B8 29 F1 02 21 06 45
-			// B8 F1 29 0F 61 06 00 00 C3 DC F7 ED F7 83 00 00 00 00 11 06
-			//
-			// BrakeLinePressureFront = (hex2dec('F7ED')-65536)/100 = -20.67 [bar]
-			// BrakeLinePressureRear  = (hex2dec('F783')-65536)/100 = -21.73 [bar]
-			// BrakeLinePressureFront = (hex2dec('FFA5')-65536)/100 = -0.91 [bar]
-			//
-			//
-			// Status sensor offset (21 02):
-			// B8 29 F1 02 21 02 41
-			// B8 F1 29 0C 61 02 FA89 FF18 1E81 FE5D 0000 A7
-			//
-			// B8 F1 29 0C 61 02 xxxx yyyy 1E81 FE5D 0000 A7
-			// xxxx = hex value in telegram of Offset Front
-			// yyyy = hex value in telegram of Offset Rear
-			// BrakeLinePressureFrontOffset = 0.000625*x + 2.3315e-15
-			// BrakeLinePressureRearOffset  = 0.000625*y + 2.3315e-15
-			//
-			// where x is twos complement of xxxx (or yyyy)
-			// if neg value in xxxx (or yyyy) (msb set), otherwise pos value of xxxx (or yyyy)
-			//
-			// Example: 0xFA89 => neg value since msb=1
-			// Twos complement of 0xFA89 = -1399 => -0.87438 [bar]
-			data.value = 'Brake pressure';
-			break;
-
-		default : data.value = data.src.id.toString(16);
-	}
+	// Brake pressure messages observed in 2002 E39 M5
+	//
+	//       B0 B1 B2 B3 B4 B5 B6 B7
+	// 077F  14 14 00 00 00 00 82 01
+	//
+	// B6 : Pedal pressure LSB
+	// B7 : Pedal pressure MSB
+	//
+	//       XX XX    XX          XX
+	// 07B5  30 30 00 30 00 00 00 42
+	//
+	//
+	//
+	// 0xB8 = DME? KWP2000 protocol
+	// Status sensors (21 06):
+	// Positive pressure:
+	// B8 29 F1 02 21 06 45
+	//                               XX XX XX XX
+	// B8 F1 29 0F 61 06 00 00 C3 DC 14 8F 14 A4 00 00 00 00 11 06
+	//
+	// BrakeLinePressureFront = hex2dec('148F')/100 = 52.63 [bar]
+	// BrakeLinePressureRear  = hex2dec('14A4')/100 = 52.84 [bar]
+	//
+	// BrakeLinePressureFront = hex2dec('1D31')/100 = 74.73 [bar]
+	// BrakeLinePressureRear  = hex2dec('1D1C')/100 = 74.52 [bar]
+	//
+	// Neg. pressure by twos complement:
+	// B8 29 F1 02 21 06 45
+	// B8 F1 29 0F 61 06 00 00 C3 DC F7 ED F7 83 00 00 00 00 11 06
+	//
+	// BrakeLinePressureFront = (hex2dec('F7ED')-65536)/100 = -20.67 [bar]
+	// BrakeLinePressureRear  = (hex2dec('F783')-65536)/100 = -21.73 [bar]
+	// BrakeLinePressureFront = (hex2dec('FFA5')-65536)/100 = -0.91 [bar]
+	//
+	//
+	// Status sensor offset (21 02):
+	// B8 29 F1 02 21 02 41
+	// B8 F1 29 0C 61 02 FA89 FF18 1E81 FE5D 0000 A7
+	//
+	// B8 F1 29 0C 61 02 xxxx yyyy 1E81 FE5D 0000 A7
+	// xxxx = hex value in telegram of Offset Front
+	// yyyy = hex value in telegram of Offset Rear
+	// BrakeLinePressureFrontOffset = 0.000625*x + 2.3315e-15
+	// BrakeLinePressureRearOffset  = 0.000625*y + 2.3315e-15
+	//
+	// where x is twos complement of xxxx (or yyyy)
+	// if neg value in xxxx (or yyyy) (msb set), otherwise pos value of xxxx (or yyyy)
+	//
+	// Example: 0xFA89 => neg value since msb=1
+	// Twos complement of 0xFA89 = -1399 => -0.87438 [bar]
+	data.value = 'Brake pressure';
 
 	return data;
 }
 
 
-function init_listeners() {
-	// Send vehicle speed 0 to CAN1 on power module events
-	// This is because vehicle speed isn't received via CAN0 when key is in accessory
-	power.on('active', () => {
-		setTimeout(() => {
-			encode_1a1(0);
-		}, 250);
-	});
+// Parse data sent from module
+function parse_out(data) {
+	switch (data.src.id) {
+		case 0x153 : return parse_153(data);
 
-	// Reset torque reduction values when engine not running
-	update.on('status.engine.running', (data) => {
-		switch (data.new) {
-			case false : {
-				update.status('vehicle.dsc.torque_reduction_1', 0);
-				update.status('vehicle.dsc.torque_reduction_2', 0);
-			}
-		}
-	});
+		case 0x0CE :
+		case 0x1F0 : return parse_1f0(data);
+		case 0x1F3 : return parse_1f3(data);
+		case 0x1F5 : return parse_1f5(data);
+		case 0x1F8 : return parse_1f8(data);
 
-	// Reset torque reduction values when ignition not in run
-	update.on('status.vehicle.ignition', (data) => {
-		if (data.new === 'run') return;
+		default : data.value = data.src.id.toString(16);
+	}
 
-		update.status('vehicle.dsc.torque_reduction_1', 0);
-		update.status('vehicle.dsc.torque_reduction_2', 0);
-	});
-
-	log.msg('Initialized listeners');
+	return data;
 }
 
 
