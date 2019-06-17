@@ -113,12 +113,9 @@ function init_listeners() {
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.src.id) {
-		case 0x202 : data = decode_backlight(data); break;
+		case 0x202 : return decode_backlight(data);
 
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		default : data.value = data.src.id.toString(16);
 	}
 
 	return data;

@@ -193,13 +193,13 @@ function parse_in(data) {
 // Parse data sent from MID module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x20 : { // Broadcast : { Display status
+		case 0x20 : { // Broadcast : Display status
 			data.command = 'bro';
 			data.value   = 'display status: ';
 			break;
 		}
 
-		case 0x31 : { // Broadcast : { Button pressed
+		case 0x31 : { // Broadcast : Button pressed
 			data.command = 'bro';
 			data.value   = 'button pressed: ' + data.msg[1] + ' ' + data.msg[2] + ' ' + data.msg[3];
 
@@ -309,21 +309,15 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x47 : { // Broadcast : { BM status
+		case 0x47 : { // Broadcast : BM status
 			data.command = 'bro';
 			data.value   = 'BM status';
 			break;
 		}
 
-		case 0x48 : { // Broadcast : { BM button
+		case 0x48 : { // Broadcast : BM button
 			data.command = 'bro';
 			data.value   = 'BM button';
-			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
 			break;
 		}
 	}

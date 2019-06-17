@@ -29,10 +29,7 @@ function parse_gps_time(data) {
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x1F : { // Broadcast: Time and date
-			data = parse_gps_time(data);
-			break;
-		}
+		case 0x1F : return parse_gps_time(data);
 
 		case 0xA2 : { // Broadcast: Current GPS position
 			data.command = 'bro';
@@ -62,15 +59,11 @@ function parse_out(data) {
 			// A9 0A 30 30,NAV,TEL,Telephone data Current_phone_status    Count_0
 			break;
 		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
 	}
 
 	return data;
 }
+
 
 module.exports = {
 	parse_out : parse_out,

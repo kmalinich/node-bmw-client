@@ -1,4 +1,7 @@
 function decode_button(data) {
+	data.command = 'bro';
+	data.value   = 'Button operation';
+
 	let button;
 	let state;
 
@@ -42,6 +45,8 @@ function decode_button(data) {
 			break;
 		}
 	}
+
+	return data;
 }
 
 // Generate a SZM button press CANBUS message
@@ -80,18 +85,18 @@ function encode_button(button, state) {
 
 // Parse data sent from module
 function parse_out(data) {
-	data.command = 'bro';
-
 	switch (data.src.id) {
 		case 0x1EB :
 		case 0x1EC :
 		case 0x1ED :
 		case 0x1EF :
 		case 0x317 :
-		case 0x319 : decode_button(data); data.value = 'Button operation'; break;
+		case 0x319 : return decode_button(data);
 
 		default : data.value = data.src.id.toString(16);
 	}
+
+	return data;
 }
 
 

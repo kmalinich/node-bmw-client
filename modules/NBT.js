@@ -3,7 +3,7 @@
 // Fxx : 12F -> 37 7C 8A DD D4 05 33 6B
 function decode_ignition(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
 
 	data.command = 'bro';
 	data.value   = 'Ignition status';
@@ -16,7 +16,7 @@ function decode_ignition(data) {
 // Used for iDrive knob rotational initialization
 function decode_status_module(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
 
 	data.command = 'con';
 	data.value   = 'NBT init iDrive knob';
@@ -121,73 +121,6 @@ function init_listeners() {
 	power.on('active', status_ignition);
 
 	log.msg('Initialized listeners');
-}
-
-
-// Parse data sent to module
-function parse_in(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true) return;
-
-	switch (data.msg[0]) {
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
-	}
-
-	return data;
-}
-
-// Parse data sent from module
-function parse_out(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
-
-	switch (data.src.id) {
-		case 0x273 :
-		case 0x563 : data = decode_status_module(data); break;
-
-		case 0x277 : { // NBT ACK to rotational initialization message
-			data.command = 'rep';
-			data.value   = 'CON => NBT : ACK init';
-			break;
-		}
-
-		case 0x34E : { // NBT navigation information
-			data.command = 'bro';
-			data.value   = 'Navigation system information';
-
-			// Bounce if this data is already on K-CAN (can1)
-			// if (data.bus === 'can1') break;
-
-			// // Forward to can1
-			// bus.data.send({
-			// 	bus  : 'can1',
-			// 	id   : data.src.id,
-			// 	data : Buffer.from(data.msg),
-			// });
-
-			break;
-		}
-
-		case 0x38D : return;
-		case 0x5E3 : {
-			data.command = 'bro';
-			data.value   = 'Services';
-			break;
-		}
-
-		case 0x12F :
-		case 0x4F8 : data = decode_ignition(data); break;
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
-	}
-
-	return data;
 }
 
 
@@ -323,6 +256,61 @@ function status_ignition() {
 
 	// Send message
 	bus.data.send(msg);
+}
+
+
+// Parse data sent to module
+function parse_in(data) {
+	// Bounce if not enabled
+	if (config.emulate.nbt !== true) return data;
+
+	return data;
+}
+
+// Parse data sent from module
+function parse_out(data) {
+	// Bounce if not enabled
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
+
+	switch (data.src.id) {
+		case 0x273 :
+		case 0x563 : return decode_status_module(data);
+
+		case 0x277 : { // NBT ACK to rotational initialization message
+			data.command = 'rep';
+			data.value   = 'CON => NBT : ACK init';
+			break;
+		}
+
+		case 0x34E : { // NBT navigation information
+			data.command = 'bro';
+			data.value   = 'Navigation system information';
+
+			// Bounce if this data is already on K-CAN (can1)
+			// if (data.bus === 'can1') break;
+
+			// // Forward to can1
+			// bus.data.send({
+			// 	bus  : 'can1',
+			// 	id   : data.src.id,
+			// 	data : Buffer.from(data.msg),
+			// });
+
+			break;
+		}
+
+		case 0x38D : return;
+		case 0x5E3 : {
+			data.command = 'bro';
+			data.value   = 'Services';
+			break;
+		}
+
+		case 0x12F :
+		case 0x4F8 : return decode_ignition(data);
+	}
+
+	return data;
 }
 
 

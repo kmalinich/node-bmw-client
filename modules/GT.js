@@ -206,7 +206,7 @@ function parse_out(data) {
 		}
 
 		// Control: DSP
-		case 0x34 : data = parse_control_dsp(data); break;
+		case 0x34 : return parse_control_dsp(data);
 
 		// Control: Select menu
 		case 0x37 : {
@@ -255,12 +255,7 @@ function parse_out(data) {
 		}
 
 		// Control: LCD (screen in dash)
-		case 0x4F : data = parse_control_lcd(data); break;
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		case 0x4F : return parse_control_lcd(data);
 	}
 
 	return data;

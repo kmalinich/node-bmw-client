@@ -775,6 +775,7 @@ function parse_out(data) {
 		case 0x54 : { // Broadcast: vehicle data
 			data.command = 'bro';
 			data.value   = 'vehicle data';
+
 			decode(data); // Decode it
 			break;
 		}
@@ -782,6 +783,7 @@ function parse_out(data) {
 		case 0x5B : { // Broadcast: light status
 			data.command = 'bro';
 			data.value   = 'light status';
+
 			decode(data); // Decode it
 			break;
 		}
@@ -817,11 +819,6 @@ function parse_out(data) {
 			}
 
 			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
 		}
 	}
 

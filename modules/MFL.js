@@ -138,21 +138,6 @@ function decode_button_recirc(data) {
 }
 
 
-// Parse data sent from MFL module
-function parse_out(data) {
-	// 50 B0 01,MFL --> SES: Device status request
-	// 50 C8 01,MFL --> TEL: Device status request
-
-	switch (data.msg[0]) {
-		// case 0x01 : return decode_button_com(data);    // Button: R/T
-		case 0x3A : return decode_button_recirc(data); // Button: Recirculation
-		case 0x3B : return decode_button_media(data);  // Button: Media
-	}
-
-	return data;
-}
-
-
 // Translate button presses to CANBUS messages
 function translate_button_media(unmask) {
 	// Return here if disabled
@@ -245,6 +230,21 @@ function translate_button_media(unmask) {
 			});
 		}
 	}
+}
+
+
+// Parse data sent from MFL module
+function parse_out(data) {
+	// 50 B0 01,MFL --> SES: Device status request
+	// 50 C8 01,MFL --> TEL: Device status request
+
+	switch (data.msg[0]) {
+		// case 0x01 : return decode_button_com(data);    // Button: R/T
+		case 0x3A : return decode_button_recirc(data); // Button: Recirculation
+		case 0x3B : return decode_button_media(data);  // Button: Media
+	}
+
+	return data;
 }
 
 

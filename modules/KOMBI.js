@@ -52,7 +52,8 @@ function gauge_sweep() {
 
 
 function parse_1b4(data) {
-	data.value = 'Vehicle speed';
+	data.command = 'bro';
+	data.value   = 'Vehicle speed';
 
 	let vehicle_speed_kmh = parse_speed(data.msg[0], data.msg[1]);
 
@@ -74,8 +75,6 @@ function parse_1b4(data) {
 
 // Parse data sent from module
 function parse_out(data) {
-	data.command = 'bro';
-
 	switch (data.src.id) {
 		case 0x1B4 : return parse_1b4(data);
 
