@@ -67,6 +67,8 @@ function video_source(source = 'default') {
 		data : Buffer.from(cmd_data.msg0),
 	});
 
+	update.status('nbt.video.source', source);
+
 	// 2nd half of message sent 100ms later
 	setTimeout(() => {
 		bus.data.send({
@@ -74,24 +76,26 @@ function video_source(source = 'default') {
 			id   : cmd_data.id,
 			data : Buffer.from(cmd_data.msg1),
 		});
-
-		update.status('nbt.video.source', source);
 	}, 100);
 }
 
 function reverse_camera(gear) {
-	if (config.retrofit.nbt !== true) return;
+	// Bounce if NBT retrofit is not enabled or NBT reverse camera is not enabled
+	if (config.retrofit.nbt               !== true) return;
+	if (config.nbt.reverse_camera.enabled !== true) return;
 
 	switch (gear) {
 		case 'reverse' : {
 			// If now in reverse, and were NOT before,
 			// Send message to NBT to switch input to reverse camera
-			if (status.egs.gear !== 'reverse') {
-				// Wait 250ms, then check if we're still in reverse
-				setTimeout(() => {
-					if (status.egs.gear === 'reverse') video_source('RFK');
-				}, 250);
-			}
+			if (status.egs.gear === 'reverse') return;
+
+			// Wait 250ms, then check if we're still in reverse
+			setTimeout(() => {
+				if (status.egs.gear !== 'reverse') return;
+
+				video_source(config.nbt.reverse_camera.input);
+			}, 250);
 
 			break;
 		}
@@ -99,11 +103,14 @@ function reverse_camera(gear) {
 		default : {
 			// If now NOT in reverse, and were before
 			// Send message to NBT to switch input to default
-			if (status.egs.gear === 'reverse') {
-				setTimeout(() => {
-					if (status.egs.gear !== 'reverse') video_source();
-				}, 250);
-			}
+			if (status.egs.gear !== 'reverse') return;
+
+			setTimeout(() => {
+				if (status.egs.gear         === 'reverse')                       return;
+				if (status.nbt.video.source !== config.nbt.reverse_camera.input) return;
+
+				video_source();
+			}, 250);
 		}
 	}
 }
@@ -189,9 +196,6 @@ function status_module(action = false) {
 			return;
 		}
 	}
-
-	// This is pretty noisy due to 2000ms timeout
-	// log.module('Sending module status');
 
 	// Convert data array to Buffer
 	msg.data = Buffer.from(msg.data);
@@ -285,17 +289,6 @@ function parse_out(data) {
 		case 0x34E : { // NBT navigation information
 			data.command = 'bro';
 			data.value   = 'Navigation system information';
-
-			// Bounce if this data is already on K-CAN (can1)
-			// if (data.bus === 'can1') break;
-
-			// // Forward to can1
-			// bus.data.send({
-			// 	bus  : 'can1',
-			// 	id   : data.src.id,
-			// 	data : Buffer.from(data.msg),
-			// });
-
 			break;
 		}
 

@@ -71,7 +71,7 @@ It does:
     * Coolant/exterior temperatures
     * VIN (last 7)
     * Odometer
-    * Doors/hood/trunk open/closed
+    * Doors/hood/trunk opened/closed
     * Windows up/down
     * Central locking
     * Handbrake status

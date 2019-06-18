@@ -139,7 +139,7 @@ class CAS extends EventEmitter {
 	}
 
 	// [0x2FC] Decode a door status message from CAS and act upon the results
-	decode_status_open(data) {
+	decode_status_opened(data) {
 		data.command = 'bro';
 		data.value   = 'door status';
 
@@ -155,8 +155,8 @@ class CAS extends EventEmitter {
 		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
 		update.status('doors.closed', update_closed_doors, false);
 
-		// Set status.doors.open if any doors are open
-		update.status('doors.open', (update_closed_doors === false), false);
+		// Set status.doors.opened if any doors are opened
+		update.status('doors.opened', (update_closed_doors === false), false);
 
 		// Set status.doors.sealed if all doors and flaps are closed
 		let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
@@ -179,7 +179,7 @@ class CAS extends EventEmitter {
 		switch (data.src.id) {
 			case 0x130 : return this.decode_ignition(data);
 			case 0x23A : return this.decode_status_keyfob(data);
-			case 0x2FC : return this.decode_status_open(data);
+			case 0x2FC : return this.decode_status_opened(data);
 		}
 
 		return data;

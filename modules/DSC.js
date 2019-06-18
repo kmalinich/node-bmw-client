@@ -1,37 +1,6 @@
 const convert = require('node-unit-conversion');
 
 
-function init_listeners() {
-	// Send vehicle speed 0 to CAN1 on power module events
-	// This is because vehicle speed isn't received via CAN0 when key is in accessory
-	power.on('active', () => {
-		setTimeout(() => {
-			encode_1a1(0);
-		}, 250);
-	});
-
-	// Reset torque reduction values when engine not running
-	update.on('status.engine.running', (data) => {
-		switch (data.new) {
-			case false : {
-				update.status('vehicle.dsc.torque_reduction_1', 0);
-				update.status('vehicle.dsc.torque_reduction_2', 0);
-			}
-		}
-	});
-
-	// Reset torque reduction values when ignition not in run
-	update.on('status.vehicle.ignition', (data) => {
-		if (data.new === 'run') return;
-
-		update.status('vehicle.dsc.torque_reduction_1', 0);
-		update.status('vehicle.dsc.torque_reduction_2', 0);
-	});
-
-	log.msg('Initialized listeners');
-}
-
-
 // Parse wheel speed LSB and MSB into KPH value
 function parse_wheel(byte0, byte1) {
 	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
@@ -64,6 +33,8 @@ function parse_wheel(byte0, byte1) {
 //
 // Input is in KPH
 function encode_1a1(speed = 0) {
+	log.module('Sending CAN 0x1A1 packet for ' + speed + ' KPH');
+
 	speed = speed * 100;
 
 	let lsb = speed        & 0xFF || 0; // LSB
@@ -77,8 +48,6 @@ function encode_1a1(speed = 0) {
 		id   : 0x1A1,
 		data : Buffer.from(msg),
 	});
-
-	log.module('Send CAN 0x1A1 packet for ' + speed + ' KPH');
 }
 
 
@@ -210,41 +179,27 @@ function parse_1f3(data) {
 	return data;
 }
 
-// TODO: This.... needs help
+// [0x1F5] Steering angle sensor data
+// Steering angle and change velocity
 function parse_1f5(data) {
 	data.command = 'bro';
 	data.value   = 'Steering angle';
 
-	let angle = 0;
+	// Create new Int8Array objects from CAN message
+	let data_int8 = new Int8Array(data.msg);
 
-	// Specifically these horrific if statements
-	if (data.msg[1] > 127) {
-		angle = -1 * (((data.msg[1] - 128) * 256) + data.msg[0]);
-	}
-	else {
-		angle = (data.msg[1] * 256) + data.msg[0];
-	}
+	// Calculate steering angle and velocity from Int8Array data
+	let angle    = (data_int8[1] << 8) + data_int8[0];
+	let velocity = (data_int8[3] << 8) + data_int8[2];
 
-	// let velocity = 0;
-	// // These are an embarrasment
-	// if (data.msg[3] > 127) {
-	// 	velocity = -1 * (((data.msg[3] - 128) * 256) + data.msg[2]);
-	// }
-	// else {
-	// 	velocity = (data.msg[3] * 256) + data.msg[2];
-	// }
-
-	// 0.043393 : 3.75 turns, lock to lock (1350 degrees of total rotation)
-	let steering_multiplier = 0.043393;
-
+	// Steering multiplier = 0.043393 = 3.75 turns, lock to lock (1350 degrees of total rotation)
 	let steering = {
-		angle : Math.floor(angle    * steering_multiplier) * -1, // Thanks babe
-		// velocity : Math.floor(velocity * steering_multiplier) * -1,
+		angle    : Math.floor(angle    * config.vehicle.steering_multiplier) * -1, // Thanks babe
+		velocity : Math.floor(velocity * config.vehicle.steering_multiplier) * -1,
 	};
 
-
 	update.status('vehicle.steering.angle',    steering.angle);
-	// update.status('vehicle.steering.velocity', steering.velocity);
+	update.status('vehicle.steering.velocity', steering.velocity);
 
 	return data;
 }
@@ -323,6 +278,37 @@ function parse_out(data) {
 	}
 
 	return data;
+}
+
+
+function init_listeners() {
+	// Send vehicle speed 0 to CAN1 on power module events
+	// This is because vehicle speed isn't received via CAN0 when key is in accessory
+	power.on('active', () => {
+		setTimeout(() => {
+			encode_1a1(0);
+		}, 250);
+	});
+
+	// Reset torque reduction values when engine not running
+	update.on('status.engine.running', (data) => {
+		switch (data.new) {
+			case false : {
+				update.status('vehicle.dsc.torque_reduction_1', 0);
+				update.status('vehicle.dsc.torque_reduction_2', 0);
+			}
+		}
+	});
+
+	// Reset torque reduction values when ignition not in run
+	update.on('status.vehicle.ignition', (data) => {
+		if (data.new === 'run') return;
+
+		update.status('vehicle.dsc.torque_reduction_1', 0);
+		update.status('vehicle.dsc.torque_reduction_2', 0);
+	});
+
+	log.msg('Initialized listeners');
 }
 
 

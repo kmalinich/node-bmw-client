@@ -25,40 +25,62 @@ function parse_gps_time(data) {
 	return data;
 }
 
+// Broadcast: Current GPS position
+function parse_gps_position(data) {
+	data.command = 'bro';
+	data.value   = 'current GPS position TODO';
+
+	// data.msg[1] = 0x01 : GPS fix
+
+	return data;
+}
+
+// Broadcast: Current location name
+function parse_location_name(data) {
+	data.command = 'bro';
+	data.value   = 'current location name TODO';
+
+	// data.msg[2] = 0x01 : Town
+	// data.msg[2] = 0x02 : Street
+
+	return data;
+}
+
+// Request: TMC status
+function parse_tmc_status(data) {
+	data.command = 'req';
+	data.value   = 'TMC status, update class: ' + hex.i2s(data.msg[1]);
+
+	// Src : NAV
+	// Dst : TEL
+	//
+	// data.msg[1] = 0x03 : Current network request
+	// data.msg[1] = 0x0A : Current phone status
+	//
+	//
+	// [ 0xA9, 0x03, 0x30, 0x30 ] = Current_network_request  Count_0
+	// [ 0xA9, 0x0A, 0x30, 0x30 ] = Current_phone_status     Count_0
+
+	return data;
+}
+
+// Broadcast: Telephone data
+function parse_telephone_data(data) {
+	data.command = 'bro';
+	data.value   = 'telephone data TODO';
+
+	return data;
+}
+
 
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x1F : return parse_gps_time(data);
-
-		case 0xA2 : { // Broadcast: Current GPS position
-			data.command = 'bro';
-			data.value   = 'current GPS position TODO';
-			// data.msg[1] = 0x01 : GPS fix
-			break;
-		}
-
-		case 0xA4 : { // Broadcast: Current location name
-			data.command = 'bro';
-			data.value   = 'current location name TODO';
-			// data.msg[2] = 0x01 : Town
-			// data.msg[2] = 0x02 : Street
-			break;
-		}
-
-		case 0xA7 : { // Request: TMC status
-			data.command = 'req';
-			data.value   = 'TMC status, update class: ' + hex.i2s(data.msg[1]);
-			break;
-		}
-
-		case 0xA9 : { // Broadcast: Telephone data
-			data.command = 'bro';
-			data.value   = 'Telephone data TODO';
-			// A9 03 30 30,NAV,TEL,Telephone data Current_network_request Count_0
-			// A9 0A 30 30,NAV,TEL,Telephone data Current_phone_status    Count_0
-			break;
-		}
+		case 0xA2 : return parse_gps_position(data);
+		case 0xA4 : return parse_location_name(data);
+		case 0xA7 : return parse_tmc_status(data);
+		case 0xA9 : return parse_telephone_data(data);
 	}
 
 	return data;

@@ -24,9 +24,10 @@ function decode_button(data) {
 	}
 
 	// Update status object
-	update.status('szm.button.' + button + '.state', state);
+	update.status('szm.button.' + button + '.state', state, false);
 
 	// Translate SZM messages for active backrest to active seat equivalent
+	// TODO Add config option for translation operations
 	switch (button) {
 		case 'active.backrest.driver'    : encode_button('active.seat.driver',    state); break;
 		case 'active.backrest.passenger' : encode_button('active.seat.passenger', state); break;

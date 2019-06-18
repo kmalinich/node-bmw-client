@@ -58,7 +58,9 @@ function parse_316(data) {
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
 	let parse = {
-		ac_clutch : mask_0.b7,
+		ac : {
+			clutch : mask_0.b7,
+		},
 
 		rpm : ((data.msg[3] << 8) + data.msg[2]) / 6.4,
 
@@ -100,7 +102,7 @@ function parse_316(data) {
 	};
 
 
-	update.status('engine.ac_clutch', parse.ac_clutch, false);
+	update.status('engine.ac.clutch', parse.ac.clutch, false);
 
 	// yeah, i'm not real sure about this
 	update.status('vehicle.key.off',       parse.key.off,       false);
@@ -271,17 +273,30 @@ function parse_338(data) {
 // byte 0, bit 4 : EML
 // byte 0, bit 7 : Check gas cap
 //
+// byte 1 : Fuel consumption LSB
+// byte 2 : Fuel consumption LSB
+//
 // byte 3, bit 0 : Oil level error, if motortype = S62
-// byte 3, bit 1 : Oil level warning
-// byte 3, bit 2 : Oil level error
-// byte 3, bit 3 : Overheat Light
+// byte 3, bit 1 : Oil level warning (yellow)
+// byte 3, bit 2 : Oil level error   (red)
+// byte 3, bit 3 : Coolant overtemperature light
 // byte 3, bit 4 : M3/M5 tachometer light
 // byte 3, bit 5 : M3/M5 tachometer light
 // byte 3, bit 6 : M3/M5 tachometer light
 //
 // byte 4 : Oil temperature (ºC = X - 48)
-// byte 5 : Charge light (0 = off, 1 = on; only used on some DMEs)
+//
+// byte 5, bit 0 : Oil pressure light off
+// byte 5, bit 1 :
+// byte 5, bit 2 :
+// byte 5, bit 3 : A/C switch
+// byte 5, bit 4 : Alternator/battery light off
+// byte 5, bit 5 :
+// byte 5, bit 6 :
+// byte 5, bit 7 :
+//
 // byte 6 : CSL oil level (format unclear)
+//
 // byte 7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
 	data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
@@ -396,7 +411,7 @@ function parse_613(data) {
 function parse_615(data) {
 	data.value = 'A/C request/Outside air temp/Parking brake/door contacts';
 
-	// byte 0 : AC signal, 0x80 when on, AC torque in bits 0-4 (value can be between 0 and 1F; unit is Nm). Bits 5 and 6 are unknown
+	// byte 0 : AC signal, 0x80 when on, AC torque in bits 0-4 (value can be between 0x00 and 0x1F; unit is Nm). Bits 5 and 6 are unknown
 	//
 	// byte 1, bit 0 : ??
 	// byte 1, bit 1 : ??
@@ -409,7 +424,7 @@ function parse_615(data) {
 	//
 	// byte 3 : Outside air temperature
 	//
-	// byte 4, bit 0 : Driver door open
+	// byte 4, bit 0 : Driver door opened
 	// byte 4, bit 1 : Handbrake engaged
 	// byte 4, bit 2 : ??
 	// byte 4, bit 3 : ??
@@ -446,9 +461,9 @@ function parse_615(data) {
 	// byte 7, bit 7 : ??
 
 	let parse = {
-		engine : {
-			ac_request    : data.msg[0],
-			aux_fan_speed : (data.msg[0] >= 0x80) && data.msg[0] - 0x80 || data.msg[0], // TODO: Should be ac_torque
+		ac : {
+			request : data.msg[0],
+			torque  : (data.msg[0] >= 0x80) && data.msg[0] - 0x80 || data.msg[0],
 		},
 
 		temperature : {
@@ -471,8 +486,8 @@ function parse_615(data) {
 	parse.temperature.exterior.f = Math.floor(parse.temperature.exterior.f);
 
 	// Update status object
-	update.status('engine.ac_request',    parse.engine.ac_request,    false);
-	update.status('engine.aux_fan_speed', parse.engine.aux_fan_speed, false);
+	update.status('engine.ac.request', parse.engine.ac.request, false);
+	update.status('engine.ac.torque',  parse.engine.ac.torque,  false);
 
 	update.status('temperature.exterior.c', parse.temperature.exterior.c, false);
 	update.status('temperature.exterior.f', parse.temperature.exterior.f);
@@ -584,7 +599,6 @@ function parse_out(data) {
 	}
 
 	// CAN data
-	// TODO move data.value = into parse_* functions
 	switch (data.src.id) {
 		case 0x316 : return parse_316(data);
 		case 0x329 : return parse_329(data);
