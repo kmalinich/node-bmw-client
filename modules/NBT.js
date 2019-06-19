@@ -3,7 +3,7 @@
 // Fxx : 12F -> 37 7C 8A DD D4 05 33 6B
 function decode_ignition(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
 
 	data.command = 'bro';
 	data.value   = 'Ignition status';
@@ -16,7 +16,7 @@ function decode_ignition(data) {
 // Used for iDrive knob rotational initialization
 function decode_status_module(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
 
 	data.command = 'con';
 	data.value   = 'NBT init iDrive knob';
@@ -67,6 +67,8 @@ function video_source(source = 'default') {
 		data : Buffer.from(cmd_data.msg0),
 	});
 
+	update.status('nbt.video.source', source);
+
 	// 2nd half of message sent 100ms later
 	setTimeout(() => {
 		bus.data.send({
@@ -74,24 +76,26 @@ function video_source(source = 'default') {
 			id   : cmd_data.id,
 			data : Buffer.from(cmd_data.msg1),
 		});
-
-		update.status('nbt.video.source', source);
 	}, 100);
 }
 
 function reverse_camera(gear) {
-	if (config.retrofit.nbt !== true) return;
+	// Bounce if NBT retrofit is not enabled or NBT reverse camera is not enabled
+	if (config.retrofit.nbt               !== true) return;
+	if (config.nbt.reverse_camera.enabled !== true) return;
 
 	switch (gear) {
 		case 'reverse' : {
 			// If now in reverse, and were NOT before,
 			// Send message to NBT to switch input to reverse camera
-			if (status.egs.gear !== 'reverse') {
-				// Wait 250ms, then check if we're still in reverse
-				setTimeout(() => {
-					if (status.egs.gear === 'reverse') video_source('RFK');
-				}, 250);
-			}
+			if (status.egs.gear === 'reverse') return;
+
+			// Wait 250ms, then check if we're still in reverse
+			setTimeout(() => {
+				if (status.egs.gear !== 'reverse') return;
+
+				video_source(config.nbt.reverse_camera.input);
+			}, 250);
 
 			break;
 		}
@@ -99,11 +103,14 @@ function reverse_camera(gear) {
 		default : {
 			// If now NOT in reverse, and were before
 			// Send message to NBT to switch input to default
-			if (status.egs.gear === 'reverse') {
-				setTimeout(() => {
-					if (status.egs.gear !== 'reverse') video_source();
-				}, 250);
-			}
+			if (status.egs.gear !== 'reverse') return;
+
+			setTimeout(() => {
+				if (status.egs.gear         === 'reverse')                       return;
+				if (status.nbt.video.source !== config.nbt.reverse_camera.input) return;
+
+				video_source();
+			}, 250);
 		}
 	}
 }
@@ -121,73 +128,6 @@ function init_listeners() {
 	power.on('active', status_ignition);
 
 	log.msg('Initialized listeners');
-}
-
-
-// Parse data sent to module
-function parse_in(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true) return;
-
-	switch (data.msg[0]) {
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
-	}
-
-	log.bus(data);
-}
-
-// Parse data sent from module
-function parse_out(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
-
-	switch (data.src.id) {
-		case 0x273 :
-		case 0x563 : data = decode_status_module(data); break;
-
-		case 0x277 : { // NBT ACK to rotational initialization message
-			data.command = 'rep';
-			data.value   = 'CON => NBT : ACK init';
-			break;
-		}
-
-		case 0x34E : { // NBT navigation information
-			data.command = 'bro';
-			data.value   = 'Navigation system information';
-
-			// Bounce if this data is already on K-CAN (can1)
-			// if (data.bus === 'can1') break;
-
-			// // Forward to can1
-			// bus.data.send({
-			// 	bus  : 'can1',
-			// 	id   : data.src.id,
-			// 	data : Buffer.from(data.msg),
-			// });
-
-			break;
-		}
-
-		case 0x38D : return;
-		case 0x5E3 : {
-			data.command = 'bro';
-			data.value   = 'Services';
-			break;
-		}
-
-		case 0x12F :
-		case 0x4F8 : data = decode_ignition(data); break;
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
-	}
-
-	log.bus(data);
 }
 
 
@@ -257,9 +197,6 @@ function status_module(action = false) {
 		}
 	}
 
-	// This is pretty noisy due to 2000ms timeout
-	// log.module('Sending module status');
-
 	// Convert data array to Buffer
 	msg.data = Buffer.from(msg.data);
 
@@ -323,6 +260,50 @@ function status_ignition() {
 
 	// Send message
 	bus.data.send(msg);
+}
+
+
+// Parse data sent to module
+function parse_in(data) {
+	// Bounce if not enabled
+	if (config.emulate.nbt !== true) return data;
+
+	return data;
+}
+
+// Parse data sent from module
+function parse_out(data) {
+	// Bounce if not enabled
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
+
+	switch (data.src.id) {
+		case 0x273 :
+		case 0x563 : return decode_status_module(data);
+
+		case 0x277 : { // NBT ACK to rotational initialization message
+			data.command = 'rep';
+			data.value   = 'CON => NBT : ACK init';
+			break;
+		}
+
+		case 0x34E : { // NBT navigation information
+			data.command = 'bro';
+			data.value   = 'Navigation system information';
+			break;
+		}
+
+		case 0x38D : return;
+		case 0x5E3 : {
+			data.command = 'bro';
+			data.value   = 'Services';
+			break;
+		}
+
+		case 0x12F :
+		case 0x4F8 : return decode_ignition(data);
+	}
+
+	return data;
 }
 
 

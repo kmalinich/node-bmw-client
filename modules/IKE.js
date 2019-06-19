@@ -38,6 +38,7 @@ class IKE extends EventEmitter {
 	}
 
 
+	// Broadcast: Aux heat LED status
 	// This actually is a bitmask but.. this is also a freetime project
 	decode_aux_heat_led(data) {
 		data.command = 'bro';
@@ -57,6 +58,23 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: BC button press (MFL BC stalk button)
+	decode_bc_button(data) {
+		data.command = 'bro';
+		data.value   = 'BC button';
+
+		// Extend cluster HUD refresh by 5 seconds, so you can read what's on the screen
+		update.status('hud.refresh_last', (status.hud.refresh_last + 5000));
+
+		// 5.2 seconds later, re-refresh it
+		setTimeout(() => {
+			this.hud_refresh();
+		}, 5200);
+
+		return data;
+	}
+
+	// Broadcast: Country coding data
 	decode_country_coding_data(data) {
 		data.command = 'bro';
 		data.value   = 'TODO country coding data';
@@ -64,6 +82,7 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Gong status
 	decode_gong_status(data) {
 		data.command = 'bro';
 		data.value   = 'TODO gong status ' + data.msg;
@@ -71,6 +90,7 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Update: OBC text
 	decode_obc_text(data) {
 		data.command = 'upd';
 
@@ -399,6 +419,7 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: Odometer
 	decode_odometer(data) {
 		data.command = 'bro';
 		data.value   = 'odometer';
@@ -413,6 +434,7 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: Vehicle speed and RPM
 	decode_speed_values(data) {
 		data.command = 'bro';
 		data.value   = 'speed values';
@@ -431,6 +453,7 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: Coolant temp and external temp
 	// Update exterior and engine coolant temperature data
 	decode_temperature_values(data) {
 		data.command = 'bro';
@@ -855,6 +878,7 @@ class IKE extends EventEmitter {
 		}, 12000);
 	}
 
+	// Broadcast: Ignition status
 	decode_ignition_status(data) {
 		let new_level_name;
 
@@ -970,6 +994,7 @@ class IKE extends EventEmitter {
 		return data;
 	}
 
+	// Broadcast: IKE sensor status
 	decode_sensor_status(data) {
 		data.command = 'bro';
 		data.value   = 'sensor status';
@@ -1118,65 +1143,22 @@ class IKE extends EventEmitter {
 
 	// Parse data sent from IKE module
 	parse_out(data) {
-		// Init variables
 		switch (data.msg[0]) {
-			case 0x07: // Gong status
-				data = this.decode_gong_status(data);
-				break;
-
-			case 0x11: // Broadcast: Ignition status
-				data = this.decode_ignition_status(data);
-				break;
-
-			case 0x13: // IKE sensor status
-				data = this.decode_sensor_status(data);
-				break;
-
-			case 0x15: // country coding data
-				data = this.decode_country_coding_data(data);
-				break;
-
-			case 0x17: // Odometer
-				data = this.decode_odometer(data);
-				break;
-
-			case 0x18: // Vehicle speed and RPM
-				data = this.decode_speed_values(data);
-				break;
-
-			case 0x19: // Coolant temp and external temp
-				data = this.decode_temperature_values(data);
-				break;
-
-			case 0x24: // Update: OBC text
-				data = this.decode_obc_text(data);
-				break;
-
-			case 0x2A: // Broadcast: Aux heat LED status
-				data = this.decode_aux_heat_led(data);
-				break;
-
-			case 0x57: // Broadcast: BC button press (MFL BC stalk button)
-				data.command = 'bro';
-				data.value   = 'BC button';
-
-				// Extend cluster HUD refresh by 5 seconds, so you can read what's on the screen
-				update.status('hud.refresh_last', (status.hud.refresh_last + 5000));
-
-				// 5 seconds later, re-refresh it
-				setTimeout(() => {
-					this.hud_refresh();
-				}, 5000);
-				break;
-
-			default:
-				data.command = 'unk';
-				data.value   = Buffer.from(data.msg);
-				break;
+			case 0x07 : return this.decode_gong_status(data);
+			case 0x11 : return this.decode_ignition_status(data);
+			case 0x13 : return this.decode_sensor_status(data);
+			case 0x15 : return this.decode_country_coding_data(data);
+			case 0x17 : return this.decode_odometer(data);
+			case 0x18 : return this.decode_speed_values(data);
+			case 0x19 : return this.decode_temperature_values(data);
+			case 0x24 : return this.decode_obc_text(data);
+			case 0x2A : return this.decode_aux_heat_led(data);
+			case 0x57 : return this.decode_bc_button(data);
 		}
 
-		log.bus(data);
+		return data;
 	}
+
 
 	// Request various things from IKE
 	request(value) {

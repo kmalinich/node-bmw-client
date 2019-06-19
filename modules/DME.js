@@ -33,6 +33,7 @@ function encode_316(rpm = 10000) {
 	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm_orig);
 }
 
+
 // CAN ARBID 0x316 (DME1)
 //
 // byte 0, bit 0 : Something is pushed here, but I'm having a hard time tracing what it is. Appears it would always be 1 if everything is running normally
@@ -49,13 +50,17 @@ function encode_316(rpm = 10000) {
 // byte 5 : md_reib       -- torque loss of consumers (alternator, ac, oil pump, etc) (in %)
 // byte 7 : md_ind_lm_ist -- theoretical engine torque from air mass, excluding ignition angle (in %)
 function parse_316(data) {
+	data.value = 'AC clutch/Throttle/RPM';
+
 	// Bounce if ignition is not in run
-	if (status.vehicle.ignition !== 'run') return;
+	if (status.vehicle.ignition !== 'run') return data;
 
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
 	let parse = {
-		ac_clutch : mask_0.b7,
+		ac : {
+			clutch : mask_0.b7,
+		},
 
 		rpm : ((data.msg[3] << 8) + data.msg[2]) / 6.4,
 
@@ -97,7 +102,7 @@ function parse_316(data) {
 	};
 
 
-	update.status('engine.ac_clutch', parse.ac_clutch, false);
+	update.status('engine.ac.clutch', parse.ac.clutch, false);
 
 	// yeah, i'm not real sure about this
 	update.status('vehicle.key.off',       parse.key.off,       false);
@@ -119,10 +124,14 @@ function parse_316(data) {
 	update.status('engine.horsepower.before_interventions', parse.horsepower.before_interventions);
 	update.status('engine.horsepower.loss',                 parse.horsepower.loss);
 	update.status('engine.horsepower.output',               parse.horsepower.output);
+
+	return data;
 }
 
 // CAN ARBID 0x329 (DME2)
 function parse_329(data) {
+	data.value = 'Temp/Brake pedal depressed/Throttle position';
+
 	// byte 0 : ??
 	// byte 1 : coolant temp
 	// byte 2 : atmospheric pressure
@@ -228,10 +237,14 @@ function parse_329(data) {
 			update.status('vehicle.clutch_count', parseFloat((status.vehicle.clutch_count + 1)), false);
 		}
 	}
+
+	return data;
 }
 
 // MS45/MSD80/MSV80 only
 function parse_338(data) {
+	data.value = 'Sport mode status';
+
 	// byte2, bit 0 = Sport on (request by SMG transmission)
 	// byte2, bit 1 = Sport off
 	// byte2, bit 2 = Sport on
@@ -260,19 +273,34 @@ function parse_338(data) {
 // byte 0, bit 4 : EML
 // byte 0, bit 7 : Check gas cap
 //
+// byte 1 : Fuel consumption LSB
+// byte 2 : Fuel consumption LSB
+//
 // byte 3, bit 0 : Oil level error, if motortype = S62
-// byte 3, bit 1 : Oil level warning
-// byte 3, bit 2 : Oil level error
-// byte 3, bit 3 : Overheat Light
+// byte 3, bit 1 : Oil level warning (yellow)
+// byte 3, bit 2 : Oil level error   (red)
+// byte 3, bit 3 : Coolant overtemperature light
 // byte 3, bit 4 : M3/M5 tachometer light
 // byte 3, bit 5 : M3/M5 tachometer light
 // byte 3, bit 6 : M3/M5 tachometer light
 //
 // byte 4 : Oil temperature (ºC = X - 48)
-// byte 5 : Charge light (0 = off, 1 = on; only used on some DMEs)
+//
+// byte 5, bit 0 : Oil pressure light off
+// byte 5, bit 1 :
+// byte 5, bit 2 :
+// byte 5, bit 3 : A/C switch
+// byte 5, bit 4 : Alternator/battery light off
+// byte 5, bit 5 :
+// byte 5, bit 6 :
+// byte 5, bit 7 :
+//
 // byte 6 : CSL oil level (format unclear)
+//
 // byte 7 : Possibly MSS54 TPM trigger
 function parse_545(data) {
+	data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
+
 	let process_consumption = true;
 
 	let consumption_current = ((data.msg[2] << 8) + data.msg[1]);
@@ -322,6 +350,14 @@ function parse_545(data) {
 
 	update.status('temperature.oil.f', parse.temperature.oil.f);
 	update.status('temperature.oil.c', parse.temperature.oil.c, false);
+
+	return data;
+}
+
+function parse_610(data) {
+	data.value = 'VIN/info';
+
+	return data;
 }
 
 
@@ -335,6 +371,8 @@ function parse_545(data) {
 //
 // This is actually sent by IKE
 function parse_613(data) {
+	data.value = 'Odometer/Running clock/Fuel level [0x615 ACK]';
+
 	let parse = {
 		vehicle : {
 			odometer : {
@@ -365,11 +403,15 @@ function parse_613(data) {
 	update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi, false);
 
 	update.status('vehicle.running_clock', parse.vehicle.running_clock, false);
+
+	return data;
 }
 
 // ARBID: 0x615 sent from the instrument cluster
 function parse_615(data) {
-	// byte 0 : AC signal, 0x80 when on, AC torque in bits 0-4 (value can be between 0 and 1F; unit is Nm). Bits 5 and 6 are unknown
+	data.value = 'A/C request/Outside air temp/Parking brake/door contacts';
+
+	// byte 0 : AC signal, 0x80 when on, AC torque in bits 0-4 (value can be between 0x00 and 0x1F; unit is Nm). Bits 5 and 6 are unknown
 	//
 	// byte 1, bit 0 : ??
 	// byte 1, bit 1 : ??
@@ -382,7 +424,7 @@ function parse_615(data) {
 	//
 	// byte 3 : Outside air temperature
 	//
-	// byte 4, bit 0 : Driver door open
+	// byte 4, bit 0 : Driver door opened
 	// byte 4, bit 1 : Handbrake engaged
 	// byte 4, bit 2 : ??
 	// byte 4, bit 3 : ??
@@ -419,9 +461,9 @@ function parse_615(data) {
 	// byte 7, bit 7 : ??
 
 	let parse = {
-		engine : {
-			ac_request    : data.msg[0],
-			aux_fan_speed : (data.msg[0] >= 0x80) && data.msg[0] - 0x80 || data.msg[0], // TODO: Should be ac_torque
+		ac : {
+			request : data.msg[0],
+			torque  : (data.msg[0] >= 0x80) && data.msg[0] - 0x80 || data.msg[0],
 		},
 
 		temperature : {
@@ -444,13 +486,15 @@ function parse_615(data) {
 	parse.temperature.exterior.f = Math.floor(parse.temperature.exterior.f);
 
 	// Update status object
-	update.status('engine.ac_request',    parse.engine.ac_request,    false);
-	update.status('engine.aux_fan_speed', parse.engine.aux_fan_speed, false);
+	update.status('engine.ac.request', parse.engine.ac.request, false);
+	update.status('engine.ac.torque',  parse.engine.ac.torque,  false);
 
 	update.status('temperature.exterior.c', parse.temperature.exterior.c, false);
 	update.status('temperature.exterior.f', parse.temperature.exterior.f);
 
 	update.status('vehicle.handbrake', parse.vehicle.handbrake, false);
+
+	return data;
 }
 
 // ARBID: 0x720 sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
@@ -464,6 +508,8 @@ function parse_615(data) {
 //
 // Example : [ 0x40, 0x4A, 0x03, 0x3E, 0x7C, 0x00, 0x00, 0x00 ]
 function parse_720(data) {
+	data.value = 'Coolant temp/Intake air temp/Exhaust gas temp/Oil temp/Voltage/Speed/Fuel pump duty';
+
 	let parse = {
 		dme : {
 			voltage : data.msg[4] / 10,
@@ -520,15 +566,12 @@ function parse_720(data) {
 	// update.status('temperature.oil.f',     parse.temperature.oil.f);
 	update.status('temperature.exhaust.f', parse.temperature.exhaust.f);
 	update.status('temperature.intake.f',  parse.temperature.intake.f);
+
+	return data;
 }
 
-function parse_out_low(data) {
-	switch (data.msg[0]) {
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-	}
 
+function parse_out_low(data) {
 	if (data.dst === null || typeof data.dst === 'undefined') {
 		data.dst = {
 			id   : 0x12,
@@ -540,7 +583,7 @@ function parse_out_low(data) {
 		data.msg = [ 0xFF ];
 	}
 
-	log.bus(data);
+	return data;
 }
 
 
@@ -548,69 +591,28 @@ function parse_out_low(data) {
 function parse_out(data) {
 	data.command = 'bro';
 
+	// DBUS/IBUS/KBUS data - not CAN
 	switch (data.bus) {
 		case 'ibus' :
 		case 'dbus' :
-		case 'kbus' : {
-			parse_out_low(data);
-			return;
-		}
+		case 'kbus' : return parse_out_low(data);
 	}
 
+	// CAN data
 	switch (data.src.id) {
-		case 0x316 : {
-			data.value = 'AC clutch/Throttle/RPM';
-			parse_316(data);
-			break;
-		}
+		case 0x316 : return parse_316(data);
+		case 0x329 : return parse_329(data);
+		case 0x338 : return parse_338(data);
+		case 0x545 : return parse_545(data);
+		case 0x610 : return parse_610(data);
+		case 0x613 : return parse_613(data);
+		case 0x615 : return parse_615(data);
+		case 0x720 : return parse_720(data);
 
-		case 0x329 : {
-			data.value = 'Temp/Brake pedal depressed/Throttle position';
-			parse_329(data);
-			break;
-		}
-
-		case 0x338 : {
-			data.value = 'Sport mode status';
-			parse_338(data);
-			break;
-		}
-
-		case 0x545 : {
-			data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
-			parse_545(data);
-			break;
-		}
-
-		case 0x610 : {
-			data.value = 'VIN/info';
-			break;
-		}
-
-		case 0x613 : {
-			data.value = 'Odometer/Running clock/Fuel level [0x615 ACK]';
-			parse_613(data);
-			break;
-		}
-
-		case 0x615 : {
-			data.value = 'A/C request/Outside air temp/Parking brake/door contacts';
-			parse_615(data);
-			break;
-		}
-
-		case 0x720 : {
-			data.value = 'Coolant temp/Intake air temp/Exhaust gas temp/Oil temp/Voltage/Speed/Fuel pump duty';
-			parse_720(data);
-			break;
-		}
-
-		default : {
-			data.value = data.src.id.toString(16);
-		}
+		default : data.value = data.src.id.toString(16);
 	}
 
-	// log.bus(data);
+	return data;
 }
 
 // Request various things from DME
@@ -676,7 +678,8 @@ module.exports = {
 	consumption_last : 0,
 
 	// Functions
-	encode_316     : encode_316,
+	encode_316 : encode_316,
+
 	init_listeners : init_listeners,
 	parse_out      : parse_out,
 	request        : request,

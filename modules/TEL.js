@@ -128,20 +128,14 @@ function led(object) {
 // Parse data sent from TEL module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x2B : data = decode_status_indicator(data); break;
-		case 0x2C : data = decode_status_telephone(data); break;
-		case 0xA9 : data = decode_data_telephone(data);   break;
-
-		case 0x52 : data = decode_text(data);    break;
-		case 0xA6 : data = decode_special(data); break;
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		case 0x2B : return decode_status_indicator(data);
+		case 0x2C : return decode_status_telephone(data);
+		case 0xA9 : return decode_data_telephone(data);
+		case 0x52 : return decode_text(data);
+		case 0xA6 : return decode_special(data);
 	}
 
-	log.bus(data);
+	return data;
 }
 
 

@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+npm link amp-message callers-path defaults-deep express jsonfile object-path performance-now socket.io trucolor

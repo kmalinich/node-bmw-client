@@ -50,18 +50,16 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0xA0: // Broadcast: diagnostic command acknowledged
+		case 0xA0 : { // Broadcast: diagnostic command acknowledged
 			data.command = 'bro';
 			data.value   = 'diagnostic command acknowledged';
 			break;
-
-		default:
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
+		}
 	}
 
-	log.bus(data);
+	return data;
 }
+
 
 module.exports = {
 	parse_out : parse_out,

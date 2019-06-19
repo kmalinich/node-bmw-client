@@ -5,14 +5,19 @@ DIR_BMWCD="${DIR_BASE}/bmwcd"
 
 DATE_STR="$(date '+%Y%m%d')"
 
-if [[ ! -d "${DIR_BMWCD}" ]]; then
-	exit 0;
-fi
+ARRAY_FILES=(
+'config.json'
+'status.json'
+)
+
+
+[[ ! -d "${DIR_BMWCD}" ]] && exit 0
 
 cd "${DIR_BMWCD}" || exit 1
 
-mkdir -p json.bak
+mkdir -p json.bak || exit 2
 
-for JSON_FILE in config status; do
-	cp -v ${JSON_FILE}.json "json.bak/${JSON_FILE}.json.${DATE_STR}"
+for JSON_FILE in "${ARRAY_FILES[@]}"; do
+	[[ ! -s "${JSON_FILE}" ]] && continue
+	cp -v "${JSON_FILE}" "json.bak/${JSON_FILE}.${DATE_STR}"
 done

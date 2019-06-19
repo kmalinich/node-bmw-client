@@ -79,11 +79,11 @@ function load_modules(pass) {
 
 	// Class/event-based DBUS/KBUS/IBUS modules
 	GM  = new (require('GM'))();
+	CAS = new (require('CAS'))();
 	EWS = new (require('EWS'))();
 	IKE = new (require('IKE'))();
 
 	// CANBUS modules
-	CAS   = require('CAS');
 	CON   = require('CON');
 	DSC   = require('DSC');
 	FEM   = require('FEM');

@@ -43,17 +43,10 @@ function parse_out(data) {
 				case 0x07 : data.value += 'end';          break;
 				case 0x08 : data.value += 'loading';
 			}
-
-			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
 		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // CDC->RAD CD status

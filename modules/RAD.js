@@ -19,7 +19,7 @@ function decode_audio_control_command(data) {
 	// Bounce if bit8 (no bits set) is true
 	if (mask.bit8) {
 		data.value += 'empty value';
-		return;
+		return null;
 	}
 
 	let command;
@@ -146,6 +146,7 @@ function decode_audio_control_command(data) {
 	return command;
 }
 
+// Audio control (i.e. source)
 // Decode various audio control/DSP/EQ commands
 function decode_audio_control(data) {
 	data.command = 'con';
@@ -210,6 +211,7 @@ function decode_audio_control(data) {
 	return data;
 }
 
+// Broadcast: BM button
 function decode_bm_button(data) {
 	let action = 'depress';
 	let button;
@@ -288,150 +290,6 @@ function decode_bm_button(data) {
 	}
 
 	return data;
-}
-
-
-// Parse data sent to RAD module
-function parse_in(data) {
-	switch (data.msg[0]) {
-		case 0x01 : {
-			// When RAD receives a device status request, send DSP a device status request
-			bus.cmds.request_device_status('RAD', 'DSP');
-			break;
-		}
-
-		case 0x47 : { // Broadcast: BM status
-			return data;
-		}
-
-		case 0x48 : { // Broadcast: BM button
-			data = decode_bm_button(data);
-			break;
-		}
-
-		case 0x49 : { // Broadcast: BM knob
-			return data;
-		}
-
-		case 0x4B : { // Broadcast: Cassette status
-			return data;
-		}
-
-		default : {
-			return data;
-		}
-	}
-}
-
-// Parse data sent from RAD module
-function parse_out(data) {
-	// Device status
-	switch (data.msg[0]) {
-		case 0x34 : { // Control: DSP
-			data.command = 'con';
-			data.value   = 'DSP - ';
-
-			switch (data.msg[1]) {
-				case 0x08 : data.value += 'memory get';                break;
-				case 0x09 : data.value += 'EQ button: concert hall';   break;
-				case 0x0A : data.value += 'EQ button: jazz club';      break;
-				case 0x0B : data.value += 'EQ button: cathedral';      break;
-				case 0x0C : data.value += 'EQ button: memory 1';       break;
-				case 0x0D : data.value += 'EQ button: memory 2';       break;
-				case 0x0E : data.value += 'EQ button: memory 3';       break;
-				case 0x0F : data.value += 'EQ button: DSP off';        break;
-				case 0x28 : data.value += 'EQ button: unknown (0x28)'; break;
-
-				case 0x90 : {
-					data.value += 'EQ button: M-Audio off';
-					// Not really the right place to set this var
-					// It should be in the status from DSP itself
-					update.status('dsp.m_audio', false, false);
-					break;
-				}
-
-				case 0x91 : {
-					data.value += 'EQ button: M-Audio on';
-					update.status('dsp.m_audio', true, false);
-					break;
-				}
-
-				case 0x95 : {
-					data.value += 'memory set';
-					update.status('dsp.m_audio', false, false);
-					break;
-				}
-
-				default : {
-					data.value = Buffer.from(data.msg);
-				}
-			}
-			break;
-		}
-
-		case 0x36 : { // Audio control (i.e. source)
-			data = decode_audio_control(data);
-			break;
-		}
-
-		case 0x38 : { // Control: CD
-			data.command = 'con';
-			data.value   = 'CD - ';
-
-			// Command
-			switch (data.msg[1]) {
-				case 0x00 : data.value += 'status';       break;
-				case 0x01 : data.value += 'stop';         break;
-				case 0x02 : data.value += 'pause';        break;
-				case 0x03 : data.value += 'play';         break;
-				case 0x04 : data.value += 'fast-forward'; break;
-				case 0x05 : data.value += 'fast-reverse'; break;
-				case 0x06 : data.value += 'scan-off';     break;
-				case 0x07 : data.value += 'end';          break;
-				case 0x08 : data.value += 'random-off';
-			}
-
-			break;
-		}
-
-		case 0x4A : { // Control: Cassette
-			BMBT.cassette_status(data.msg[1]);
-
-			data.command = 'con';
-			data.value   = 'cassette: ';
-
-			switch (data.msg[1]) {
-				case 0x00 : data.value += 'power off'; break;
-				case 0xFF : data.value += 'power on';  break;
-				default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
-			}
-			break;
-		}
-
-		case 0x46 : { // Control: LCD
-			data.command = 'con';
-			data.value   = 'LCD: ';
-
-			switch (data.msg[1]) {
-				case 0x0E : data.value += 'off'; break;
-				default   : data.value += data.msg[1];
-			}
-			break;
-		}
-
-		case 0xA5 : { // Control: Screen text
-			data.command = 'con';
-			data.value   = 'screen text TODO';
-			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
-	}
-
-	log.bus(data);
 }
 
 // Send audio control commands
@@ -664,7 +522,7 @@ function audio_power(power_state = false) {
 function init_listeners() {
 	// Bounce if we're not configured to emulate the RAD module or not in an E39
 	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.rad       !== true)  return;
+	if (config.emulate.rad       !== true) return;
 
 	// Perform commands on power lib active event
 	// TODO: Make this a config value
@@ -683,6 +541,137 @@ function init_listeners() {
 
 
 	log.msg('Initialized listeners');
+}
+
+
+// Parse data sent to RAD module
+function parse_in(data) {
+	switch (data.msg[0]) {
+		case 0x01 : {
+			// When RAD receives a device status request, send DSP a device status request
+			bus.cmds.request_device_status('RAD', 'DSP');
+			break;
+		}
+
+		case 0x47 : { // Broadcast: BM status
+			return data;
+		}
+
+		case 0x48 : return decode_bm_button(data);
+
+		case 0x49 : { // Broadcast: BM knob
+			return data;
+		}
+
+		case 0x4B : { // Broadcast: Cassette status
+			return data;
+		}
+	}
+
+	return data;
+}
+
+// Parse data sent from RAD module
+function parse_out(data) {
+	// Device status
+	switch (data.msg[0]) {
+		case 0x34 : { // Control: DSP
+			data.command = 'con';
+			data.value   = 'DSP - ';
+
+			switch (data.msg[1]) {
+				case 0x08 : data.value += 'memory get';                break;
+				case 0x09 : data.value += 'EQ button: concert hall';   break;
+				case 0x0A : data.value += 'EQ button: jazz club';      break;
+				case 0x0B : data.value += 'EQ button: cathedral';      break;
+				case 0x0C : data.value += 'EQ button: memory 1';       break;
+				case 0x0D : data.value += 'EQ button: memory 2';       break;
+				case 0x0E : data.value += 'EQ button: memory 3';       break;
+				case 0x0F : data.value += 'EQ button: DSP off';        break;
+				case 0x28 : data.value += 'EQ button: unknown (0x28)'; break;
+
+				case 0x90 : {
+					data.value += 'EQ button: M-Audio off';
+					// Not really the right place to set this var
+					// It should be in the status from DSP itself
+					update.status('dsp.m_audio', false, false);
+					break;
+				}
+
+				case 0x91 : {
+					data.value += 'EQ button: M-Audio on';
+					update.status('dsp.m_audio', true, false);
+					break;
+				}
+
+				case 0x95 : {
+					data.value += 'memory set';
+					update.status('dsp.m_audio', false, false);
+					break;
+				}
+
+				default : {
+					data.value = Buffer.from(data.msg);
+				}
+			}
+			break;
+		}
+
+		case 0x36 : return decode_audio_control(data);
+
+		case 0x38 : { // Control: CD
+			data.command = 'con';
+			data.value   = 'CD - ';
+
+			// Command
+			switch (data.msg[1]) {
+				case 0x00 : data.value += 'status';       break;
+				case 0x01 : data.value += 'stop';         break;
+				case 0x02 : data.value += 'pause';        break;
+				case 0x03 : data.value += 'play';         break;
+				case 0x04 : data.value += 'fast-forward'; break;
+				case 0x05 : data.value += 'fast-reverse'; break;
+				case 0x06 : data.value += 'scan-off';     break;
+				case 0x07 : data.value += 'end';          break;
+				case 0x08 : data.value += 'random-off';
+			}
+
+			break;
+		}
+
+		case 0x4A : { // Control: Cassette
+			BMBT.cassette_status(data.msg[1]);
+
+			data.command = 'con';
+			data.value   = 'cassette: ';
+
+			switch (data.msg[1]) {
+				case 0x00 : data.value += 'power off'; break;
+				case 0xFF : data.value += 'power on';  break;
+				default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
+			}
+			break;
+		}
+
+		case 0x46 : { // Control: LCD
+			data.command = 'con';
+			data.value   = 'LCD: ';
+
+			switch (data.msg[1]) {
+				case 0x0E : data.value += 'off'; break;
+				default   : data.value += data.msg[1];
+			}
+			break;
+		}
+
+		case 0xA5 : { // Control: Screen text
+			data.command = 'con';
+			data.value   = 'screen text TODO';
+			break;
+		}
+	}
+
+	return data;
 }
 
 

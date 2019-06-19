@@ -22,6 +22,8 @@ class EWS extends EventEmitter {
 		});
 	}
 
+
+	// Broadcast: Immobilizer status
 	parse_immobilizer_status(data) {
 		data.command = 'bro';
 		data.value   = 'key presence - ';
@@ -75,28 +77,22 @@ class EWS extends EventEmitter {
 		return data;
 	}
 
+
 	// Parse data sent from EWS module
 	parse_out(data) {
 		switch (data.msg[0]) {
-			case 0x74 : { // Broadcast: immobilizer status
-				data = this.parse_immobilizer_status(data);
-				break;
-			}
+			case 0x74 : return this.parse_immobilizer_status(data);
 
-			case 0xA0 : { // Broadcast: diagnostic command acknowledged
+			// Broadcast: Diagnostic command acknowledged
+			case 0xA0 : {
 				data.command = 'bro';
 				data.value   = 'diagnostic command acknowledged';
-				break;
-			}
-
-			default : {
-				data.command = 'unk';
-				data.value   = Buffer.from(data.msg);
 			}
 		}
 
-		log.bus(data);
+		return data;
 	}
 }
+
 
 module.exports = EWS;

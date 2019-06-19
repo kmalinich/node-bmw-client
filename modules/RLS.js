@@ -3,6 +3,7 @@
 // This module.. can get confused with the AIC module
 // (AIC module is the rain-only sensor)
 
+// Broadcast: Light control status
 function decode_light_control_status(data) {
 	data.command = 'bro';
 	data.value   = 'light control status - ';
@@ -40,11 +41,11 @@ function decode_light_control_status(data) {
 		intensity     : null,
 		intensity_str : null,
 		intensities   : {
-			l1 : mask1.bit4  && !mask1.bit5 && !mask1.bit6 && !mask1.bit8,
+			l1 :  mask1.bit4 && !mask1.bit5 && !mask1.bit6 && !mask1.bit8,
 			l2 : !mask1.bit4 &&  mask1.bit5 && !mask1.bit6 && !mask1.bit8,
-			l3 : mask1.bit4  &&  mask1.bit5 && !mask1.bit6 && !mask1.bit8,
+			l3 :  mask1.bit4 &&  mask1.bit5 && !mask1.bit6 && !mask1.bit8,
 			l4 : !mask1.bit4 && !mask1.bit5 &&  mask1.bit6 && !mask1.bit8,
-			l5 : mask1.bit4  && !mask1.bit5 &&  mask1.bit6 && !mask1.bit8,
+			l5 :  mask1.bit4 && !mask1.bit5 &&  mask1.bit6 && !mask1.bit8,
 			l6 : !mask1.bit4 &&  mask1.bit5 &&  mask1.bit6 && !mask1.bit8,
 			l0 : !mask1.bit4 && !mask1.bit5 && !mask1.bit6 &&  mask1.bit8,
 		},
@@ -55,7 +56,7 @@ function decode_light_control_status(data) {
 		reason     : null,
 		reason_str : null,
 		reasons    : {
-			twilight : mask2.bit0  && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
+			twilight :  mask2.bit0 && !mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
 			darkness : !mask2.bit0 &&  mask2.bit1 && !mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
 			rain     : !mask2.bit0 && !mask2.bit1 &&  mask2.bit2 && !mask2.bit3 && !mask2.bit4 && !mask2.bit8,
 			tunnel   : !mask2.bit0 && !mask2.bit1 && !mask2.bit2 &&  mask2.bit3 && !mask2.bit4 && !mask2.bit8,
@@ -94,6 +95,7 @@ function decode_light_control_status(data) {
 
 	return data;
 }
+
 
 function light_control_status(data) {
 	// Init variables
@@ -145,9 +147,10 @@ function light_control_status(data) {
 	});
 }
 
+// Broadcast: Headlight wipe interval
 function decode_headlight_wipe_interval(data) {
 	data.command = 'bro';
-	data.value   = 'headlight wipe interval';
+	data.value   = 'headlight wipe interval - V1: ' + data.msg[1] + ' V2: ' + data.msg[2];
 
 	update.status('rls.interval.wipe.headlight.v1', data.msg[1]);
 	update.status('rls.interval.wipe.headlight.v2', data.msg[2]);
@@ -159,28 +162,6 @@ function decode_headlight_wipe_interval(data) {
 	return data;
 }
 
-// Parse data sent from RLS module
-function parse_out(data) {
-	switch (data.msg[0]) {
-		case 0x58: { // Broadcast: Headlight wipe interval
-			data = decode_headlight_wipe_interval(data);
-			break;
-		}
-
-		case 0x59: { // Broadcast: Light control status
-			data = decode_light_control_status(data);
-			break;
-		}
-
-		default: {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
-	}
-
-	log.bus(data);
-}
-
 // Request various things from RLS
 function request(value) {
 	// Init variables
@@ -188,10 +169,11 @@ function request(value) {
 	let cmd;
 
 	switch (value) {
-		case 'rain-sensor-status' :
+		case 'rain-sensor-status' : {
 			src = 'IHKA';
 			cmd = [ 0x71 ]; // Get IO status
 			break;
+		}
 	}
 
 	bus.data.send({
@@ -200,6 +182,18 @@ function request(value) {
 		msg : cmd,
 	});
 }
+
+
+// Parse data sent from RLS module
+function parse_out(data) {
+	switch (data.msg[0]) {
+		case 0x58 : return decode_headlight_wipe_interval(data);
+		case 0x59 : return decode_light_control_status(data);
+	}
+
+	return data;
+}
+
 
 module.exports = {
 	light_control_status : light_control_status,
