@@ -16,7 +16,6 @@
 		"kodi-ws": "^2.4.3",
 		"moment": "^2.24.0",
 		"node-unit-conversion": "^0.1.1",
-		"npm-check-updates": "^3.1.11",
 		"object-path": "^0.11.4",
 		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
