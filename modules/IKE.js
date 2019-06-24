@@ -1017,8 +1017,8 @@ class IKE extends EventEmitter {
 		}
 
 		// If the vehicle is newly in reverse, show IKE message if configured to do so
-		if (config.options.message_reverse === true) {
-			if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]), false)) {
+		if (update.status('vehicle.reverse', bitmask.test(data.msg[2], bitmask.bit[4]), false)) {
+			if (config.options.message_reverse === true) {
 				if (status.vehicle.reverse === true) this.text_override('you\'re in reverse..');
 			}
 		}
