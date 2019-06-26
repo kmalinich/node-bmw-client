@@ -1,6 +1,7 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 
+// Broadcast: BM button
 // Decode various BMBT button presses
 function decode_button(data) {
 	data.command = 'bro';
@@ -176,6 +177,7 @@ function decode_button(data) {
 	return data;
 }
 
+// Broadcast: Cassette status
 function decode_cassette_status(data) {
 	data.command = 'sta';
 	data.value   = 'cassette: ';
@@ -191,6 +193,7 @@ function decode_cassette_status(data) {
 	return data;
 }
 
+// Broadcast: BM knob
 // Decode BMBT knob turns
 function decode_knob(data) {
 	data.command = 'bro';
@@ -227,9 +230,8 @@ function decode_knob(data) {
 
 // Set or unset the status timeout
 function status_loop(action) {
-	if (config.chassis.model !== 'e39') return;
-
-	if (config.emulate.bmbt !== true) return;
+	if (config.intf.ibus.enabled !== true) return;
+	if (config.emulate.bmbt      !== true) return;
 
 	if (status.vehicle.ignition_level < 1) action = false;
 
@@ -273,7 +275,7 @@ function status_loop(action) {
 
 // Send BMBT status, and request status from RAD
 function refresh_status() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	if (status.vehicle.ignition_level > 0) {
 		log.module('Refreshing status');
@@ -295,9 +297,8 @@ function refresh_status() {
 
 // Send the power on button command if needed/ready
 function toggle_power_if_ready() {
-	if (config.chassis.model !== 'e39') return;
-
-	if (config.emulate.bmbt !== true) return;
+	if (config.intf.ibus.enabled !== true) return;
+	if (config.emulate.bmbt      !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
 	if (BMBT.timeout.power_on !== null) return;
@@ -338,52 +339,10 @@ function toggle_power_if_ready() {
 	}, 1000);
 }
 
-// Parse data sent to BMBT module
-function parse_in(data) {
-	switch (data.msg[0]) {
-		case 0x4A: // Cassette control
-			cassette_status();
-			toggle_power_if_ready();
-			break;
-	}
-}
-
-// Parse data sent from BMBT module
-function parse_out(data) {
-	switch (data.msg[0]) {
-		case 0x47 : { // Broadcast: BM status
-			data = decode_button(data);
-			break;
-		}
-
-		case 0x48 : { // Broadcast: BM button
-			data = decode_button(data);
-			break;
-		}
-
-		case 0x49 : { // Broadcast: BM knob
-			data = decode_knob(data);
-			break;
-		}
-
-		case 0x4B : { // Broadcast: Cassette status
-			data = decode_cassette_status(data);
-			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-			break;
-		}
-	}
-
-	log.bus(data);
-}
 
 // Say we have no tape in the player
 function cassette_status(value = 0x05) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	bus.data.send({
 		src : module_name,
@@ -394,7 +353,7 @@ function cassette_status(value = 0x05) {
 
 // Emulate button presses
 function button(button) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	let button_down = 0x00;
 	// let button_hold;
@@ -439,8 +398,9 @@ function button(button) {
 	}, 150);
 }
 
+
 function init_listeners() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Perform commands on power lib active event
 	power.on('active', (power_state) => {
@@ -448,6 +408,30 @@ function init_listeners() {
 	});
 
 	log.msg('Initialized listeners');
+}
+
+
+// Parse data sent to BMBT module
+function parse_in(data) {
+	switch (data.msg[0]) {
+		case 0x4A : { // Cassette control
+			cassette_status();
+			toggle_power_if_ready();
+			break;
+		}
+	}
+}
+
+// Parse data sent from BMBT module
+function parse_out(data) {
+	switch (data.msg[0]) {
+		case 0x47 :
+		case 0x48 : return decode_button(data);
+		case 0x49 : return decode_knob(data);
+		case 0x4B : return decode_cassette_status(data);
+	}
+
+	return data;
 }
 
 

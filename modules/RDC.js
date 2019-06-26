@@ -6,15 +6,11 @@ function parse_out(data) {
 			data.value   = 'RDC status TODO, ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
 			break;
 		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
 	}
 
-	log.bus(data);
+	return data;
 }
+
 
 module.exports = {
 	parse_out : parse_out,

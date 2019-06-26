@@ -3,6 +3,9 @@ const EventEmitter = require('events');
 
 class EGS extends EventEmitter {
 	parse_304(data) {
+		data.command = 'bro';
+		data.value   = 'Transmission gear';
+
 		let gear;
 
 		switch (data.msg[0]) {
@@ -33,18 +36,20 @@ class EGS extends EventEmitter {
 
 		// Update status object
 		update.status('egs.gear', gear, false);
+
+		return data;
 	}
 
 
 	// Parse data sent from module
 	parse_out(data) {
-		data.command = 'bro';
-
 		switch (data.src.id) {
-			case 0x304 : this.parse_304(data); data.value = 'Transmission gear'; break;
+			case 0x304 : return this.parse_304(data);
 
 			default : data.value = data.src.id.toString(16);
 		}
+
+		return data;
 	}
 }
 

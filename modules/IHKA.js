@@ -1,43 +1,3 @@
-// Parse data sent from IHKA module
-function parse_out(data) {
-	switch (data.msg[0]) {
-		case 0x83 : { // Broadcast: AC compressor status
-			update.status('ihka.ac', bitmask.test(data.msg[1], 0x80), false);
-
-			data.command = 'bro';
-			data.value   = 'AC compressor status ' + data.msg;
-			break;
-		}
-
-		case 0x86 : { // Broadcast: Rear defroster status
-			update.status('ihka.defroster', bitmask.test(data.msg[1], 0x01), false);
-
-			data.command = 'bro';
-			data.value   = 'defroster status ' + status.ihka.defroster;
-			break;
-		}
-
-		case 0xA0 : { // Reply to DIA: success
-			data.command = 'rep';
-			data.value   = Buffer.from(data.msg);
-			break;
-		}
-
-		case 0xB0 : { // Reply: Something else
-			data.command = 'rep';
-			data.value   = Buffer.from(data.msg);
-			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
-	}
-
-	log.bus(data);
-}
-
 // Enable/disable aux heat/vent
 function aux(data) {
 	let cmd;
@@ -85,6 +45,7 @@ function recirc() {
 	});
 }
 
+
 // Request various things from IHKA
 function request(value) {
 	// Init variables
@@ -105,6 +66,43 @@ function request(value) {
 		msg : cmd,
 	});
 }
+
+
+// Parse data sent from IHKA module
+function parse_out(data) {
+	switch (data.msg[0]) {
+		case 0x83 : { // Broadcast: AC compressor status
+			update.status('ihka.ac', bitmask.test(data.msg[1], 0x80), false);
+
+			data.command = 'bro';
+			data.value   = 'AC compressor status ' + data.msg;
+			break;
+		}
+
+		case 0x86 : { // Broadcast: Rear defroster status
+			update.status('ihka.defroster', bitmask.test(data.msg[1], 0x01), false);
+
+			data.command = 'bro';
+			data.value   = 'defroster status ' + status.ihka.defroster;
+			break;
+		}
+
+		case 0xA0 : { // Reply to DIA: success
+			data.command = 'rep';
+			data.value   = Buffer.from(data.msg);
+			break;
+		}
+
+		case 0xB0 : { // Reply: Something else
+			data.command = 'rep';
+			data.value   = Buffer.from(data.msg);
+			break;
+		}
+	}
+
+	return data;
+}
+
 
 module.exports = {
 	aux       : aux,

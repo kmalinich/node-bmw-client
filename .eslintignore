@@ -1,4 +1,7 @@
-/.git/
-/candump/
-/node_modules/
-/test/
+/*.md
+/*.sh
+/.git
+/LICENSE
+/candump
+/node_modules
+/test

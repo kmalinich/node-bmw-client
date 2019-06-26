@@ -79,12 +79,6 @@ function parse_out(data) {
 		case 0xB8 : {
 			data.command = 'req';
 			data.value   = 'motor-values';
-			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
 		}
 	}
 
@@ -95,7 +89,7 @@ function parse_out(data) {
 		val : data.value,
 	};
 
-	log.bus(data);
+	return data;
 }
 
 module.exports = {

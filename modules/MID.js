@@ -11,7 +11,7 @@ const pad = require('pad');
 // 68 C0 21 00 15 06 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
 
 function refresh_text() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
@@ -187,19 +187,19 @@ function parse_in(data) {
 		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // Parse data sent from MID module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x20 : { // Broadcast : { Display status
+		case 0x20 : { // Broadcast : Display status
 			data.command = 'bro';
 			data.value   = 'display status: ';
 			break;
 		}
 
-		case 0x31 : { // Broadcast : { Button pressed
+		case 0x31 : { // Broadcast : Button pressed
 			data.command = 'bro';
 			data.value   = 'button pressed: ' + data.msg[1] + ' ' + data.msg[2] + ' ' + data.msg[3];
 
@@ -309,31 +309,25 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x47 : { // Broadcast : { BM status
+		case 0x47 : { // Broadcast : BM status
 			data.command = 'bro';
 			data.value   = 'BM status';
 			break;
 		}
 
-		case 0x48 : { // Broadcast : { BM button
+		case 0x48 : { // Broadcast : BM button
 			data.command = 'bro';
 			data.value   = 'BM button';
 			break;
 		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-			break;
-		}
 	}
 
-	log.bus(data);
+	return data;
 }
 
 // Emulate button presses
 function button(button) {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	let button_down = 0x00;
 	let button_hold;
@@ -377,7 +371,7 @@ function button(button) {
 }
 
 function init_listeners() {
-	if (config.chassis.model !== 'e39') return;
+	if (config.intf.ibus.enabled !== true) return;
 
 	// Perform commands on power lib active event
 	power.on('active', (power_state) => {

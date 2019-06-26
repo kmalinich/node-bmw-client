@@ -1,19 +1,61 @@
 #!/usr/bin/env bash
 
-_out() {
-	local BAR="==========="
+. ~/.kdm/rc.d/text
 
-	echo
-	echo "-${BAR} ${1} ${BAR}-"
+
+_out() {
+	local COLUMN_COUNT
+
+	local BANNER_EQ1_LENGTH BANNER_EQ1_STRING
+	local BANNER_EQ2_LENGTH BANNER_EQ2_STRING
+	local BANNER_TXT_LENGTH BANNER_TXT_ODD
+
+	# Init variables
+	BANNER_TXT_ODD="FALSE"
+
+	# Get length of input string
+	BANNER_TXT_LENGTH="${#1}"
+
+	# Subtract the modulo to even it out
+	if [[ "$((BANNER_TXT_LENGTH%2))" != "0" ]]; then
+		BANNER_TXT_ODD="TRUE"
+		((BANNER_TXT_LENGTH--))
+	fi
+
+	# Get 1/2 the number of columns
+	COLUMN_COUNT="$(echo "scale=0; $(tput cols)/2" | bc)"
+
+	# Ceil 1/2 column count value at 120
+	[[ "${COLUMN_COUNT}" -gt "120" ]] && COLUMN_COUNT="120"
+
+	# Floor 1/2 column count value at 57
+	[[ "${COLUMN_COUNT}" -lt "57" ]] && COLUMN_COUNT="57"
+
+	# Calculate number of = characters for main portion
+	BANNER_EQ1_LENGTH="$((COLUMN_COUNT-BANNER_TXT_LENGTH))"
+
+	BANNER_EQ1_LENGTH="$((BANNER_EQ1_LENGTH-9))"
+
+	# Subtract 1 if input text was odd-numbered, to even it out
+	[[ "${BANNER_TXT_ODD}" == "TRUE" ]] && ((BANNER_EQ1_LENGTH--))
+
+	# Number of = characters for smaller portion
+	BANNER_EQ2_LENGTH="6"
+
+	# Create ===== strings
+	BANNER_EQ1_STRING="$(printf '%*s' ${BANNER_EQ1_LENGTH} '' | sed 's/\ /=/g')"
+	BANNER_EQ2_STRING="$(printf '%*s' ${BANNER_EQ2_LENGTH} '' | sed 's/\ /=/g')"
+
+	printf "\n${C_RED}%s${C_RST} ${C_WHT_BRT}%s${C_RST} ${C_RED}%s${C_RST}\n" "${BANNER_EQ1_STRING}" "${1}" "${BANNER_EQ2_STRING}"
 }
 
 _smf() {
-	git submodule foreach --recursive git ${*}
+	git submodule foreach git "${@}"
 }
 
 
 _out "JSON backup"
-./json-backup
+# ./json-backup
 
 _out "Repo fetch"
 git fetch --all --prune

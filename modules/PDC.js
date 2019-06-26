@@ -1,3 +1,4 @@
+// PDC status (Sets off IKE gongs)
 function decode_pdc_status(data) {
 	let parse;
 
@@ -15,21 +16,14 @@ function decode_pdc_status(data) {
 	return data;
 }
 
+
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x07 : { // PDC status (Sets off IKE gongs)
-			data = decode_pdc_status(data);
-			break;
-		}
-
-		default : {
-			data.command = 'unk';
-			data.value   = Buffer.from(data.msg);
-		}
+		case 0x07 : return decode_pdc_status(data);
 	}
 
-	log.bus(data);
+	return data;
 }
 
 

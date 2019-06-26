@@ -79,11 +79,11 @@ function load_modules(pass) {
 
 	// Class/event-based DBUS/KBUS/IBUS modules
 	GM  = new (require('GM'))();
+	CAS = new (require('CAS'))();
 	EWS = new (require('EWS'))();
 	IKE = new (require('IKE'))();
 
 	// CANBUS modules
-	CAS   = require('CAS');
 	CON   = require('CON');
 	DSC   = require('DSC');
 	FEM   = require('FEM');
@@ -106,12 +106,6 @@ function load_modules(pass) {
 	// Data handler/router
 	bus = require('bus');
 
-	// Host data object (CPU, memory, etc.)
-	host_data = require('host-data');
-
-	// Push notification library
-	// notify = require('notify');
-
 	log.msg('Loaded modules');
 
 	process.nextTick(pass);
@@ -125,37 +119,35 @@ function init() {
 	json.read(() => { // Read JSON config and status files
 		load_modules(() => { // Load IBUS/KBUS module node modules
 			json.reset(() => { // Reset vars (hack =/)
-				socket.init(() => { // Start zeroMQ client
-					host_data.init(() => { // Initialize host data object
-						api.init();       // Start Express API server
-						bluetooth.init(); // Start Linux D-Bus Bluetooth handler
-						gpio.init();      // Initialize GPIO relays
-						hdmi_cec.init();  // Open HDMI-CEC
-						hdmi_rpi.init();  // Open HDMI (RPi)
-						kodi.init();      // Start Kodi WebSocket client
-						weather.init();   // Initialize weather object
+				socket.init(() => { // Start socket client(s)
+					api.init();       // Start Express API server
+					bluetooth.init(); // Start Linux D-Bus Bluetooth handler
+					gpio.init();      // Initialize GPIO relays
+					hdmi_cec.init();  // Open HDMI-CEC
+					hdmi_rpi.init();  // Open HDMI (RPi)
+					kodi.init();      // Start Kodi WebSocket client
+					weather.init();   // Initialize weather object
 
-						// Initialize event listeners
-						BMBT.init_listeners();
-						CON.init_listeners();
-						DME.init_listeners();
-						DSC.init_listeners();
-						FEM.init_listeners();
-						GM.init_listeners();
-						IKE.init_listeners();
-						LCM.init_listeners();
-						MID.init_listeners();
-						NBT.init_listeners();
-						RAD.init_listeners();
+					// Initialize event listeners
+					BMBT.init_listeners();
+					CON.init_listeners();
+					DME.init_listeners();
+					DSC.init_listeners();
+					FEM.init_listeners();
+					GM.init_listeners();
+					IKE.init_listeners();
+					LCM.init_listeners();
+					MID.init_listeners();
+					NBT.init_listeners();
+					RAD.init_listeners();
 
-						bus.data.init_listeners();
-						gpio.init_listeners();
-						json.init_listeners();
-						kodi.init_listeners();
-						power.init_listeners();
+					bus.data.init_listeners();
+					gpio.init_listeners();
+					json.init_listeners();
+					kodi.init_listeners();
+					power.init_listeners();
 
-						log.msg('Initialized');
-					}, term);
+					log.msg('Initialized');
 				}, term);
 			}, term);
 		}, term);
@@ -180,10 +172,8 @@ function term() {
 	hdmi_cec.term(() => { // Close HDMI-CEC
 		hdmi_rpi.term(() => { // Close HDMI (RPi)
 			gpio.term(() => { // Terminate GPIO relays
-				host_data.term(() => { // Terminate host data timeout
-					socket.term(() => { // Stop zeroMQ client
-						kodi.term(bail); // Stop Kodi WebSocket client
-					}, bail);
+				socket.term(() => { // Stop zeroMQ client
+					kodi.term(bail); // Stop Kodi WebSocket client
 				}, bail);
 			}, bail);
 		}, bail);

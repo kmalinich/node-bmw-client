@@ -135,7 +135,7 @@
 		"bluetooth": false,
 		"bus": false,
 		"config": true,
-		"gpio": true,
+		"gpio": false,
 		"hdmi_cec": false,
 		"hdmi_rpi": false,
 		"hex": false,
@@ -150,7 +150,7 @@
 		"power": false,
 		"socket": false,
 		"status": true,
-		"terminating": false,
+		"terminating": true,
 		"update": false,
 		"weather": false
 	},
