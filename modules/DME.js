@@ -486,8 +486,8 @@ function parse_615(data) {
 	parse.temperature.exterior.f = Math.floor(parse.temperature.exterior.f);
 
 	// Update status object
-	update.status('engine.ac.request', parse.engine.ac.request, false);
-	update.status('engine.ac.torque',  parse.engine.ac.torque,  false);
+	update.status('engine.ac.request', parse.ac.request, false);
+	update.status('engine.ac.torque',  parse.ac.torque,  false);
 
 	update.status('temperature.exterior.c', parse.temperature.exterior.c, false);
 	update.status('temperature.exterior.f', parse.temperature.exterior.f);
