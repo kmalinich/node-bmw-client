@@ -41,7 +41,7 @@
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
 		"onoff": "^4.1.2",
-		"pi-temperature": "^2.0.0",
+		"pi-temperature": "^2.1.0",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git"
 	},
 	"repository": {
