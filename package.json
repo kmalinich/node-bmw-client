@@ -1,5 +1,8 @@
 {
 	"author": "kdm <kennygprs@gmail.com>",
+	"bin": {
+		"bmwcd": "bin/bmwcd"
+	},
 	"bugs": {
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
