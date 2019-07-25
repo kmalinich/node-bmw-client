@@ -856,7 +856,7 @@ class IKE extends EventEmitter {
 
 		// Request fresh data
 		this.request('ignition');
-		LCM.request('io-status');
+		// LCM.request('io-status');
 
 		// Refresh HUD display
 		this.hud_refresh(true);
