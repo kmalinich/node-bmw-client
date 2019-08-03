@@ -1082,7 +1082,8 @@ class IKE extends EventEmitter {
 		update.on('status.vehicle.dsc.active', (value) => {
 			switch (value.new) {
 				case false : {
-					// Don't send CC message if engine was started in the last 15 seconds
+					// Don't send CC message if engine is not running or was started in the last 15 seconds
+					if (status.engine.running === false)                      break;
 					if ((Date.now() - status.engine.start_time_last) < 15000) break;
 
 					this.text_warning('  DSC deactivated!  ');

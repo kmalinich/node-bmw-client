@@ -1,6 +1,9 @@
 /* eslint key-spacing : 0 */
+/* eslint no-console  : 0 */
+
 
 const EventEmitter = require('events');
+
 
 // All the possible values to send to GM
 // let array_of_possible_values = {
@@ -308,9 +311,9 @@ class GM extends EventEmitter {
 
 	// Send message to GM
 	io_set(packet) {
-		if (config.intf.ibus.enabled !== true) return;
+		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
-		log.module('Setting IO status');
+		// log.module('Setting IO status');
 
 		// Add 'set IO status' command to beginning of array
 		packet.unshift(0x0C);
@@ -327,9 +330,10 @@ class GM extends EventEmitter {
 		// Send the notification to the log and the cluster
 		let notify_message = 'Toggling door locks';
 		log.module(notify_message);
+		console.log('[9] DOOR LOCK EVENT : Toggling door locks');
 
 		// TODO: Add MID message
-		if (config.gm.text.ike) IKE.text_override(notify_message);
+		if (config.gm.text.ike === true) IKE.text_override(notify_message);
 
 		// Hex:
 		// 01 3A 01 : LF unlock (CL)
@@ -340,13 +344,26 @@ class GM extends EventEmitter {
 		// 01 41 01 : Rear lock
 		// 01 42 02 : Rear unlock
 
-		// Init message variable
+		// Send IO set command
 		this.io_set([ 0x00, 0x0B ]);
+		this.io_set([ 0x00, 0x0B, 0x01 ]);
+
+		// Really extra send it though
+		setTimeout(() => {
+			this.io_set([ 0x00, 0x0B ]);
+			this.io_set([ 0x00, 0x0B, 0x01 ]);
+
+			// Like, really, really, really extra send it
+			setTimeout(() => {
+				this.io_set([ 0x00, 0x0B ]);
+				this.io_set([ 0x00, 0x0B, 0x01 ]);
+			}, 100);
+		}, 100);
 	}
 
 	// Request various things from GM
 	request(value) {
-		if (config.intf.ibus.enabled !== true) return;
+		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
 		// Init variables
 		let src;
@@ -468,22 +485,40 @@ class GM extends EventEmitter {
 
 
 	init_listeners() {
-		if (config.intf.ibus.enabled !== true) return;
+		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
 		// Lock and unlock doors automatically on ignition events
 		update.on('status.vehicle.ignition', (data) => {
+			console.log('[0] DOOR LOCK EVENT : data.old              = ', data.old);
+			console.log('[0] DOOR LOCK EVENT : data.new              = ', data.new);
+			console.log('[0] DOOR LOCK EVENT : status.doors.closed   = ', status.doors.closed);
+			console.log('[0] DOOR LOCK EVENT : status.vehicle.locked = ', status.vehicle.locked);
+
 			// Return if doors are not closed
-			if (!status.doors.closed) return;
+			// if (!status.doors.closed) return;
+			if (status.doors.closed !== true) {
+				console.log('[1] DOOR LOCK EVENT : Returning due to (status.doors.closed !== true)');
+				return;
+			}
 
 			switch (data.new) {
 				case 'off' : {
 					// Return if not previously in accessory position
-					if (data.old !== 'accessory') return;
+					// if (data.old !== 'accessory') return;
+					if (data.old !== 'accessory') {
+						console.log('[2] DOOR LOCK EVENT : Returning due to (data.old !== \'accessory\')');
+						return;
+					}
 
 					// Return if doors are NOT locked
-					if (!status.vehicle.locked) return;
+					// if (status.vehicle.locked !== true) return;
+					if (status.vehicle.locked !== true) {
+						console.log('[3] DOOR LOCK EVENT : Returning due to (status.vehicle.locked !== true)');
+						return;
+					}
 
-					log.module('Doors are locked and closed, toggling door locks');
+					console.log('[4] DOOR LOCK EVENT : Doors are locked and closed, toggling door locks');
+					// log.module('Doors are locked and closed, toggling door locks');
 
 					setTimeout(() => { this.locks(); }, 500);
 					break;
@@ -491,12 +526,21 @@ class GM extends EventEmitter {
 
 				case 'run' : {
 					// Return if not previously in start position
-					if (data.old !== 'start') return;
+					// if (data.old !== 'start') return;
+					if (data.old !== 'start') {
+						console.log('[5] DOOR LOCK EVENT : Returning due to (data.old !== \'start\')');
+						return;
+					}
 
 					// Return if doors are locked
-					if (status.vehicle.locked) return;
+					// if (status.vehicle.locked === true) return;
+					if (status.vehicle.locked === true) {
+						console.log('[6] DOOR LOCK EVENT : Returning due to (status.vehicle.locked === true)');
+						return;
+					}
 
-					log.module('Doors are unlocked and closed, toggling door locks');
+					console.log('[7] DOOR LOCK EVENT : Doors are unlocked and closed, toggling door locks');
+					// log.module('Doors are unlocked and closed, toggling door locks');
 
 					setTimeout(() => { this.locks(); }, 500);
 				}
