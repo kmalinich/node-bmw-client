@@ -1,6 +1,7 @@
 /* eslint no-console       : 0 */
 /* eslint no-global-assign : 0 */
 
+
 // Bump up default max event listeners
 require('events').EventEmitter.defaultMaxListeners = 20;
 
