@@ -330,7 +330,6 @@ class GM extends EventEmitter {
 		// Send the notification to the log and the cluster
 		let notify_message = 'Toggling door locks';
 		log.module(notify_message);
-		console.log('[9] DOOR LOCK EVENT : Toggling door locks');
 
 		// TODO: Add MID message
 		if (config.gm.text.ike === true) IKE.text_override(notify_message);
@@ -344,21 +343,28 @@ class GM extends EventEmitter {
 		// 01 41 01 : Rear lock
 		// 01 42 02 : Rear unlock
 
+		console.log('[9] DOOR LOCK EVENT : Toggling door locks (1x)');
+
 		// Send IO set command
 		this.io_set([ 0x00, 0x0B ]);
 		this.io_set([ 0x00, 0x0B, 0x01 ]);
 
+
 		// Really extra send it though
 		setTimeout(() => {
+			console.log('[9] DOOR LOCK EVENT : Toggling door locks (2x)');
+
 			this.io_set([ 0x00, 0x0B ]);
 			this.io_set([ 0x00, 0x0B, 0x01 ]);
 
 			// Like, really, really, really extra send it
 			setTimeout(() => {
+				console.log('[9] DOOR LOCK EVENT : Toggling door locks (3x)');
+
 				this.io_set([ 0x00, 0x0B ]);
 				this.io_set([ 0x00, 0x0B, 0x01 ]);
-			}, 100);
-		}, 100);
+			}, 150);
+		}, 150);
 	}
 
 	// Request various things from GM
