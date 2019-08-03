@@ -140,7 +140,8 @@ function parse_316(data) {
 	update.status('engine.torque_intervention', parse.torque_intervention, false);
 
 	// If the engine is newly running
-	if (update.status('engine.running', (parse.rpm > 0), false)) {
+	let engine_running = (parse.rpm > 0);
+	if (update.status('engine.running', engine_running, false) && engine_running === true) {
 		update.status('engine.start_time_last', Date.now(), false);
 	}
 
@@ -240,10 +241,11 @@ function parse_329(data) {
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = Math.floor(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 
+
 	// Update status object
-	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar, false);
-	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg, false);
-	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi,  false);
+	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar);
+	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
+	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi, false);
 
 	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus,  false);
 	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff,  false);

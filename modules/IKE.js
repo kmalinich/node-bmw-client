@@ -1012,7 +1012,8 @@ class IKE extends EventEmitter {
 		update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]), false);
 
 		// If the engine is newly running
-		if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]), false)) {
+		let engine_running = bitmask.test(data.msg[2], bitmask.bit[0]);
+		if (update.status('engine.running', engine_running, false) && engine_running === true) {
 			this.emit('engine-running');
 			update.status('engine.start_time_last', Date.now(), false);
 		}

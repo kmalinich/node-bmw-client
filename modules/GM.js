@@ -511,8 +511,8 @@ class GM extends EventEmitter {
 				case 'off' : {
 					// Return if not previously in accessory position
 					// if (data.old !== 'accessory') return;
-					if (data.old !== 'accessory') {
-						console.log('[2] DOOR LOCK EVENT : Returning due to (data.old !== \'accessory\')');
+					if (data.old !== 'accessory' && data.old !== 'run') {
+						console.log('[2] DOOR LOCK EVENT : Returning due to (data.old !== \'accessory\' && data.old !== \'run\')');
 						return;
 					}
 
