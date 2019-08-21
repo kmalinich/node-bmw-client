@@ -343,8 +343,6 @@ class GM extends EventEmitter {
 		// 01 41 01 : Rear lock
 		// 01 42 02 : Rear unlock
 
-		console.log('[9] DOOR LOCK EVENT : Toggling door locks (1x)');
-
 		// Send IO set command
 		this.io_set([ 0x00, 0x0B ]);
 		this.io_set([ 0x00, 0x0B, 0x01 ]);
@@ -352,15 +350,11 @@ class GM extends EventEmitter {
 
 		// Really extra send it though
 		setTimeout(() => {
-			console.log('[9] DOOR LOCK EVENT : Toggling door locks (2x)');
-
 			this.io_set([ 0x00, 0x0B ]);
 			this.io_set([ 0x00, 0x0B, 0x01 ]);
 
 			// Like, really, really, really extra send it
 			setTimeout(() => {
-				console.log('[9] DOOR LOCK EVENT : Toggling door locks (3x)');
-
 				this.io_set([ 0x00, 0x0B ]);
 				this.io_set([ 0x00, 0x0B, 0x01 ]);
 			}, 150);
@@ -495,36 +489,18 @@ class GM extends EventEmitter {
 
 		// Lock and unlock doors automatically on ignition events
 		update.on('status.vehicle.ignition', (data) => {
-			console.log('[0] DOOR LOCK EVENT : data.old              = ', data.old);
-			console.log('[0] DOOR LOCK EVENT : data.new              = ', data.new);
-			console.log('[0] DOOR LOCK EVENT : status.doors.closed   = ', status.doors.closed);
-			console.log('[0] DOOR LOCK EVENT : status.vehicle.locked = ', status.vehicle.locked);
-
 			// Return if doors are not closed
-			// if (!status.doors.closed) return;
-			if (status.doors.closed !== true) {
-				console.log('[1] DOOR LOCK EVENT : Returning due to (status.doors.closed !== true)');
-				return;
-			}
+			if (status.doors.closed !== true) return;
 
 			switch (data.new) {
 				case 'off' : {
 					// Return if not previously in accessory position
-					// if (data.old !== 'accessory') return;
-					if (data.old !== 'accessory' && data.old !== 'run') {
-						console.log('[2] DOOR LOCK EVENT : Returning due to (data.old !== \'accessory\' && data.old !== \'run\')');
-						return;
-					}
+					if (data.old !== 'accessory') return;
 
 					// Return if doors are NOT locked
-					// if (status.vehicle.locked !== true) return;
-					if (status.vehicle.locked !== true) {
-						console.log('[3] DOOR LOCK EVENT : Returning due to (status.vehicle.locked !== true)');
-						return;
-					}
+					if (status.vehicle.locked !== true) return;
 
-					console.log('[4] DOOR LOCK EVENT : Doors are locked and closed, toggling door locks');
-					// log.module('Doors are locked and closed, toggling door locks');
+					log.module('Doors are locked and closed, toggling door locks');
 
 					setTimeout(() => { this.locks(); }, 500);
 					break;
@@ -532,21 +508,12 @@ class GM extends EventEmitter {
 
 				case 'run' : {
 					// Return if not previously in start position
-					// if (data.old !== 'start') return;
-					if (data.old !== 'start') {
-						console.log('[5] DOOR LOCK EVENT : Returning due to (data.old !== \'start\')');
-						return;
-					}
+					if (data.old !== 'start') return;
 
 					// Return if doors are locked
-					// if (status.vehicle.locked === true) return;
-					if (status.vehicle.locked === true) {
-						console.log('[6] DOOR LOCK EVENT : Returning due to (status.vehicle.locked === true)');
-						return;
-					}
+					if (status.vehicle.locked === true) return;
 
-					console.log('[7] DOOR LOCK EVENT : Doors are unlocked and closed, toggling door locks');
-					// log.module('Doors are unlocked and closed, toggling door locks');
+					log.module('Doors are unlocked and closed, toggling door locks');
 
 					setTimeout(() => { this.locks(); }, 500);
 				}
