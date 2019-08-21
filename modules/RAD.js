@@ -556,11 +556,10 @@ function init_listeners() {
 
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
 	IKE.on('ignition-start-end', () => {
-		setTimeout(() => {
-			audio_power(false);
-
-			setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
-		}, config.rad.after_start_delay);
+		setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
+		// setTimeout(() => {
+			// audio_power(false);
+		// }, config.rad.after_start_delay);
 	});
 
 
