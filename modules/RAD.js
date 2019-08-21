@@ -191,7 +191,9 @@ function decode_audio_control(data) {
 				case 0xA1 : update.status('rad.source_name', 'tuner/tape', false); break;
 
 				case 0x0F :
-				case 0xAF : update.status('rad.source_name', 'off', false);
+				case 0xAF : update.status('rad.source_name', 'off', false); break;
+
+				default : update.status('rad.source_name', 'unknown', false);
 			}
 
 			// Technically not legit
@@ -313,6 +315,7 @@ function audio_control(command) {
 
 	};
 
+
 	let msg;
 
 	switch (command) {
@@ -322,6 +325,8 @@ function audio_control(command) {
 		case 'cdc'        : {
 			command = 'source cd changer';
 			msg     = msgs.source.cd;
+
+			update.status('rad.source_name', 'cd', false);
 			break;
 		}
 
@@ -350,6 +355,8 @@ function audio_control(command) {
 		case 'on'         : {
 			command = 'source tuner/tape';
 			msg     = msgs.source.tunertape;
+
+			update.status('rad.source_name', 'tuner/tape', false);
 			break;
 		}
 
@@ -362,6 +369,8 @@ function audio_control(command) {
 		default          : {
 			command = 'power off';
 			msg     = msgs.off;
+
+			update.status('rad.source_name', 'off', false);
 		}
 	}
 
@@ -451,7 +460,7 @@ function volume_control(value = 1) {
 
 
 // Power on DSP amp and GPIO pin for amplifier
-function audio_power(power_state = false) {
+function audio_power(power_state = false, volume_increase = true) {
 	if (config.intf.ibus.enabled !== true) return;
 
 	// Bounce if we're not configured to emulate the RAD module
@@ -474,6 +483,12 @@ function audio_power(power_state = false) {
 
 			update.status('dsp.ready', false, false);
 			update.status('dsp.reset', true,  false);
+
+			// Send pause command to Bluetooth device
+			bluetooth.command('pause');
+
+			// Send pause command to Kodi
+			kodi.command('pause');
 
 			break;
 		}
@@ -500,12 +515,16 @@ function audio_power(power_state = false) {
 			// Turn on BMBT
 			setTimeout(() => { cassette_control(true); }, 250);
 
+
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
-			setTimeout(() => {
-				for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
-					setTimeout(() => { volume_control(5); }, 10 * pass);
-				}
-			}, 500);
+			if (volume_increase === true) {
+				setTimeout(() => {
+					for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
+						setTimeout(() => { volume_control(5); }, 10 * pass);
+					}
+				}, 500);
+			}
+
 
 			// Delay sending EQ command 750ms + 12ms per volume step
 			let dsp_eq_delay = (750 + (12 * config.rad.power_on_volume));
@@ -514,6 +533,13 @@ function audio_power(power_state = false) {
 			setTimeout(() => {
 				DSP.eq_encode(config.media.dsp.eq);
 			}, dsp_eq_delay);
+
+
+			// Send play command to Bluetooth device
+			bluetooth.command('play');
+
+			// Send play command to Kodi
+			kodi.command('play');
 		}
 	}
 }
@@ -525,18 +551,15 @@ function init_listeners() {
 	if (config.emulate.rad       !== true) return;
 
 	// Perform commands on power lib active event
-	// TODO: Make this a config value
+	// TODO: Make the delay a config value
 	power.on('active', (power_state) => {
-		setTimeout(() => { audio_power(power_state); }, 200);
+		setTimeout(() => { audio_power(power_state); }, 300);
 	});
 
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
 	IKE.on('ignition-start-end', () => {
-		setTimeout(() => {
-			audio_power(false);
-
-			setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
-		}, config.rad.after_start_delay);
+		// Specify to not increase the volume on this possibly second power on event
+		setTimeout(() => { audio_power(true, false); }, config.rad.after_start_delay);
 	});
 
 

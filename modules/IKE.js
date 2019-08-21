@@ -447,7 +447,7 @@ class IKE extends EventEmitter {
 		}
 
 		if (config.canbus.rpm === false || status.vehicle.ignition_level < 3) {
-			update.status('engine.speed', parseFloat(data.msg[2] * 100));
+			update.status('engine.rpm', parseFloat(data.msg[2] * 100));
 		}
 
 		return data;
@@ -856,7 +856,7 @@ class IKE extends EventEmitter {
 
 		// Request fresh data
 		this.request('ignition');
-		LCM.request('io-status');
+		// LCM.request('io-status');
 
 		// Refresh HUD display
 		this.hud_refresh(true);
@@ -1012,8 +1012,10 @@ class IKE extends EventEmitter {
 		update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]), false);
 
 		// If the engine is newly running
-		if (update.status('engine.running', bitmask.test(data.msg[2], bitmask.bit[0]), false)) {
+		let engine_running = bitmask.test(data.msg[2], bitmask.bit[0]);
+		if (update.status('engine.running', engine_running, false) && engine_running === true) {
 			this.emit('engine-running');
+			update.status('engine.start_time_last', Date.now(), false);
 		}
 
 		// If the vehicle is newly in reverse, show IKE message if configured to do so
@@ -1080,7 +1082,14 @@ class IKE extends EventEmitter {
 		// DSC off CC message
 		update.on('status.vehicle.dsc.active', (value) => {
 			switch (value.new) {
-				case false : this.text_warning('  DSC deactivated!  '); break;
+				case false : {
+					// Don't send CC message if engine is not running or was started in the last 15 seconds
+					if (status.engine.running === false)                      break;
+					if ((Date.now() - status.engine.start_time_last) < 15000) break;
+
+					this.text_warning('  DSC deactivated!  ');
+					break;
+				}
 			}
 		});
 

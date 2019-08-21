@@ -1,6 +1,9 @@
 /* eslint key-spacing : 0 */
+/* eslint no-console  : 0 */
+
 
 const EventEmitter = require('events');
+
 
 // All the possible values to send to GM
 // let array_of_possible_values = {
@@ -308,9 +311,9 @@ class GM extends EventEmitter {
 
 	// Send message to GM
 	io_set(packet) {
-		if (config.intf.ibus.enabled !== true) return;
+		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
-		log.module('Setting IO status');
+		// log.module('Setting IO status');
 
 		// Add 'set IO status' command to beginning of array
 		packet.unshift(0x0C);
@@ -329,7 +332,7 @@ class GM extends EventEmitter {
 		log.module(notify_message);
 
 		// TODO: Add MID message
-		if (config.gm.text.ike) IKE.text_override(notify_message);
+		if (config.gm.text.ike === true) IKE.text_override(notify_message);
 
 		// Hex:
 		// 01 3A 01 : LF unlock (CL)
@@ -340,13 +343,27 @@ class GM extends EventEmitter {
 		// 01 41 01 : Rear lock
 		// 01 42 02 : Rear unlock
 
-		// Init message variable
+		// Send IO set command
 		this.io_set([ 0x00, 0x0B ]);
+		this.io_set([ 0x00, 0x0B, 0x01 ]);
+
+
+		// Really extra send it though
+		setTimeout(() => {
+			this.io_set([ 0x00, 0x0B ]);
+			this.io_set([ 0x00, 0x0B, 0x01 ]);
+
+			// Like, really, really, really extra send it
+			setTimeout(() => {
+				this.io_set([ 0x00, 0x0B ]);
+				this.io_set([ 0x00, 0x0B, 0x01 ]);
+			}, 150);
+		}, 150);
 	}
 
 	// Request various things from GM
 	request(value) {
-		if (config.intf.ibus.enabled !== true) return;
+		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
 		// Init variables
 		let src;
@@ -468,12 +485,12 @@ class GM extends EventEmitter {
 
 
 	init_listeners() {
-		if (config.intf.ibus.enabled !== true) return;
+		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
 		// Lock and unlock doors automatically on ignition events
 		update.on('status.vehicle.ignition', (data) => {
 			// Return if doors are not closed
-			if (!status.doors.closed) return;
+			if (status.doors.closed !== true) return;
 
 			switch (data.new) {
 				case 'off' : {
@@ -481,7 +498,7 @@ class GM extends EventEmitter {
 					if (data.old !== 'accessory') return;
 
 					// Return if doors are NOT locked
-					if (!status.vehicle.locked) return;
+					if (status.vehicle.locked !== true) return;
 
 					log.module('Doors are locked and closed, toggling door locks');
 
@@ -494,7 +511,7 @@ class GM extends EventEmitter {
 					if (data.old !== 'start') return;
 
 					// Return if doors are locked
-					if (status.vehicle.locked) return;
+					if (status.vehicle.locked === true) return;
 
 					log.module('Doors are unlocked and closed, toggling door locks');
 

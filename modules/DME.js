@@ -3,6 +3,14 @@
 const convert = require('node-unit-conversion');
 
 
+// I should look into extending object classes and using Prototype for crap like this
+//
+// Horsepower = (torque * RPM)/5252
+function tq2hp(torque, rpm) {
+	return Math.round((torque * rpm) / 5252);
+}
+
+
 // This is dangerous and awesome if you can see what it does
 function encode_316(rpm = 10000) {
 	// Bounce if can0 is not enabled
@@ -57,18 +65,38 @@ function parse_316(data) {
 
 	let mask_0 = bitmask.check(data.msg[0]).mask;
 
+	// Key message examples seen:
+	//                      [ 0 1 2 3 4 5 6 7 ]
+	// data.msg[0] = 0x04 : [ - - T - - - - - ]
+	// data.msg[0] = 0x05 : [ T - T - - - - - ]
+	// data.msg[0] = 0x15 : [ T - T - T - - - ]
+
 	let parse = {
+		dsc_error           : !mask_0.b0,
+		maf_error           : mask_0.b7,
+		status_ok           : mask_0.b0,
+		torque_intervention : mask_0.b4,
+
+		rpm : Math.round(((data.msg[3] << 8) + data.msg[2]) / 6.4),
+
+
 		ac : {
-			clutch : mask_0.b7,
+			clutch : mask_0.b6,
 		},
 
-		rpm : ((data.msg[3] << 8) + data.msg[2]) / 6.4,
-
+		// This is not actually factual
 		key : {
 			off       :  mask_0.b8,
-			accessory : !mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
-			run       :  mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 && !mask_0.b4,
-			start     :  mask_0.b0 && !mask_0.b1 && mask_0.b2 && !mask_0.b3 &&  mask_0.b4,
+			accessory : !mask_0.b0 && mask_0.b2 && !mask_0.b4,
+			run       :  mask_0.b0 && mask_0.b2 && !mask_0.b4,
+			start     :  mask_0.b0 && mask_0.b2 &&  mask_0.b4,
+		},
+
+		horsepower : {
+			after_interventions  : 0,
+			before_interventions : 0,
+			loss                 : 0,
+			output               : 0,
 		},
 
 		torque : {
@@ -84,31 +112,38 @@ function parse_316(data) {
 			loss                 : Math.round(config.engine.torque_max * (data.msg[5] / 255)),
 			output               : Math.round(config.engine.torque_max * (data.msg[7] / 255)),
 		},
-
-		horsepower : {
-			after_interventions  : 0,
-			before_interventions : 0,
-			loss                 : 0,
-			output               : 0,
-		},
 	};
 
 	// Horsepower = (torque * RPM)/5252
 	parse.horsepower = {
-		after_interventions  : Math.round((parse.torque_value.after_interventions  * status.engine.speed) / 5252),
-		before_interventions : Math.round((parse.torque_value.before_interventions * status.engine.speed) / 5252),
-		loss                 : Math.round((parse.torque_value.loss                 * status.engine.speed) / 5252),
-		output               : Math.round((parse.torque_value.output               * status.engine.speed) / 5252),
+		after_interventions  : tq2hp(parse.torque_value.after_interventions,  parse.rpm),
+		before_interventions : tq2hp(parse.torque_value.before_interventions, parse.rpm),
+
+		loss   : tq2hp(parse.torque_value.loss,   parse.rpm),
+		output : tq2hp(parse.torque_value.output, parse.rpm),
 	};
 
 
-	update.status('engine.ac.clutch', parse.ac.clutch, false);
+	// This is not actually factual
+	// update.status('vehicle.key.off',       parse.key.off,       false);
+	// update.status('vehicle.key.accessory', parse.key.accessory, false);
+	// update.status('vehicle.key.run',       parse.key.run,       false);
+	// update.status('vehicle.key.start',     parse.key.start,     false);
 
-	// yeah, i'm not real sure about this
-	update.status('vehicle.key.off',       parse.key.off,       false);
-	update.status('vehicle.key.accessory', parse.key.accessory, false);
-	update.status('vehicle.key.run',       parse.key.run,       false);
-	update.status('vehicle.key.start',     parse.key.start,     false);
+
+	update.status('engine.rpm', parse.rpm);
+
+	update.status('engine.ac.clutch',           parse.ac.clutch,           false);
+	update.status('engine.dsc_error',           parse.dsc_error,           false);
+	update.status('engine.maf_error',           parse.maf_error,           false);
+	update.status('engine.status_ok',           parse.status_ok,           false);
+	update.status('engine.torque_intervention', parse.torque_intervention, false);
+
+	// If the engine is newly running
+	let engine_running = (parse.rpm > 0);
+	if (update.status('engine.running', engine_running, false) && engine_running === true) {
+		update.status('engine.start_time_last', Date.now(), false);
+	}
 
 	update.status('engine.torque.after_interventions',  parse.torque.after_interventions);
 	update.status('engine.torque.before_interventions', parse.torque.before_interventions);
@@ -206,10 +241,11 @@ function parse_329(data) {
 	// Calculate fahrenheit temperature values
 	parse.temperature.coolant.f = Math.floor(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
 
+
 	// Update status object
-	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar, false);
-	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg, false);
-	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi,  false);
+	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar);
+	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
+	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi, false);
 
 	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus,  false);
 	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff,  false);

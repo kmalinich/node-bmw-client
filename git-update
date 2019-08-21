@@ -54,8 +54,10 @@ _smf() {
 }
 
 
-_out "JSON backup"
-# ./json-backup
+if [[ "${1}" != "--no-json" ]]; then
+	_out "JSON backup"
+	./json-backup
+fi
 
 _out "Repo fetch"
 git fetch --all --prune
