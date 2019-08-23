@@ -171,7 +171,11 @@ function eq_encode(data) {
 	for (let band_num = 0; band_num < 7; band_num++) {
 		// ... Don't look at me
 		let band_out = [ 0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F))) ];
-		eq_send(band_out);
+
+		// Send each EQ band update with a small delay
+		setTimeout(() => {
+			eq_send(band_out);
+		}, (band_num * 50));
 	}
 
 	log.module('DSP EQ encoded');
