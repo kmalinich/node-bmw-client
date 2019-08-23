@@ -164,9 +164,11 @@ function eq_delta(band, value) {
 function eq_encode(data) {
 	let echo_out = [ 0x34, 0x94 + data.memory, data.echo & 0x0F ];
 	eq_send(echo_out);
+	log.module('DSP EQ echo encoded');
 
 	let room_size_out = [ 0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20 ];
 	eq_send(room_size_out);
+	log.module('DSP EQ room size encoded');
 
 	for (let band_num = 0; band_num < 7; band_num++) {
 		// ... Don't look at me
@@ -175,10 +177,10 @@ function eq_encode(data) {
 		// Send each EQ band update with a small delay
 		setTimeout(() => {
 			eq_send(band_out);
+
+			log.module('DSP EQ band ' + band_num + ' encoded');
 		}, (band_num * 50));
 	}
-
-	log.module('DSP EQ encoded');
 }
 
 // Send EQ data to DSP
