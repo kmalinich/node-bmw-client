@@ -179,7 +179,7 @@ function eq_encode(data) {
 			eq_send(band_out);
 
 			log.module('DSP EQ band ' + band_num + ' encoded');
-		}, (band_num * 50));
+		}, (band_num * 200));
 	}
 }
 
@@ -190,7 +190,7 @@ function eq_send(msg) {
 		msg : msg,
 	});
 
-	log.module('DSP EQ sent');
+	// log.module('DSP EQ sent');
 }
 
 // Set M-Audio on/off
