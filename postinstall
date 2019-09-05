@@ -6,10 +6,12 @@ for FILE_V8 in $(find . -name index-v8.js); do
 	FILE_V9="${FILE_V8/v8/v9}"
 	FILE_V10="${FILE_V8/v8/v10}"
 	FILE_V11="${FILE_V8/v8/v11}"
+	FILE_v12="${FILE_V8/v8/v12}"
 
 	[[ ! -s "${FILE_V9}"  ]] && cp -fv "${FILE_V8}" "${FILE_V9}"
 	[[ ! -s "${FILE_V10}" ]] && cp -fv "${FILE_V8}" "${FILE_V10}"
 	[[ ! -s "${FILE_V11}" ]] && cp -fv "${FILE_V8}" "${FILE_V11}"
+	[[ ! -s "${FILE_v12}" ]] && cp -fv "${FILE_V8}" "${FILE_v12}"
 done
 
 cd .. || exit 1
