@@ -3,7 +3,6 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 const EventEmitter = require('events');
 const convert      = require('node-unit-conversion');
 const moment       = require('moment');
-const now          = require('performance-now');
 const os           = require('os');
 
 
@@ -17,6 +16,12 @@ function text_urgent_off() {
 	});
 }
 
+// Get delta time between two a previous process.hrtime() call and now, and return it as non-BigInt
+function hrtime_delta(start) {
+	const delta = process.hrtime(start);
+	return parseFloat(delta[0] + '.' + delta[1]);
+}
+
 
 class IKE extends EventEmitter {
 	constructor() {
@@ -26,13 +31,16 @@ class IKE extends EventEmitter {
 		this.max_len_text = 20;
 
 		// HUD refresh vars
-		this.timeout_data_refresh = null;
-		this.hud_override         = false;
-		this.hud_override_text    = null;
-
 		this.timeout_accept_refresh = null;
+		this.timeout_data_refresh   = null;
 
-		this.hud_refresh = this.hud_refresh;
+		this.hud_override      = false;
+		this.hud_override_text = null;
+
+		// Don't refresh HUD if true
+		this.hud_locked = false;
+
+		this.hud_refresh_hrtime = process.hrtime();
 
 		this.text_urgent_off = text_urgent_off;
 	}
@@ -63,13 +71,14 @@ class IKE extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'BC button';
 
-		// Extend cluster HUD refresh by 5 seconds, so you can read what's on the screen
-		update.status('hud.refresh_last', (status.hud.refresh_last + 5000));
+		// Disable HUD updates
+		this.hud_locked = true;
 
-		// 5.2 seconds later, re-refresh it
-		setTimeout(() => {
-			this.hud_refresh();
-		}, 5200);
+		// 5 seconds later, unlock HUD refresh
+		setTimeout(() => { this.hud_locked = false; }, 5000);
+
+		// 5.2 seconds later, re-refresh HUD
+		setTimeout(() => { this.hud_refresh(); }, 5200);
 
 		return data;
 	}
@@ -552,16 +561,18 @@ class IKE extends EventEmitter {
 		// Bounce if the ignition is off
 		if (status.vehicle.ignition_level < 1) return false;
 
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
+
 		// Bounce if override is active
 		if (this.hud_override === true) return false;
 
-		let time_now = now();
-		let refresh_delta = time_now - status.hud.refresh_last;
+		let refresh_delta = hrtime_delta(this.hud_refresh_hrtime);
 
 		// Bonce if the last update was less than the configured value in milliseconds ago
 		if (refresh_delta <= config.hud.refresh_max) return false;
 
-		update.status('hud.refresh_last', time_now);
+		this.hud_refresh_hrtime = process.hrtime();
 
 		return true;
 	}
@@ -570,9 +581,13 @@ class IKE extends EventEmitter {
 	hud_refresh(override = false) {
 		if (config.intf.ibus.enabled !== true) return;
 
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
+
 		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
 		if (override === false && !this.ok2hud()) return;
 
+		// TODO: Move this to update.on('hud.string', (data) => {});
 		this.hud_render(override, () => {
 			// Send text to IKE
 			this.text(status.hud.string);
@@ -582,6 +597,9 @@ class IKE extends EventEmitter {
 	// Refresh custom HUD speed
 	hud_refresh_speed() {
 		if (config.intf.ibus.enabled !== true) return;
+
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
 
 		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
@@ -594,6 +612,9 @@ class IKE extends EventEmitter {
 	// Render custom HUD string
 	hud_render(override = false, hud_render_cb = null) {
 		if (config.intf.ibus.enabled !== true) return;
+
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
 
 		// Determine Moment.js format string
 		let moment_format;
@@ -619,7 +640,10 @@ class IKE extends EventEmitter {
 			time  : moment().format(moment_format),
 			volt  : status.dme.voltage,
 
-			// Clutch count
+			// Horsepower
+			hp : Math.floor(status.engine.horsepower.output) + 'hp',
+
+			// Clutch-in/gear change count
 			cc : status.vehicle.clutch_count + 'gc',
 		};
 
@@ -637,7 +661,7 @@ class IKE extends EventEmitter {
 
 		// TODO: Use layout from config
 		hud_strings.left   = hud_strings.temp;
-		hud_strings.center = hud_strings.egt;
+		hud_strings.center = hud_strings.speed;
 		hud_strings.right  = hud_strings.iat;
 
 		// Change string to be load/CPU temp if over threshold
@@ -654,7 +678,7 @@ class IKE extends EventEmitter {
 		if (typeof hud_strings.left.padEnd    === 'function') hud_strings.left  = hud_strings.left.padEnd(9);
 		if (typeof hud_strings.right.padStart === 'function') hud_strings.right = hud_strings.right.padStart(4);
 
-		if (typeof hud_strings.center.padEnd  === 'function') {
+		if (typeof hud_strings.center.padEnd === 'function') {
 			hud_strings.center = hud_strings.center.padStart(6);
 			hud_strings.center = hud_strings.center.padEnd(7);
 		}
@@ -812,6 +836,9 @@ class IKE extends EventEmitter {
 	// IKE cluster text send message - without space padding
 	text_nopad(message, cb = null, override = false) {
 		if (config.intf.ibus.enabled !== true) return;
+
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
 
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
@@ -1032,15 +1059,10 @@ class IKE extends EventEmitter {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Bring up last HUD refresh time
-		update.status('hud.refresh_last', now());
+		this.hud_refresh_hrtime = process.hrtime();
 
 		// Refresh data on interface connection
 		socket.on('ready', (intf) => {
-			// Show warning message in cluster if app running for longer than 30 seconds
-			if (now() > 30000) {
-				this.text_urgent('    ' + intf + ' restart    ');
-			}
-
 			// Only refresh on new IBUS interface connection
 			if (intf !== 'ibus') return;
 
@@ -1246,6 +1268,9 @@ class IKE extends EventEmitter {
 	text(message, cb = null, override = false) {
 		if (config.intf.ibus.enabled !== true) return;
 
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return;
+
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
 			log.module('NOT sending space-padded IKE text message: \'' + message + '\'');
@@ -1278,6 +1303,9 @@ class IKE extends EventEmitter {
 	// IKE cluster text send message, override other messages
 	text_override(message, timeout = 2500, direction = 'left', turn = false) {
 		if (config.intf.ibus.enabled !== true) return;
+
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return;
 
 		// kodi.notify(module_name, message);
 		let scroll_delay         = 300;
