@@ -4,22 +4,22 @@ function parse_in(data) {
 
 	switch (DIA.last.val) {
 		case 'coding-data' : {
-			log.msg(DIA.last.cmd + ' ' + DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
+			log.module(DIA.last.cmd + ' ' + DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
 			break;
 		}
 
 		case 'dsp-status' : {
-			log.msg(DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
+			log.module(DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
 			break;
 		}
 
 		case 'io-status' : {
-			log.msg(DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
+			log.module(DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
 			break;
 		}
 
 		case 'identity' : {
-			log.msg(DIA.last.cmd + ' ' + DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
+			log.module(DIA.last.cmd + ' ' + DIA.last.dst + ' ' + DIA.last.val + ': ' + data.msg);
 			break;
 		}
 	}

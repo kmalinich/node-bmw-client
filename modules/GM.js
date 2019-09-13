@@ -520,7 +520,7 @@ class GM extends EventEmitter {
 			}
 		});
 
-		log.msg('Initialized listeners');
+		log.module('Initialized listeners');
 	}
 
 

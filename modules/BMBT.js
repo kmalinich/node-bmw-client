@@ -407,7 +407,7 @@ function init_listeners() {
 		status_loop(power_state);
 	});
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 

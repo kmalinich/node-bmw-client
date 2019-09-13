@@ -308,7 +308,7 @@ function init_listeners() {
 		update.status('vehicle.dsc.torque_reduction_2', 0);
 	});
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 

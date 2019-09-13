@@ -563,7 +563,7 @@ function init_listeners() {
 	});
 
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 

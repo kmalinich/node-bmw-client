@@ -379,7 +379,7 @@ function init_listeners() {
 		text_loop(power_state);
 	});
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 

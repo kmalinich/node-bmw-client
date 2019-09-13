@@ -1035,14 +1035,14 @@ class IKE extends EventEmitter {
 		update.status('hud.refresh_last', now());
 
 		// Refresh data on interface connection
-		socket.on('recv-host-connect', (data) => {
+		socket.on('ready', (intf) => {
 			// Show warning message in cluster if app running for longer than 30 seconds
 			if (now() > 30000) {
-				this.text_urgent('    ' + data.intf + ' restart    ');
+				this.text_urgent('    ' + intf + ' restart    ');
 			}
 
 			// Only refresh on new IBUS interface connection
-			if (data.intf !== 'ibus') return;
+			if (intf !== 'ibus') return;
 
 			// Clear existing timeout if exists
 			if (this.timeout_accept_refresh !== null) {
@@ -1093,7 +1093,7 @@ class IKE extends EventEmitter {
 			}
 		});
 
-		log.msg('Initialized listeners');
+		log.module('Initialized listeners');
 	}
 
 	// Refresh OBC data

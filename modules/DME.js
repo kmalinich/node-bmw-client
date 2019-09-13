@@ -705,7 +705,7 @@ function init_listeners() {
 		update.status('engine.horsepower.output',               0);
 	});
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 

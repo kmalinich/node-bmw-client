@@ -448,7 +448,7 @@ function init_listeners() {
 	// Perform commands on power lib active event
 	power.on('active', init_rotation);
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 // Initialize CON rotation counter

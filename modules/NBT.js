@@ -127,7 +127,7 @@ function init_listeners() {
 	power.on('active', status_module);
 	power.on('active', status_ignition);
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 
