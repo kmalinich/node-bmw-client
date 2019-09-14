@@ -497,12 +497,14 @@ class GM extends EventEmitter {
 					// Return if not previously in accessory position
 					if (data.old !== 'accessory') return;
 
-					// Return if doors are NOT locked
-					if (status.vehicle.locked !== true) return;
+					setTimeout(() => {
+						// Return if doors are NOT locked
+						if (status.vehicle.locked !== true) return;
 
-					log.module('Doors are locked and closed, toggling door locks');
+						log.module('Doors are locked and closed, toggling door locks');
 
-					setTimeout(() => { this.locks(); }, 500);
+						this.locks();
+					}, 500);
 					break;
 				}
 
@@ -510,17 +512,19 @@ class GM extends EventEmitter {
 					// Return if not previously in start position
 					if (data.old !== 'start') return;
 
-					// Return if doors are locked
-					if (status.vehicle.locked === true) return;
+					setTimeout(() => {
+						// Return if doors are locked
+						if (status.vehicle.locked === true) return;
 
-					log.module('Doors are unlocked and closed, toggling door locks');
+						log.module('Doors are unlocked and closed, toggling door locks');
 
-					setTimeout(() => { this.locks(); }, 500);
+						this.locks();
+					}, 500);
 				}
 			}
 		});
 
-		log.module('Initialized listeners');
+		log.msg('Initialized listeners');
 	}
 
 
