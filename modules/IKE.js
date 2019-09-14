@@ -837,7 +837,9 @@ class IKE extends EventEmitter {
 	}
 
 
-	// Refresh various values every 12 seconds
+	// Refresh various values periodically
+	// TODO: Make setTimeout delay value a config param
+	// TODO: Make functions that are not inside IKE (like LCM.io_request()) into their own modules
 	data_refresh() {
 		if (config.intf.ibus.enabled !== true) return;
 
@@ -856,7 +858,7 @@ class IKE extends EventEmitter {
 
 		// Request fresh data
 		this.request('ignition');
-		// LCM.request('io-status');
+		LCM.request('io-status');
 
 		// Refresh HUD display
 		this.hud_refresh(true);
@@ -875,7 +877,7 @@ class IKE extends EventEmitter {
 		let self = this;
 		this.timeout_data_refresh = setTimeout(() => {
 			self.data_refresh();
-		}, 12000);
+		}, 5000);
 	}
 
 	// Broadcast: Ignition status
