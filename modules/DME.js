@@ -1,5 +1,7 @@
 /* eslint key-spacing : 0 */
 
+// TODO: Change purely calculated values to update.on() calls
+
 const convert = require('node-unit-conversion');
 
 
@@ -548,7 +550,8 @@ function parse_720(data) {
 
 	let parse = {
 		dme : {
-			voltage : data.msg[4] / 10,
+			// voltage : data.msg[4] / 10,
+			voltage : status.lcm.voltage.terminal_30,
 		},
 
 		fuel : {

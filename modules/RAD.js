@@ -479,7 +479,6 @@ function audio_power(power_state = false, volume_increase = true) {
 			log.module('Setting audio power to state : ' + power_state);
 
 			audio_control(false);
-			cassette_control(false);
 
 			update.status('dsp.ready', false, false);
 			update.status('dsp.reset', true,  false);
@@ -489,6 +488,8 @@ function audio_power(power_state = false, volume_increase = true) {
 
 			// Send pause command to Kodi
 			kodi.command('pause');
+
+			setTimeout(() => { cassette_control(false); }, 500);
 
 			break;
 		}
@@ -505,29 +506,33 @@ function audio_power(power_state = false, volume_increase = true) {
 
 			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
 			let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
+			let count_request = 1;
 			array_request.forEach((module_request) => {
-				bus.cmds.request_device_status(module_name, module_request);
+				setTimeout(() => {
+					bus.cmds.request_device_status(module_name, module_request);
+				}, (count_request * 100));
+
+				count_request++;
 			});
 
 			// Set DSP source to whatever is configured
-			audio_control(config.media.dsp.default_source);
+			setTimeout(() => { audio_control(config.media.dsp.default_source); }, 650);
 
 			// Turn on BMBT
-			setTimeout(() => { cassette_control(true); }, 250);
-
+			setTimeout(() => { cassette_control(true); }, 900);
 
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			if (volume_increase === true) {
 				setTimeout(() => {
 					for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
-						setTimeout(() => { volume_control(5); }, 10 * pass);
+						setTimeout(() => { volume_control(5); }, 15 * pass);
 					}
-				}, 500);
+				}, 1300);
 			}
 
 
-			// Delay sending EQ command 750ms + 12ms per volume step
-			let dsp_eq_delay = (750 + (12 * config.rad.power_on_volume));
+			// Delay sending EQ command 2000ms + 20ms per volume step
+			let dsp_eq_delay = (2000 + (20 * config.rad.power_on_volume));
 
 			// Send configured DSP EQ (it seems to forget over time)
 			setTimeout(() => {

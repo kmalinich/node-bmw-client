@@ -19,7 +19,7 @@ function text_urgent_off() {
 // Get delta time between two a previous process.hrtime() call and now, and return it as non-BigInt
 function hrtime_delta(start) {
 	const delta = process.hrtime(start);
-	return parseFloat(delta[0] + '.' + delta[1]);
+	return parseFloat((delta[0] + '.' + delta[1]) * 1000);
 }
 
 
@@ -569,10 +569,11 @@ class IKE extends EventEmitter {
 
 		let refresh_delta = hrtime_delta(this.hud_refresh_hrtime);
 
-		// Bonce if the last update was less than the configured value in milliseconds ago
-		if (refresh_delta <= config.hud.refresh_max) return false;
 
-		this.hud_refresh_hrtime = process.hrtime();
+		// Bonce if the last update was less than the configured value in milliseconds ago
+		if (refresh_delta < config.hud.refresh_max) return false;
+
+		// log.msg('refresh_delta2: ' + refresh_delta);
 
 		return true;
 	}
@@ -581,17 +582,8 @@ class IKE extends EventEmitter {
 	hud_refresh(override = false) {
 		if (config.intf.ibus.enabled !== true) return;
 
-		// Return if HUD refresh is locked
-		if (this.hud_locked !== false) return false;
-
-		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
-		if (override === false && !this.ok2hud()) return;
-
 		// TODO: Move this to update.on('hud.string', (data) => {});
-		this.hud_render(override, () => {
-			// Send text to IKE
-			this.text(status.hud.string);
-		});
+		this.hud_render(override);
 	}
 
 	// Refresh custom HUD speed
@@ -604,17 +596,19 @@ class IKE extends EventEmitter {
 		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
 
+		this.hud_refresh_hrtime = process.hrtime();
+
 		// Send text to IKE
 		this.text(status.vehicle.speed.mph + 'mph');
 	}
 
 
 	// Render custom HUD string
+	// override = force a refresh even if the rendered string has not changed
+	//            this is for long period of non-changing data, where otherwise
+	//            the text would disappear from the cluster display
 	hud_render(override = false, hud_render_cb = null) {
 		if (config.intf.ibus.enabled !== true) return;
-
-		// Return if HUD refresh is locked
-		if (this.hud_locked !== false) return false;
 
 		// Determine Moment.js format string
 		let moment_format;
@@ -635,7 +629,7 @@ class IKE extends EventEmitter {
 			iat   : Math.floor(status.temperature.intake.c) + '¨',
 			load  : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
 			range : Math.floor(status.obc.range.mi) + 'mi',
-			speed : status.vehicle.speed.mph + 'mph',
+			speed : Math.ceil(status.vehicle.speed.mph) + 'mph',
 			temp  : Math.floor(status.temperature.coolant.c) + '¨',
 			time  : moment().format(moment_format),
 			volt  : status.dme.voltage,
@@ -690,6 +684,17 @@ class IKE extends EventEmitter {
 		if (override === false && status.hud.string === hud_string_rendered) return;
 
 		update.status('hud.string', hud_string_rendered);
+
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
+
+		// Bounce if it's not OK (yet) to post a HUD update
+		if (!this.ok2hud()) return;
+
+		this.hud_refresh_hrtime = process.hrtime();
+
+		// Send text to IKE
+		this.text(status.hud.string);
 
 		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
 		hud_render_cb = undefined;

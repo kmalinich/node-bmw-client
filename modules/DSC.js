@@ -185,17 +185,31 @@ function parse_1f5(data) {
 	data.command = 'bro';
 	data.value   = 'Steering angle';
 
-	// Create new Int8Array objects from CAN message
-	let data_int8 = new Int8Array(data.msg);
+  // Thanks babe
+	let sign = {
+		angle    : -1,
+		velocity : -1,
+	};
 
-	// Calculate steering angle and velocity from Int8Array data
-	let angle    = (data_int8[1] << 8) + data_int8[0];
-	let velocity = (data_int8[3] << 8) + data_int8[2];
+  // Handle signed values (in a very bad way)
+	if (data.msg[1] >= 0x80) {
+		sign.angle = 1;
+		data.msg[1] = data.msg[1] - 0x80;
+	}
+
+	if (data.msg[3] >= 0x80) {
+		sign.velocity = 1;
+		data.msg[3] = data.msg[3] - 0x80;
+	}
+
+	// Calculate steering angle and velocity values
+	let angle    = (data.msg[1] << 8) + data.msg[0];
+	let velocity = (data.msg[3] << 8) + data.msg[2];
 
 	// Steering multiplier = 0.043393 = 3.75 turns, lock to lock (1350 degrees of total rotation)
 	let steering = {
-		angle    : Math.floor(angle    * config.vehicle.steering_multiplier) * -1, // Thanks babe
-		velocity : Math.floor(velocity * config.vehicle.steering_multiplier) * -1,
+		angle    : Math.floor(angle    * config.vehicle.steering_multiplier) * sign.angle,
+		velocity : Math.floor(velocity * config.vehicle.steering_multiplier) * sign.velocity,
 	};
 
 	update.status('vehicle.steering.angle',    steering.angle);
