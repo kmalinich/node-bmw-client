@@ -7,28 +7,32 @@ function decode_button(data) {
 	data.command = 'bro';
 	data.value   = 'BM button ';
 
+	// 0x47 messages (SELECT button, etc) have slightly different format
+	if (data.msg[0] === 0x47 && data.msg.length === 3) {
+		data.msg[1] = data.msg[2];
+	}
+
 	let action = 'depress';
 	let button;
 
 	// Depress
 	// [ 72, 5 ]
-	// BIT7 FALSE!
-	// BIT7 FALSE + BIT6 FALSE!
-
-	// Release
-	// [ 72, 133 ]
-	// BIT7 TRUE!
-	// BIT7 TRUE + BIT6 FALSE!
+	// BIT7 FALSE + BIT6 FALSE
 
 	// Hold
 	// [ 72, 69 ]
-	// BIT7 FALSE!
-	// BIT7 FALSE + BIT6 TRUE!
+	// BIT7 FALSE + BIT6 TRUE
+
+	// Release
+	// [ 72, 133 ]
+	// BIT7 TRUE + BIT6 FALSE
 
 	// Determine action
 	let mask = bitmask.check(data.msg[1]).mask;
+
+
 	switch (mask.b7) {
-		case false : {
+		case false : { // bit7 false
 			switch (mask.b6) {
 				case false : {
 					action = 'depress';
@@ -43,9 +47,9 @@ function decode_button(data) {
 			}
 
 			break;
-		}
+		} // bit7 false
 
-		case true : {
+		case true : { // bit7 true
 			switch (mask.b6) {
 				case false : {
 					// Remove release bit from button value
@@ -53,8 +57,9 @@ function decode_button(data) {
 					action      = 'release';
 				}
 			}
-		}
+		} // bit7 true
 	}
+
 
 	// Determine button
 	switch (data.msg[1]) {
@@ -67,12 +72,13 @@ function decode_button(data) {
 		case 0x06 : button = 'power';    break;
 		case 0x07 : button = 'clock';    break;
 		case 0x08 : button = 'phone';    break;
+		case 0x0F : button = 'select';   break; // 0x47 message
 		case 0x10 : button = 'left';     break;
 		case 0x11 : button = '1';        break;
 		case 0x12 : button = '3';        break;
 		case 0x13 : button = '5';        break;
 		case 0x14 : button = '<>';       break;
-		case 0x20 : button = 'select';   break;
+		case 0x20 : button = 'select';   break; // No
 		case 0x21 : button = 'am';       break;
 		case 0x22 : button = 'rds';      break;
 		case 0x23 : button = 'mode';     break;
@@ -146,6 +152,12 @@ function decode_button(data) {
 					update.status('hdmi.rpi.power_override', true, false);
 					hdmi_rpi.command('toggle');
 
+					break;
+				}
+
+				case 'depresspower' : {
+					// To use pressing the BMBT power knob button (left side) to toggle RAD power
+					RAD.audio_power('toggle');
 					break;
 				}
 

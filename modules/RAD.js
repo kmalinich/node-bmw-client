@@ -215,11 +215,13 @@ function decode_audio_control(data) {
 
 // Broadcast: BM button
 function decode_bm_button(data) {
+	return data;
 	let action = 'depress';
 	let button;
 
 	// Determine action
 	let mask = bitmask.check(data.msg[1]).mask;
+
 	switch (mask.b6) {
 		case true : {
 			switch (mask.b7) {
