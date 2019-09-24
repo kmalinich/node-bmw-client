@@ -7,7 +7,6 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"amp-message": "^0.1.2",
 		"body-parser": "^1.19.0",
 		"callers-path": "^1.0.5",
 		"chump": "git+https://github.com/kmalinich/chump.git",

@@ -1,3 +1,17 @@
 #!/usr/bin/env bash
 
-npm link amp-message callers-path defaults-deep express json-socket jsonfile object-path performance-now socket.io trucolor
+ARRAY_LINK=(
+'callers-path'
+'defaults-deep'
+'express'
+'json-socket'
+'jsonfile'
+'object-path'
+'performance-now'
+'socket.io'
+'trucolor'
+)
+
+npm -g i "${ARRAY_LINK[@]}" --unsafe-perm
+
+npm link "${ARRAY_LINK[@]}"
