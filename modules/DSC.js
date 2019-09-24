@@ -185,13 +185,13 @@ function parse_1f5(data) {
 	data.command = 'bro';
 	data.value   = 'Steering angle';
 
-  // Thanks babe
+	// Thanks babe
 	let sign = {
 		angle    : -1,
 		velocity : -1,
 	};
 
-  // Handle signed values (in a very bad way)
+	// Handle signed values (in a very bad way)
 	if (data.msg[1] >= 0x80) {
 		sign.angle = 1;
 		data.msg[1] = data.msg[1] - 0x80;

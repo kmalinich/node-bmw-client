@@ -215,7 +215,6 @@ function decode_audio_control(data) {
 
 // Broadcast: BM button
 function decode_bm_button(data) {
-	return data;
 	let action = 'depress';
 	let button;
 
@@ -587,7 +586,8 @@ function parse_in(data) {
 			return data;
 		}
 
-		case 0x48 : return decode_bm_button(data);
+		// Even if RAD is emulated we should decode BM button output in the BMBT module (BMBT.js)
+		// case 0x48 : return decode_bm_button(data);
 
 		case 0x49 : { // Broadcast: BM knob
 			return data;
