@@ -312,7 +312,7 @@ function parse_338(data) {
 // byte 0, bit 7 : Check gas cap
 //
 // byte 1 : Fuel consumption LSB
-// byte 2 : Fuel consumption LSB
+// byte 2 : Fuel consumption MSB
 //
 // byte 3, bit 0 : Oil level error, if motortype = S62
 // byte 3, bit 1 : Oil level warning (yellow)
@@ -339,18 +339,16 @@ function parse_338(data) {
 function parse_545(data) {
 	data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
 
-	let process_consumption = true;
-
-	let consumption_current = ((data.msg[2] << 8) + data.msg[1]);
-
-	// Need at least one value first
-	if (DME.consumption_last === 0) {
-		DME.consumption_last = consumption_current;
-		process_consumption = false;
-	}
+	// TODO: Fuel consumption still eludes me
 
 	// The amount of fuel being consumed isn't a flat number
 	// It's the difference between two numbers factoring in the time between the time both numbers were received
+	let process_consumption = true;
+
+	let consumption_current = (data.msg[2] << 8) + data.msg[1];
+
+	// Need at least one changed value first
+	if (DME.consumption_last === 0 || DME.consumption_last === consumption_current) process_consumption = false;
 
 	let parse = {
 		fuel : {
@@ -372,10 +370,10 @@ function parse_545(data) {
 		},
 	};
 
-	if (process_consumption === true) {
-		DME.consumption_last = consumption_current;
-		update.status('fuel.consumption', parse.fuel.consumption);
-	}
+	// Store 'last' fuel consumption value for comparison the next go-around
+	DME.consumption_last = consumption_current;
+
+	if (process_consumption === true) update.status('fuel.consumption', parse.fuel.consumption);
 
 	// Calculate fahrenheit temperature values
 	parse.temperature.oil.f = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
@@ -550,8 +548,7 @@ function parse_720(data) {
 
 	let parse = {
 		dme : {
-			// voltage : data.msg[4] / 10,
-			voltage : status.lcm.voltage.terminal_30,
+			voltage : data.msg[4] / 10,
 		},
 
 		fuel : {
