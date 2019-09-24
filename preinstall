@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# npm packages bmwcd and bmwi share
 ARRAY_LINK=(
 'callers-path'
 'defaults-deep'
@@ -12,6 +13,24 @@ ARRAY_LINK=(
 'trucolor'
 )
 
-npm -g i "${ARRAY_LINK[@]}" --unsafe-perm
+FILE_TMP="$(mktemp)"
 
+# Create temporary list of package names with versions
+jq .dependencies package.json | awk -F '"' '/"/ {print $2 "@" $4}' > "${FILE_TMP}"
+
+
+# Install version-specific npm packages globally
+for DEP in "${ARRAY_LINK[@]}"; do
+	DEP_FULL="$(grep "${DEP}" "${FILE_TMP}")"
+	echo "npm -g i '${DEP_FULL}'"
+	npm -g i "${DEP_FULL}" --unsafe-perm
+	echo
+done
+echo
+
+# Link npm packages from global to local
+echo "npm link '${ARRAY_LINK[*]}'"
 npm link "${ARRAY_LINK[@]}"
+
+# Clean up
+rm -f "${FILE_TMP}"
