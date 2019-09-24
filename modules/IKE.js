@@ -449,7 +449,7 @@ class IKE extends EventEmitter {
 		data.value   = 'speed values';
 
 		// Update vehicle and engine speed variables
-		// Also allow update from IBUS/KBUS even if CANBUS is enabled when the ignition
+		// Also allow update from IBUS/KBUS even if CANBUS is enabled when ignition is not in run
 		if (config.canbus.speed === false || status.vehicle.ignition_level < 3) {
 			update.status('vehicle.speed.kmh', parseFloat(data.msg[1] * 2));
 			update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1] * 2))).from('kilometre').to('us mile').toFixed(2)));
@@ -875,7 +875,8 @@ class IKE extends EventEmitter {
 	data_refresh() {
 		if (config.intf.ibus.enabled !== true) return;
 
-		if (status.vehicle.ignition_level === 0) {
+		// Only execute if ignition is in accessory or run
+		if (status.vehicle.ignition_level !== 1 && status.vehicle.ignition_level !== 3) {
 			if (this.timeout_data_refresh !== null) {
 				clearTimeout(this.timeout_data_refresh);
 				this.timeout_data_refresh = null;

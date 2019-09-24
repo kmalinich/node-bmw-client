@@ -23,16 +23,18 @@
 		"object-path": "^0.11.4",
 		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
-		"socket.io": "^2.2.0",
+		"socket.io": "^2.3.0",
 		"suncalc": "^1.8.0",
 		"trucolor": "^1.0.6"
 	},
-	"description": "NodeJS-powered BMW IBUS client interface",
+	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
 		"bmw",
 		"canbus",
+		"dcan",
+		"kcan",
 		"dbus",
 		"ibus",
 		"kbus"
@@ -44,7 +46,7 @@
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
-		"onoff": "^4.1.4",
+		"onoff": "^5.0.0",
 		"pi-temperature": "^2.1.0",
 		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git"
 	},
