@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 const convert      = require('node-unit-conversion');
 const moment       = require('moment');
 const os           = require('os');
+const now          = require('performance-now');
 
 
 // Clear check control messages, then refresh HUD
@@ -16,10 +17,9 @@ function text_urgent_off() {
 	});
 }
 
-// Get delta time between two a previous process.hrtime() call and now, and return it as non-BigInt
+// Get delta time between two a previous now() call and now
 function hrtime_delta(start) {
-	const delta = process.hrtime(start);
-	return parseFloat((delta[0] + '.' + delta[1]) * 1000);
+	return now() - start;
 }
 
 
@@ -40,7 +40,7 @@ class IKE extends EventEmitter {
 		// Don't refresh HUD if true
 		this.hud_locked = false;
 
-		this.hud_refresh_hrtime = process.hrtime();
+		this.hud_refresh_hrtime = now();
 
 		this.text_urgent_off = text_urgent_off;
 	}
@@ -568,12 +568,14 @@ class IKE extends EventEmitter {
 		if (this.hud_override === true) return false;
 
 		let refresh_delta = hrtime_delta(this.hud_refresh_hrtime);
+		// log.msg('refresh_delta1: ' + refresh_delta);
 
-
-		// Bonce if the last update was less than the configured value in milliseconds ago
+		// Bounce if the last update was less than the configured value in milliseconds ago
 		if (refresh_delta < config.hud.refresh_max) return false;
 
 		// log.msg('refresh_delta2: ' + refresh_delta);
+
+		this.hud_refresh_hrtime = now();
 
 		return true;
 	}
@@ -596,7 +598,7 @@ class IKE extends EventEmitter {
 		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
 
-		this.hud_refresh_hrtime = process.hrtime();
+		this.hud_refresh_hrtime = now();
 
 		// Send text to IKE
 		this.text(status.vehicle.speed.mph + 'mph');
@@ -691,7 +693,7 @@ class IKE extends EventEmitter {
 		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
 
-		this.hud_refresh_hrtime = process.hrtime();
+		this.hud_refresh_hrtime = now();
 
 		// Send text to IKE
 		this.text(status.hud.string);
@@ -1068,7 +1070,7 @@ class IKE extends EventEmitter {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Bring up last HUD refresh time
-		this.hud_refresh_hrtime = process.hrtime();
+		this.hud_refresh_hrtime = now();
 
 		// Refresh data on interface connection
 		socket.on('ready', (intf) => {
