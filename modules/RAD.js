@@ -213,87 +213,41 @@ function decode_audio_control(data) {
 	return data;
 }
 
-// Broadcast: BM button
-function decode_bm_button(data) {
-	let action = 'depress';
-	let button;
 
-	// Determine action
-	let mask = bitmask.check(data.msg[1]).mask;
-
-	switch (mask.b6) {
-		case true : {
-			switch (mask.b7) {
-				case true  : break;
-				case false : {
-					// Remove hold bit from button value
-					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
-					action      = 'hold';
-				}
-			}
-			break;
-		}
-
-		case false : {
-			switch (mask.b7) {
-				case false : break;
-				case true  : {
-					// Remove release bit from button value
-					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
-					action      = 'release';
-				}
-			}
-		}
-	}
-
-	// Determine button
-	switch (data.msg[1]) {
-		case 0x00 : button = 'right';    break;
-		case 0x01 : button = '2';        break;
-		case 0x02 : button = '4';        break;
-		case 0x03 : button = '6';        break;
-		case 0x04 : button = 'tone';     break;
-		case 0x05 : button = 'knob';     break;
-		case 0x06 : button = 'power';    break;
-		case 0x07 : button = 'clock';    break;
-		case 0x08 : button = 'phone';    break;
-		case 0x10 : button = 'left';     break;
-		case 0x11 : button = '1';        break;
-		case 0x12 : button = '3';        break;
-		case 0x13 : button = '5';        break;
-		case 0x14 : button = '<>';       break;
-		case 0x20 : button = 'select';   break;
-		case 0x21 : button = 'am';       break;
-		case 0x22 : button = 'rds';      break;
-		case 0x23 : button = 'mode';     break;
-		case 0x24 : button = 'eject';    break;
-		case 0x30 : button = 'rad menu'; break;
-		case 0x31 : button = 'fm';       break;
-		case 0x32 : button = 'pty/tp';   break;
-		case 0x33 : button = 'dolby';    break;
-		case 0x34 : button = 'gt menu';  break;
-		case 0x38 : button = 'info';     break;
-		default   : button = 'Unknown';
-	}
-
-	data.value += action + ' ' + button;
-
-	switch (action) {
-		case 'release' : {
-			switch (button) {
-				case 'power' : {
-					log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
-					audio_power('toggle');
-					break;
-				}
-			}
-
-			break;
-		}
-	}
+// Broadcast: BMBT button
+// Even if RAD is emulated, we should decode BMBT output in the BMBT module (BMBT.js)
+function decode_bmbt_button(data) {
+	data.command = 'bro';
+	data.value   = 'BMBT button';
 
 	return data;
 }
+
+// Broadcast: BMBT button
+function decode_bmbt_knob(data) {
+	data.command = 'bro';
+	data.value   = 'BMBT knob';
+
+	return data;
+}
+
+// Broadcast: BMBT button
+function decode_bmbt_status(data) {
+	data.command = 'bro';
+	data.value   = 'BMBT status';
+
+	return data;
+}
+
+
+// Broadcast: Cassette status
+function decode_cassette_status(data) {
+	data.command = 'bro';
+	data.value   = 'Cassette status';
+
+	return data;
+}
+
 
 // Send audio control commands
 function audio_control(command) {
@@ -582,20 +536,11 @@ function parse_in(data) {
 			break;
 		}
 
-		case 0x47 : { // Broadcast: BM status
-			return data;
-		}
-
-		// Even if RAD is emulated we should decode BM button output in the BMBT module (BMBT.js)
-		// case 0x48 : return decode_bm_button(data);
-
-		case 0x49 : { // Broadcast: BM knob
-			return data;
-		}
-
-		case 0x4B : { // Broadcast: Cassette status
-			return data;
-		}
+		// Even if RAD is emulated we should decode BMBT output in the BMBT module (BMBT.js)
+		case 0x47 : return decode_bmbt_status(data);     // Broadcast: BMBT status
+		case 0x48 : return decode_bmbt_button(data);     // Broadcast: BMBT button
+		case 0x49 : return decode_bmbt_knob(data);       // Broadcast: BMBT knob
+		case 0x4B : return decode_cassette_status(data); // Broadcast: Cassette status
 	}
 
 	return data;
@@ -670,8 +615,6 @@ function parse_out(data) {
 		}
 
 		case 0x4A : { // Control: Cassette
-			BMBT.cassette_status(data.msg[1]);
-
 			data.command = 'con';
 			data.value   = 'cassette: ';
 
