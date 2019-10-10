@@ -29,7 +29,7 @@ function dsp_mode(mode) {
 	log.module('Setting DSP mode set to \'' + mode + '\'');
 
 	bus.data.send({
-		src : 'RAD',
+		src : 'DSPC',
 		msg : cmd,
 	});
 }
@@ -220,6 +220,7 @@ function m_audio(value) {
 // Start/stop speaker test function
 function speaker_test(command) {
 	let msg;
+
 	switch (command) {
 		case 'start' :
 		case 1       :
@@ -275,15 +276,15 @@ function request(value) {
 	log.module('Requesting \'' + value + '\'');
 
 	switch (value) {
-		case 'io-status' : {
+		case 'io-status' : { // Get IO status
 			src = 'DIA';
-			cmd = [ 0x0B, 0x00 ]; // Get IO status
+			cmd = [ 0x0B, 0x00 ];
 			break;
 		}
 
-		case 'memory' : {
+		case 'memory' : { // Get DSP memory
 			src = 'RAD';
-			cmd = [ 0x34, 0x08 ]; // Get DSP memory
+			cmd = [ 0x34, 0x08 ];
 		}
 	}
 

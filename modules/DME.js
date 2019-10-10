@@ -1,13 +1,16 @@
 /* eslint key-spacing : 0 */
 
-// TODO: Change purely calculated values to update.on() calls
-
 const convert = require('node-unit-conversion');
 
 
 // I should look into extending object classes and using Prototype for crap like this
-//
-// Horsepower = (torque * RPM)/5252
+
+// Celcius to Fahrenheit wrapped in Math.ceil()
+function c2f(deg_c) {
+	return Math.ceil(convert(deg_c).from('celsius').to('fahrenheit'));
+}
+
+// Horsepower = ((torque * RPM) / 5252)
 function tq2hp(torque, rpm) {
 	return Math.round((torque * rpm) / 5252);
 }
@@ -189,10 +192,10 @@ function parse_329(data) {
 
 	let parse = {
 		engine : {
-			// throttle : {
-			// 	cruise : num.round2(data.msg[4] / 2.54),
-			// 	pedal  : num.round2(data.msg[5] / 2.54),
-			// },
+			throttle : {
+				cruise : num.round2(data.msg[4] / 2.54),
+				pedal  : num.round2(data.msg[5] / 2.54),
+			},
 
 			atmospheric_pressure : {
 				mbar : (data.msg[2] * 2) + 597,
@@ -204,7 +207,6 @@ function parse_329(data) {
 		temperature : {
 			coolant : {
 				c : Math.floor((data.msg[1] * 0.75) - 48),
-				f : null,
 			},
 		},
 
@@ -236,18 +238,8 @@ function parse_329(data) {
 		},
 	};
 
-	// Calculate mmhg and psi atmospheric pressure values
-	parse.engine.atmospheric_pressure.mmhg = num.round2(parse.engine.atmospheric_pressure.mbar * 0.75006157818041);
-	parse.engine.atmospheric_pressure.psi  = num.round2(parse.engine.atmospheric_pressure.mbar * 0.01450377380072);
-
-	// Calculate fahrenheit temperature values
-	parse.temperature.coolant.f = Math.floor(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
-
-
 	// Update status object
 	update.status('engine.atmospheric_pressure.mbar', parse.engine.atmospheric_pressure.mbar);
-	update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
-	update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi, false);
 
 	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus,  false);
 	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff,  false);
@@ -266,9 +258,8 @@ function parse_329(data) {
 	// update.status('vehicle.sport.active', parse.vehicle.sport.active, false);
 
 	update.status('temperature.coolant.c', parse.temperature.coolant.c, false);
-	update.status('temperature.coolant.f', parse.temperature.coolant.f);
 
-	update.status('vehicle.brake',  parse.vehicle.brake, false);
+	update.status('vehicle.brake', parse.vehicle.brake, false);
 
 	if (update.status('vehicle.clutch', parse.vehicle.clutch, false)) {
 		if (parse.vehicle.clutch === false && status.engine.running === true) {
@@ -365,7 +356,6 @@ function parse_545(data) {
 		temperature : {
 			oil : {
 				c : data.msg[4] - 48,
-				f : null,
 			},
 		},
 	};
@@ -373,19 +363,16 @@ function parse_545(data) {
 	// Store 'last' fuel consumption value for comparison the next go-around
 	DME.consumption_last = consumption_current;
 
-	if (process_consumption === true) update.status('fuel.consumption', parse.fuel.consumption);
-
-	// Calculate fahrenheit temperature values
-	parse.temperature.oil.f = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
-
 	// Update status object
 	update.status('dme.status.check_engine',  parse.status.check_engine,  false);
 	update.status('dme.status.check_gas_cap', parse.status.check_gas_cap, false);
 	update.status('dme.status.cruise',        parse.status.cruise,        false);
 	update.status('dme.status.eml',           parse.status.eml,           false);
 
-	update.status('temperature.oil.f', parse.temperature.oil.f);
 	update.status('temperature.oil.c', parse.temperature.oil.c, false);
+
+	// Update fuel consumption value if consumption process flag is true
+	// if (process_consumption === true) update.status('fuel.consumption', Math.round((parse.fuel.consumption + status.fuel.consumption) / 2));
 
 	return data;
 }
@@ -413,7 +400,6 @@ function parse_613(data) {
 		vehicle : {
 			odometer : {
 				km : ((data.msg[1] << 8) + data.msg[0]) * 10,
-				mi : null,
 			},
 
 			running_clock : ((data.msg[4] << 8) + data.msg[3]),
@@ -426,17 +412,17 @@ function parse_613(data) {
 		},
 	};
 
+
+	// Calculate fuel level
 	parse.fuel.level = Math.floor((parse.fuel.liters / config.fuel.liters_max) * 100);
 	if (parse.fuel.level < 0)   parse.fuel.level = 0;
 	if (parse.fuel.level > 100) parse.fuel.level = 100;
 
+	// Update status object
 	update.status('fuel.level',  parse.fuel.level, false);
 	update.status('fuel.liters', parse.fuel.liters);
 
-	parse.vehicle.odometer.mi = Math.floor(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
-
 	update.status('vehicle.odometer.km', parse.vehicle.odometer.km);
-	update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi, false);
 
 	update.status('vehicle.running_clock', parse.vehicle.running_clock, false);
 
@@ -505,7 +491,6 @@ function parse_615(data) {
 		temperature : {
 			exterior : {
 				c : (data.msg[3] >= 0x80) && data.msg[3] - 0x80 || data.msg[3],
-				f : null,
 			},
 		},
 
@@ -514,19 +499,14 @@ function parse_615(data) {
 		},
 	};
 
-	// Calculate fahrenheit temperature values
-	parse.temperature.exterior.f = parseFloat(convert(parse.temperature.exterior.c).from('celsius').to('fahrenheit'));
-
 	// Round temperature values
 	parse.temperature.exterior.c = Math.floor(parse.temperature.exterior.c);
-	parse.temperature.exterior.f = Math.floor(parse.temperature.exterior.f);
 
 	// Update status object
 	update.status('engine.ac.request', parse.ac.request, false);
 	update.status('engine.ac.torque',  parse.ac.torque,  false);
 
 	update.status('temperature.exterior.c', parse.temperature.exterior.c, false);
-	update.status('temperature.exterior.f', parse.temperature.exterior.f);
 
 	update.status('vehicle.handbrake', parse.vehicle.handbrake, false);
 
@@ -559,49 +539,33 @@ function parse_720(data) {
 		},
 
 		temperature : {
-			// coolant : {
-			// 	c : data.msg[0] - 48,
-			// 	f : null,
-			// },
+			coolant : {
+				c : data.msg[0] - 48,
+			},
 
 			exhaust : {
 				c : data.msg[2] << 2,
-				f : null,
 			},
 
-			// oil : {
-			// 	c : data.msg[3] - 48,
-			// 	f : null,
-			// },
+			oil : {
+				c : data.msg[3] - 48,
+			},
 
 			intake : {
 				c : data.msg[1] - 48,
-				f : null,
 			},
 		},
 	};
 
 	// Update status object
+	update.status('dme.voltage',       parse.dme.voltage);
+	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
+	update.status('fuel.pump.percent', parse.fuel.pump.percent);
 
 	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	// update.status('temperature.oil.c',     parse.temperature.oil.c);
 	update.status('temperature.exhaust.c', parse.temperature.exhaust.c, false);
 	update.status('temperature.intake.c',  parse.temperature.intake.c,  false);
-
-	update.status('dme.voltage',       parse.dme.voltage);
-	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
-	update.status('fuel.pump.percent', parse.fuel.pump.percent);
-
-	// Calculate fahrenheit temperature values
-	// parse.temperature.coolant.f = parseFloat(convert(parse.temperature.coolant.c).from('celsius').to('fahrenheit'));
-	parse.temperature.exhaust.f = parseFloat(convert(parse.temperature.exhaust.c).from('celsius').to('fahrenheit'));
-	parse.temperature.intake.f  = parseFloat(convert(parse.temperature.intake.c).from('celsius').to('fahrenheit'));
-	// parse.temperature.oil.f     = parseFloat(convert(parse.temperature.oil.c).from('celsius').to('fahrenheit'));
-
-	// update.status('temperature.coolant.f', parse.temperature.coolant.f);
-	// update.status('temperature.oil.f',     parse.temperature.oil.f);
-	update.status('temperature.exhaust.f', parse.temperature.exhaust.f);
-	update.status('temperature.intake.f',  parse.temperature.intake.f);
 
 	return data;
 }
@@ -676,10 +640,10 @@ function request(value) {
 
 
 function init_listeners() {
+	// If configured, send RPM 10000 on 0x316 on ignition in run
 	update.on('status.engine.running', (data) => {
 		switch (data.new) {
 			case true : {
-				// If configured, send RPM 10000 on 0x316 on ignition in run
 				if (config.ike.sweep === true) encode_316(10000);
 			}
 		}
@@ -704,6 +668,26 @@ function init_listeners() {
 		update.status('engine.horsepower.loss',                 0);
 		update.status('engine.horsepower.output',               0);
 	});
+	
+
+	// Update purely calculated values when original value changes
+	update.on('status.temperature.coolant.c',  (data) => { update.status('temperature.coolant.f',  c2f(data.new)); });
+	update.on('status.temperature.exhaust.c',  (data) => { update.status('temperature.exhaust.f',  c2f(data.new)); });
+	update.on('status.temperature.exterior.c', (data) => { update.status('temperature.exterior.f', c2f(data.new)); });
+	update.on('status.temperature.intake.c',   (data) => { update.status('temperature.intake.f',   c2f(data.new)); });
+	update.on('status.temperature.oil.c',      (data) => { update.status('temperature.oil.f',      c2f(data.new)); });
+
+	// TODO: Change remaining purely calculated values to update.on() calls
+
+	// Calculate mmhg and psi atmospheric pressure values
+	// parse.engine.atmospheric_pressure.mmhg = num.round2(parse.engine.atmospheric_pressure.mbar * 0.75006157818041);
+	// parse.engine.atmospheric_pressure.psi  = num.round2(parse.engine.atmospheric_pressure.mbar * 0.01450377380072);
+	// update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
+	// update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi, false);
+
+	// parse.vehicle.odometer.mi = Math.floor(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
+	// update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi, false);
+
 
 	log.module('Initialized listeners');
 }

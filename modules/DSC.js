@@ -13,8 +13,8 @@ function parse_wheel(byte0, byte1) {
 	}
 
 	return {
-		kmh : num.round2(parsed_wheel_speed, 1),
-		mph : num.round2(convert(parsed_wheel_speed).from('kilometre').to('us mile'), 1),
+		kmh : Math.round(parsed_wheel_speed),
+		mph : Math.round(convert(parsed_wheel_speed).from('kilometre').to('us mile')),
 	};
 }
 
