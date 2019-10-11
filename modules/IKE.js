@@ -1,10 +1,10 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
-const EventEmitter = require('events');
-const convert      = require('node-unit-conversion');
-const moment       = require('moment');
-const os           = require('os');
-const now          = require('performance-now');
+const convert = require('node-unit-conversion');
+const events  = require('events');
+const moment  = require('moment');
+const now     = require('performance-now');
+const os      = require('os');
 
 
 // Clear check control messages, then refresh HUD
@@ -23,7 +23,7 @@ function hrtime_delta(start) {
 }
 
 
-class IKE extends EventEmitter {
+class IKE extends events {
 	constructor() {
 		super();
 
