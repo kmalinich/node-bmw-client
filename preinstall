@@ -4,6 +4,11 @@
 ARRAY_LINK=(
 'callers-path'
 'defaults-deep'
+'eslint'
+'eslint-plugin-import'
+'eslint-plugin-node'
+'eslint-plugin-promise'
+'eslint-plugin-standard'
 'express'
 'json-socket'
 'jsonfile'
@@ -16,7 +21,8 @@ ARRAY_LINK=(
 FILE_TMP="$(mktemp)"
 
 # Create temporary list of package names with versions
-jq .dependencies package.json | awk -F '"' '/"/ {print $2 "@" $4}' > "${FILE_TMP}"
+jq .dependencies    package.json | awk -F '"' '/"/ {print $2 "@" $4}' >  "${FILE_TMP}"
+jq .devDependencies package.json | awk -F '"' '/"/ {print $2 "@" $4}' >> "${FILE_TMP}"
 
 
 # Install version-specific npm packages globally

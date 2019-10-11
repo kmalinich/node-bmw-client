@@ -460,7 +460,11 @@ function audio_power(power_state = false, volume_increase = true) {
 			bus.cmds.send_device_status(module_name);
 
 			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
-			let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
+			// TODO: Make this a config array
+
+			// let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
+			let array_request = [ 'BMBT', 'DSP' ];
+
 			let count_request = 1;
 			array_request.forEach((module_request) => {
 				setTimeout(() => {
@@ -471,35 +475,30 @@ function audio_power(power_state = false, volume_increase = true) {
 			});
 
 			// Set DSP source to whatever is configured
-			setTimeout(() => { audio_control(config.media.dsp.default_source); }, 650);
+			count_request++;
+			setTimeout(() => { audio_control(config.media.dsp.default_source); }, (count_request * 100));
 
 			// Turn on BMBT
-			setTimeout(() => { cassette_control(true); }, 900);
+			count_request++;
+			setTimeout(() => { cassette_control(true); }, (count_request * 100));
 
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			if (volume_increase === true) {
 				setTimeout(() => {
-					for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
+					for (let pass = 0; pass <= config.rad.power_on_volume; pass++) {
 						setTimeout(() => { volume_control(5); }, 15 * pass);
+						count_request++;
 					}
 				}, 1300);
 			}
 
-
-			// Delay sending EQ command 2000ms + 20ms per volume step
-			let dsp_eq_delay = (2000 + (20 * config.rad.power_on_volume));
-
 			// Send configured DSP EQ (it seems to forget over time)
 			setTimeout(() => {
 				DSP.eq_encode(config.media.dsp.eq);
-			}, dsp_eq_delay);
+			}, (count_request * 100));
 
-
-			// Send play command to Bluetooth device
-			bluetooth.command('play');
-
-			// Send play command to Kodi
-			kodi.command('play');
+			// Send play command to Bluetooth/Kodi
+			bluetooth.command('play'); kodi.command('play');
 		}
 	}
 }
@@ -519,7 +518,7 @@ function init_listeners() {
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
 	IKE.on('ignition-start-end', () => {
 		// Specify to not increase the volume on this possibly second power on event
-		setTimeout(() => { audio_power(true, false); }, config.rad.after_start_delay);
+		setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
 	});
 
 
