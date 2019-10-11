@@ -27,7 +27,13 @@ jq .devDependencies package.json | awk -F '"' '/"/ {print $2 "@" $4}' >> "${FILE
 
 # Install version-specific npm packages globally
 for DEP in "${ARRAY_LINK[@]}"; do
-	DEP_FULL="$(grep "${DEP}" "${FILE_TMP}")"
+	DEP_FULL="$(grep -E "^${DEP}@" "${FILE_TMP}")"
+
+	if [[ -z "${DEP_FULL}" ]]; then
+		echo "Failed finding full dependency name for '${DEP}', cannot continue"
+		exit 1
+	fi
+
 	echo "npm -g i '${DEP_FULL}'"
 	npm -g i "${DEP_FULL}" --unsafe-perm
 	echo
@@ -40,3 +46,5 @@ npm link "${ARRAY_LINK[@]}"
 
 # Clean up
 rm -f "${FILE_TMP}"
+
+exit 0
