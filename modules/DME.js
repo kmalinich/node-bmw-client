@@ -334,12 +334,12 @@ function parse_545(data) {
 
 	// The amount of fuel being consumed isn't a flat number
 	// It's the difference between two numbers factoring in the time between the time both numbers were received
-	let process_consumption = true;
+	// let process_consumption = true;
 
 	let consumption_current = (data.msg[2] << 8) + data.msg[1];
 
 	// Need at least one changed value first
-	if (DME.consumption_last === 0 || DME.consumption_last === consumption_current) process_consumption = false;
+	// if (DME.consumption_last === 0 || DME.consumption_last === consumption_current) process_consumption = false;
 
 	let parse = {
 		fuel : {
@@ -668,7 +668,7 @@ function init_listeners() {
 		update.status('engine.horsepower.loss',                 0);
 		update.status('engine.horsepower.output',               0);
 	});
-	
+
 
 	// Update purely calculated values when original value changes
 	update.on('status.temperature.coolant.c',  (data) => { update.status('temperature.coolant.f',  c2f(data.new)); });

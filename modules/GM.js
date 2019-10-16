@@ -495,7 +495,7 @@ class GM extends EventEmitter {
 			switch (data.new) {
 				case 'off' : {
 					// Return if not previously in accessory position
-					if (data.old !== 'accessory') return;
+					// if (data.old !== 'accessory') return;
 
 					setTimeout(() => {
 						// Return if doors are NOT locked
@@ -503,8 +503,8 @@ class GM extends EventEmitter {
 
 						log.module('Doors are locked and closed, toggling door locks');
 
-						this.locks();
-					}, 500);
+						setTimeout(() => { this.locks(); }, 750);
+					}, 250);
 					break;
 				}
 
