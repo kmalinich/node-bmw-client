@@ -677,16 +677,16 @@ function init_listeners() {
 	update.on('status.temperature.intake.c',   (data) => { update.status('temperature.intake.f',   c2f(data.new)); });
 	update.on('status.temperature.oil.c',      (data) => { update.status('temperature.oil.f',      c2f(data.new)); });
 
-	// TODO: Change remaining purely calculated values to update.on() calls
+	// Calculate and update mmhg and psi atmospheric pressure values from mbar
+	update.on('status.engine.atmospheric_pressure.mbar', (data) => {
+		update.status('engine.atmospheric_pressure.mmhg', num.round2(data.new * 0.75006157818041));
+		update.status('engine.atmospheric_pressure.psi',  num.round2(data.new * 0.01450377380072));
+	});
 
-	// Calculate mmhg and psi atmospheric pressure values
-	// parse.engine.atmospheric_pressure.mmhg = num.round2(parse.engine.atmospheric_pressure.mbar * 0.75006157818041);
-	// parse.engine.atmospheric_pressure.psi  = num.round2(parse.engine.atmospheric_pressure.mbar * 0.01450377380072);
-	// update.status('engine.atmospheric_pressure.mmhg', parse.engine.atmospheric_pressure.mmhg);
-	// update.status('engine.atmospheric_pressure.psi',  parse.engine.atmospheric_pressure.psi, false);
-
-	// parse.vehicle.odometer.mi = Math.floor(convert(parse.vehicle.odometer.km).from('kilometre').to('us mile'));
-	// update.status('vehicle.odometer.mi', parse.vehicle.odometer.mi, false);
+	// Calculate and update odometer value in miles
+	update.on('status.vehicle.odometer.km', (data) => {
+		update.status('vehicle.odometer.mi', Math.floor(convert(data.new).from('kilometre').to('us mile')), false);
+	});
 
 
 	log.module('Initialized listeners');
