@@ -233,8 +233,9 @@ function comfort_turn(data) {
 }
 
 function comfort_turn_flash(action) {
-	// If the time difference is more than 1000ms, bounce
-	if (status.lights.turn.depress_elapsed >= 1000) return;
+	// TODO: Make the time difference value configurable
+	// If the time difference is more than the configured value, bounce
+	if (status.lights.turn.depress_elapsed >= 600) return;
 
 	// Double-check the requested action
 	if (action !== 'left' && action !== 'right') return;
