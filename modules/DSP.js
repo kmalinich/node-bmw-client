@@ -175,7 +175,7 @@ function eq_delta(band, value) {
 	}
 
 	bus.data.send({
-		src : 'DSPC',
+		src : 'RAD', // Might also be one of BMBT, DSPC, GT, RAD..
 		msg : msg,
 	});
 
