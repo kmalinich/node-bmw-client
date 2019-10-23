@@ -90,14 +90,18 @@ function parse_dsp_memory(data) {
 		case false : {
 			// Check if the command is setting echo amount or room size and get the value
 			switch (bitmask.test(data.msg[2], bitmask.b[5])) {
-				case false : { // Room size
+				// Room size
+				case false : {
 					data.value += 'room size - ';
+
 					amount = data.msg[2];
 					break;
 				}
 
-				case true : { // Echo
+				// Echo/reverb
+				case true : {
 					data.value += 'echo amount - ';
+
 					// Remove 0x20 from the value
 					amount = bitmask.unset(data.msg[2], bitmask.b[5]);
 				}
@@ -199,7 +203,8 @@ function parse_control_lcd(data) {
 // Parse data sent from GT module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x2B : { // Broadcast: Indicator status
+		// Broadcast: Indicator status
+		case 0x2B : {
 			data.command = 'bro';
 			data.value   = 'indicator status TODO';
 			break;
@@ -215,7 +220,8 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x41 : { // Control: Aux heat/vent
+		// Control: Aux heat/vent
+		case 0x41 : {
 			data.command = 'con';
 
 			switch (data.msg[1]) {
@@ -228,13 +234,15 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x45 : { // Request: Radio status
+		// Request: Radio status
+		case 0x45 : {
 			data.command = 'req';
 			data.value   = 'radio status TODO, ' + hex.i2s(data.msg[1]);
 			break;
 		}
 
-		case 0x4A : { // Control: Cassette
+		// Control: Cassette
+		case 0x4A : {
 			BMBT.cassette_status(data.msg[1]);
 
 			data.command = 'con';
@@ -248,7 +256,8 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x4E : { // Control: Audio source selection
+		// Control: Audio source selection
+		case 0x4E : {
 			data.command = 'con';
 			data.value   = 'audio source selection TODO, ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
 			break;
@@ -256,6 +265,13 @@ function parse_out(data) {
 
 		// Control: LCD (screen in dash)
 		case 0x4F : return parse_control_lcd(data);
+
+		// Control: DSP EQ delta update
+		case 0x95 : {
+			data.command = 'con';
+			data.value   = 'DSP EQ delta update TODO';
+			break;
+		}
 	}
 
 	return data;

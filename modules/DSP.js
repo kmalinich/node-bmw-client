@@ -101,45 +101,81 @@ function eq_delta(band, value) {
 	// Negative value sets 0x10 bit
 	if (minus === true) value += 0x10;
 
+	let cmd = 0x95;
+
 	let msg;
 	switch (band) {
-		case 'room-size' : msg = [ 0x95, value ]; break;
+		case 'echo'      :
+		case 'reverb'    : value += 0x20; msg = [ cmd, value ]; break;
+		case 'room-size' :                msg = [ cmd, value ]; break;
 
-		case 'echo' : value += 0x20; msg = [ 0x95, value ]; break;
-
-		case '1'    :
+		case '0'    :
 		case '80'   :
-		case '80hz' : msg = [ 0x95, 0x15, value ]; break;
+		case '80hz' : {
+			band = '80Hz';
+			msg  = [ cmd, 0x15, value ];
+			break;
+		}
+
+		case '1'     :
+		case '200'   :
+		case '200hz' : {
+			band   = '200Hz';
+			value += 0x20;
+			msg    = [ cmd, 0x15, value ];
+			break;
+		}
 
 		case '2'     :
-		case '200'   :
-		case '200hz' : value += 0x20; msg = [ 0x95, 0x15, value ]; break;
-
-		case '3'     :
 		case '500'   :
-		case '500hz' : value += 0x40; msg = [ 0x95, 0x15, value ]; break;
+		case '500hz' : {
+			band   = '500Hz';
+			value += 0x40;
+			msg    = [ cmd, 0x15, value ];
+			break;
+		}
+
+		case '3'    :
+		case '1000' :
+		case '1khz' : {
+			band   = '1kHz';
+			value += 0x60;
+			msg    = [ cmd, 0x15, value ];
+			break;
+		}
 
 		case '4'    :
-		case '1000' :
-		case '1khz' : value += 0x60; msg = [ 0x95, 0x15, value ]; break;
+		case '2000' :
+		case '2khz' : {
+			band   = '2kHz';
+			value += 0x80;
+			msg    = [ cmd, 0x15, value ];
+			break;
+		}
 
 		case '5'    :
-		case '2000' :
-		case '2khz' : value += 0x80; msg = [ 0x95, 0x15, value ]; break;
-
-		case '6'    :
 		case '5000' :
-		case '5khz' : value += 0xA0; msg = [ 0x95, 0x15, value ]; break;
+		case '5khz' : {
+			band   = '5kHz';
+			value += 0xA0;
+			msg    = [ cmd, 0x15, value ];
+			break;
+		}
 
-		case '7'     :
+		case '6'     :
 		case '12000' :
-		case '12khz' : value += 0xC0; msg = [ 0x95, 0x15, value ]; break;
+		case '12khz' : {
+			band   = '12kHz';
+			value += 0xC0;
+			msg    = [ cmd, 0x15, value ];
+			break;
+		}
 
 		default : return;
 	}
 
 	bus.data.send({
-		src : 'GT',
+		src : 'DSPC',
 		msg : msg,
 	});
 
