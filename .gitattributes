@@ -73,6 +73,8 @@
 *.xz    binary
 *.zip   binary
 
+# crlf = Windows
+# lf   = Linux/Unix/macOS 10+
 
 # These files are text and should be normalized (Convert crlf => lf)
 *.bat           text eol=crlf
@@ -118,6 +120,7 @@
 *.jsx           text
 *.latte         text
 *.less          text
+*.log           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
 *.lock          text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
 *.ls            text
 *.map           text
@@ -169,7 +172,6 @@
 *.ts            text
 *.tsx           text
 *.twig          text
-*.txt           text
 *.txt           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
 *.xhtml         text
 *.xml           text eol=lf whitespace=blank-at-eol,-blank-at-eof,-space-before-tab,tab-in-indent,tabwidth=2
