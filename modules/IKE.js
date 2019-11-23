@@ -609,16 +609,40 @@ class IKE extends events {
 	// override = force a refresh even if the rendered string has not changed
 	//            this is for long period of non-changing data, where otherwise
 	//            the text would disappear from the cluster display
-	hud_render(override = false, hud_render_cb = null) {
+	hud_render(override = false, hud_render_cb = null, retry = 1) {
 		if (config.intf.ibus.enabled !== true) return;
 
-		// Determine Moment.js format string
-		let moment_format;
-		switch (config.hud.time.format) {
-			case '24h' : moment_format = 'H:mm'; break;
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
 
-			default : moment_format = 'h:mm';
+		// Bounce if it's not OK (yet) to post a HUD update
+		if (!this.ok2hud()) {
+			// Increment retry counter
+			retry++;
+
+			let retry_ms = retry * 2;
+
+			// TODO: Make retry counter a config value
+			if (retry >= 200) {
+				// log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms + ', retries exceeded, bailing');
+				return;
+			}
+
+			// log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms);
+
+			setTimeout(() => {
+				this.hud_render(override, hud_render_cb, retry);
+			}, retry_ms);
+			return;
 		}
+
+		// Determine Moment.js format string
+		// let moment_format;
+		// switch (config.hud.time.format) {
+		// 	case '24h' : moment_format = 'H:mm'; break;
+
+		// 	default : moment_format = 'h:mm';
+		// }
 
 		let hud_strings = {
 			left   : '',
@@ -626,21 +650,18 @@ class IKE extends events {
 			right  : '',
 
 			// TODO: Use unit from config
-			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg',
-			egt   : Math.floor(status.temperature.exhaust.c) + '¨',
 			iat   : Math.floor(status.temperature.intake.c) + '¨',
 			load  : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
-			range : Math.floor(status.obc.range.mi) + 'mi',
 			speed : Math.ceil(status.vehicle.speed.mph) + 'mph',
 			temp  : Math.floor(status.temperature.coolant.c) + '¨',
-			time  : moment().format(moment_format),
 			volt  : status.dme.voltage,
 
-			// Horsepower
-			hp : Math.floor(status.engine.horsepower.output) + 'hp',
-
-			// Clutch-in/gear change count
-			cc : status.vehicle.clutch_count + 'gc',
+			// cc    : status.vehicle.clutch_count + 'gc',
+			// cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg',
+			// egt   : Math.floor(status.temperature.exhaust.c) + '¨',
+			// hp    : Math.floor(status.engine.horsepower.output) + 'hp',
+			// range : Math.floor(status.obc.range.mi) + 'mi',
+			// time  : moment().format(moment_format),
 		};
 
 		// Only use voltage from CANBUS if configured to do so, and ignition is in run
@@ -666,8 +687,8 @@ class IKE extends events {
 		}
 
 		// Change center string to be voltage if under threshold
-		if (status.dme.voltage <= config.hud.volt.threshold) {
-			hud_strings.center = hud_strings.volt + 'v';
+		if (status.dme.voltage <= config.hud.volt.threshold || status.lcm.voltage.terminal_30 <= config.hud.volt.threshold) {
+			hud_strings.center = hud_strings.volt.toFixed(1) + 'v';
 		}
 
 		// Space-pad HUD strings
@@ -687,12 +708,6 @@ class IKE extends events {
 
 		update.status('hud.string', hud_string_rendered);
 
-		// Return if HUD refresh is locked
-		if (this.hud_locked !== false) return false;
-
-		// Bounce if it's not OK (yet) to post a HUD update
-		if (!this.ok2hud()) return;
-
 		this.hud_refresh_hrtime = now();
 
 		// Send text to IKE
@@ -700,7 +715,7 @@ class IKE extends events {
 
 		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
 		hud_render_cb = undefined;
-	}
+	} // hud_render(override, hud_render_cb)
 
 
 	// OBC set clock
@@ -893,7 +908,7 @@ class IKE extends events {
 
 		// Request fresh data
 		this.request('ignition');
-		LCM.request('io-status');
+		// LCM.request('io-status');
 
 		// Refresh HUD display
 		this.hud_refresh(true);
@@ -1102,13 +1117,13 @@ class IKE extends events {
 		// Refresh HUD after certain data values update
 		update.on('status.dme.voltage',             () => { this.hud_refresh(); });
 		update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
-		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
-		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
 		update.on('status.system.temperature',      () => { this.hud_refresh(); });
 		update.on('status.temperature.coolant.c',   () => { this.hud_refresh(); });
-		update.on('status.temperature.exhaust.c',   () => { this.hud_refresh(); });
 		update.on('status.temperature.intake.c',    () => { this.hud_refresh(); });
 		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
+		// update.on('status.temperature.exhaust.c',   () => { this.hud_refresh(); });
+		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
+		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
 		// update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
 		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
 
