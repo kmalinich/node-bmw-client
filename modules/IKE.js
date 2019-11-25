@@ -667,7 +667,7 @@ class IKE extends events {
 		// Only use voltage from CANBUS if configured to do so, and ignition is in run
 		// CANBUS data is not broadcast when key is in accessory
 		if (config.canbus.voltage === false || status.vehicle.ignition_level < 3) {
-			hud_strings.volt = parseFloat(status.lcm.voltage.terminal_30.toFixed(1));
+			hud_strings.volt = status.lcm.voltage.terminal_30;
 		}
 
 		// Add oil temp to temp string if configured
@@ -686,8 +686,8 @@ class IKE extends events {
 			hud_strings.left = hud_strings.load;
 		}
 
-		// Change center string to be voltage if under threshold
-		if (status.dme.voltage <= config.hud.volt.threshold || status.lcm.voltage.terminal_30 <= config.hud.volt.threshold) {
+		// Change center string to be voltage if under threshold or if vehicle speed is 0
+		if (hud_strings.volt <= config.hud.volt.threshold || hud_strings.speed === '0mph') {
 			hud_strings.center = hud_strings.volt.toFixed(1) + 'v';
 		}
 
@@ -897,18 +897,17 @@ class IKE extends events {
 			if (this.timeout_data_refresh !== null) {
 				clearTimeout(this.timeout_data_refresh);
 				this.timeout_data_refresh = null;
-
 				log.module('Unset data refresh timeout');
-
-				return;
 			}
+
+			return;
 		}
 
 		log.module('Refreshing');
 
 		// Request fresh data
-		this.request('ignition');
-		// LCM.request('io-status');
+		// this.request('ignition');
+		LCM.request('io-status');
 
 		// Refresh HUD display
 		this.hud_refresh(true);
@@ -918,10 +917,16 @@ class IKE extends events {
 			this.request('temperature');
 		}
 
-		if (status.vehicle.ignition_level === 0) return;
+		// Return here if vehicle ignition is off
+		if (status.vehicle.ignition_level === 0) {
+			if (this.timeout_data_refresh !== null) {
+				clearTimeout(this.timeout_data_refresh);
+				this.timeout_data_refresh = null;
+				log.module('Unset data refresh timeout');
+			}
 
-		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
-
+			return;
+		}
 
 		// setTimeout for next update
 		// TODO: Make this setTimeout delay value a config param
@@ -929,6 +934,8 @@ class IKE extends events {
 		this.timeout_data_refresh = setTimeout(() => {
 			self.data_refresh();
 		}, 5000);
+
+		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
 	}
 
 	// Broadcast: Ignition status
