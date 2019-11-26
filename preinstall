@@ -34,6 +34,8 @@ for DEP in "${ARRAY_LINK[@]}"; do
 		exit 1
 	fi
 
+	[[ "${1}" == "--no-install" ]] && continue
+
 	echo "npm -g i '${DEP_FULL}'"
 	npm -g i "${DEP_FULL}" --unsafe-perm
 	echo
