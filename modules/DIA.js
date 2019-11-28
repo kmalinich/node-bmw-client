@@ -92,7 +92,7 @@ function parse_out(data) {
 	return data;
 }
 
-module.exports = {
+export default {
 	last : {
 		cmd : null,
 		dst : null,
@@ -100,6 +100,6 @@ module.exports = {
 		val : null,
 	},
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 };

@@ -1,4 +1,7 @@
-const EventEmitter = require('events');
+import EventEmitter from 'events';
+
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
 
 
 class EGS extends EventEmitter {
@@ -54,4 +57,4 @@ class EGS extends EventEmitter {
 }
 
 
-module.exports = EGS;
+export default EGS;

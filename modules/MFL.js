@@ -30,8 +30,8 @@ function decode_button_media(data) {
 	// 0x40 : ??
 	// 0x80 : button : voice command (sneezing man)
 
-	let mask   = bitmask.check(data.msg[1]).mask;
-	let unmask = {
+	const mask   = bitmask.check(data.msg[1]).mask;
+	const unmask = {
 		actions : {
 			depress : !mask.bit4 && !mask.bit5 && !mask.bit8,
 			hold    : mask.bit4  && !mask.bit5 && !mask.bit8,
@@ -46,7 +46,7 @@ function decode_button_media(data) {
 	};
 
 	// Loop action object to populate log string
-	for (let action in unmask.actions) {
+	for (const action in unmask.actions) {
 		if (unmask.actions[action] === true) {
 			unmask.action = action;
 			break;
@@ -54,7 +54,7 @@ function decode_button_media(data) {
 	}
 
 	// Loop button object to populate log string
-	for (let button in unmask.buttons) {
+	for (const button in unmask.buttons) {
 		if (unmask.buttons[button] === true) {
 			unmask.button = button;
 			break;
@@ -143,7 +143,7 @@ function translate_button_media(unmask) {
 	// Return here if disabled
 	if (config.translate.mfl !== true) return;
 
-	let src = 0x1D6;
+	const src = 0x1D6;
 
 	// Depress
 	// Voice    : 0x1D6 > 0xC0, 0x01
@@ -248,12 +248,12 @@ function parse_out(data) {
 }
 
 
-module.exports = {
+export default {
 	// decode_button_com    : decode_button_com,
-	decode_button_media  : decode_button_media,
-	decode_button_recirc : decode_button_recirc,
+	decode_button_media,
+	decode_button_recirc,
 
-	parse_out : parse_out,
+	parse_out,
 
-	translate_button_media : translate_button_media,
+	translate_button_media,
 };

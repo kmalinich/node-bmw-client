@@ -34,10 +34,10 @@ function decode_light_control_status(data) {
 	// 0x08 : Bit3 : Tunnel
 	// 0x10 : Bit4 : Garage
 
-	let mask1 = bitmask.check(data.msg[1]).mask;
-	let mask2 = bitmask.check(data.msg[2]).mask;
+	const mask1 = bitmask.check(data.msg[1]).mask;
+	const mask2 = bitmask.check(data.msg[2]).mask;
 
-	let parse = {
+	const parse = {
 		intensity     : null,
 		intensity_str : null,
 		intensities   : {
@@ -66,7 +66,7 @@ function decode_light_control_status(data) {
 	};
 
 	// Loop intensity object to obtain intensity level
-	for (let intensity in parse.intensities) {
+	for (const intensity in parse.intensities) {
 		if (parse.intensities[intensity] === true) {
 			// Convert hacky object key name back to integer
 			parse.intensity = parseInt(intensity.replace(/\D/g, ''));
@@ -75,7 +75,7 @@ function decode_light_control_status(data) {
 	}
 
 	// Loop reason object to obtain reason name
-	for (let reason in parse.reasons) {
+	for (const reason in parse.reasons) {
 		if (parse.reasons[reason] === true) {
 			parse.reason = reason;
 			break;
@@ -136,7 +136,7 @@ function light_control_status(data) {
 		case 'garage'   : byte2 = bitmask.set(byte2, bitmask.bit[4]);
 	}
 
-	let cmd = [ 0x59, byte1, byte2 ];
+	const cmd = [ 0x59, byte1, byte2 ];
 
 	log.module('Sending light control status, intensity: ' + data.intensity + ', lights on: ' + data.lights + ', reason: ' + data.reason);
 
@@ -177,7 +177,7 @@ function request(value) {
 	}
 
 	bus.data.send({
-		src : src,
+		src,
 		dst : 'GM',
 		msg : cmd,
 	});
@@ -195,9 +195,9 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	light_control_status : light_control_status,
+export default {
+	light_control_status,
 
-	request   : request,
-	parse_out : parse_out,
+	request,
+	parse_out,
 };

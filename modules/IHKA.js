@@ -23,23 +23,23 @@ function aux(data) {
 // Toggle air recirculation
 function recirc() {
 	// Init variables
-	let src = 'MFL';
+	const src = 'MFL';
 
-	let cmds = {
+	const cmds = {
 		depress : [ 0x3A, 0x01, 0x34 ], // Recirc depressed
 		release : [ 0x3A, 0x01, 0x35 ], // Recirc released
 	};
 
 	// Send depress command
 	bus.data.send({
-		src : src,
+		src,
 		msg : cmds.depress,
 	});
 
 	// Send release command after 200ms delay
 	setTimeout(() => {
 		bus.data.send({
-			src : src,
+			src,
 			msg : cmds.release,
 		}, 200);
 	});
@@ -62,7 +62,7 @@ function request(value) {
 	}
 
 	bus.data.send({
-		src : src,
+		src,
 		msg : cmd,
 	});
 }
@@ -104,9 +104,9 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	aux       : aux,
-	parse_out : parse_out,
-	recirc    : recirc,
-	request   : request,
+export default {
+	aux,
+	parse_out,
+	recirc,
+	request,
 };

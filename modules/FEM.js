@@ -122,11 +122,11 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	backlight : backlight,
+export default {
+	backlight,
 
 	// Functions
-	init_listeners : init_listeners,
+	init_listeners,
 
-	parse_out : parse_out,
+	parse_out,
 };

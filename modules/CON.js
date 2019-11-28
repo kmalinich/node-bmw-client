@@ -1,23 +1,23 @@
 /* eslint key-spacing : 0 */
 
-const time_now = require('performance-now');
+import time_now from 'performance-now';
 
 
 function button_check(button) {
 	// Workaround for the last of a proper 'release' message when in 'joystick mode'
-	let joystick_release = (button.mode === 'joystick' && button.action === 'release' && button.button === 'none');
+	const joystick_release = (button.mode === 'joystick' && button.action === 'release' && button.button === 'none');
 	if (joystick_release === true) button.button = status.con.last.button.button;
 
 	// Detect if there is a change from the last button message, bounce if not
 	// CON sends a lot of repeat messages (it's CANBUS)
-	let change = (status.con.last.button.action !== button.action || status.con.last.button.button !== button.button || status.con.last.button.mode !== button.mode);
+	const change = (status.con.last.button.action !== button.action || status.con.last.button.button !== button.button || status.con.last.button.mode !== button.mode);
 	if (change === false) return;
 
 	log.module('Button: ' + button.action + ' ' + button.button);
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for <configured> milliseconds
-	let rotation_gap = time_now() - status.con.rotation.last_msg;
+	const rotation_gap = time_now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
 		update.status('con.rotation.horizontal', false, false);
@@ -57,7 +57,7 @@ function button_check(button) {
 
 						case 'nav' : {
 							// To use the NAV button as a toggle for police lights
-							LCM.police((status.lcm.police_lights.on === false));
+							LCM.police((status.lcm.police.on === false));
 							break;
 						}
 
@@ -161,13 +161,13 @@ function decode_button(data) {
 	// release : 00 DE 01
 
 	// Decode bitmasks
-	let m = {
+	const m = {
 		a : bitmask.check(data.msg[3]).mask, // Actions bitmask
 		b : bitmask.check(data.msg[5]).mask, // Buttons bitmask
 		m : bitmask.check(data.msg[4]).mask, // Modes bitmask
 	};
 
-	let unmask = {
+	const unmask = {
 		actions : {
 			depress : false,
 			hold    : false,
@@ -203,7 +203,7 @@ function decode_button(data) {
 	};
 
 	// Loop unmask object to determine action+button combination
-	for (let mode in unmask.modes) {
+	for (const mode in unmask.modes) {
 		if (unmask.modes[mode] === true) {
 			unmask.mode = mode;
 			break;
@@ -236,14 +236,14 @@ function decode_button(data) {
 	};
 
 	// Loop unmask object to determine action+button combination
-	for (let action in unmask.actions) {
+	for (const action in unmask.actions) {
 		if (unmask.actions[action] === true) {
 			unmask.action = action;
 			break;
 		}
 	}
 
-	for (let button in unmask.buttons) {
+	for (const button in unmask.buttons) {
 		if (unmask.buttons[button] === true) {
 			unmask.button = button;
 			break;
@@ -285,20 +285,20 @@ function decode_rotation(data) {
 	// If it hasn't rotated any notches
 	if (change === 0) return data;
 
-	let change_calc = 256 - Math.abs(change);
+	const change_calc = 256 - Math.abs(change);
 
 	// If change_calc is less than 128,
 	// the relative counter has either rolled from 128-255 to 0-127 or 0-127 to 128-255
-	let rollover = (change_calc < 128);
+	const rollover = (change_calc < 128);
 	if (rollover) {
 		switch (change > 0) {
-			case false : change = (change + 256); break;
-			case true  : change = (change - 256);
+			case false : change += 256; break;
+			case true  : change -= 256;
 		}
 	}
 
 	// The absolute number of notches travelled
-	let change_abs = Math.abs(change);
+	const change_abs = Math.abs(change);
 
 	switch (change > 0) {
 		case false : direction = 'left'; break;
@@ -315,7 +315,7 @@ function decode_rotation(data) {
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
-	let rotation_gap = time_now() - status.con.rotation.last_msg;
+	const rotation_gap = time_now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
 		update.status('con.rotation.horizontal', false, false);
@@ -323,7 +323,7 @@ function decode_rotation(data) {
 	}
 
 	// Create quick bitmask to ease switch statement processing
-	let mask_mode = bitmask.create({
+	const mask_mode = bitmask.create({
 		// b0 : status.con.rotation.horizontal,
 		// b1 : status.con.rotation.volume,
 		b0 : (status.con.touch.count === 1), // If 1 finger  on touchpad, do horizontal scroll
@@ -409,10 +409,10 @@ function decode_touchpad(data) {
 	data.command = 'con';
 	data.value   = 'Touchpad contact';
 
-	let x = data.msg[1];
-	let y = data.msg[3];
+	const x = data.msg[1];
+	const y = data.msg[3];
 
-	let touch_count = decode_touch_count(data.msg[4]);
+	const touch_count = decode_touch_count(data.msg[4]);
 
 	// Update status object
 	if (update.status('con.touch.count', touch_count, false)) {
@@ -515,13 +515,13 @@ function parse_out(data) {
 }
 
 
-module.exports = {
+export default {
 	timeout : {
 		init_rotation : null,
 	},
 
 	// Functions
-	init_listeners : init_listeners,
+	init_listeners,
 
-	parse_out : parse_out,
+	parse_out,
 };

@@ -1,3 +1,5 @@
+import hex from '../share/hex.js';
+
 // Parse data sent from module
 function parse_out(data) {
 	switch (data.msg[0]) {
@@ -12,6 +14,6 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	parse_out : parse_out,
+export default {
+	parse_out,
 };

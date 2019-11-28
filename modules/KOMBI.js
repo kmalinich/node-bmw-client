@@ -1,4 +1,4 @@
-const convert = require('node-unit-conversion');
+import convert from 'node-unit-conversion';
 
 
 // Parse vehicle speed LSB and MSB into KPH value
@@ -55,10 +55,10 @@ function parse_1b4(data) {
 	data.command = 'bro';
 	data.value   = 'Vehicle speed';
 
-	let vehicle_speed_kmh = parse_speed(data.msg[0], data.msg[1]);
+	const vehicle_speed_kmh = parse_speed(data.msg[0], data.msg[1]);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
+	const vehicle_speed_mph = Math.floor(convert(vehicle_speed_kmh).from('kilometre').to('us mile'));
 
 	update.status('vehicle.speed.mph', vehicle_speed_mph);
 
@@ -85,8 +85,8 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	gauge_sweep : gauge_sweep,
+export default {
+	gauge_sweep,
 
-	parse_out : parse_out,
+	parse_out,
 };

@@ -28,7 +28,7 @@ function decode_status_module(data) {
 
 function video_source(source = 'default') {
 	// Controlled by cmd_data.msg1[4], set to normal video output by default
-	let cmd_data = {
+	const cmd_data = {
 		id   : 0x6F1,
 		msg0 : [ 0x63, 0x10, 0x0B, 0x31, 0x01, 0xA0, 0x1C, 0x00 ],
 		msg1 : [ 0x63, 0x21, 0x00, 0x00, 0x01, 0x00, 0x01, 0xFF ],
@@ -172,7 +172,7 @@ function status_module(action = false) {
 	}
 
 	// Default is NBT message
-	let msg = {
+	const msg = {
 		bus  : config.nbt.can_intf,
 		id   : null,
 		data : [ ],
@@ -242,7 +242,7 @@ function status_ignition() {
 	}
 
 	// Default is NBT message
-	let msg = {
+	const msg = {
 		bus  : config.nbt.can_intf,
 		id   : 0x12F,
 		data : [ 0x37, 0x7C, 0x8A, 0xDD, 0xD4, 0x05, 0x33, 0x6B ],
@@ -307,20 +307,20 @@ function parse_out(data) {
 }
 
 
-module.exports = {
+export default {
 	timeout : {
 		status_ignition : null,
 		status_module   : null,
 	},
 
 	// Functions
-	init_listeners : init_listeners,
+	init_listeners,
 
-	video_source : video_source,
+	video_source,
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 
-	status_ignition : status_ignition, // Should be in CAS module
-	status_module   : status_module,
+	status_ignition, // Should be in CAS module
+	status_module,
 };

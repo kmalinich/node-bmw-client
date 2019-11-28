@@ -2,6 +2,8 @@
 // 1F 40 21 38 25 00 10 20 11
 //    ?? %H %M %d ?? %m %C %y
 
+import hex from '../share/hex.js';
+
 // Parse GPS time and date message
 function parse_gps_time(data) {
 	data.command = 'bro';
@@ -87,6 +89,6 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	parse_out : parse_out,
+export default {
+	parse_out,
 };

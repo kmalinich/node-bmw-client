@@ -1,5 +1,7 @@
 /* eslint key-spacing : 0 */
 
+import hex from '../share/hex.js';
+
 
 // Broadcast: Telephone data
 function decode_data_telephone(data) {
@@ -30,10 +32,10 @@ function decode_status_indicator(data) {
 	// Bit4 = green,  solid
 	// Bit5 = green,  flash
 
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
 
 	// If 'flash' and 'solid' for the same color are passed, the LED flashes
-	let led = {
+	const led = {
 		green : {
 			flash : !mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 &&                mask.bit5 && !mask.bit8,
 			solid : !mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 &&  mask.bit4 && !mask.bit5 && !mask.bit8,
@@ -139,7 +141,7 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	led       : led,
-	parse_out : parse_out,
+export default {
+	led,
+	parse_out,
 };

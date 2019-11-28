@@ -1,7 +1,9 @@
+import hex from '../share/hex.js';
+
 // Broadcast: check control message
 function parse_cc_message(data) {
 	data.command = 'bro';
-	data.value   = 'check control message TODO ' + hex.h2a(data.msg);
+	data.value   = 'check control message TODO: ' + hex.h2a(data.msg);
 
 	return data;
 }
@@ -11,7 +13,7 @@ function parse_cc_sensors(data) {
 	data.command = 'bro';
 	data.value   = 'check control sensors - ';
 
-	// TODO Le sigh.. this is a bitmask, not done properly
+	// TODO: Le sigh.. this is a bitmask, not done properly
 	switch (data.msg[1]) {
 		case 0x00 : data.value += 'none';                  break;
 		case 0x04 : data.value += 'key in ignition';       break;
@@ -34,6 +36,6 @@ function parse_out(data) {
 }
 
 
-module.exports = {
-	parse_out : parse_out,
+export default {
+	parse_out,
 };

@@ -1,9 +1,11 @@
-const convert = require('node-unit-conversion');
+import convert from 'node-unit-conversion';
+
+import num from '../share/num.js';
 
 
 // Parse wheel speed LSB and MSB into KPH value
 function parse_wheel(byte0, byte1) {
-	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
+	const parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
 
 	if (parsed_wheel_speed < 3) {
 		return {
@@ -35,12 +37,12 @@ function parse_wheel(byte0, byte1) {
 function encode_1a1(speed = 0) {
 	log.module('Sending CAN 0x1A1 packet for ' + speed + ' KPH');
 
-	speed = speed * 100;
+	speed *= 100;
 
-	let lsb = speed        & 0xFF || 0; // LSB
-	let msb = (speed >> 8) & 0xFF || 0; // MSB
+	const lsb = speed        & 0xFF || 0; // LSB
+	const msb = (speed >> 8) & 0xFF || 0; // MSB
 
-	let msg = [ 0x00, 0x00, lsb, msb, 0x00 ];
+	const msg = [ 0x00, 0x00, lsb, msb, 0x00 ];
 
 	// Send packet
 	bus.data.send({
@@ -106,7 +108,7 @@ function parse_153(data) {
 	// A4 61 01 FF 00 FE FF 0B
 	//
 	// B3 and B6 change during torque reduction
-	let parse = {
+	const parse = {
 		vehicle : {
 			brake : bitmask.test(data.msg[1], 0x10),
 
@@ -131,7 +133,7 @@ function parse_1f0(data) {
 	data.command = 'bro';
 	data.value   = 'Wheel speeds';
 
-	let wheel_speed = {
+	const wheel_speed = {
 		front : {
 			left  : parse_wheel(data.msg[0], data.msg[1]),
 			right : parse_wheel(data.msg[2], data.msg[3]),
@@ -144,13 +146,13 @@ function parse_1f0(data) {
 	};
 
 	// Calculate vehicle speed from average of all 4 sensors
-	let vehicle_speed_total = wheel_speed.front.left.kmh + wheel_speed.front.right.kmh + wheel_speed.rear.left.kmh + wheel_speed.rear.right.kmh;
+	const vehicle_speed_total = wheel_speed.front.left.kmh + wheel_speed.front.right.kmh + wheel_speed.rear.left.kmh + wheel_speed.rear.right.kmh;
 
 	// Average all wheel speeds together
-	let vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
+	const vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
+	const vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left.mph);
@@ -186,28 +188,28 @@ function parse_1f5(data) {
 	data.value   = 'Steering angle';
 
 	// Thanks babe
-	let sign = {
+	const sign = {
 		angle    : -1,
 		velocity : -1,
 	};
 
 	// Handle signed values (in a very bad way)
 	if (data.msg[1] >= 0x80) {
-		sign.angle = 1;
-		data.msg[1] = data.msg[1] - 0x80;
+		sign.angle   = 1;
+		data.msg[1] -= 0x80;
 	}
 
 	if (data.msg[3] >= 0x80) {
 		sign.velocity = 1;
-		data.msg[3] = data.msg[3] - 0x80;
+		data.msg[3]  -= 0x80;
 	}
 
 	// Calculate steering angle and velocity values
-	let angle    = (data.msg[1] << 8) + data.msg[0];
-	let velocity = (data.msg[3] << 8) + data.msg[2];
+	const angle    = (data.msg[1] << 8) + data.msg[0];
+	const velocity = (data.msg[3] << 8) + data.msg[2];
 
 	// Steering multiplier = 0.043393 = 3.75 turns, lock to lock (1350 degrees of total rotation)
-	let steering = {
+	const steering = {
 		angle    : Math.floor(angle    * config.vehicle.steering_multiplier) * sign.angle,
 		velocity : Math.floor(velocity * config.vehicle.steering_multiplier) * sign.velocity,
 	};
@@ -326,10 +328,10 @@ function init_listeners() {
 }
 
 
-module.exports = {
-	init_listeners : init_listeners,
+export default {
+	init_listeners,
 
-	encode_1a1 : encode_1a1,
+	encode_1a1,
 
-	parse_out : parse_out,
+	parse_out,
 };

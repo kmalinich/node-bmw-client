@@ -1,8 +1,9 @@
 /* eslint key-spacing : 0 */
-/* eslint no-console  : 0 */
 
+import EventEmitter from 'events';
 
-const EventEmitter = require('events');
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
 
 
 // All the possible values to send to GM
@@ -51,7 +52,7 @@ class GM extends EventEmitter {
 	// Reply: Diagnostic command acknowledged
 	decode_dia_reply(data) {
 		data.command = 'rep';
-		data.value   = 'TODO diagnostic command ack';
+		data.value   = 'TODO: diagnostic command ack';
 
 		return data;
 	}
@@ -59,7 +60,7 @@ class GM extends EventEmitter {
 	// Broadcast: Seat memory data
 	decode_seat_memory(data) {
 		data.command = 'bro';
-		data.value   = 'TODO seat memory data';
+		data.value   = 'TODO: seat memory data';
 
 		return data;
 	}
@@ -84,9 +85,9 @@ class GM extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'key fob status - ';
 
-		let mask = bitmask.check(data.msg[1]).mask;
+		const mask = bitmask.check(data.msg[1]).mask;
 
-		let keyfob = {
+		const keyfob = {
 			low_batt     : mask.bit0,
 			low_batt_str : 'battery low: ' + mask.bit0,
 
@@ -110,7 +111,7 @@ class GM extends EventEmitter {
 		};
 
 		// Loop button object to populate log string
-		for (let button in keyfob.buttons) {
+		for (const button in keyfob.buttons) {
 			if (keyfob.buttons[button] === true) {
 				keyfob.button     = button;
 				keyfob.button_str = 'button: ' + button;
@@ -119,7 +120,7 @@ class GM extends EventEmitter {
 		}
 
 		// Loop key object to populate log string
-		for (let key in keyfob.keys) {
+		for (const key in keyfob.keys) {
 			if (keyfob.keys[key] === true) {
 				keyfob.key     = key;
 				keyfob.key_str = 'key: ' + key;
@@ -181,7 +182,7 @@ class GM extends EventEmitter {
 		update.status('doors.rear_right',  bitmask.test(data.msg[1], 0x08), false);
 		update.status('doors.trunk',       bitmask.test(data.msg[2], 0x20), false);
 
-		update.status('lights.interior', bitmask.test(data.msg[1], 0x40), false);
+		update.status('gm.interior_lights', bitmask.test(data.msg[1], 0x40), false);
 
 		update.status('windows.front_left',  bitmask.test(data.msg[2], 0x01), false);
 		update.status('windows.front_right', bitmask.test(data.msg[2], 0x02), false);
@@ -194,19 +195,19 @@ class GM extends EventEmitter {
 
 
 		// Set status.doors.closed if all doors are closed
-		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
+		const update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
 		update.status('doors.closed', update_closed_doors, false);
 
 		// Set status.doors.opened if any doors are opened
 		update.status('doors.opened', (update_closed_doors === false), false);
 
 		// Set status.doors.sealed if all doors and flaps are closed
-		let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
+		const update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
 		update.status('doors.sealed', update_sealed_doors, false);
 
 
 		// Set status.windows.closed if all windows are closed
-		let update_closed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
+		const update_closed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
 		update.status('windows.closed', update_closed_windows, false);
 
 		// Set status.windows.opened if any windows are opened
@@ -242,7 +243,7 @@ class GM extends EventEmitter {
 		// 4+8  : sens 3
 		// 0x20 : spray
 
-		let mask = bitmask.check(data.msg[1]).mask;
+		const mask = bitmask.check(data.msg[1]).mask;
 
 		// A slightly different approach
 		data.speed = 'off';
@@ -286,9 +287,9 @@ class GM extends EventEmitter {
 
 		// Initialize bitmask variables
 		let bitmask_0  = 0x00;
-		let bitmask_1  = 0x00;
-		let bitmask_2  = 0x00;
-		let bitmask_3  = 0x00;
+		const bitmask_1  = 0x00;
+		const bitmask_2  = 0x00;
+		const bitmask_3  = 0x00;
 
 		// Set the various bitmask values according to the input object
 		if (object.clamp_30a) bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]);
@@ -328,7 +329,7 @@ class GM extends EventEmitter {
 	// Central locking
 	locks() {
 		// Send the notification to the log and the cluster
-		let notify_message = 'Toggling door locks';
+		const notify_message = 'Toggling door locks';
 		log.module(notify_message);
 
 		// TODO: Add MID message
@@ -386,7 +387,7 @@ class GM extends EventEmitter {
 		log.module('Requesting \'' + value + '\'');
 
 		bus.data.send({
-			src : src,
+			src,
 			msg : cmd,
 		});
 	}
@@ -544,4 +545,4 @@ class GM extends EventEmitter {
 }
 
 
-module.exports = GM;
+export default GM;

@@ -1,6 +1,8 @@
 /* eslint key-spacing : 0 */
 
-const convert = require('node-unit-conversion');
+import convert from 'node-unit-conversion';
+
+import num from '../share/num.js';
 
 
 // I should look into extending object classes and using Prototype for crap like this
@@ -21,16 +23,16 @@ function encode_316(rpm = 10000) {
 	// Bounce if can0 is not enabled
 	if (config.intf[config.dme.can_intf].enabled !== true) return;
 
-	let rpm_orig = rpm;
+	const rpm_orig = rpm;
 
 	rpm = Math.floor(rpm * 6.4);
 
-	let lsb = rpm        & 0xFF || 0; // LSB
-	let msb = (rpm >> 8) & 0xFF || 0; // MSB
+	const lsb = rpm        & 0xFF || 0; // LSB
+	const msb = (rpm >> 8) & 0xFF || 0; // MSB
 
-	let msg = Buffer.from([ 0x05, 0x16, lsb, msb, 0x16, 0x18, 0x00, 0x16 ]);
+	const msg = Buffer.from([ 0x05, 0x16, lsb, msb, 0x16, 0x18, 0x00, 0x16 ]);
 
-	let count = 500;
+	const count = 500;
 
 	// Send packets
 	for (let i = 0; i < count; i++) {
@@ -68,7 +70,7 @@ function parse_316(data) {
 	// Bounce if ignition is not in run
 	if (status.vehicle.ignition !== 'run') return data;
 
-	let mask_0 = bitmask.check(data.msg[0]).mask;
+	const mask_0 = bitmask.check(data.msg[0]).mask;
 
 	// Key message examples seen:
 	//                      [ 0 1 2 3 4 5 6 7 ]
@@ -76,7 +78,7 @@ function parse_316(data) {
 	// data.msg[0] = 0x05 : [ T - T - - - - - ]
 	// data.msg[0] = 0x15 : [ T - T - T - - - ]
 
-	let parse = {
+	const parse = {
 		dsc_error           : !mask_0.b0,
 		maf_error           : mask_0.b7,
 		status_ok           : mask_0.b0,
@@ -145,7 +147,7 @@ function parse_316(data) {
 	update.status('engine.torque_intervention', parse.torque_intervention, false);
 
 	// If the engine is newly running
-	let engine_running = (parse.rpm > 0);
+	const engine_running = (parse.rpm > 0);
 	if (update.status('engine.running', engine_running, false) && engine_running === true) {
 		update.status('engine.start_time_last', Date.now(), false);
 	}
@@ -190,7 +192,7 @@ function parse_329(data) {
 	//
 	// byte 7 : ??
 
-	let parse = {
+	const parse = {
 		engine : {
 			throttle : {
 				cruise : num.round2(data.msg[4] / 2.54),
@@ -336,12 +338,12 @@ function parse_545(data) {
 	// It's the difference between two numbers factoring in the time between the time both numbers were received
 	// let process_consumption = true;
 
-	let consumption_current = (data.msg[2] << 8) + data.msg[1];
+	const consumption_current = (data.msg[2] << 8) + data.msg[1];
 
 	// Need at least one changed value first
 	// if (DME.consumption_last === 0 || DME.consumption_last === consumption_current) process_consumption = false;
 
-	let parse = {
+	const parse = {
 		fuel : {
 			consumption : consumption_current - DME.consumption_last,
 		},
@@ -396,7 +398,7 @@ function parse_610(data) {
 function parse_613(data) {
 	data.value = 'Odometer/Running clock/Fuel level [0x615 ACK]';
 
-	let parse = {
+	const parse = {
 		vehicle : {
 			odometer : {
 				km : ((data.msg[1] << 8) + data.msg[0]) * 10,
@@ -482,7 +484,7 @@ function parse_615(data) {
 	// byte 7, bit 6 : ??
 	// byte 7, bit 7 : ??
 
-	let parse = {
+	const parse = {
 		ac : {
 			request : data.msg[0],
 			torque  : (data.msg[0] >= 0x80) && data.msg[0] - 0x80 || data.msg[0],
@@ -526,7 +528,7 @@ function parse_615(data) {
 function parse_720(data) {
 	data.value = 'Coolant temp/Intake air temp/Exhaust gas temp/Oil temp/Voltage/Speed/Fuel pump duty';
 
-	let parse = {
+	const parse = {
 		dme : {
 			voltage : data.msg[4] / 10,
 		},
@@ -632,7 +634,7 @@ function request(value) {
 	}
 
 	bus.data.send({
-		src : src,
+		src,
 		dst : 'DME',
 		msg : cmd,
 	});
@@ -693,14 +695,14 @@ function init_listeners() {
 }
 
 
-module.exports = {
+export default {
 	// Variables
 	consumption_last : 0,
 
 	// Functions
-	encode_316 : encode_316,
+	encode_316,
 
-	init_listeners : init_listeners,
-	parse_out      : parse_out,
-	request        : request,
+	init_listeners,
+	parse_out,
+	request,
 };

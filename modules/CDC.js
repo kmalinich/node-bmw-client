@@ -85,9 +85,9 @@ function cd_status(value) {
 }
 
 
-module.exports = {
-	cd_status : cd_status,
+export default {
+	cd_status,
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 };

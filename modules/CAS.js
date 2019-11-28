@@ -1,6 +1,9 @@
 /* eslint key-spacing : 0 */
 
-const EventEmitter = require('events');
+import EventEmitter from 'events';
+
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
 
 
 class CAS extends EventEmitter {
@@ -11,7 +14,7 @@ class CAS extends EventEmitter {
 		let new_level_name;
 
 		// Save previous ignition status
-		let previous_level = status.vehicle.ignition_level;
+		const previous_level = status.vehicle.ignition_level;
 
 		// Set ignition status value
 		update.status('vehicle.ignition_level', data.msg[0], false);
@@ -100,9 +103,9 @@ class CAS extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'key fob status - ';
 
-		let mask = bitmask.check(data.msg[2]).mask;
+		const mask = bitmask.check(data.msg[2]).mask;
 
-		let keyfob = {
+		const keyfob = {
 			button     : null,
 			button_str : null,
 			buttons    : {
@@ -114,7 +117,7 @@ class CAS extends EventEmitter {
 		};
 
 		// Loop button object to populate log string
-		for (let button in keyfob.buttons) {
+		for (const button in keyfob.buttons) {
 			if (keyfob.buttons[button] === true) {
 				keyfob.button     = button;
 				keyfob.button_str = 'button: ' + button;
@@ -152,14 +155,14 @@ class CAS extends EventEmitter {
 		update.status('doors.trunk',       bitmask.test(data.msg[2], 0x01), false);
 
 		// Set status.doors.closed if all doors are closed
-		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
+		const update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
 		update.status('doors.closed', update_closed_doors, false);
 
 		// Set status.doors.opened if any doors are opened
 		update.status('doors.opened', (update_closed_doors === false), false);
 
 		// Set status.doors.sealed if all doors and flaps are closed
-		let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
+		const update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
 		update.status('doors.sealed', update_sealed_doors, false);
 
 		return data;
@@ -187,4 +190,4 @@ class CAS extends EventEmitter {
 }
 
 
-module.exports = CAS;
+export default CAS;

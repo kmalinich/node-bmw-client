@@ -1,10 +1,12 @@
-const module_name = __filename.slice(__dirname.length + 1, -3);
+import convert from 'node-unit-conversion';
+import events  from 'events';
+import moment  from 'moment';
+import now     from 'performance-now';
+import os      from 'os';
 
-const convert = require('node-unit-conversion');
-const events  = require('events');
-const moment  = require('moment');
-const now     = require('performance-now');
-const os      = require('os');
+import hex from '../share/hex.js';
+
+const module_name = __filename.slice(__dirname.length + 1, -3);
 
 
 // Clear check control messages, then refresh HUD
@@ -86,7 +88,7 @@ class IKE extends events {
 	// Broadcast: Country coding data
 	decode_country_coding_data(data) {
 		data.command = 'bro';
-		data.value   = 'TODO country coding data';
+		data.value   = 'TODO: country coding data';
 
 		return data;
 	}
@@ -94,7 +96,7 @@ class IKE extends events {
 	// Gong status
 	decode_gong_status(data) {
 		data.command = 'bro';
-		data.value   = 'TODO gong status ' + data.msg;
+		data.value   = 'TODO: gong status ' + data.msg;
 
 		return data;
 	}
@@ -104,7 +106,7 @@ class IKE extends events {
 		data.command = 'upd';
 
 		// data.msg[1] - Layout
-		let layout = obc_values.h2n(data.msg[1]);
+		const layout = obc_values.h2n(data.msg[1]);
 
 		switch (layout) {
 			case 'time' : {
@@ -433,9 +435,9 @@ class IKE extends events {
 		data.command = 'bro';
 		data.value   = 'odometer';
 
-		let odometer_value1 = data.msg[3] << 16;
-		let odometer_value2 = data.msg[2] << 8;
-		let odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
+		const odometer_value1 = data.msg[3] << 16;
+		const odometer_value2 = data.msg[2] << 8;
+		const odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
 		update.status('vehicle.odometer.km', odometer_value,                                                      false);
 		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')), false);
@@ -473,7 +475,7 @@ class IKE extends events {
 			let temp_coolant = parseFloat(data.msg[2]);
 
 			// Signed value?
-			if (temp_coolant > 128) temp_coolant = temp_coolant - 256;
+			if (temp_coolant > 128) temp_coolant -= 256;
 
 			update.status('temperature.coolant.c', Math.floor(temp_coolant), false);
 			update.status('temperature.coolant.f', Math.floor(convert(temp_coolant).from('celsius').to('fahrenheit')));
@@ -484,7 +486,7 @@ class IKE extends events {
 			let temp_exterior = parseFloat(data.msg[1]);
 
 			// Signed value?
-			if (temp_exterior > 128) temp_exterior = temp_exterior - 256;
+			if (temp_exterior > 128) temp_exterior -= 256;
 
 			update.status('temperature.exterior.c', Math.floor(temp_exterior), false);
 			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius').to('fahrenheit')));
@@ -543,7 +545,7 @@ class IKE extends events {
 
 		log.module('Sending ignition state: ' + state);
 
-		let ignition_msg = {
+		const ignition_msg = {
 			src : 'IKE',
 			dst : 'GLO',
 			msg : [ 0x11, value ],
@@ -567,7 +569,7 @@ class IKE extends events {
 		// Bounce if override is active
 		if (this.hud_override === true) return false;
 
-		let refresh_delta = hrtime_delta(this.hud_refresh_hrtime);
+		const refresh_delta = hrtime_delta(this.hud_refresh_hrtime);
 		// log.msg('refresh_delta1: ' + refresh_delta);
 
 		// Bounce if the last update was less than the configured value in milliseconds ago
@@ -620,7 +622,7 @@ class IKE extends events {
 			// Increment retry counter
 			retry++;
 
-			let retry_ms = retry * 2;
+			const retry_ms = retry * 2;
 
 			// TODO: Make retry counter a config value
 			if (retry >= 200) {
@@ -644,7 +646,7 @@ class IKE extends events {
 		// 	default : moment_format = 'h:mm';
 		// }
 
-		let hud_strings = {
+		const hud_strings = {
 			left   : '',
 			center : '',
 			right  : '',
@@ -701,7 +703,7 @@ class IKE extends events {
 		}
 
 		// Update hud string in status object
-		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
+		const hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
 
 		// If the newly rendered string matches the existing string, bail out
 		if (override === false && status.hud.string === hud_string_rendered) return;
@@ -773,13 +775,15 @@ class IKE extends events {
 
 		bus.data.send({
 			src : 'GT',
-			msg : msg,
+			msg,
 		});
 	}
 
 	// Check control messages
 	text_urgent(message, timeout = 5000) {
 		if (config.intf.ibus.enabled !== true) return;
+
+		if (message === 'off') return this.text_urgent_off();
 
 		log.module('Sending urgent IKE text message: \'' + message + '\'');
 
@@ -930,7 +934,7 @@ class IKE extends events {
 
 		// setTimeout for next update
 		// TODO: Make this setTimeout delay value a config param
-		let self = this;
+		const self = this;
 		this.timeout_data_refresh = setTimeout(() => {
 			self.data_refresh();
 		}, 5000);
@@ -943,7 +947,7 @@ class IKE extends events {
 		let new_level_name;
 
 		// Save previous ignition status
-		let previous_level = status.vehicle.ignition_level;
+		const previous_level = status.vehicle.ignition_level;
 
 		// Set ignition status value
 		if (update.status('vehicle.ignition_level', data.msg[1], false)) {
@@ -1072,7 +1076,7 @@ class IKE extends events {
 		update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]), false);
 
 		// If the engine is newly running
-		let engine_running = bitmask.test(data.msg[2], bitmask.bit[0]);
+		const engine_running = bitmask.test(data.msg[2], bitmask.bit[0]);
 		if (update.status('engine.running', engine_running, false) && engine_running === true) {
 			this.emit('engine-running');
 			update.status('engine.start_time_last', Date.now(), false);
@@ -1291,8 +1295,8 @@ class IKE extends events {
 		log.module('Requesting \'' + value + '\'');
 
 		bus.data.send({
-			src : src,
-			dst : dst,
+			src,
+			dst,
 			msg : cmd,
 		});
 	}
@@ -1417,4 +1421,4 @@ class IKE extends events {
 	}
 }
 
-module.exports = IKE;
+export default IKE;

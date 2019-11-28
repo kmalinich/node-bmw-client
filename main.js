@@ -1,33 +1,32 @@
-/* eslint no-console       : 0 */
-/* eslint no-global-assign : 0 */
+/* eslint no-console         : 0 */
+/* eslint no-global-assign   : 0 */
+/* eslint import/no-commonjs : 0 */
+/* eslint new-cap : 0 */
+
+import share from './share/index.js';
+
+import json   from './lib/json.js';
+import power  from './lib/power.js';
+import socket from './lib/socket.js';
 
 
-// Bump up default max event listeners
-require('events').EventEmitter.defaultMaxListeners = 20;
+process.title = 'bmwcd';
 
-app_path = __dirname;
-app_name = 'bmwcd';
-app_intf = 'client';
+let terminating = false;
 
-process.title = app_name;
 
-terminating = false;
+global.bitmask    = share.bitmask;
+global.gpio       = share.gpio;
+global.log        = share.log_output;
+global.obc_values = share.obc_values;
+global.weather    = share.weather;
+global.update     = share.update;
 
-// node-bmw shared libraries
-api        = require('api');
-bitmask    = require('bitmask');
-gpio       = require('gpio');
-hex        = require('hex');
-json       = require('json');
-log        = require('log-output');
-num        = require('num');
-obc_values = require('obc-values');
-weather    = require('weather');
 
 // Class/event-based modules
-power  = new (require('power'))();  // External device power control library
-socket = new (require('socket'))();
-update = new (require('update'))();
+global.power  = new power();
+global.socket = new socket();
+global.update = new update();
 
 
 // Configure term event listeners
@@ -105,7 +104,9 @@ function load_modules(pass) {
 	kodi      = require('kodi');
 
 	// Data handler/router
-	bus = require('bus');
+	bus      = require('bus');
+	bus.cmds = require('bus-cmds');
+	bus.data = require('bus-data');
 
 	log.msg('Loaded modules');
 
@@ -121,7 +122,7 @@ function init() {
 		load_modules(() => { // Load IBUS/KBUS module node modules
 			json.reset(() => { // Reset vars (hack =/)
 				socket.init(() => { // Start socket client(s)
-					api.init();       // Start Express API server
+					share.api.init();       // Start Express API server
 					bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 					gpio.init();      // Initialize GPIO relays
 					hdmi_cec.init();  // Open HDMI-CEC

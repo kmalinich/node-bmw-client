@@ -1,4 +1,6 @@
-const pad = require('pad');
+import pad from 'pad';
+
+import hex from '../share/hex.js';
 
 
 // Top screen - First 11 characters
@@ -219,13 +221,13 @@ function parse_out(data) {
 
 					case 0x0A : {
 						update.config('lights.auto', false);
-						LCM.auto_lights();
+						LCM.auto();
 						break;
 					}
 
 					case 0x0B : {
 						update.config('lights.auto', true);
-						LCM.auto_lights();
+						LCM.auto();
 						break;
 					}
 				}
@@ -350,9 +352,9 @@ function button(button) {
 	log.module('Button down: ' + button + ', hold: ' + button_hold);
 
 	// Init variables
-	let command     = 0x48; // Button action
-	let packet_down = [ command, button_down ];
-	let packet_up   = [ command, button_up ];
+	const command     = 0x48; // Button action
+	const packet_down = [ command, button_down ];
+	const packet_up   = [ command, button_up ];
 
 	bus.data.send({
 		dst : 'RAD',
@@ -383,7 +385,7 @@ function init_listeners() {
 }
 
 
-module.exports = {
+export default {
 	interval : {
 		status_loop : null,
 		text_loop   : null,
@@ -395,17 +397,17 @@ module.exports = {
 	},
 
 
-	button : button,
+	button,
 
-	init_listeners : init_listeners,
+	init_listeners,
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 
-	refresh_text : refresh_text,
+	refresh_text,
 
-	status_loop : status_loop,
-	text_loop   : text_loop,
+	status_loop,
+	text_loop,
 
-	toggle_power_if_ready : toggle_power_if_ready,
+	toggle_power_if_ready,
 };
