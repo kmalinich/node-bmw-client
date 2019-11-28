@@ -12,5 +12,5 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_out : parse_out,
+	parse_out,
 };

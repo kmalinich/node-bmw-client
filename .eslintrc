@@ -129,6 +129,9 @@
 		"VVT1": false,
 		"VVT2": false,
 		"api": false,
+		"app_intf": false,
+		"app_name": false,
+		"app_path": false,
 		"bitmask": false,
 		"bluetooth": false,
 		"bus": false,
@@ -148,6 +151,7 @@
 		"power": false,
 		"socket": false,
 		"status": true,
+		"terminating": false,
 		"update": false,
 		"weather": false
 	},
@@ -277,7 +281,7 @@
 			"error",
 			"unix"
 		],
-		"new-cap": "warn",
+		"new-cap": "off",
 		"new-parens": "error",
 		"newline-per-chained-call": "warn",
 		"no-array-constructor": "error",

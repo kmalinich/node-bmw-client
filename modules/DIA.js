@@ -100,6 +100,6 @@ module.exports = {
 		val : null,
 	},
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 };

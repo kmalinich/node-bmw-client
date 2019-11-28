@@ -14,7 +14,7 @@ function decode_audio_control_command(data) {
 	// 0xC0 - treble
 	// 0xE0 - dsp1+
 
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
 
 	// Bounce if bit8 (no bits set) is true
 	if (mask.bit8) {
@@ -163,7 +163,7 @@ function decode_audio_control(data) {
 	// 0xE0 - dsp1+
 
 	let cmd_value;
-	let cmd_type = decode_audio_control_command(data);
+	const cmd_type = decode_audio_control_command(data);
 	switch (cmd_type) {
 		case 'balance' : cmd_value = data.msg[1] - 0x50; break;
 		case 'bass'    : cmd_value = data.msg[1] - 0x60; break;
@@ -253,9 +253,9 @@ function decode_cassette_status(data) {
 function audio_control(command) {
 	if (config.intf.ibus.enabled !== true) return;
 
-	let cmd = 0x36;
+	const cmd = 0x36;
 
-	let msgs = {
+	const msgs = {
 		off : [ cmd, 0xAF ],
 
 		dsp : {
@@ -334,16 +334,16 @@ function audio_control(command) {
 	bus.data.send({
 		src : module_name,
 		dst : 'LOC',
-		msg : msg,
+		msg,
 	});
 }
 
 function cassette_control(command) {
 	if (config.intf.ibus.enabled !== true) return;
 
-	let cmd = 0x4A;
+	const cmd = 0x4A;
 
-	let msgs = {
+	const msgs = {
 		on  : [ cmd, 0xFF ],
 		off : [ cmd, 0x00 ],
 	};
@@ -380,7 +380,7 @@ function cassette_control(command) {
 	bus.data.send({
 		src : module_name,
 		dst : 'BMBT',
-		msg : msg,
+		msg,
 	});
 }
 
@@ -463,7 +463,7 @@ function audio_power(power_state = false, volume_increase = true) {
 			// TODO: Make this a config array
 
 			// let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
-			let array_request = [ 'BMBT', 'DSP' ];
+			const array_request = [ 'BMBT', 'DSP' ];
 
 			let count_request = 1;
 			array_request.forEach((module_request) => {
@@ -648,13 +648,13 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 
-	init_listeners : init_listeners,
+	init_listeners,
 
-	audio_power      : audio_power,
-	audio_control    : audio_control,
-	cassette_control : cassette_control,
-	volume_control   : volume_control,
+	audio_power,
+	audio_control,
+	cassette_control,
+	volume_control,
 };

@@ -3,14 +3,14 @@ const EventEmitter = require('events');
 
 class EWS extends EventEmitter {
 	// Request various things from EWS
-	request(value) {
+	static request(value) {
 		let cmd;
 
 		log.module('Requesting \'' + value + '\'');
 
 		switch (value) {
 			case 'immobilizerstatus' : {
-				// cmd = [0x73, 0x00, 0x00, 0x80];
+				// cmd = [ 0x73, 0x00, 0x00, 0x80 ];
 				cmd = [ 0x73 ];
 				break;
 			}
@@ -24,7 +24,7 @@ class EWS extends EventEmitter {
 
 
 	// Broadcast: Immobilizer status
-	parse_immobilizer_status(data) {
+	static parse_immobilizer_status(data) {
 		data.command = 'bro';
 		data.value   = 'key presence - ';
 

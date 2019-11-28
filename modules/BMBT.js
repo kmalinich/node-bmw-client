@@ -28,7 +28,7 @@ function decode_button(data) {
 	// BIT7 TRUE + BIT6 FALSE
 
 	// Determine action
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
 
 
 	switch (mask.b7) {
@@ -211,17 +211,16 @@ function decode_knob(data) {
 	data.value   = 'BM knob ';
 
 	let direction = 'left';
-	let steps;
 
 	// Determine rotation direction
 	// Bit7 : Right
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
 	if (mask.b7) {
 		data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
 		direction   = 'right';
 	}
 
-	steps = data.msg[1];
+	const steps = data.msg[1];
 
 	data.value += direction + ' ' + steps + ' steps';
 
@@ -387,9 +386,9 @@ function button(button) {
 	log.module('Button down ' + button);
 
 	// Init variables
-	let command     = 0x48; // Button action
-	let packet_down = [ command, button_down ];
-	let packet_up   = [ command, button_up ];
+	const command     = 0x48; // Button action
+	const packet_down = [ command, button_down ];
+	const packet_up   = [ command, button_up ];
 
 	bus.data.send({
 		src : module_name,
@@ -455,16 +454,16 @@ module.exports = {
 	},
 
 
-	button : button,
+	button,
 
-	cassette_status : cassette_status,
+	cassette_status,
 
-	init_listeners : init_listeners,
+	init_listeners,
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 
-	status_loop : status_loop,
+	status_loop,
 
-	toggle_power_if_ready : toggle_power_if_ready,
+	toggle_power_if_ready,
 };
