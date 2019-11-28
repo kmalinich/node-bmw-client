@@ -122,7 +122,7 @@ function init() {
 		load_modules(() => { // Load IBUS/KBUS module node modules
 			json.reset(() => { // Reset vars (hack =/)
 				socket.init(() => { // Start socket client(s)
-					share.api.init();       // Start Express API server
+					share.api.init(); // Start Express API server
 					bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 					gpio.init();      // Initialize GPIO relays
 					hdmi_cec.init();  // Open HDMI-CEC
