@@ -156,16 +156,15 @@ async function term() {
 
 	log.msg('Terminating');
 
-	await json.write();  // Write JSON config and status files
-	await socket.term(); // Stop socket client
+	await json.write();    // Write JSON config and status files
+	await socket.term();   // Stop socket client
+	await hdmi_cec.term(); // Close HDMI-CEC
 
-	hdmi_cec.term(() => { // Close HDMI-CEC
-		hdmi_rpi.term(() => { // Close HDMI (RPi)
-			gpio.term(() => { // Terminate GPIO relays
-				kodi.term(() => { // Stop Kodi WebSocket client
-					log.msg('Terminated');
-					process.exit();
-				});
+	hdmi_rpi.term(() => { // Close HDMI (RPi)
+		gpio.term(() => { // Terminate GPIO relays
+			kodi.term(() => { // Stop Kodi WebSocket client
+				log.msg('Terminated');
+				process.exit();
 			});
 		});
 	});
