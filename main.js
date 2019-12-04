@@ -30,32 +30,9 @@ socket = new (require('socket'))();
 update = new (require('update'))();
 
 
-// Configure term event listeners
-function term_config(pass) {
-	process.on('SIGTERM', () => {
-		if (terminating === true) return;
-
-		console.log('');
-		log.msg('Caught SIGTERM');
-		process.nextTick(term);
-	});
-
-	process.on('SIGINT', () => {
-		if (terminating === true) return;
-
-		console.log('');
-		log.msg('Caught SIGINT');
-		process.nextTick(term);
-	});
-
-	process.on('exit', bail);
-
-	process.nextTick(pass);
-}
-
 // Function to load modules that require data from config object,
 // AFTER the config object is loaded
-function load_modules(pass) {
+async function load_modules() {
 	// DBUS/KBUS/IBUS modules
 	ABG  = require('ABG');
 	ASC  = require('ASC');
@@ -108,79 +85,92 @@ function load_modules(pass) {
 	bus = require('bus');
 
 	log.msg('Loaded modules');
+} // async load_modules()
 
-	process.nextTick(pass);
-}
+// Configure term event listeners
+async function term_config() {
+	process.on('SIGTERM', async () => {
+		if (terminating === true) return;
 
+		console.log('');
+		log.msg('Caught SIGTERM');
+		await term();
+	});
+
+	process.on('SIGINT', async () => {
+		if (terminating === true) return;
+
+		console.log('');
+		log.msg('Caught SIGINT');
+		await term();
+	});
+
+	process.on('exit', term);
+} // async term_config()
 
 // Global init
-function init() {
+async function init() {
 	log.msg('Initializing');
 
-	json.read(() => { // Read JSON config and status files
-		load_modules(() => { // Load IBUS/KBUS module node modules
-			json.reset(() => { // Reset vars (hack =/)
-				socket.init(() => { // Start socket client(s)
-					api.init();       // Start Express API server
-					bluetooth.init(); // Start Linux D-Bus Bluetooth handler
-					gpio.init();      // Initialize GPIO relays
-					hdmi_cec.init();  // Open HDMI-CEC
-					hdmi_rpi.init();  // Open HDMI (RPi)
-					kodi.init();      // Start Kodi WebSocket client
-					weather.init();   // Initialize weather object
+	await term_config();
 
-					// Initialize event listeners
-					BMBT.init_listeners();
-					CON.init_listeners();
-					DME.init_listeners();
-					DSC.init_listeners();
-					FEM.init_listeners();
-					GM.init_listeners();
-					IKE.init_listeners();
-					LCM.init_listeners();
-					MID.init_listeners();
-					NBT.init_listeners();
-					RAD.init_listeners();
+	await json.read();    // Read JSON config and status files
+	await load_modules(); // Load IBUS/KBUS module node modules
+	await json.reset();   // Reset vars (hack =/)
+	await socket.init(); // Start socket client(s)
 
-					bus.data.init_listeners();
-					gpio.init_listeners();
-					json.init_listeners();
-					kodi.init_listeners();
-					power.init_listeners();
+	api.init();       // Start Express API server
+	bluetooth.init(); // Start Linux D-Bus Bluetooth handler
+	gpio.init();      // Initialize GPIO relays
+	hdmi_cec.init();  // Open HDMI-CEC
+	hdmi_rpi.init();  // Open HDMI (RPi)
+	kodi.init();      // Start Kodi WebSocket client
+	weather.init();   // Initialize weather object
 
-					log.msg('Initialized');
-				}, term);
-			}, term);
-		}, term);
-	}, term);
-}
+	// Initialize event listeners
+	BMBT.init_listeners();
+	CON.init_listeners();
+	DME.init_listeners();
+	DSC.init_listeners();
+	FEM.init_listeners();
+	GM.init_listeners();
+	IKE.init_listeners();
+	LCM.init_listeners();
+	MID.init_listeners();
+	NBT.init_listeners();
+	RAD.init_listeners();
 
-// Save-N-Exit
-function bail() {
-	json.write(() => { // Write JSON config and status files
-		log.msg('Terminated');
-		process.exit();
-	});
-}
+	bus.data.init_listeners();
+	gpio.init_listeners();
+	json.init_listeners();
+	kodi.init_listeners();
+	power.init_listeners();
+
+	log.msg('Initialized');
+} // async init()
 
 // Global term
-function term() {
+async function term() {
 	if (terminating === true) return;
 	terminating = true;
 
 	log.msg('Terminating');
 
+	await json.write();  // Write JSON config and status files
+	await socket.term(); // Stop socket client
+
 	hdmi_cec.term(() => { // Close HDMI-CEC
 		hdmi_rpi.term(() => { // Close HDMI (RPi)
 			gpio.term(() => { // Terminate GPIO relays
-				socket.term(() => { // Stop zeroMQ client
-					kodi.term(bail); // Stop Kodi WebSocket client
-				}, bail);
-			}, bail);
-		}, bail);
-	}, bail);
-}
+				kodi.term(() => { // Stop Kodi WebSocket client
+					log.msg('Terminated');
+					process.exit();
+				});
+			});
+		});
+	});
+} // async term()
 
 
 // FASTEN SEATBELTS
-term_config(init);
+init();
