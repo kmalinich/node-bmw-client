@@ -179,8 +179,7 @@ function eq_delta(band, value) {
 		msg,
 	});
 
-	log.module('DSP EQ delta update sent, band: \'' + band + '\', minus: ' + minus + ' value: ' + value_orig + ' (0x' + value.toString(16).padStart(2, '0')
-		.toUpperCase() + ')');
+	log.module('DSP EQ delta update sent, band: \'' + band + '\', minus: ' + minus + ' value: ' + value_orig + ' (0x' + value.toString(16).padStart(2, '0').toUpperCase() + ')');
 }
 
 // let dsp_data = {

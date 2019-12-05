@@ -7,8 +7,7 @@ const convert = require('node-unit-conversion');
 
 // Celcius to Fahrenheit wrapped in Math.ceil()
 function c2f(deg_c) {
-	return Math.ceil(convert(deg_c).from('celsius')
-		.to('fahrenheit'));
+	return Math.ceil(convert(deg_c).from('celsius').to('fahrenheit'));
 }
 
 // Horsepower = ((torque * RPM) / 5252)
@@ -686,8 +685,7 @@ function init_listeners() {
 
 	// Calculate and update odometer value in miles
 	update.on('status.vehicle.odometer.km', (data) => {
-		update.status('vehicle.odometer.mi', Math.floor(convert(data.new).from('kilometre')
-			.to('us mile')), false);
+		update.status('vehicle.odometer.mi', Math.floor(convert(data.new).from('kilometre').to('us mile')), false);
 	});
 
 

@@ -114,8 +114,7 @@ class IKE extends EventEmitter {
 
 				// Parse unit
 				string_time_unit = Buffer.from([ data.msg[8], data.msg[9] ]);
-				string_time_unit = string_time_unit.toString().trim()
-					.toLowerCase();
+				string_time_unit = string_time_unit.toString().trim().toLowerCase();
 
 				// Detect 12h or 24h time and parse value
 				if (string_time_unit === 'am' || string_time_unit === 'pm') {
@@ -127,8 +126,7 @@ class IKE extends EventEmitter {
 					string_time = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
 				}
 
-				string_time = string_time.toString().trim()
-					.toLowerCase();
+				string_time = string_time.toString().trim().toLowerCase();
 
 				// Update status object
 				update.status('obc.time', string_time, false);
@@ -154,24 +152,20 @@ class IKE extends EventEmitter {
 
 				// Parse unit
 				string_outside_temp_unit = Buffer.from([ data.msg[9] ]);
-				string_outside_temp_unit = string_outside_temp_unit.toString().trim()
-					.toLowerCase();
+				string_outside_temp_unit = string_outside_temp_unit.toString().trim().toLowerCase();
 
 				// Parse if it is +/-
 				string_outside_temp_negative = Buffer.from([ data.msg[9] ]);
-				string_outside_temp_negative = string_outside_temp_negative.toString().trim()
-					.toLowerCase();
+				string_outside_temp_negative = string_outside_temp_negative.toString().trim().toLowerCase();
 
 				// Parse value
 				if (string_outside_temp_negative === '-') {
 					string_outside_temp_value = Buffer.from(data.msg[3], [ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
-					string_outside_temp_value = string_outside_temp_value.toString().trim()
-						.toLowerCase();
+					string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
 				}
 				else {
 					string_outside_temp_value = Buffer.from([ data.msg[4], data.msg[5], data.msg[6], data.msg[7] ]);
-					string_outside_temp_value = string_outside_temp_value.toString().trim()
-						.toLowerCase();
+					string_outside_temp_value = string_outside_temp_value.toString().trim().toLowerCase();
 				}
 
 				// Update status object
@@ -180,16 +174,14 @@ class IKE extends EventEmitter {
 						update.status('coding.unit.temp', 'c', false);
 
 						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(string_outside_temp_value)),                                                       false);
-						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius')
-							.to('fahrenheit'))), false);
+						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('celsius').to('fahrenheit'))), false);
 						break;
 					}
 
 					case 'f' : {
 						update.status('coding.unit.temp', 'f', false);
 
-						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit')
-							.to('celsius'))), false);
+						update.status('temperature.exterior.obc.c', Math.floor(parseFloat(convert(parseFloat(string_outside_temp_value)).from('fahrenheit').to('celsius'))), false);
 						update.status('temperature.exterior.obc.f', Math.floor(parseFloat(string_outside_temp_value)),                                                       false);
 						break;
 					}
@@ -205,8 +197,7 @@ class IKE extends EventEmitter {
 
 				// Parse unit
 				string_consumption_1_unit = Buffer.from([ data.msg[8] ]);
-				string_consumption_1_unit = string_consumption_1_unit.toString().trim()
-					.toLowerCase();
+				string_consumption_1_unit = string_consumption_1_unit.toString().trim().toLowerCase();
 
 				// Parse value
 				string_consumption_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
@@ -243,8 +234,7 @@ class IKE extends EventEmitter {
 
 				// Parse unit
 				string_consumption_2_unit = Buffer.from([ data.msg[8] ]);
-				string_consumption_2_unit = string_consumption_2_unit.toString().trim()
-					.toLowerCase();
+				string_consumption_2_unit = string_consumption_2_unit.toString().trim().toLowerCase();
 
 				// Parse value
 				string_consumption_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
@@ -279,8 +269,7 @@ class IKE extends EventEmitter {
 				string_range = parseFloat(string_range.toString().trim());
 
 				string_range_unit = Buffer.from([ data.msg[7], data.msg[8] ]);
-				string_range_unit = string_range_unit.toString().trim()
-					.toLowerCase();
+				string_range_unit = string_range_unit.toString().trim().toLowerCase();
 
 				// Update status object
 				switch (string_range_unit) {
@@ -288,18 +277,14 @@ class IKE extends EventEmitter {
 						update.status('coding.unit.distance', 'mi', false);
 
 						update.status('obc.range.mi', string_range,                                                                      false);
-						update.status('obc.range.km', parseFloat(convert(string_range).from('kilometre')
-							.to('us mile')
-							.toFixed(2)) || 0, false);
+						update.status('obc.range.km', parseFloat(convert(string_range).from('kilometre').to('us mile').toFixed(2)) || 0, false);
 						break;
 					}
 
 					case 'km' : {
 						update.status('coding.unit.distance', 'km', false);
 
-						update.status('obc.range.mi', parseFloat(convert(string_range).from('us mile')
-							.to('kilometre')
-							.toFixed(2)) || 0, false);
+						update.status('obc.range.mi', parseFloat(convert(string_range).from('us mile').to('kilometre').toFixed(2)) || 0, false);
 						update.status('obc.range.km', string_range,                                                                      false);
 					}
 				}
@@ -312,8 +297,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_distance = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_distance = parseFloat(string_distance.toString().trim()
-					.toLowerCase()) || 0;
+				string_distance = parseFloat(string_distance.toString().trim().toLowerCase()) || 0;
 
 				// Update status object
 				update.status('obc.distance', string_distance, false);
@@ -325,8 +309,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_arrival = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
-				string_arrival = string_arrival.toString().trim()
-					.toLowerCase();
+				string_arrival = string_arrival.toString().trim().toLowerCase();
 
 				// Update status object
 				update.status('obc.arrival', string_arrival, false);
@@ -338,8 +321,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_limit = Buffer.from([ data.msg[3], data.msg[4], data.msg[5] ]);
-				string_limit = parseFloat(string_limit.toString().trim()
-					.toLowerCase()) || 0;
+				string_limit = parseFloat(string_limit.toString().trim().toLowerCase()) || 0;
 
 				// Update status object
 				update.status('obc.limit', string_limit, false);
@@ -352,8 +334,7 @@ class IKE extends EventEmitter {
 
 				// Parse unit
 				string_average_speed_unit = Buffer.from([ data.msg[8] ]);
-				string_average_speed_unit = string_average_speed_unit.toString().trim()
-					.toLowerCase();
+				string_average_speed_unit = string_average_speed_unit.toString().trim().toLowerCase();
 
 				// Parse value
 				string_average_speed = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
@@ -366,9 +347,7 @@ class IKE extends EventEmitter {
 
 						// Update status object
 						update.status('obc.average_speed.kmh', string_average_speed,                                                                 false);
-						update.status('obc.average_speed.mph', parseFloat(convert(string_average_speed).from('kilometre')
-							.to('us mile')
-							.toFixed(2)), false);
+						update.status('obc.average_speed.mph', parseFloat(convert(string_average_speed).from('kilometre').to('us mile').toFixed(2)), false);
 						break;
 					}
 
@@ -376,9 +355,7 @@ class IKE extends EventEmitter {
 						update.status('obc.coding.unit.speed', 'mph', false);
 
 						// Update status object
-						update.status('obc.average_speed.kmh', parseFloat(convert(string_average_speed).from('us mile')
-							.to('kilometre')
-							.toFixed(2)), false);
+						update.status('obc.average_speed.kmh', parseFloat(convert(string_average_speed).from('us mile').to('kilometre').toFixed(2)), false);
 						update.status('obc.average_speed.mph', string_average_speed,                                                                 false);
 						break;
 					}
@@ -391,8 +368,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_code = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_code = string_code.toString().trim()
-					.toLowerCase();
+				string_code = string_code.toString().trim().toLowerCase();
 
 				// Update status object
 				update.status('obc.code', string_code, false);
@@ -416,8 +392,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_aux_heat_timer_1 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
-				string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim()
-					.toLowerCase();
+				string_aux_heat_timer_1 = string_aux_heat_timer_1.toString().trim().toLowerCase();
 
 				// Update status object
 				update.status('obc.aux_heat_timer.t1', string_aux_heat_timer_1, false);
@@ -429,8 +404,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_aux_heat_timer_2 = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6], data.msg[7], data.msg[8], data.msg[9] ]);
-				string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim()
-					.toLowerCase();
+				string_aux_heat_timer_2 = string_aux_heat_timer_2.toString().trim().toLowerCase();
 
 				// Update status object
 				update.status('obc.aux_heat_timer.t2', string_aux_heat_timer_2, false);
@@ -442,8 +416,7 @@ class IKE extends EventEmitter {
 
 				// Parse value
 				string_interim = Buffer.from([ data.msg[3], data.msg[4], data.msg[5], data.msg[6] ]);
-				string_interim = parseFloat(string_interim.toString().trim()
-					.toFixed(2)) || 0;
+				string_interim = parseFloat(string_interim.toString().trim().toFixed(2)) || 0;
 
 				// Update status object
 				update.status('obc.interim', string_interim, false);
@@ -466,8 +439,7 @@ class IKE extends EventEmitter {
 		const odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
 		update.status('vehicle.odometer.km', odometer_value,                                                      false);
-		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre')
-			.to('us mile')), false);
+		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')), false);
 
 		return data;
 	}
@@ -481,9 +453,7 @@ class IKE extends EventEmitter {
 		// Also allow update from IBUS/KBUS even if CANBUS is enabled when ignition is not in run
 		if (config.canbus.speed === false || status.vehicle.ignition_level < 3) {
 			update.status('vehicle.speed.kmh', parseFloat(data.msg[1] * 2));
-			update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1] * 2))).from('kilometre')
-				.to('us mile')
-				.toFixed(2)));
+			update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1] * 2))).from('kilometre').to('us mile').toFixed(2)));
 		}
 
 		if (config.canbus.rpm === false || status.vehicle.ignition_level < 3) {
@@ -507,8 +477,7 @@ class IKE extends EventEmitter {
 			if (temp_coolant > 128) temp_coolant -= 256;
 
 			update.status('temperature.coolant.c', Math.floor(temp_coolant), false);
-			update.status('temperature.coolant.f', Math.floor(convert(temp_coolant).from('celsius')
-				.to('fahrenheit')));
+			update.status('temperature.coolant.f', Math.floor(convert(temp_coolant).from('celsius').to('fahrenheit')));
 		}
 
 		// Temperatures are not broadcast over CANBUS when ignition is not in run
@@ -519,8 +488,7 @@ class IKE extends EventEmitter {
 			if (temp_exterior > 128) temp_exterior -= 256;
 
 			update.status('temperature.exterior.c', Math.floor(temp_exterior), false);
-			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius')
-				.to('fahrenheit')));
+			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius').to('fahrenheit')));
 		}
 
 		return data;

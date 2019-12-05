@@ -14,8 +14,7 @@ function parse_wheel(byte0, byte1) {
 
 	return {
 		kmh : Math.round(parsed_wheel_speed),
-		mph : Math.round(convert(parsed_wheel_speed).from('kilometre')
-			.to('us mile')),
+		mph : Math.round(convert(parsed_wheel_speed).from('kilometre').to('us mile')),
 	};
 }
 
@@ -151,8 +150,7 @@ function parse_1f0(data) {
 	const vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
 
 	// Calculate vehicle speed value in MPH
-	const vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre')
-		.to('us mile'), 1);
+	const vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left.mph);
