@@ -283,7 +283,7 @@
 		],
 		"new-cap": "off",
 		"new-parens": "error",
-		"newline-per-chained-call": "warn",
+		"newline-per-chained-call": "off",
 		"no-array-constructor": "error",
 		"no-caller": "error",
 		"no-class-assign": "error",
