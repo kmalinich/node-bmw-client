@@ -920,6 +920,9 @@ class IKE extends EventEmitter {
 
 		// Return here if vehicle ignition is off
 		if (status.vehicle.ignition_level === 0) {
+			// TODO: Make this a config option
+			this.obc_data('reset', 'consumption-2');
+
 			if (this.timeout_data_refresh !== null) {
 				clearTimeout(this.timeout_data_refresh);
 				this.timeout_data_refresh = null;
