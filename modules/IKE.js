@@ -49,7 +49,7 @@ class IKE extends EventEmitter {
 
 	// Broadcast: Aux heat LED status
 	// This actually is a bitmask but.. this is also a freetime project
-	static decode_aux_heat_led(data) {
+	decode_aux_heat_led(data) {
 		data.command = 'bro';
 
 		let aux_heat_led;
@@ -85,7 +85,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Broadcast: Country coding data
-	static decode_country_coding_data(data) {
+	decode_country_coding_data(data) {
 		data.command = 'bro';
 		data.value   = 'TODO country coding data';
 
@@ -93,7 +93,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Gong status
-	static decode_gong_status(data) {
+	decode_gong_status(data) {
 		data.command = 'bro';
 		data.value   = 'TODO gong status ' + data.msg;
 
@@ -101,7 +101,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Update: OBC text
-	static decode_obc_text(data) {
+	decode_obc_text(data) {
 		data.command = 'upd';
 
 		// data.msg[1] - Layout
@@ -430,7 +430,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Broadcast: Odometer
-	static decode_odometer(data) {
+	decode_odometer(data) {
 		data.command = 'bro';
 		data.value   = 'odometer';
 
@@ -445,7 +445,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Broadcast: Vehicle speed and RPM
-	static decode_speed_values(data) {
+	decode_speed_values(data) {
 		data.command = 'bro';
 		data.value   = 'speed values';
 
@@ -465,7 +465,7 @@ class IKE extends EventEmitter {
 
 	// Broadcast: Coolant temp and external temp
 	// Update exterior and engine coolant temperature data
-	static decode_temperature_values(data) {
+	decode_temperature_values(data) {
 		data.command = 'bro';
 		data.value   = 'temperature values';
 
@@ -720,7 +720,7 @@ class IKE extends EventEmitter {
 
 
 	// OBC set clock
-	static obc_clock() {
+	obc_clock() {
 		if (config.intf.ibus.enabled !== true) return;
 
 		log.module('Setting OBC clock to current time');
@@ -739,7 +739,7 @@ class IKE extends EventEmitter {
 	}
 
 	// OBC data request
-	static obc_data(action, value, target) {
+	obc_data(action, value, target) {
 		if (config.intf.ibus.enabled !== true) return;
 
 		let cmd = 0x41; // OBC data request
@@ -1226,7 +1226,7 @@ class IKE extends EventEmitter {
 
 
 	// Request various things from IKE
-	static request(value) {
+	request(value) {
 		if (config.intf.ibus.enabled !== true) return;
 
 		let cmd = null;

@@ -5,7 +5,7 @@ const EventEmitter = require('events');
 
 class CAS extends EventEmitter {
 	// [0x130] Ignition status
-	static decode_ignition(data) {
+	decode_ignition(data) {
 		data.command = 'bro';
 
 		let new_level_name;
@@ -139,7 +139,7 @@ class CAS extends EventEmitter {
 	}
 
 	// [0x2FC] Decode a door status message from CAS and act upon the results
-	static decode_status_opened(data) {
+	decode_status_opened(data) {
 		data.command = 'bro';
 		data.value   = 'door status';
 
@@ -167,7 +167,7 @@ class CAS extends EventEmitter {
 
 
 	// Parse data sent to module
-	static parse_in(data) {
+	parse_in(data) {
 		// Bounce if not enabled
 		if (config.emulate.cas !== true) return;
 

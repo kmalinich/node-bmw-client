@@ -61,7 +61,7 @@ class GM extends EventEmitter {
 
 
 	// Reply: Diagnostic command acknowledged
-	static decode_dia_reply(data) {
+	decode_dia_reply(data) {
 		data.command = 'rep';
 		data.value   = 'TODO diagnostic command ack';
 
@@ -69,7 +69,7 @@ class GM extends EventEmitter {
 	}
 
 	// Broadcast: Seat memory data
-	static decode_seat_memory(data) {
+	decode_seat_memory(data) {
 		data.command = 'bro';
 		data.value   = 'TODO seat memory data';
 
@@ -78,7 +78,7 @@ class GM extends EventEmitter {
 
 
 	// Broadcast: 'Crash alarm'
-	static decode_status_crash_alarm(data) {
+	decode_status_crash_alarm(data) {
 		data.command = 'bro';
 		data.value   = 'crash alarm - ';
 
@@ -92,7 +92,7 @@ class GM extends EventEmitter {
 
 	// Broadcast: Key fob status
 	// [0x72] Decode a key fob bitmask message, and act upon the results
-	static decode_status_keyfob(data) {
+	decode_status_keyfob(data) {
 		data.command = 'bro';
 		data.value   = 'key fob status - ';
 
@@ -285,7 +285,7 @@ class GM extends EventEmitter {
 
 	// This is just a dumb placeholder
 	// Decode GM bitmask string and output an array of true/false values
-	static io_decode(data) {
+	io_decode(data) {
 		return {
 			seat_driver_backrest_backward : bitmask.test(data[0], bitmask.bit[0]),
 		};
@@ -322,7 +322,7 @@ class GM extends EventEmitter {
 	}
 
 	// Send message to GM
-	static io_set(packet) {
+	io_set(packet) {
 		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
 		// log.module('Setting IO status');
@@ -374,7 +374,7 @@ class GM extends EventEmitter {
 	}
 
 	// Request various things from GM
-	static request(value) {
+	request(value) {
 		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
 		// Init variables
