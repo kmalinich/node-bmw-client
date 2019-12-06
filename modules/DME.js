@@ -136,19 +136,21 @@ function parse_316(data) {
 	// update.status('vehicle.key.start',     parse.key.start,     false);
 
 
-	update.status('engine.rpm', parse.rpm);
+	// If the engine is newly running
+	const engine_running = (parse.rpm > 0);
+	if (engine_running === true) {
+		update.status('engine.rpm', parse.rpm);
+
+		if (update.status('engine.running', engine_running, false)) {
+			update.status('engine.start_time_last', Date.now(), false);
+		}
+	}
 
 	update.status('engine.ac.clutch',           parse.ac.clutch,           false);
 	update.status('engine.dsc_error',           parse.dsc_error,           false);
 	update.status('engine.maf_error',           parse.maf_error,           false);
 	update.status('engine.status_ok',           parse.status_ok,           false);
 	update.status('engine.torque_intervention', parse.torque_intervention, false);
-
-	// If the engine is newly running
-	const engine_running = (parse.rpm > 0);
-	if (update.status('engine.running', engine_running, false) && engine_running === true) {
-		update.status('engine.start_time_last', Date.now(), false);
-	}
 
 	update.status('engine.torque.after_interventions',  parse.torque.after_interventions);
 	update.status('engine.torque.before_interventions', parse.torque.before_interventions);
@@ -641,7 +643,7 @@ function request(value) {
 
 function init_listeners() {
 	// If configured, send RPM 10000 on 0x316 on ignition in run
-	update.on('status.engine.running', (data) => {
+	update.on('status.engine.running', data => {
 		switch (data.new) {
 			case true : {
 				if (config.ike.sweep === true) encode_316(10000);

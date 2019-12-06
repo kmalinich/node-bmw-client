@@ -1012,9 +1012,6 @@ class IKE extends EventEmitter {
 						default : {
 							log.module('Start-begin state');
 							this.emit('ignition-start-begin');
-
-							// TODO: Make this a config option
-							this.obc_data('reset', 'consumption-2');
 						}
 					}
 				}
