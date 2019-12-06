@@ -349,7 +349,7 @@ function decode_rotation(data) {
 		}
 
 		case 0x03 : { // Horizontal AND volume mode - error
-			log.module('Error: Horizontal and volume rotation modes simultaneously active, resetting');
+			log.error('Horizontal and volume rotation modes simultaneously active, resetting');
 
 			update.status('con.rotation.horizontal', false, false);
 			update.status('con.rotation.volume',     false, false);

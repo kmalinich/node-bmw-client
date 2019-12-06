@@ -123,20 +123,20 @@ class GM extends EventEmitter {
 
 		// Loop button object to populate log string
 		for (const button in keyfob.buttons) {
-			if (keyfob.buttons[button] === true) {
-				keyfob.button     = button;
-				keyfob.button_str = 'button: ' + button;
-				break;
-			}
+			if (keyfob.buttons[button] !== true) continue;
+
+			keyfob.button     = button;
+			keyfob.button_str = 'button: ' + button;
+			break;
 		}
 
 		// Loop key object to populate log string
 		for (const key in keyfob.keys) {
-			if (keyfob.keys[key] === true) {
-				keyfob.key     = key;
-				keyfob.key_str = 'key: ' + key;
-				break;
-			}
+			if (keyfob.keys[key] !== true) continue;
+
+			keyfob.key     = key;
+			keyfob.key_str = 'key: ' + key;
+			break;
 		}
 
 

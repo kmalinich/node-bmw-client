@@ -115,11 +115,10 @@ class CAS extends EventEmitter {
 
 		// Loop button object to populate log string
 		for (const button in keyfob.buttons) {
-			if (keyfob.buttons[button] === true) {
-				keyfob.button     = button;
-				keyfob.button_str = 'button: ' + button;
-				break;
-			}
+			if (keyfob.buttons[button] !== true) continue;
+			keyfob.button     = button;
+			keyfob.button_str = 'button: ' + button;
+			break;
 		}
 
 		// Update status object
