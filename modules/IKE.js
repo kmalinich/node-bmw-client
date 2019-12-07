@@ -615,15 +615,15 @@ class IKE extends EventEmitter {
 			const retry_ms = retry * 2;
 
 			// TODO: Make retry counter a config value
-			if (retry >= 200) {
+			if (retry > 10) {
 				// log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms + ', retries exceeded, bailing');
 				return;
 			}
 
 			// log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms);
 
-			setTimeout(() => {
-				this.hud_refresh(override, retry);
+			setTimeout(async () => {
+				await this.hud_refresh(override, retry);
 			}, retry_ms);
 			return;
 		}
@@ -699,8 +699,6 @@ class IKE extends EventEmitter {
 		if (override === false && status.hud.string === hud_string_rendered) return;
 
 		update.status('hud.string', hud_string_rendered);
-
-		this.hud_refresh_hrtime = await now();
 
 		// Send text to IKE
 		// TODO: Move this to update.on('hud.string', (data) => {});
@@ -1112,17 +1110,18 @@ class IKE extends EventEmitter {
 		});
 
 		// Refresh HUD after certain data values update
-		update.on('status.dme.voltage',             this.hud_refresh);
-		update.on('status.lcm.voltage.terminal_30', this.hud_refresh);
-		update.on('status.system.temperature',      this.hud_refresh);
-		update.on('status.temperature.coolant.c',   this.hud_refresh);
-		update.on('status.temperature.intake.c',    this.hud_refresh);
-		update.on('status.temperature.oil.c',       this.hud_refresh);
-		// update.on('status.temperature.exhaust.c',  this.hud_refresh);
-		// update.on('status.obc.consumption.c1.mpg', this.hud_refresh);
-		// update.on('status.obc.range.mi',           this.hud_refresh);
-		// update.on('status.vehicle.clutch_count',   this.hud_refresh);
-		// update.on('status.vehicle.speed.mph',      this.hud_refresh);
+		update.on('status.dme.voltage',             async () => { await this.hud_refresh(); });
+		update.on('status.lcm.voltage.terminal_30', async () => { await this.hud_refresh(); });
+		update.on('status.system.temperature',      async () => { await this.hud_refresh(); });
+		update.on('status.temperature.coolant.c',   async () => { await this.hud_refresh(); });
+		update.on('status.temperature.intake.c',    async () => { await this.hud_refresh(); });
+		update.on('status.temperature.oil.c',       async () => { await this.hud_refresh(); });
+
+		update.on('status.temperature.exhaust.c',  async () => { await this.hud_refresh(); });
+		update.on('status.obc.consumption.c1.mpg', async () => { await this.hud_refresh(); });
+		update.on('status.obc.range.mi',           async () => { await this.hud_refresh(); });
+		update.on('status.vehicle.clutch_count',   async () => { await this.hud_refresh(); });
+		update.on('status.vehicle.speed.mph',      async () => { await this.hud_refresh(); });
 
 		// DSC off CC message
 		update.on('status.vehicle.dsc.active', (value) => {

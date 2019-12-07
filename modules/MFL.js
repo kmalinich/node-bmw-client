@@ -56,7 +56,7 @@ async function decode_button_media(data) {
 	}
 
 	// Loop button object to populate log string
-	for (const button of unmask.buttons) {
+	for (const button in unmask.buttons) {
 		if (unmask.buttons[button] !== true) continue;
 		unmask.button = button;
 		break;
