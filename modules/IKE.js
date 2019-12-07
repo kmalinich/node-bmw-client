@@ -581,16 +581,8 @@ class IKE extends EventEmitter {
 		return true;
 	}
 
-	// Refresh custom HUD
-	hud_refresh(override = false) {
-		if (config.intf.ibus.enabled !== true) return;
-
-		// TODO: Move this to update.on('hud.string', (data) => {});
-		this.hud_render(override);
-	}
-
 	// Refresh custom HUD speed
-	hud_refresh_speed() {
+	async hud_refresh_speed() {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Return if HUD refresh is locked
@@ -602,15 +594,14 @@ class IKE extends EventEmitter {
 		this.hud_refresh_hrtime = now();
 
 		// Send text to IKE
-		this.text(status.vehicle.speed.mph + 'mph');
-	}
+		await this.text(status.vehicle.speed.mph + 'mph');
+	} // async hud_refresh_speed()
 
-
-	// Render custom HUD string
+	// Render/refresh custom HUD string
 	// override = force a refresh even if the rendered string has not changed
 	//            this is for long period of non-changing data, where otherwise
 	//            the text would disappear from the cluster display
-	hud_render(override = false, hud_render_cb = null, retry = 1) {
+	async hud_refresh(override = false, retry = 1) {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Return if HUD refresh is locked
@@ -632,7 +623,7 @@ class IKE extends EventEmitter {
 			// log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms);
 
 			setTimeout(() => {
-				this.hud_render(override, hud_render_cb, retry);
+				this.hud_refresh(override, retry);
 			}, retry_ms);
 			return;
 		}
@@ -709,14 +700,12 @@ class IKE extends EventEmitter {
 
 		update.status('hud.string', hud_string_rendered);
 
-		this.hud_refresh_hrtime = now();
+		this.hud_refresh_hrtime = await now();
 
 		// Send text to IKE
-		this.text(status.hud.string);
-
-		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
-		hud_render_cb = undefined;
-	} // hud_render(override, hud_render_cb)
+		// TODO: Move this to update.on('hud.string', (data) => {});
+		await this.text(status.hud.string);
+	} // async hud_refresh(override, retry)
 
 
 	// OBC set clock
@@ -798,7 +787,7 @@ class IKE extends EventEmitter {
 
 		// Clear the message after 5 seconds
 		if (timeout !== 0) setTimeout(this.text_urgent_off, timeout);
-	}
+	} // text_urgent(message, timeout)
 
 	// Check control warnings
 	text_warning(message, timeout = 10000) {
@@ -1123,17 +1112,17 @@ class IKE extends EventEmitter {
 		});
 
 		// Refresh HUD after certain data values update
-		update.on('status.dme.voltage',             () => { this.hud_refresh(); });
-		update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
-		update.on('status.system.temperature',      () => { this.hud_refresh(); });
-		update.on('status.temperature.coolant.c',   () => { this.hud_refresh(); });
-		update.on('status.temperature.intake.c',    () => { this.hud_refresh(); });
-		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
-		// update.on('status.temperature.exhaust.c',   () => { this.hud_refresh(); });
-		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
-		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
-		// update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
-		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
+		update.on('status.dme.voltage',             this.hud_refresh);
+		update.on('status.lcm.voltage.terminal_30', this.hud_refresh);
+		update.on('status.system.temperature',      this.hud_refresh);
+		update.on('status.temperature.coolant.c',   this.hud_refresh);
+		update.on('status.temperature.intake.c',    this.hud_refresh);
+		update.on('status.temperature.oil.c',       this.hud_refresh);
+		// update.on('status.temperature.exhaust.c',  this.hud_refresh);
+		// update.on('status.obc.consumption.c1.mpg', this.hud_refresh);
+		// update.on('status.obc.range.mi',           this.hud_refresh);
+		// update.on('status.vehicle.clutch_count',   this.hud_refresh);
+		// update.on('status.vehicle.speed.mph',      this.hud_refresh);
 
 		// DSC off CC message
 		update.on('status.vehicle.dsc.active', (value) => {
@@ -1299,7 +1288,7 @@ class IKE extends EventEmitter {
 	}
 
 	// IKE cluster text send message
-	text(message, cb = null, override = false) {
+	async text(message, override = false) {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Return if HUD refresh is locked
@@ -1308,9 +1297,6 @@ class IKE extends EventEmitter {
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
 			log.module('NOT sending space-padded IKE text message: \'' + message + '\'');
-
-			// Exec callback function if present
-			typeof cb === 'function' && cb();
 			return;
 		}
 
@@ -1324,18 +1310,15 @@ class IKE extends EventEmitter {
 		message_hex = message_hex.concat(0x04);
 		// message_hex = message_hex.concat(0x66);
 
-		bus.data.send({
+		await bus.data.send({
 			src : 'RAD',
 			dst : 'IKE',
 			msg : message_hex,
 		});
-
-		// Exec callback function if present
-		typeof cb === 'function' && cb();
-	}
+	} // async text(message, override)
 
 	// IKE cluster text send message, override other messages
-	text_override(message, timeout = 2500, direction = 'left', turn = false) {
+	async text_override(message, timeout = 2500, direction = 'left', turn = false) {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Return if HUD refresh is locked
@@ -1358,7 +1341,7 @@ class IKE extends EventEmitter {
 
 		// Equal to or less than 20 char
 		if (message.length - this.max_len_text <= 0) {
-			if (this.hud_override_text === message) this.text(message, null, true);
+			if (this.hud_override_text === message) await this.text(message, null, true);
 		}
 		else {
 			// Adjust timeout since we will be scrolling
@@ -1367,48 +1350,36 @@ class IKE extends EventEmitter {
 			// Send initial string if we're currently the first up
 			if (this.hud_override_text === message) {
 				switch (direction) {
-					case 'left' : {
-						this.text(message, null, true);
-						break;
-					}
-
-					case 'right' : {
-						this.text(message.substring(message.length - this.max_len_text, message.length), null, true);
-					}
+					case 'left'  : await this.text(message, null, true); break;
+					case 'right' : await this.text(message.substring(message.length - this.max_len_text, message.length), null, true);
 				}
 			}
 
 			// Add a time buffer before scrolling starts (if this isn't a turn signal message)
-			setTimeout(() => {
-				for (let scroll = 0; scroll <= message.length - this.max_len_text; scroll++) {
-					setTimeout((current_scroll, message_full, direction) => {
+			setTimeout(async () => {
+				for (let scroll_count = 0; scroll_count <= message.length - this.max_len_text; scroll_count++) {
+					setTimeout(async (current_scroll, message_full, direction) => {
 						// Only send the message if we're currently the first up
 						if (this.hud_override_text !== message_full) return;
 
 						switch (direction) {
-							case 'left' : {
-								this.text(message.substring(current_scroll, current_scroll + this.max_len_text), null, true);
-								break;
-							}
-
-							case 'right' : {
-								this.text(message.substring(message.length - this.max_len_text - current_scroll, message.length - current_scroll), null, true);
-							}
+							case 'left'  : await this.text(message.substring(current_scroll, current_scroll + this.max_len_text), null, true); break;
+							case 'right' : await this.text(message.substring(message.length - this.max_len_text - current_scroll, message.length - current_scroll), null, true);
 						}
-					}, scroll_delay * scroll, scroll, message, direction);
+					}, (scroll_delay * scroll_count), scroll_count, message, direction);
 				}
 			}, scroll_delay_timeout);
 		}
 
 		// Clear the override flag
-		setTimeout((message_full) => {
+		setTimeout(async (message_full) => {
 			// Only deactivate the override if we're currently first up
 			if (this.hud_override_text === message_full) {
 				this.hud_override = false;
-				this.hud_refresh(true);
+				await this.hud_refresh(true);
 			}
 		}, timeout, message);
-	}
+	} // async text_override(message, timeout, direction, turn)
 
 	// Welcome text message in cluster
 	welcome_message() {
