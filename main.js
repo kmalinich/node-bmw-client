@@ -129,6 +129,7 @@ async function init() {
 
 	// Initialize event listeners
 	BMBT.init_listeners();
+	CAS.init_listeners();
 	CON.init_listeners();
 	DME.init_listeners();
 	DSC.init_listeners();

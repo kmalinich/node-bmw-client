@@ -173,6 +173,7 @@ function decode_button(data) {
 			hold    : false,
 			release : false,
 		},
+
 		buttons : {
 			back   : false,
 			cd     : false,
@@ -188,6 +189,7 @@ function decode_button(data) {
 			tel    : false,
 			up     : false,
 		},
+
 		modes : {
 			button   : false,
 			joystick : false,
@@ -437,62 +439,20 @@ function decode_touchpad(data) {
 	return data;
 }
 
+function decode_init(data) {
+	data.command = 'con';
+	data.value   = 'CON rotation init';
+
+	// When CON receives this message, it resets it's relative rotation counter to -1
+	update.status('con.rotation.relative', -1);
+}
+
 
 function init_listeners() {
 	// Stamp last message time as now
 	update.status('con.rotation.last_msg', time_now());
 
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true) return;
-
-	// Perform commands on power lib active event
-	power.on('active', init_rotation);
-
 	log.module('Initialized listeners');
-}
-
-// Initialize CON rotation counter
-// TODO: This should be in modules/NBT.js (it's emulating a real NBT module)
-function init_rotation(action = false) {
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true) return;
-
-	// Handle setting/unsetting timeout
-	switch (action) {
-		case false : {
-			if (CON.timeout.init_rotation !== null) {
-				clearTimeout(CON.timeout.init_rotation);
-				CON.timeout.init_rotation = null;
-
-				log.module('Unset CON rotation init timeout');
-			}
-
-			// Return here since we're not re-sending again
-			return;
-		}
-
-		case true : {
-			CON.timeout.init_rotation = setTimeout(() => {
-				init_rotation(true);
-			}, 10000);
-
-			if (CON.timeout.init_rotation === null) {
-				log.module('Set CON rotation init timeout');
-			}
-		}
-	}
-
-	// When CON receives this message, it resets it's relative rotation counter to -1
-	update.status('con.rotation.relative', -1);
-
-	// log.module('Sending CON rotation init');
-
-	// Send message
-	bus.data.send({
-		bus  : config.con.can_intf,
-		id   : 0x273,
-		data : Buffer.from([ 0x1D, 0xE1, 0x00, 0xF0, 0xFF, 0x7F, 0xDE, 0x00 ]),
-	});
 }
 
 
@@ -505,6 +465,7 @@ function parse_out(data) {
 		case 0x0BF : return decode_touchpad(data);
 		case 0x264 : return decode_rotation(data);
 		case 0x267 : return decode_button(data);
+		case 0x273 : return decode_init(data);
 		case 0x277 : return decode_ack(data);
 
 		case 0x4E7 :
@@ -516,10 +477,6 @@ function parse_out(data) {
 
 
 module.exports = {
-	timeout : {
-		init_rotation : null,
-	},
-
 	// Functions
 	init_listeners,
 
