@@ -971,6 +971,9 @@ class IKE extends EventEmitter {
 					log.module('Run state');
 					this.emit('ignition-run');
 
+					// TODO: Make this a config option
+					this.obc_data('reset', 'consumption-1');
+
 					// Refresh OBC data
 					if (config.options.obc_refresh_on_start === true) this.obc_refresh();
 
