@@ -11,7 +11,7 @@ function parse_cc_sensors(data) {
 	data.command = 'bro';
 	data.value   = 'check control sensors - ';
 
-	// TODO Le sigh.. this is a bitmask, not done properly
+	// TODO: Le sigh.. this is a bitmask, not done properly
 	switch (data.msg[1]) {
 		case 0x00 : data.value += 'none';                  break;
 		case 0x04 : data.value += 'key in ignition';       break;

@@ -1,31 +1,3 @@
-// Ignition status
-// Exx : 4F8 -> 00 42 FE 01 FF FF FF FF
-// Fxx : 12F -> 37 7C 8A DD D4 05 33 6B
-function decode_ignition(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
-
-	data.command = 'bro';
-	data.value   = 'Ignition status';
-
-	// log.module('Ignition message ' + Buffer.from(data.msg));
-
-	return data;
-}
-
-// Used for iDrive knob rotational initialization
-function decode_status_module(data) {
-	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
-
-	data.command = 'con';
-	data.value   = 'NBT init iDrive knob';
-
-	// log.module('NBT status message ' + Buffer.from(data.msg));
-
-	return data;
-}
-
 function video_source(source = 'default') {
 	// Controlled by cmd_data.msg1[4], set to normal video output by default
 	const cmd_data = {
@@ -39,6 +11,7 @@ function video_source(source = 'default') {
 		case 'toggle' : {
 			log.module('Toggling video input');
 
+			// Pick target video source based on current video source (for toggling)
 			switch (status.nbt.video.source) {
 				case 'default' : source = 'RFK'; break;
 				case 'RFK'     : source = 'default';
@@ -77,7 +50,7 @@ function video_source(source = 'default') {
 			data : Buffer.from(cmd_data.msg1),
 		});
 	}, 100);
-}
+} // video_source(source)
 
 function reverse_camera(gear) {
 	// Bounce if NBT retrofit is not enabled or NBT reverse camera is not enabled
@@ -113,65 +86,50 @@ function reverse_camera(gear) {
 			}, 250);
 		}
 	}
-}
+} // reverse_camera(gear)
 
 
-function init_listeners() {
+// Used for iDrive knob rotational initialization
+function decode_init_con(data) {
 	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return data;
 
-	// Perform commands on EGS gear changes
-	EGS.on('gear', reverse_camera);
+	data.command = 'con';
+	data.value   = 'NBT init iDrive knob';
 
-	// Perform commands on power lib active event
-	power.on('active', status_module);
-	power.on('active', status_ignition);
+	// log.module('NBT status message ' + Buffer.from(data.msg));
 
-	log.module('Initialized listeners');
-}
+	return data;
+} // decode_init_con(data)
 
-
-// NBT status
-// 273 -> 1D E1 00 F0 FF 7F DE 04
-function status_module(action = false) {
+// Initialize CON rotation counter
+function encode_init_con(action = false) {
 	// Bounce if not enabled
-	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.con !== true) return;
 
-	switch (config.nbt.mode.toLowerCase()) {
-		case 'cic' : {
-			// When CON receives this message, it resets it's relative rotation counter to -1
-			update.status('con.rotation.relative', -1);
-			break;
+	// Handle setting/unsetting timeout
+	switch (action) {
+		case false : {
+			if (NBT.timeout.encode_init_con !== null) {
+				clearTimeout(NBT.timeout.encode_init_con);
+				NBT.timeout.encode_init_con = null;
+
+				log.module('Unset CON rotation init timeout');
+			}
+
+			// Return here since we're not re-sending again
+			return;
 		}
 
-		case 'nbt' : {
-			switch (action) {
-				case false : {
-					if (NBT.timeout.status_module !== null) {
-						clearTimeout(NBT.timeout.status_module);
-						NBT.timeout.status_module = null;
+		case true : {
+			NBT.timeout.encode_init_con = setTimeout(() => {
+				encode_init_con(true);
+			}, 10000);
 
-						log.module('Unset module status timeout');
-					}
-
-					// Return here since we're not re-sending again
-					return;
-				}
-
-				case true : {
-					NBT.timeout.status_module = setTimeout(() => {
-						status_module(true);
-					}, 2000);
-
-					if (NBT.timeout.status_module === null) {
-						log.module('Set module status timeout');
-					}
-				}
-			}
+			if (NBT.timeout.encode_init_con === null) log.module('Set CON rotation init timeout');
 		}
 	}
 
-	// Default is NBT message
 	const msg = {
 		bus  : config.nbt.can_intf,
 		id   : null,
@@ -192,7 +150,7 @@ function status_module(action = false) {
 		}
 
 		default : {
-			log.module('config.nbt.mode must be set to one of cic or nbt');
+			log.error('config.nbt.mode must be set to one of CIC or NBT');
 			return;
 		}
 	}
@@ -202,65 +160,23 @@ function status_module(action = false) {
 
 	// Send message
 	bus.data.send(msg);
-}
+} //  encode_init_con(action)
 
-// Ignition status
-// TODO: Should be in CAS module
-function status_ignition() {
+
+function init_listeners() {
 	// Bounce if not enabled
-	if (config.retrofit.nbt !== true) return;
+	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
-	// Handle setting/unsetting timeout
-	switch (status.power.active) {
-		case false : {
-			// Return here if timeout is already null
-			if (NBT.timeout.status_ignition !== null) {
-				clearTimeout(NBT.timeout.status_ignition);
-				NBT.timeout.status_ignition = null;
+	// Perform commands on EGS gear changes
+	EGS.on('gear', reverse_camera);
 
-				log.module('Unset ignition status timeout');
-			}
+	// Perform commands on power lib active event
+	power.on('active', data => {
+		encode_init_con(data.new);
+	});
 
-			// Send ignition off message
-			bus.data.send({
-				bus  : config.nbt.can_intf,
-				id   : 0x12F,
-				data : Buffer.from([ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]),
-			});
-
-			// Return here since we're not re-sending again
-			return;
-		}
-
-		case true : {
-			if (NBT.timeout.status_ignition === null) {
-				log.module('Set ignition status timeout');
-			}
-
-			NBT.timeout.status_ignition = setTimeout(status_ignition, 100);
-		}
-	}
-
-	// Default is NBT message
-	const msg = {
-		bus  : config.nbt.can_intf,
-		id   : 0x12F,
-		data : [ 0x37, 0x7C, 0x8A, 0xDD, 0xD4, 0x05, 0x33, 0x6B ],
-	};
-
-	switch (config.nbt.mode.toLowerCase()) {
-		case 'cic' : {
-			msg.id   = 0x4F8;
-			msg.data = [ 0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF ];
-		}
-	}
-
-	// Convert data array to Buffer
-	msg.data = Buffer.from(msg.data);
-
-	// Send message
-	bus.data.send(msg);
-}
+	log.module('Initialized listeners');
+} // init_listeners()
 
 
 // Parse data sent to module
@@ -269,7 +185,7 @@ function parse_in(data) {
 	if (config.emulate.nbt !== true) return data;
 
 	return data;
-}
+} // parse_in(data)
 
 // Parse data sent from module
 function parse_out(data) {
@@ -278,7 +194,7 @@ function parse_out(data) {
 
 	switch (data.src.id) {
 		case 0x273 :
-		case 0x563 : return decode_status_module(data);
+		case 0x563 : return decode_init_con(data);
 
 		case 0x277 : { // NBT ACK to rotational initialization message
 			data.command = 'rep';
@@ -298,19 +214,15 @@ function parse_out(data) {
 			data.value   = 'Services';
 			break;
 		}
-
-		case 0x12F :
-		case 0x4F8 : return decode_ignition(data);
 	}
 
 	return data;
-}
+} // parse_out(data)
 
 
 module.exports = {
 	timeout : {
-		status_ignition : null,
-		status_module   : null,
+		encode_init_con : null,
 	},
 
 	// Functions
@@ -320,7 +232,4 @@ module.exports = {
 
 	parse_in,
 	parse_out,
-
-	status_ignition, // Should be in CAS module
-	status_module,
 };
