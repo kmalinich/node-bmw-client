@@ -93,6 +93,7 @@ async function term_config() {
 		if (terminating === true) return;
 
 		console.log('');
+		config.console.output = true;
 		log.msg('Caught SIGTERM');
 		await term();
 	});
@@ -101,11 +102,15 @@ async function term_config() {
 		if (terminating === true) return;
 
 		console.log('');
+		config.console.output = true;
 		log.msg('Caught SIGINT');
 		await term();
 	});
 
-	process.on('exit', term);
+	process.on('exit', () => {
+		config.console.output = true;
+		log.msg('Caught exit event');
+	});
 } // async term_config()
 
 // Global init
