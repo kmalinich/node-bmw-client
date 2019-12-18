@@ -28,6 +28,6 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 };

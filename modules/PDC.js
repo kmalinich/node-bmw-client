@@ -1,11 +1,9 @@
 // PDC status (Sets off IKE gongs)
 function decode_pdc_status(data) {
-	let parse;
-
 	data.command = 'bro';
 	data.value   = 'IKE gong/PDC status';
 
-	parse = {
+	const parse = {
 		distance_0 : data.msg[1],
 		distance_1 : data.msg[2],
 		distance_2 : data.msg[3],
@@ -28,5 +26,5 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_out : parse_out,
+	parse_out,
 };

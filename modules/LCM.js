@@ -54,8 +54,8 @@ function auto_lights_process() {
 	let new_lowbeam;
 	let night_percentage;
 
-	let now_time  = Date.now();
-	let now_epoch = Math.floor(now_time / 1000);
+	const now_time  = Date.now();
+	const now_epoch = Math.floor(now_time / 1000);
 
 	let now_offset  = 0;
 	let now_weather = false;
@@ -73,9 +73,9 @@ function auto_lights_process() {
 		});
 	}
 
-	let sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
-	let lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
-	let lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
+	const sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
+	const lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
+	const lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
@@ -196,7 +196,7 @@ function comfort_turn(data) {
 	}
 
 	// Determine the direction of the currently active turn signal
-	let mask = bitmask.check(data.after).mask;
+	const mask = bitmask.check(data.after).mask;
 	let after;
 	switch (mask.bit5) {
 		case false : {
@@ -262,7 +262,7 @@ function comfort_turn_flash(action) {
 	// Send cluster message if configured to do so
 	if (config.lights.comfort_turn.cluster_msg === true) {
 		// Concat message string
-		let cluster_msg = cluster_msg_outer + ' ' + action.charAt(0).toUpperCase() + ' ' + cluster_msg_outer;
+		const cluster_msg = cluster_msg_outer + ' ' + action.charAt(0).toUpperCase() + ' ' + cluster_msg_outer;
 		IKE.text_override(cluster_msg, 2000 + status.lights.turn.depress_elapsed, action, true);
 	}
 
@@ -274,8 +274,8 @@ function comfort_turn_flash(action) {
 
 	// Calculate timeout length, accounting for the time from the initial flash
 	// 1 flash ~ 500ms, so 5x flash ~ 2500ms
-	let timer_off  = (config.lights.comfort_turn.flashes - 1) * 500;
-	let timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
+	const timer_off  = (config.lights.comfort_turn.flashes - 1) * 500;
+	const timer_cool = timer_off + 1500; // Cooldown period ends 1.5s after last comfort turn
 
 	log.module('Comfort turn timer: ' + timer_off + 'ms');
 
@@ -295,7 +295,7 @@ function comfort_turn_flash(action) {
 function decode(data) {
 	switch (data.msg[0]) {
 		case 0x54: { // Vehicle service data
-			let parse = {
+			const parse = {
 				vin      : hex.h2a(hex.i2s(data.msg[1], false)) + hex.h2a(hex.i2s(data.msg[2], false)) + hex.i2s(data.msg[3], false) + hex.i2s(data.msg[4], false) + hex.i2s(data.msg[5], false)[0],
 				odometer : ((data.msg[6] << 8) | (data.msg[7])) * 100,
 
@@ -320,7 +320,7 @@ function decode(data) {
 			comfort_turn({ before : status.lights.turn, after : data.msg[0] });
 
 			// Decode bitmasks
-			let masks = {
+			const masks = {
 				m0 : bitmask.check(data.msg[0]).mask,
 				m1 : bitmask.check(data.msg[1]).mask,
 				m2 : bitmask.check(data.msg[2]).mask,
@@ -409,7 +409,7 @@ function decode(data) {
 			// Decode values
 			update.status('lcm.dimmer.value_2', data.msg[15], false);
 
-			let voltages = {
+			const voltages = {
 				pot : {
 					dimmer : num.round2((data.msg[15] * 5) / 255),
 					lwr    : num.round2((data.msg[16] * 5) / 255),
@@ -455,7 +455,7 @@ function decode(data) {
 			update.status('lcm.voltage.terminal_30', parseFloat(((data.msg[9] * 18) / 255).toFixed(2)), false);
 
 			// Decode bitmasks
-			let masks = {
+			const masks = {
 				m0 : bitmask.check(data.msg[0]).mask,
 				m1 : bitmask.check(data.msg[1]).mask,
 				m2 : bitmask.check(data.msg[2]).mask,
@@ -549,7 +549,7 @@ function decode(data) {
 // Encode the LCM bitmask string from an input of true/false values
 function io_encode(object) {
 	// Initialize bitmask variables
-	let output = {
+	const output = {
 		b0 : bitmask.create({
 			b0 : object.clamp_30a,
 			b1 : object.input_fire_extinguisher,
@@ -705,7 +705,7 @@ function io_set(packet) {
 // Make things.. how they should be?
 function reset() {
 	// Object of autolights related values
-	let io_object_auto_lights = {
+	const io_object_auto_lights = {
 		dimmer_value_2              : Math.ceil(status.lights.auto.night_percentage * 254),
 		output_standing_front_left  : true,
 		output_standing_front_right : true,
@@ -715,7 +715,7 @@ function reset() {
 	};
 
 	// Object of only comfort turn values
-	let io_object = {
+	const io_object = {
 		switch_turn_left  : status.lights.turn.left.comfort,
 		switch_turn_right : status.lights.turn.right.comfort,
 	};
@@ -765,8 +765,8 @@ function request(value) {
 	}
 
 	bus.data.send({
-		src : src,
-		msg : msg,
+		src,
+		msg,
 	});
 }
 
@@ -895,7 +895,7 @@ function pl() {
 		IKE.text_warning('   Police lights!   ', 0);
 	}
 
-	let object = {
+	const object = {
 		front : {
 			left : {
 				fog      : false,
@@ -948,7 +948,7 @@ function pl() {
 	};
 
 	// Clean this up later
-	let io_object = {
+	const io_object = {
 		output_standing_front_left  : object.front.left.standing,
 		output_standing_front_right : object.front.right.standing,
 
@@ -1057,16 +1057,16 @@ module.exports = {
 	},
 
 	// Functions
-	decode : decode,
+	decode,
 
-	auto_lights         : auto_lights,
-	auto_lights_process : auto_lights_process,
-	comfort_turn_flash  : comfort_turn_flash,
-	init_listeners      : init_listeners,
-	io_encode           : io_encode,
-	parse_out           : parse_out,
-	police              : police,
-	request             : request,
-	set_backlight       : set_backlight,
-	welcome_lights      : welcome_lights,
+	auto_lights,
+	auto_lights_process,
+	comfort_turn_flash,
+	init_listeners,
+	io_encode,
+	parse_out,
+	police,
+	request,
+	set_backlight,
+	welcome_lights,
 };

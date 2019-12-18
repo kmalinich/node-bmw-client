@@ -10,7 +10,7 @@ class EWS extends EventEmitter {
 
 		switch (value) {
 			case 'immobilizerstatus' : {
-				// cmd = [0x73, 0x00, 0x00, 0x80];
+				// cmd = [ 0x73, 0x00, 0x00, 0x80 ];
 				cmd = [ 0x73 ];
 				break;
 			}

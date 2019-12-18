@@ -2,8 +2,16 @@
 
 # shellcheck disable=SC2044
 
-echo "Searching for old version index files"
-for FILE_INDEX in $(find /usr/lib/node_modules ./node_modules -type f -name 'index-v*.js'); do
+ARRAY_MODULE_DIRS=(
+'./node_modules'
+)
+
+[[ -d "/usr/lib/node_modules"       ]] && ARRAY_MODULE_DIRS+=('/usr/lib/node_modules')
+[[ -d "/usr/local/lib/node_modules" ]] && ARRAY_MODULE_DIRS+=('/usr/local/lib/node_modules')
+
+
+echo "Searching for old version index files in directories ${ARRAY_MODULE_DIRS[*]}"
+for FILE_INDEX in $(find "${ARRAY_MODULE_DIRS[@]}" -type f -name 'index-v*.js'); do
 	FILE_V8="${FILE_INDEX/v.*.\.js/v8\.js/}"
 	FILE_V9="${FILE_INDEX/v.*.\.js/v9\.js/}"
 	FILE_V10="${FILE_INDEX/v.*.\.js/v10\.js/}"

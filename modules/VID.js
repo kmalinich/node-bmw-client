@@ -5,8 +5,8 @@ function parse_out(data) {
 			data.command = 'con';
 			data.value   = 'LCD ';
 
-			let mask_m1  = bitmask.check(data.msg[1]).mask;
-			let parse_m1 = {
+			const mask_m1  = bitmask.check(data.msg[1]).mask;
+			const parse_m1 = {
 				on          : mask_m1.b4,
 				source_name : null,
 				source      : {
@@ -33,8 +33,8 @@ function parse_out(data) {
 
 			// Only if data.msg[2] is populated
 			if (data.msg.length >= 3) {
-				let mask_m2  = bitmask.check(data.msg[2]).mask;
-				let parse_m2 = {
+				const mask_m2  = bitmask.check(data.msg[2]).mask;
+				const parse_m2 = {
 					aspect_ratio : mask_m2.b4 && '16:9' || '4:3',
 					refresh_rate : mask_m2.b1 && '50Hz' || '60Hz',
 					zoom         : mask_m2.b5,
@@ -62,5 +62,5 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_out : parse_out,
+	parse_out,
 };

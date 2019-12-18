@@ -9,7 +9,7 @@
 	"dependencies": {
 		"body-parser": "^1.19.0",
 		"callers-path": "^1.0.5",
-		"chump": "git+https://github.com/kmalinich/chump.git",
+		"chump": "github:kmalinich/chump",
 		"dark-sky": "^1.1.5",
 		"defaults-deep": "^0.2.4",
 		"express": "^4.17.1",
@@ -28,11 +28,15 @@
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^6.7.1",
-		"eslint-plugin-import": "^2.18.2",
+		"eslint": "^6.7.2",
+		"eslint-config-esnext": "^4.0.0",
+		"eslint-plugin-import": "^2.19.1",
 		"eslint-plugin-node": "^10.0.0",
 		"eslint-plugin-promise": "^4.2.1",
 		"eslint-plugin-standard": "^4.0.1"
+	},
+	"engines": {
+		"node": ">=12"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
@@ -45,15 +49,15 @@
 		"kbus"
 	],
 	"license": "MIT",
-	"main": "launch.sh",
+	"main": "main.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
-		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
+		"node-cec": "github:kmalinich/node-cec",
 		"onoff": "^5.0.0",
 		"pi-temperature": "^2.1.0",
-		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git"
+		"rpi-hdmi": "github:kmalinich/rpi-hdmi"
 	},
 	"repository": {
 		"type": "git",
@@ -62,5 +66,6 @@
 	"scripts": {
 		"postinstall": "/usr/bin/env bash ./postinstall"
 	},
+	"type": "script",
 	"version": "0.0.1"
 }

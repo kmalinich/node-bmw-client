@@ -1,5 +1,5 @@
 // Array of all DSP modes
-let dsp_modes = {
+const dsp_modes = {
 	0 : 'concert hall',
 	1 : 'jazz club',
 	2 : 'cathedral',
@@ -40,7 +40,7 @@ function eq_decode(data) {
 	data.command = 'bro';
 	data.value   = 'DSP memory';
 
-	let dsp_mode = data.msg[1] - 1;
+	const dsp_mode = data.msg[1] - 1;
 
 	let echo = data.msg[2] & 0x0F;
 	if (bitmask.test(data.msg[2], bitmask.b[4])) {
@@ -52,7 +52,7 @@ function eq_decode(data) {
 		room_size *= -1;
 	}
 
-	let band = [];
+	const band = [];
 	let n;
 
 	for (n = 0; n < 7; n++) {
@@ -87,13 +87,13 @@ function eq_delta(band, value) {
 	value = parseInt(value);
 
 	// Save original integer value for log message
-	let value_orig = value;
+	const value_orig = value;
 
 	// Ensure band is string type and lowercase
 	band = band.toString().toLowerCase();
 
 	// Check if negative number
-	let minus = (Math.sign(value) === -1);
+	const minus = (Math.sign(value) === -1);
 
 	// Get absolute value
 	value = Math.abs(value);
@@ -101,7 +101,7 @@ function eq_delta(band, value) {
 	// Negative value sets 0x10 bit
 	if (minus === true) value += 0x10;
 
-	let cmd = 0x95;
+	const cmd = 0x95;
 
 	let msg;
 	switch (band) {
@@ -176,7 +176,7 @@ function eq_delta(band, value) {
 
 	bus.data.send({
 		src : 'RAD', // Might also be one of BMBT, DSPC, GT, RAD..
-		msg : msg,
+		msg,
 	});
 
 	log.module('DSP EQ delta update sent, band: \'' + band + '\', minus: ' + minus + ' value: ' + value_orig + ' (0x' + value.toString(16).padStart(2, '0').toUpperCase() + ')');
@@ -198,17 +198,17 @@ function eq_delta(band, value) {
 // };
 
 function eq_encode(data) {
-	let echo_out = [ 0x34, 0x94 + data.memory, data.echo & 0x0F ];
+	const echo_out = [ 0x34, 0x94 + data.memory, data.echo & 0x0F ];
 	eq_send(echo_out);
 	log.module('DSP EQ echo encoded');
 
-	let room_size_out = [ 0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20 ];
+	const room_size_out = [ 0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20 ];
 	eq_send(room_size_out);
 	log.module('DSP EQ room size encoded');
 
 	for (let band_num = 0; band_num < 7; band_num++) {
 		// ... Don't look at me
-		let band_out = [ 0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F))) ];
+		const band_out = [ 0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F))) ];
 
 		// Send each EQ band update with a small delay
 		setTimeout(() => {
@@ -223,7 +223,7 @@ function eq_encode(data) {
 function eq_send(msg) {
 	bus.data.send({
 		src : 'DSPC',
-		msg : msg,
+		msg,
 	});
 
 	// log.module('DSP EQ sent');
@@ -278,7 +278,7 @@ function speaker_test(command) {
 
 	bus.data.send({
 		src : 'DIA',
-		msg : msg,
+		msg,
 	});
 }
 
@@ -325,7 +325,7 @@ function request(value) {
 	}
 
 	bus.data.send({
-		src : src,
+		src,
 		msg : cmd,
 	});
 }
@@ -342,20 +342,20 @@ function parse_out(data) {
 
 
 module.exports = {
-	dsp_mode : dsp_mode,
+	dsp_mode,
 
-	eq_decode : eq_decode,
-	eq_delta  : eq_delta,
-	eq_encode : eq_encode,
-	eq_send   : eq_send,
+	eq_decode,
+	eq_delta,
+	eq_encode,
+	eq_send,
 
-	m_audio : m_audio,
+	m_audio,
 
-	loudness : loudness,
+	loudness,
 
-	parse_out : parse_out,
+	parse_out,
 
-	request : request,
+	request,
 
-	speaker_test : speaker_test,
+	speaker_test,
 };

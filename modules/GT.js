@@ -111,9 +111,9 @@ function parse_dsp_memory(data) {
 		}
 
 		case true : {
-			let mask = bitmask.check(data.msg[3]).mask;
+			const mask = bitmask.check(data.msg[3]).mask;
 
-			let dsp_memory = {
+			const dsp_memory = {
 				negative     : mask.bit4,
 				low_batt_str : 'negative: ' + mask.bit4,
 
@@ -131,7 +131,7 @@ function parse_dsp_memory(data) {
 			};
 
 			// Loop band object to populate log string
-			for (let band in dsp_memory.bands) {
+			for (const band in dsp_memory.bands) {
 				if (dsp_memory.bands[band] === true) {
 					dsp_memory.band     = band;
 					dsp_memory.band_str = 'band: ' + band;
@@ -153,8 +153,8 @@ function parse_control_lcd(data) {
 	data.command = 'con';
 	data.value   = 'LCD ';
 
-	let mask_m1  = bitmask.check(data.msg[1]).mask;
-	let parse_m1 = {
+	const mask_m1  = bitmask.check(data.msg[1]).mask;
+	const parse_m1 = {
 		on          : mask_m1.b4,
 		source_name : null,
 		source      : {
@@ -181,8 +181,8 @@ function parse_control_lcd(data) {
 
 	// Only if data.msg[2] is populated
 	if (data.msg.length >= 3) {
-		let mask_m2  = bitmask.check(data.msg[2]).mask;
-		let parse_m2 = {
+		const mask_m2  = bitmask.check(data.msg[2]).mask;
+		const parse_m2 = {
 			aspect_ratio : mask_m2.b4 && '16:9' || '4:3',
 			refresh_rate : mask_m2.b1 && '50Hz' || '60Hz',
 			zoom         : mask_m2.b5,
@@ -279,5 +279,5 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_out : parse_out,
+	parse_out,
 };
