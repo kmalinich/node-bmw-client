@@ -4,7 +4,6 @@ const EventEmitter = require('events');
 
 const convert = require('node-unit-conversion');
 const moment  = require('moment');
-const now     = require('performance-now');
 const os      = require('os');
 
 
@@ -18,9 +17,9 @@ function text_urgent_off() {
 	});
 }
 
-// Get delta time between two a previous now() call and now
-async function hrtime_delta(start) {
-	return await now() - start;
+// Get delta time between two a previous Date.now() call and now
+function time_delta(start) {
+	return Date.now() - start;
 }
 
 
@@ -36,14 +35,24 @@ class IKE extends EventEmitter {
 		this.timeout_bc_button_hud  = null;
 		this.timeout_data_refresh   = null;
 
-		this.hud_override      = false;
-		this.hud_override_text = null;
+		this.text_override_status = {
+			active : false,
+			text   : null,
+		};
 
 		// Don't refresh HUD if true
+		// (set to true for a period of time after BC button press)
 		this.hud_locked = false;
 
-		this.hud_refresh_hrtime = now();
+		// hud_override = force a refresh even if the rendered string has not changed
+		//                this is for long period of non-changing data, where otherwise
+		//                the text would disappear from the cluster display
+		this.hud_override = false;
 
+		// Update HUD text transmit timestamp
+		this.hud_tx_last = Date.now();
+
+		// TODO: This is a hack
 		this.text_urgent_off = text_urgent_off;
 	}
 
@@ -566,7 +575,7 @@ class IKE extends EventEmitter {
 
 
 	// Determine if it is OK to refresh IKE HUD
-	async ok2hud() {
+	ok2hud() {
 		// Bounce if the ignition is off
 		if (status.vehicle.ignition_level < 1) return false;
 
@@ -574,45 +583,21 @@ class IKE extends EventEmitter {
 		if (this.hud_locked !== false) return false;
 
 		// Bounce if override is active
-		if (this.hud_override === true) return false;
+		if (this.text_override_status.active === true) return false;
 
-		const refresh_delta = await hrtime_delta(IKE.hud_refresh_hrtime);
-		// log.msg('refresh_delta1: ' + refresh_delta);
+		const refresh_delta = time_delta(this.hud_tx_last);
+		// log.msg('HUD refresh delta [1]: ' + refresh_delta);
 
 		// Bounce if the last update was less than the configured value in milliseconds ago
 		if (refresh_delta < config.hud.refresh_max) return false;
 
-		log.msg('refresh_delta2: ' + refresh_delta);
+		log.msg('HUD refresh delta [2]: ' + refresh_delta);
 
 		return true;
 	}
 
 	// Render/refresh custom HUD string
-	// override = force a refresh even if the rendered string has not changed
-	//            this is for long period of non-changing data, where otherwise
-	//            the text would disappear from the cluster display
-	async hud_refresh(override = false) {
-		// Bounce if it's not OK (yet) to post a HUD update
-		// if (override === false && !await this.ok2hud()) {
-		// 	// Increment retry counter
-		// 	retry++;
-
-		// 	const retry_ms = retry * 100;
-
-		// 	// TODO: Make retry counter a config value
-		// 	if (retry > 5) {
-		// 		log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms + ', retries exceeded, bailing');
-		// 		return;
-		// 	}
-
-		// 	log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms);
-
-		// 	setTimeout(async () => {
-		// 		await this.hud_refresh(override, retry);
-		// 	}, retry_ms);
-		// 	return;
-		// }
-
+	async hud_refresh() {
 		// Determine Moment.js format string
 		// let moment_format;
 		// switch (config.hud.time.format) {
@@ -694,11 +679,7 @@ class IKE extends EventEmitter {
 
 		// Update hud string in status object
 		const hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
-
-		// If the newly rendered string matches the existing string, bail out
-		// if (override === false) return;
-
-		update.status('hud.string', hud_string_rendered, false);
+		update.status('hud.string', hud_string_rendered);
 	} // async hud_refresh(override, retry)
 
 
@@ -708,9 +689,7 @@ class IKE extends EventEmitter {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Bounce if it's not OK (yet) to post a HUD update
-		if (!await this.ok2hud()) return;
-
-		IKE.hud_refresh_hrtime = now();
+		if (!this.ok2hud()) return;
 
 		// Send text to IKE
 		await this.text(status.vehicle.speed.mph + 'mph');
@@ -862,7 +841,7 @@ class IKE extends EventEmitter {
 		if (this.hud_locked !== false) return false;
 
 		// Bounce if override is active
-		if (override === false && this.hud_override === true) {
+		if (override === false && this.text_override_status.active === true) {
 			log.module('NOT sending non-padded IKE text message: \'' + message + '\'');
 			return;
 		}
@@ -902,8 +881,13 @@ class IKE extends EventEmitter {
 		// this.request('ignition');
 		// LCM.request('io-status');
 
-		// Refresh HUD display
-		this.hud_refresh(true);
+		// Manually refresh HUD text if it's been too long since the last auto refresh
+		if (this.hud_override !== true) {
+			if (time_delta(this.hud_tx_last) > 15000) {
+				log.module('Manually refreshing HUD text');
+				this.text(status.hud.string);
+			}
+		}
 
 		// Only request temperatures if not configured to get both from CANBUS or ignition is not in run
 		if (config.canbus.coolant === false || config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
@@ -1087,9 +1071,6 @@ class IKE extends EventEmitter {
 	init_listeners() {
 		if (config.intf.ibus.enabled !== true) return;
 
-		// Bring up last HUD refresh time
-		IKE.hud_refresh_hrtime = now();
-
 		// Refresh data on interface connection
 		socket.on('ready', (intf) => {
 			// Only refresh on new IBUS interface connection
@@ -1136,8 +1117,8 @@ class IKE extends EventEmitter {
 			switch (value.new) {
 				case false : {
 					// Don't send CC message if engine is not running or was started in the last 15 seconds
-					if (status.engine.running === false)                      break;
-					if ((Date.now() - status.engine.start_time_last) < 15000) break;
+					if (status.engine.running === false)                   break;
+					if (time_delta(status.engine.start_time_last) < 15000) break;
 
 					this.text_warning('  DSC deactivated!  ');
 					break;
@@ -1146,21 +1127,18 @@ class IKE extends EventEmitter {
 		});
 
 		// Update IKE cluster text
-		update.on('status.hud.string', async (data) => {
-			if (config.intf.ibus.enabled !== true) return;
+		update.on('status.hud.string', data => {
+			if (!this.ok2hud() && this.hud_override === false) return;
 
-			// if (override === false && !await this.ok2hud()) return;
-			const ok2hud_now = await this.ok2hud();
+			// Update HUD text transmit timestamp
+			this.hud_tx_last = Date.now();
 
-			if (ok2hud_now !== true) return;
-
-			IKE.hud_refresh_hrtime = now();
-
-			await this.text(data.new);
+			this.text(data.new);
 		});
 
 		log.module('Initialized listeners');
 	}
+
 
 	// Refresh OBC data
 	obc_refresh() {
@@ -1316,7 +1294,7 @@ class IKE extends EventEmitter {
 		if (this.hud_locked !== false) return;
 
 		// Bounce if override is active
-		if (override === false && this.hud_override === true) {
+		if (override === false && this.text_override_status.active === true) {
 			log.module('NOT sending space-padded IKE text message: \'' + message + '\'');
 			return;
 		}
@@ -1357,19 +1335,19 @@ class IKE extends EventEmitter {
 		}
 
 		// Delare that we're currently first up
-		this.hud_override      = true;
-		this.hud_override_text = message;
+		this.text_override_status.active = true;
+		this.text_override_status.text   = message;
 
 		// Equal to or less than 20 char
 		if (message.length - this.max_len_text <= 0) {
-			if (this.hud_override_text === message) await this.text(message, null, true);
+			if (this.text_override_status.text === message) await this.text(message, null, true);
 		}
 		else {
 			// Adjust timeout since we will be scrolling
 			timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - this.max_len_text));
 
 			// Send initial string if we're currently the first up
-			if (this.hud_override_text === message) {
+			if (this.text_override_status.text === message) {
 				switch (direction) {
 					case 'left'  : await this.text(message, null, true); break;
 					case 'right' : await this.text(message.substring(message.length - this.max_len_text, message.length), null, true);
@@ -1381,7 +1359,7 @@ class IKE extends EventEmitter {
 				for (let scroll_count = 0; scroll_count <= message.length - this.max_len_text; scroll_count++) {
 					setTimeout(async (current_scroll, message_full, direction) => {
 						// Only send the message if we're currently the first up
-						if (this.hud_override_text !== message_full) return;
+						if (this.text_override_status.text !== message_full) return;
 
 						switch (direction) {
 							case 'left'  : await this.text(message.substring(current_scroll, current_scroll + this.max_len_text), null, true); break;
@@ -1395,8 +1373,8 @@ class IKE extends EventEmitter {
 		// Clear the override flag
 		setTimeout(async (message_full) => {
 			// Only deactivate the override if we're currently first up
-			if (this.hud_override_text === message_full) {
-				this.hud_override = false;
+			if (this.text_override_status.text === message_full) {
+				this.text_override_status.active = false;
 				await this.hud_refresh(true);
 			}
 		}, timeout, message);
