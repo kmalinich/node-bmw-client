@@ -584,8 +584,6 @@ class IKE extends EventEmitter {
 
 		log.msg('refresh_delta2: ' + refresh_delta);
 
-		IKE.hud_refresh_hrtime = await now();
-
 		return true;
 	}
 
@@ -593,13 +591,7 @@ class IKE extends EventEmitter {
 	// override = force a refresh even if the rendered string has not changed
 	//            this is for long period of non-changing data, where otherwise
 	//            the text would disappear from the cluster display
-	async hud_refresh(override = false, retry = 1) {
-		if (config.intf.ibus.enabled !== true) return;
-
-		if (override === false && !await this.ok2hud()) return;
-
-		IKE.hud_refresh_hrtime = await now();
-
+	async hud_refresh(override = false) {
 		// Bounce if it's not OK (yet) to post a HUD update
 		// if (override === false && !await this.ok2hud()) {
 		// 	// Increment retry counter
@@ -629,37 +621,50 @@ class IKE extends EventEmitter {
 		// 	default : moment_format = 'h:mm';
 		// }
 
-		const hud_strings = {
-			left   : '',
-			center : '',
-			right  : '',
-
-			// TODO: Use unit from config
-			iat   : Math.floor(status.temperature.intake.c) + '¨',
-			load  : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
-			speed : Math.ceil(status.vehicle.speed.mph) + 'mph',
-			temp  : Math.floor(status.temperature.coolant.c) + '¨',
+		const hud_data = {
+			speed : Math.ceil(status.vehicle.speed[config.hud.speed.unit]),
 			volt  : status.dme.voltage,
 
-			// cc    : status.vehicle.clutch_count + 'gc',
-			// cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg',
-			// egt   : Math.floor(status.temperature.exhaust.c) + '¨',
-			// hp    : Math.floor(status.engine.horsepower.output) + 'hp',
-			// range : Math.floor(status.obc.range.mi) + 'mi',
-			// time  : moment().format(moment_format),
+			// TODO: Use unit from config
+			temp : {
+				coolant : Math.floor(status.temperature.coolant.c),
+				exhaust : Math.floor(status.temperature.exhaust.c),
+				intake  : Math.floor(status.temperature.intake.c),
+				oil     : Math.floor(status.temperature.oil.c),
+			},
 		};
 
 		// Only use voltage from CANBUS if configured to do so, and ignition is in run
 		// CANBUS data is not broadcast when key is in accessory
 		if (config.canbus.voltage === false || status.vehicle.ignition_level < 3) {
-			hud_strings.volt = status.lcm.voltage.terminal_30;
+			hud_data.volt = status.lcm.voltage.terminal_30;
 		}
+
+		const hud_strings = {
+			left   : '',
+			center : '',
+			right  : '',
+
+			speed : hud_data.speed + config.hud.speed.unit,
+			volt  : hud_data.volt.toFixed(1) + 'v',
+
+			iat  : hud_data.temp.intake  + '¨',
+			temp : hud_data.temp.coolant + '¨',
+			// egt  : hud_data.temp.exhaust.c + '¨',
+
+			load : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
+
+			// cc    : status.vehicle.clutch_count + 'gc',
+			// cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg',
+			// hp    : Math.floor(status.engine.horsepower.output) + 'hp',
+			// range : Math.floor(status.obc.range.mi) + 'mi',
+			// time  : moment().format(moment_format),
+		};
 
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
-			hud_strings.temp += ' ' + Math.floor(status.temperature.oil.c) + '¨';
+			hud_strings.temp += ' ' + hud_data.temp.oil + '¨';
 		}
-
 
 		// TODO: Use layout from config
 		hud_strings.left   = hud_strings.temp;
@@ -671,9 +676,11 @@ class IKE extends EventEmitter {
 			hud_strings.left = hud_strings.load;
 		}
 
-		// Change center string to be voltage if under threshold or if vehicle speed is 0
-		if (hud_strings.volt <= config.hud.volt.threshold || hud_strings.speed === '0mph') {
-			hud_strings.center = hud_strings.volt.toFixed(1) + 'v';
+		// Change center string to be voltage
+		//   if voltage       is at or under threshold, or
+		//   if vehicle speed is at or under threshold
+		if (hud_data.volt <= config.hud.volt.threshold || hud_data.speed <= config.hud.speed.threshold) {
+			hud_strings.center = hud_strings.volt;
 		}
 
 		// Space-pad HUD strings
@@ -689,17 +696,13 @@ class IKE extends EventEmitter {
 		const hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
 
 		// If the newly rendered string matches the existing string, bail out
-		if (override === false && status.hud.string === hud_string_rendered) return;
+		// if (override === false) return;
 
-		update.status('hud.string', hud_string_rendered);
-
-		// Send text to IKE
-		// TODO: Move this to update.on('hud.string', (data) => {});
-		await this.text(status.hud.string);
-
-		IKE.hud_refresh_hrtime = now();
+		update.status('hud.string', hud_string_rendered, false);
 	} // async hud_refresh(override, retry)
 
+
+	// TODO: Make this actually work, or do anything, at all
 	// Refresh custom HUD speed
 	async hud_refresh_speed() {
 		if (config.intf.ibus.enabled !== true) return;
@@ -1140,6 +1143,20 @@ class IKE extends EventEmitter {
 					break;
 				}
 			}
+		});
+
+		// Update IKE cluster text
+		update.on('status.hud.string', async (data) => {
+			if (config.intf.ibus.enabled !== true) return;
+
+			// if (override === false && !await this.ok2hud()) return;
+			const ok2hud_now = await this.ok2hud();
+
+			if (ok2hud_now !== true) return;
+
+			IKE.hud_refresh_hrtime = now();
+
+			await this.text(data.new);
 		});
 
 		log.module('Initialized listeners');

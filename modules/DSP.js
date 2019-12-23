@@ -69,13 +69,13 @@ function eq_decode(data) {
 	update.status('dsp.echo',      echo,      false);
 	update.status('dsp.room_size', room_size, false);
 
-	update.status('dsp.eq.band0',  band[0], false);
-	update.status('dsp.eq.band1',  band[1], false);
-	update.status('dsp.eq.band2',  band[2], false);
-	update.status('dsp.eq.band3',  band[3], false);
-	update.status('dsp.eq.band4',  band[4], false);
-	update.status('dsp.eq.band5',  band[5], false);
-	update.status('dsp.eq.band6',  band[6], false);
+	update.status('dsp.eq.0',  band[0], false);
+	update.status('dsp.eq.1',  band[1], false);
+	update.status('dsp.eq.2',  band[2], false);
+	update.status('dsp.eq.3',  band[3], false);
+	update.status('dsp.eq.4',  band[4], false);
+	update.status('dsp.eq.5',  band[5], false);
+	update.status('dsp.eq.6',  band[6], false);
 
 	log.module('DSP EQ decoded');
 
