@@ -883,7 +883,7 @@ class IKE extends EventEmitter {
 
 		// Manually refresh HUD text if it's been too long since the last auto refresh
 		if (this.hud_override !== true) {
-			if (time_delta(this.hud_tx_last) > 15000) {
+			if (time_delta(this.hud_tx_last) > 9000) {
 				log.module('Manually refreshing HUD text');
 				this.text(status.hud.string);
 			}
@@ -910,7 +910,7 @@ class IKE extends EventEmitter {
 		const self = this;
 		this.timeout_data_refresh = setTimeout(() => {
 			self.data_refresh();
-		}, 14000);
+		}, 10000);
 
 		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
 	}

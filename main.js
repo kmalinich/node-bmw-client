@@ -153,6 +153,9 @@ async function init() {
 	power.init_listeners();
 
 	log.msg('Initialized');
+	
+	// Disable console output
+	config.console.output = false;
 } // async init()
 
 // Global term
