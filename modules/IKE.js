@@ -19,8 +19,8 @@ function text_urgent_off() {
 }
 
 // Get delta time between two a previous now() call and now
-function hrtime_delta(start) {
-	return now() - start;
+async function hrtime_delta(start) {
+	return await now() - start;
 }
 
 
@@ -33,6 +33,7 @@ class IKE extends EventEmitter {
 
 		// HUD refresh vars
 		this.timeout_accept_refresh = null;
+		this.timeout_bc_button_hud  = null;
 		this.timeout_data_refresh   = null;
 
 		this.hud_override      = false;
@@ -72,14 +73,20 @@ class IKE extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'BC button';
 
+		// If there's already a queued timeout scheduled, cancel it
+		if (this.timeout_bc_button_hud !== null) {
+			clearTimeout(this.timeout_bc_button_hud);
+		}
+
 		// Disable HUD updates
 		this.hud_locked = true;
 
-		// 5 seconds later, unlock HUD refresh
-		setTimeout(() => { this.hud_locked = false; }, 5000);
-
-		// 5.2 seconds later, re-refresh HUD
-		setTimeout(() => { this.hud_refresh(); }, 5200);
+		// 5.2 seconds later, unlock HUD refresh and refresh HUD
+		this.timeout_bc_button_hud = setTimeout(() => {
+			this.hud_locked = false;
+			this.hud_refresh();
+			this.timeout_bc_button_hud = null;
+		}, 5200);
 
 		return data;
 	}
@@ -558,7 +565,8 @@ class IKE extends EventEmitter {
 	}
 
 
-	ok2hud() {
+	// Determine if it is OK to refresh IKE HUD
+	async ok2hud() {
 		// Bounce if the ignition is off
 		if (status.vehicle.ignition_level < 1) return false;
 
@@ -568,34 +576,18 @@ class IKE extends EventEmitter {
 		// Bounce if override is active
 		if (this.hud_override === true) return false;
 
-		const refresh_delta = hrtime_delta(this.hud_refresh_hrtime);
+		const refresh_delta = await hrtime_delta(IKE.hud_refresh_hrtime);
 		// log.msg('refresh_delta1: ' + refresh_delta);
 
 		// Bounce if the last update was less than the configured value in milliseconds ago
 		if (refresh_delta < config.hud.refresh_max) return false;
 
-		// log.msg('refresh_delta2: ' + refresh_delta);
+		log.msg('refresh_delta2: ' + refresh_delta);
 
-		this.hud_refresh_hrtime = now();
+		IKE.hud_refresh_hrtime = await now();
 
 		return true;
 	}
-
-	// Refresh custom HUD speed
-	async hud_refresh_speed() {
-		if (config.intf.ibus.enabled !== true) return;
-
-		// Return if HUD refresh is locked
-		if (this.hud_locked !== false) return false;
-
-		// Bounce if it's not OK (yet) to post a HUD update
-		if (!this.ok2hud()) return;
-
-		this.hud_refresh_hrtime = now();
-
-		// Send text to IKE
-		await this.text(status.vehicle.speed.mph + 'mph');
-	} // async hud_refresh_speed()
 
 	// Render/refresh custom HUD string
 	// override = force a refresh even if the rendered string has not changed
@@ -604,29 +596,30 @@ class IKE extends EventEmitter {
 	async hud_refresh(override = false, retry = 1) {
 		if (config.intf.ibus.enabled !== true) return;
 
-		// Return if HUD refresh is locked
-		if (this.hud_locked !== false) return false;
+		if (override === false && !await this.ok2hud()) return;
+
+		IKE.hud_refresh_hrtime = await now();
 
 		// Bounce if it's not OK (yet) to post a HUD update
-		if (!this.ok2hud()) {
-			// Increment retry counter
-			retry++;
+		// if (override === false && !await this.ok2hud()) {
+		// 	// Increment retry counter
+		// 	retry++;
 
-			const retry_ms = retry * 2;
+		// 	const retry_ms = retry * 100;
 
-			// TODO: Make retry counter a config value
-			if (retry > 10) {
-				// log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms + ', retries exceeded, bailing');
-				return;
-			}
+		// 	// TODO: Make retry counter a config value
+		// 	if (retry > 5) {
+		// 		log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms + ', retries exceeded, bailing');
+		// 		return;
+		// 	}
 
-			// log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms);
+		// 	log.module('NOT ok2hud, setting setTimeout, retry ms: ' + retry_ms);
 
-			setTimeout(async () => {
-				await this.hud_refresh(override, retry);
-			}, retry_ms);
-			return;
-		}
+		// 	setTimeout(async () => {
+		// 		await this.hud_refresh(override, retry);
+		// 	}, retry_ms);
+		// 	return;
+		// }
 
 		// Determine Moment.js format string
 		// let moment_format;
@@ -703,7 +696,22 @@ class IKE extends EventEmitter {
 		// Send text to IKE
 		// TODO: Move this to update.on('hud.string', (data) => {});
 		await this.text(status.hud.string);
+
+		IKE.hud_refresh_hrtime = now();
 	} // async hud_refresh(override, retry)
+
+	// Refresh custom HUD speed
+	async hud_refresh_speed() {
+		if (config.intf.ibus.enabled !== true) return;
+
+		// Bounce if it's not OK (yet) to post a HUD update
+		if (!await this.ok2hud()) return;
+
+		IKE.hud_refresh_hrtime = now();
+
+		// Send text to IKE
+		await this.text(status.vehicle.speed.mph + 'mph');
+	} // async hud_refresh_speed()
 
 
 	// OBC set clock
@@ -844,7 +852,7 @@ class IKE extends EventEmitter {
 	}
 
 	// IKE cluster text send message - without space padding
-	text_nopad(message, cb = null, override = false) {
+	async text_nopad(message, override = false) {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Return if HUD refresh is locked
@@ -853,24 +861,18 @@ class IKE extends EventEmitter {
 		// Bounce if override is active
 		if (override === false && this.hud_override === true) {
 			log.module('NOT sending non-padded IKE text message: \'' + message + '\'');
-
-			// Exec callback function if present
-			typeof cb === 'function' && cb();
 			return;
 		}
 
 		let message_hex;
 
 		message_hex = [ 0x23, 0x42, 0x04 ];
-		message_hex = message_hex.concat(this.text_prepare(message, false));
+		message_hex = await message_hex.concat(this.text_prepare(message, false));
 
-		bus.data.send({
+		await bus.data.send({
 			src : 'TEL',
 			msg : message_hex,
 		});
-
-		// Exec callback function if present
-		typeof cb === 'function' && cb();
 	}
 
 
@@ -895,7 +897,7 @@ class IKE extends EventEmitter {
 
 		// Request fresh data
 		// this.request('ignition');
-		LCM.request('io-status');
+		// LCM.request('io-status');
 
 		// Refresh HUD display
 		this.hud_refresh(true);
@@ -921,7 +923,7 @@ class IKE extends EventEmitter {
 		const self = this;
 		this.timeout_data_refresh = setTimeout(() => {
 			self.data_refresh();
-		}, 5000);
+		}, 14000);
 
 		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
 	}
@@ -1083,7 +1085,7 @@ class IKE extends EventEmitter {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Bring up last HUD refresh time
-		this.hud_refresh_hrtime = now();
+		IKE.hud_refresh_hrtime = now();
 
 		// Refresh data on interface connection
 		socket.on('ready', (intf) => {

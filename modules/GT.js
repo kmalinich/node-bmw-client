@@ -98,7 +98,7 @@ function parse_dsp_memory(data) {
 					break;
 				}
 
-				// Echo/reverb
+				// Echo
 				case true : {
 					data.value += 'echo amount - ';
 

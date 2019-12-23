@@ -311,10 +311,15 @@ function parse_338(data) {
 // byte 3, bit 1 : Oil level warning (yellow)
 // byte 3, bit 2 : Oil level error   (red)
 // byte 3, bit 3 : Coolant overtemperature light
+
+// 0x10 : 5500RPM and up illuminated (oil 63 deg C)
+// 0x20 : 5500RPM and up illuminated (oil 63 deg C)
+//
 // byte 3, bit 4 : M3/M5 tachometer light
 // byte 3, bit 5 : M3/M5 tachometer light
 // byte 3, bit 6 : M3/M5 tachometer light
-//
+
+
 // byte 4 : Oil temperature (ºC = X - 48)
 //
 // byte 5, bit 0 : Oil pressure light off
@@ -336,16 +341,12 @@ function parse_545(data) {
 
 	// The amount of fuel being consumed isn't a flat number
 	// It's the difference between two numbers factoring in the time between the time both numbers were received
-	// let process_consumption = true;
 
 	const consumption_current = (data.msg[2] << 8) + data.msg[1];
 
-	// Need at least one changed value first
-	// if (DME.consumption_last === 0 || DME.consumption_last === consumption_current) process_consumption = false;
-
 	const parse = {
 		fuel : {
-			consumption : consumption_current - DME.consumption_last,
+			consumption : consumption_current - DME.consumption.last.msg,
 		},
 
 		status : {
@@ -362,9 +363,6 @@ function parse_545(data) {
 		},
 	};
 
-	// Store 'last' fuel consumption value for comparison the next go-around
-	DME.consumption_last = consumption_current;
-
 	// Update status object
 	update.status('dme.status.check_engine',  parse.status.check_engine,  false);
 	update.status('dme.status.check_gas_cap', parse.status.check_gas_cap, false);
@@ -373,8 +371,16 @@ function parse_545(data) {
 
 	update.status('temperature.oil.c', parse.temperature.oil.c, false);
 
+
 	// Update fuel consumption value if consumption process flag is true
 	// if (process_consumption === true) update.status('fuel.consumption', Math.round((parse.fuel.consumption + status.fuel.consumption) / 2));
+	if (consumption_current !== DME.consumption.last.msg) {
+		update.status('fuel.consumption', parse.fuel.consumption);
+	}
+
+	// Store 'last' fuel consumption value for comparison the next go-around
+	DME.consumption.last.msg   = consumption_current;
+	DME.consumption.last.value = parse.fuel.consumption;
 
 	return data;
 }
@@ -697,7 +703,12 @@ function init_listeners() {
 
 module.exports = {
 	// Variables
-	consumption_last : 0,
+	consumption : {
+		last : {
+			msg   : 0,
+			value : 0,
+		},
+	},
 
 	// Functions
 	encode_316,

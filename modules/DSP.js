@@ -105,8 +105,7 @@ function eq_delta(band, value) {
 
 	let msg;
 	switch (band) {
-		case 'echo'      :
-		case 'reverb'    : value += 0x20; msg = [ cmd, value ]; break;
+		case 'echo'      : value += 0x20; msg = [ cmd, value ]; break;
 		case 'room-size' :                msg = [ cmd, value ]; break;
 
 		case '0'    :
