@@ -860,7 +860,7 @@ class IKE extends EventEmitter {
 
 	// Refresh various values periodically
 	// TODO: Make setTimeout delay value a config param
-	// TODO: Make functions that are not inside IKE (like LCM.io_request()) into their own modules
+	// TODO: Make functions that are not inside IKE (like LCM.request('io-status')) into their own modules
 	data_refresh() {
 		if (config.intf.ibus.enabled !== true) return;
 

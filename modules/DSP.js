@@ -66,16 +66,16 @@ function eq_decode(data) {
 	// Insert parsed data into status
 	update.status('dsp.mode', dsp_modes[dsp_mode], false);
 
-	update.status('dsp.echo',      echo,      false);
-	update.status('dsp.room_size', room_size, false);
+	update.status('dsp.eq.echo',      echo,      false);
+	update.status('dsp.eq.room_size', room_size, false);
 
-	update.status('dsp.eq.0',  band[0], false);
-	update.status('dsp.eq.1',  band[1], false);
-	update.status('dsp.eq.2',  band[2], false);
-	update.status('dsp.eq.3',  band[3], false);
-	update.status('dsp.eq.4',  band[4], false);
-	update.status('dsp.eq.5',  band[5], false);
-	update.status('dsp.eq.6',  band[6], false);
+	update.status('dsp.eq.band.0',  band[0], false);
+	update.status('dsp.eq.band.1',  band[1], false);
+	update.status('dsp.eq.band.2',  band[2], false);
+	update.status('dsp.eq.band.3',  band[3], false);
+	update.status('dsp.eq.band.4',  band[4], false);
+	update.status('dsp.eq.band.5',  band[5], false);
+	update.status('dsp.eq.band.6',  band[6], false);
 
 	log.module('DSP EQ decoded');
 
@@ -182,18 +182,10 @@ function eq_delta(band, value) {
 }
 
 // let dsp_data = {
+//   band      : [ 10, 5, -3, -4, -3, 5, 9 ],
 //   echo      : 10,
 //   memory    : 2,
 //   room_size : 10,
-//   band      : {
-//     0 : 10,
-//     1 : 5,
-//     2 : -3,
-//     3 : -4,
-//     4 : -3,
-//     5 : 5,
-//     6 : 9,
-//   },
 // };
 
 function eq_encode(data) {
@@ -214,7 +206,7 @@ function eq_encode(data) {
 			eq_send(band_out);
 
 			log.module('DSP EQ band ' + band_num + ' encoded');
-		}, (band_num * 200));
+		}, (band_num * 25));
 	}
 }
 
