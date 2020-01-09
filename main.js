@@ -115,6 +115,9 @@ async function term_config() {
 
 // Global init
 async function init() {
+	// Enable console output
+	config.console.output = true;
+
 	log.msg('Initializing');
 
 	await term_config();
@@ -122,7 +125,7 @@ async function init() {
 	await json.read();    // Read JSON config and status files
 	await load_modules(); // Load IBUS/KBUS module node modules
 	await json.reset();   // Reset vars (hack =/)
-	await socket.init(); // Start socket client(s)
+	await socket.init();  // Start socket client(s)
 
 	api.init();       // Start Express API server
 	bluetooth.init(); // Start Linux D-Bus Bluetooth handler
@@ -153,7 +156,7 @@ async function init() {
 	power.init_listeners();
 
 	log.msg('Initialized');
-	
+
 	// Disable console output
 	config.console.output = false;
 } // async init()
@@ -162,6 +165,9 @@ async function init() {
 async function term() {
 	if (terminating === true) return;
 	terminating = true;
+
+	// Enable console output
+	config.console.output = true;
 
 	log.msg('Terminating');
 
@@ -173,6 +179,10 @@ async function term() {
 	await kodi.term();     // Stop Kodi WebSocket client
 
 	log.msg('Terminated');
+
+	// Disable console output
+	config.console.output = false;
+
 	process.exit();
 } // async term()
 
