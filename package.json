@@ -31,7 +31,7 @@
 		"eslint": "^6.8.0",
 		"eslint-config-esnext": "^4.0.0",
 		"eslint-plugin-import": "^2.19.1",
-		"eslint-plugin-node": "^10.0.0",
+		"eslint-plugin-node": "^11.0.0",
 		"eslint-plugin-promise": "^4.2.1",
 		"eslint-plugin-standard": "^4.0.1"
 	},
@@ -55,7 +55,7 @@
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
-		"onoff": "^5.0.0",
+		"onoff": "^5.0.1",
 		"pi-temperature": "^2.1.0",
 		"rpi-hdmi": "github:kmalinich/rpi-hdmi"
 	},
