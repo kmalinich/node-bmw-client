@@ -4,7 +4,7 @@
 // Broadcast: Telephone data
 function decode_data_telephone(data) {
 	data.command = 'bro';
-	data.value   = 'telephone data TODO';
+	data.value   = 'TODO: telephone data';
 
 	// A9 03 30 30, NAV,TEL, Telephone data Current_network_request     Count_0
 	// A9 0A 30 30, NAV,TEL, Telephone data Current_phone_status        Count_0
@@ -61,7 +61,7 @@ function decode_status_indicator(data) {
 // Broadcast: Telephone status
 function decode_status_telephone(data) {
 	data.command = 'bro';
-	data.value   = 'telephone status TODO';
+	data.value   = 'TODO: telephone status';
 
 	// Bitmask
 	// Bit0 : Handsfree
@@ -78,7 +78,7 @@ function decode_status_telephone(data) {
 // Request: Special indicators
 function decode_special(data) {
 	data.command = 'req';
-	data.value   = 'special indicators TODO';
+	data.value   = 'TODO: special indicators';
 
 	return data;
 }

@@ -62,7 +62,7 @@ function auto_lights_process() {
 
 	// Factor in cloud cover to lights on/off time
 	if (config.weather.apikey !== null) {
-		status.weather.daily.data.forEach((value) => {
+		status.weather.daily.data.forEach(value => {
 			if (now_weather === true) return;
 
 			if ((now_epoch - value.time) <= 0) {
@@ -1025,7 +1025,7 @@ function init_listeners() {
 	});
 
 	// Enable/disable welcome lights on GM keyfob event
-	GM.on('keyfob', (keyfob) => {
+	GM.on('keyfob', keyfob => {
 		log.module('Received GM keyfob event');
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});

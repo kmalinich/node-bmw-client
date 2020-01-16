@@ -72,7 +72,7 @@ function decode_backlight(data) {
 
 
 function init_listeners() {
-	power.on('active', (power_state) => {
+	power.on('active', power_state => {
 		switch (power_state) {
 			case false : { // Fade off backlight when power shuts off
 				for (let i = status.fem.backlight.value; i >= 0; i--) {
@@ -95,7 +95,7 @@ function init_listeners() {
 	});
 
 	// Set backlight based on current dimmer level
-	update.on('status.lcm.dimmer.value_1', (data) => {
+	update.on('status.lcm.dimmer.value_1', data => {
 		// 0xFF value from LCM = off
 		let value;
 		switch (data.new) {

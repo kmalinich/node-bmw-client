@@ -305,7 +305,7 @@ function init_listeners() {
 	});
 
 	// Reset torque reduction values when engine not running
-	update.on('status.engine.running', (data) => {
+	update.on('status.engine.running', data => {
 		switch (data.new) {
 			case false : {
 				update.status('vehicle.dsc.torque_reduction_1', 0);
@@ -315,7 +315,7 @@ function init_listeners() {
 	});
 
 	// Reset torque reduction values when ignition not in run
-	update.on('status.vehicle.ignition', (data) => {
+	update.on('status.vehicle.ignition', data => {
 		if (data.new === 'run') return;
 
 		update.status('vehicle.dsc.torque_reduction_1', 0);

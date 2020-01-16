@@ -84,7 +84,6 @@ function parse_316(data) {
 
 		rpm : Math.round(((data.msg[3] << 8) + data.msg[2]) / 6.4),
 
-
 		ac : {
 			clutch : mask_0.b6,
 		},
@@ -97,35 +96,12 @@ function parse_316(data) {
 			start     :  mask_0.b0 && mask_0.b2 &&  mask_0.b4,
 		},
 
-		horsepower : {
-			after_interventions  : 0,
-			before_interventions : 0,
-			loss                 : 0,
-			output               : 0,
-		},
-
 		torque : {
 			after_interventions  : num.round2(data.msg[1] / 2.55),
 			before_interventions : num.round2(data.msg[4] / 2.55),
 			loss                 : num.round2(data.msg[5] / 2.55),
 			output               : num.round2(data.msg[7] / 2.55),
 		},
-
-		torque_value : {
-			after_interventions  : Math.round(config.engine.torque_max * (data.msg[1] / 255)),
-			before_interventions : Math.round(config.engine.torque_max * (data.msg[4] / 255)),
-			loss                 : Math.round(config.engine.torque_max * (data.msg[5] / 255)),
-			output               : Math.round(config.engine.torque_max * (data.msg[7] / 255)),
-		},
-	};
-
-	// Horsepower = (torque * RPM)/5252
-	parse.horsepower = {
-		after_interventions  : tq2hp(parse.torque_value.after_interventions,  parse.rpm),
-		before_interventions : tq2hp(parse.torque_value.before_interventions, parse.rpm),
-
-		loss   : tq2hp(parse.torque_value.loss,   parse.rpm),
-		output : tq2hp(parse.torque_value.output, parse.rpm),
 	};
 
 
@@ -156,16 +132,6 @@ function parse_316(data) {
 	update.status('engine.torque.before_interventions', parse.torque.before_interventions);
 	update.status('engine.torque.loss',                 parse.torque.loss);
 	update.status('engine.torque.output',               parse.torque.output);
-
-	update.status('engine.torque_value.after_interventions',  parse.torque_value.after_interventions);
-	// update.status('engine.torque_value.before_interventions', parse.torque_value.before_interventions);
-	// update.status('engine.torque_value.loss',                 parse.torque_value.loss);
-	// update.status('engine.torque_value.output',               parse.torque_value.output);
-
-	update.status('engine.horsepower.after_interventions',  parse.horsepower.after_interventions);
-	// update.status('engine.horsepower.before_interventions', parse.horsepower.before_interventions);
-	// update.status('engine.horsepower.loss',                 parse.horsepower.loss);
-	// update.status('engine.horsepower.output',               parse.horsepower.output);
 
 	return data;
 }
@@ -206,11 +172,13 @@ function parse_329(data) {
 			},
 		},
 
-		temperature : {
-			coolant : {
-				c : Math.floor((data.msg[1] * 0.75) - 48),
-			},
-		},
+		// Skipping due to 0x720 ARBID broadcast
+		// TODO: Add config value for this
+		// temperature : {
+		// 	coolant : {
+		// 		c : Math.floor((data.msg[1] * 0.75) - 48),
+		// 	},
+		// },
 
 		vehicle : {
 			brake    : bitmask.test(data.msg[6], 0x01),
@@ -259,7 +227,9 @@ function parse_329(data) {
 
 	// update.status('vehicle.sport.active', parse.vehicle.sport.active, false);
 
-	update.status('temperature.coolant.c', parse.temperature.coolant.c, false);
+	// Skipping due to 0x720 ARBID broadcast
+	// TODO: Add config value for this
+	// update.status('temperature.coolant.c', parse.temperature.coolant.c, false);
 
 	update.status('vehicle.brake', parse.vehicle.brake, false);
 
@@ -272,14 +242,16 @@ function parse_329(data) {
 	return data;
 }
 
+
+// CAN ARBID 0x338
 // MS45/MSD80/MSV80 only
+//
+// byte2, bit 0 : Sport on (request by SMG transmission)
+// byte2, bit 1 : Sport off
+// byte2, bit 2 : Sport on
+// byte2, bit 3 : Sport error
 function parse_338(data) {
 	data.value = 'Sport mode status';
-
-	// byte2, bit 0 = Sport on (request by SMG transmission)
-	// byte2, bit 1 = Sport off
-	// byte2, bit 2 = Sport on
-	// byte2, bit 3 = Sport error
 
 	// let parse = {
 	// 	msg     : '0x338',
@@ -356,11 +328,13 @@ function parse_545(data) {
 			eml           : bitmask.test(data.msg[0], bitmask.b[4]),
 		},
 
-		temperature : {
-			oil : {
-				c : data.msg[4] - 48,
-			},
-		},
+		// Skipping due to 0x720 ARBID broadcast
+		// TODO: Add config value for this
+		// temperature : {
+		// 	oil : {
+		// 		c : data.msg[4] - 48,
+		// 	},
+		// },
 	};
 
 	// Update status object
@@ -369,7 +343,9 @@ function parse_545(data) {
 	update.status('dme.status.cruise',        parse.status.cruise,        false);
 	update.status('dme.status.eml',           parse.status.eml,           false);
 
-	update.status('temperature.oil.c', parse.temperature.oil.c, false);
+	// Skipping due to 0x720 ARBID broadcast
+	// TODO: Add config value for this
+	// update.status('temperature.oil.c', parse.temperature.oil.c, false);
 
 
 	// Update fuel consumption value if consumption process flag is true
@@ -508,7 +484,7 @@ function parse_615(data) {
 	};
 
 	// Round temperature values
-	parse.temperature.exterior.c = Math.floor(parse.temperature.exterior.c);
+	parse.temperature.exterior.c = num.round2(parse.temperature.exterior.c, 1);
 
 	// Update status object
 	update.status('engine.ac.request', parse.ac.request, false);
@@ -527,54 +503,13 @@ function parse_615(data) {
 // B2    = Exhaust gas temp
 // B3    = Oil temp
 // B4    = Voltage*10
-// B5,B6 = Speed
+// B5,B6 = Vehicle speed
 // B7    = Fuel pump duty cycle
 //
 // Example : [ 0x40, 0x4A, 0x03, 0x3E, 0x7C, 0x00, 0x00, 0x00 ]
 function parse_720(data) {
-	data.value = 'Coolant temp/Intake air temp/Exhaust gas temp/Oil temp/Voltage/Speed/Fuel pump duty';
-
-	const parse = {
-		dme : {
-			voltage : data.msg[4] / 10,
-		},
-
-		fuel : {
-			pump : {
-				duty    : data.msg[7],
-				percent : num.floor2(data.msg[7] / 2.55),
-			},
-		},
-
-		temperature : {
-			coolant : {
-				c : data.msg[0] - 48,
-			},
-
-			exhaust : {
-				c : data.msg[2] << 2,
-			},
-
-			oil : {
-				c : data.msg[3] - 48,
-			},
-
-			intake : {
-				c : data.msg[1] - 48,
-			},
-		},
-	};
-
-	// Update status object
-	// update.status('dme.voltage',       parse.dme.voltage);
-	// update.status('fuel.pump.duty',    parse.fuel.pump.duty);
-	update.status('fuel.pump.percent', parse.fuel.pump.percent);
-
-	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
-	// update.status('temperature.oil.c',     parse.temperature.oil.c);
-	// update.status('temperature.exhaust.c', parse.temperature.exhaust.c, false);
-	// update.status('temperature.intake.c',  parse.temperature.intake.c,  false);
-
+	// Now parsed by bmwi/intf-can.js
+	data.value = 'Coolant temp/Intake air temp/Exhaust gas temp/Oil temp/Voltage/Vehicle speed/Fuel pump duty';
 	return data;
 }
 
@@ -658,42 +593,68 @@ function init_listeners() {
 	});
 
 	// Reset torque output values when ignition not in run
-	update.on('status.vehicle.ignition', (data) => {
+	update.on('status.vehicle.ignition', data => {
 		if (data.new === 'run') return;
 
+		// TODO: Make this an array loop
 		update.status('engine.torque.after_interventions',  0);
 		update.status('engine.torque.before_interventions', 0);
 		update.status('engine.torque.loss',                 0);
 		update.status('engine.torque.output',               0);
-
-		update.status('engine.torque_value.after_interventions',  0);
-		update.status('engine.torque_value.before_interventions', 0);
-		update.status('engine.torque_value.loss',                 0);
-		update.status('engine.torque_value.output',               0);
-
-		update.status('engine.horsepower.after_interventions',  0);
-		update.status('engine.horsepower.before_interventions', 0);
-		update.status('engine.horsepower.loss',                 0);
-		update.status('engine.horsepower.output',               0);
 	});
 
 
 	// Update purely calculated values when original value changes
-	update.on('status.temperature.coolant.c',  (data) => { update.status('temperature.coolant.f',  c2f(data.new)); });
-	update.on('status.temperature.exhaust.c',  (data) => { update.status('temperature.exhaust.f',  c2f(data.new)); });
-	update.on('status.temperature.exterior.c', (data) => { update.status('temperature.exterior.f', c2f(data.new)); });
-	update.on('status.temperature.intake.c',   (data) => { update.status('temperature.intake.f',   c2f(data.new)); });
-	update.on('status.temperature.oil.c',      (data) => { update.status('temperature.oil.f',      c2f(data.new)); });
+	update.on('status.temperature.coolant.c',  data => { update.status('temperature.coolant.f',  c2f(data.new)); });
+	update.on('status.temperature.exhaust.c',  data => { update.status('temperature.exhaust.f',  c2f(data.new)); });
+	update.on('status.temperature.exterior.c', data => { update.status('temperature.exterior.f', c2f(data.new)); });
+	update.on('status.temperature.intake.c',   data => { update.status('temperature.intake.f',   c2f(data.new)); });
+	update.on('status.temperature.oil.c',      data => { update.status('temperature.oil.f',      c2f(data.new)); });
+
+
+	// Update fuel pump % value when fuel pump duty value changes
+	update.on('status.fuel.pump.duty', data => {
+		update.status('fuel.pump.percent', num.floor2(data.msg[7] / 2.55));
+	});
 
 	// Calculate and update mmhg and psi atmospheric pressure values from mbar
-	update.on('status.engine.atmospheric_pressure.mbar', (data) => {
+	update.on('status.engine.atmospheric_pressure.mbar', data => {
 		update.status('engine.atmospheric_pressure.mmhg', num.round2(data.new * 0.75006157818041));
 		update.status('engine.atmospheric_pressure.psi',  num.round2(data.new * 0.01450377380072));
 	});
 
 	// Calculate and update odometer value in miles
-	update.on('status.vehicle.odometer.km', (data) => {
+	update.on('status.vehicle.odometer.km', data => {
 		update.status('vehicle.odometer.mi', Math.floor(convert(data.new).from('kilometre').to('us mile')), false);
+	});
+
+	// Calculate and update torque value
+	update.on('status.engine.torque.after_interventions', data => {
+		update.status('engine.torque_value.after_interventions', Math.round(config.engine.torque_max * data.new));
+	});
+	update.on('status.engine.torque.before_interventions', data => {
+		update.status('engine.torque_value.before_interventions', Math.round(config.engine.torque_max * data.new));
+	});
+	update.on('status.engine.torque.loss', data => {
+		update.status('engine.torque_value.loss', Math.round(config.engine.torque_max * data.new));
+	});
+	update.on('status.engine.torque.output', data => {
+		update.status('engine.torque_value.output', Math.round(config.engine.torque_max * data.new));
+	});
+
+	// Calculate and update horsepower value
+	// Horsepower = (torque * RPM)/5252
+	update.on('status.engine.torque_value.after_interventions', data => {
+		update.status('engine.horsepower.after_interventions', tq2hp(data.new, status.engine.rpm));
+	});
+	update.on('status.engine.torque_value.before_interventions', data => {
+		update.status('engine.horsepower.before_interventions', tq2hp(data.new, status.engine.rpm));
+	});
+	update.on('status.engine.torque_value.loss', data => {
+		update.status('engine.horsepower.loss', tq2hp(data.new, status.engine.rpm));
+	});
+	update.on('status.engine.torque_value.output', data => {
+		update.status('engine.horsepower.output', tq2hp(data.new, status.engine.rpm));
 	});
 
 

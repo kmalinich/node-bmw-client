@@ -206,7 +206,7 @@ function parse_out(data) {
 		// Broadcast: Indicator status
 		case 0x2B : {
 			data.command = 'bro';
-			data.value   = 'indicator status TODO';
+			data.value   = 'TODO: indicator status';
 			break;
 		}
 
@@ -216,7 +216,7 @@ function parse_out(data) {
 		// Control: Select menu
 		case 0x37 : {
 			data.command = 'con';
-			data.value   = 'select menu TODO : 0x' + data.msg[1].toString(16);
+			data.value   = 'TODO: select menu 0x' + data.msg[1].toString(16);
 			break;
 		}
 
@@ -237,7 +237,7 @@ function parse_out(data) {
 		// Request: Radio status
 		case 0x45 : {
 			data.command = 'req';
-			data.value   = 'radio status TODO, ' + hex.i2s(data.msg[1]);
+			data.value   = 'TODO: radio status ' + hex.i2s(data.msg[1]);
 			break;
 		}
 
@@ -259,7 +259,7 @@ function parse_out(data) {
 		// Control: Audio source selection
 		case 0x4E : {
 			data.command = 'con';
-			data.value   = 'audio source selection TODO, ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
+			data.value   = 'TODO: audio source selection ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
 			break;
 		}
 
@@ -269,7 +269,7 @@ function parse_out(data) {
 		// Control: DSP EQ delta update
 		case 0x95 : {
 			data.command = 'con';
-			data.value   = 'DSP EQ delta update TODO';
+			data.value   = 'TODO: DSP EQ delta update';
 			break;
 		}
 	}

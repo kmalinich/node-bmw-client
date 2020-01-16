@@ -63,7 +63,7 @@ class GM extends EventEmitter {
 	// Reply: Diagnostic command acknowledged
 	decode_dia_reply(data) {
 		data.command = 'rep';
-		data.value   = 'TODO diagnostic command ack';
+		data.value   = 'TODO: diagnostic command ack';
 
 		return data;
 	}
@@ -71,7 +71,7 @@ class GM extends EventEmitter {
 	// Broadcast: Seat memory data
 	decode_seat_memory(data) {
 		data.command = 'bro';
-		data.value   = 'TODO seat memory data';
+		data.value   = 'TODO: seat memory data';
 
 		return data;
 	}
@@ -500,7 +500,7 @@ class GM extends EventEmitter {
 		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
 
 		// Lock and unlock doors automatically on ignition events
-		update.on('status.vehicle.ignition', (data) => {
+		update.on('status.vehicle.ignition', data => {
 			// Return if doors are not closed
 			if (status.doors.closed !== true) return;
 

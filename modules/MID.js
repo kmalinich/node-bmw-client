@@ -374,7 +374,7 @@ function init_listeners() {
 	if (config.intf.ibus.enabled !== true) return;
 
 	// Perform commands on power lib active event
-	power.on('active', (power_state) => {
+	power.on('active', power_state => {
 		status_loop(power_state);
 		text_loop(power_state);
 	});

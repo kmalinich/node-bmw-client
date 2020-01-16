@@ -103,7 +103,7 @@ class IKE extends EventEmitter {
 	// Broadcast: Country coding data
 	decode_country_coding_data(data) {
 		data.command = 'bro';
-		data.value   = 'TODO country coding data';
+		data.value   = 'TODO: country coding data';
 
 		return data;
 	}
@@ -111,7 +111,7 @@ class IKE extends EventEmitter {
 	// Gong status
 	decode_gong_status(data) {
 		data.command = 'bro';
-		data.value   = 'TODO gong status ' + data.msg;
+		data.value   = 'TODO: gong status ' + data.msg;
 
 		return data;
 	}
@@ -1072,7 +1072,7 @@ class IKE extends EventEmitter {
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Refresh data on interface connection
-		socket.on('ready', (intf) => {
+		socket.on('ready', intf => {
 			// Only refresh on new IBUS interface connection
 			if (intf !== 'ibus') return;
 
@@ -1092,7 +1092,7 @@ class IKE extends EventEmitter {
 
 
 		// Refresh data on GM keyfob unlock event
-		GM.on('keyfob', (keyfob) => {
+		GM.on('keyfob', keyfob => {
 			switch (keyfob.button) {
 				case 'unlock' : this.data_refresh();
 			}
@@ -1113,7 +1113,7 @@ class IKE extends EventEmitter {
 		update.on('status.vehicle.speed.mph',      async () => { await this.hud_refresh(); });
 
 		// DSC off CC message
-		update.on('status.vehicle.dsc.active', (value) => {
+		update.on('status.vehicle.dsc.active', value => {
 			switch (value.new) {
 				case false : {
 					// Don't send CC message if engine is not running or was started in the last 15 seconds
@@ -1258,7 +1258,7 @@ class IKE extends EventEmitter {
 			case 'status-short' : {
 				log.module('Requesting \'' + value + '\'');
 
-				bus.modules.modules_check.forEach((loop_dst) => {
+				bus.modules.modules_check.forEach(loop_dst => {
 					src = module_name;
 
 					switch (loop_dst) {
@@ -1371,7 +1371,7 @@ class IKE extends EventEmitter {
 		}
 
 		// Clear the override flag
-		setTimeout(async (message_full) => {
+		setTimeout(async message_full => {
 			// Only deactivate the override if we're currently first up
 			if (this.text_override_status.text === message_full) {
 				this.text_override_status.active = false;

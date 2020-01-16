@@ -28,7 +28,7 @@ function parse_gps_time(data) {
 // Broadcast: Current GPS position
 function parse_gps_position(data) {
 	data.command = 'bro';
-	data.value   = 'current GPS position TODO';
+	data.value   = 'TODO: current GPS position';
 
 	// data.msg[1] = 0x01 : GPS fix
 
@@ -38,7 +38,7 @@ function parse_gps_position(data) {
 // Broadcast: Current location name
 function parse_location_name(data) {
 	data.command = 'bro';
-	data.value   = 'current location name TODO';
+	data.value   = 'TODO: current location name';
 
 	// data.msg[2] = 0x01 : Town
 	// data.msg[2] = 0x02 : Street
@@ -67,7 +67,7 @@ function parse_tmc_status(data) {
 // Broadcast: Telephone data
 function parse_telephone_data(data) {
 	data.command = 'bro';
-	data.value   = 'telephone data TODO';
+	data.value   = 'TODO: telephone data';
 
 	return data;
 }

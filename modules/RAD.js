@@ -466,7 +466,7 @@ function audio_power(power_state = false, volume_increase = true) {
 			const array_request = [ 'BMBT', 'DSP' ];
 
 			let count_request = 1;
-			array_request.forEach((module_request) => {
+			array_request.forEach(module_request => {
 				setTimeout(() => {
 					bus.cmds.request_device_status(module_name, module_request);
 				}, (count_request * 100));
@@ -511,7 +511,7 @@ function init_listeners() {
 
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value
-	power.on('active', (power_state) => {
+	power.on('active', power_state => {
 		setTimeout(() => { audio_power(power_state); }, 300);
 	});
 
@@ -638,7 +638,7 @@ function parse_out(data) {
 
 		case 0xA5 : { // Control: Screen text
 			data.command = 'con';
-			data.value   = 'screen text TODO';
+			data.value   = 'TODO: screen text';
 			break;
 		}
 	}
