@@ -566,14 +566,14 @@ function parse_720(data) {
 	};
 
 	// Update status object
-	update.status('dme.voltage',       parse.dme.voltage);
-	update.status('fuel.pump.duty',    parse.fuel.pump.duty);
+	// update.status('dme.voltage',       parse.dme.voltage);
+	// update.status('fuel.pump.duty',    parse.fuel.pump.duty);
 	update.status('fuel.pump.percent', parse.fuel.pump.percent);
 
 	// update.status('temperature.coolant.c', parse.temperature.coolant.c);
 	// update.status('temperature.oil.c',     parse.temperature.oil.c);
-	update.status('temperature.exhaust.c', parse.temperature.exhaust.c, false);
-	update.status('temperature.intake.c',  parse.temperature.intake.c,  false);
+	// update.status('temperature.exhaust.c', parse.temperature.exhaust.c, false);
+	// update.status('temperature.intake.c',  parse.temperature.intake.c,  false);
 
 	return data;
 }

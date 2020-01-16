@@ -116,7 +116,7 @@ async function term_config() {
 // Global init
 async function init() {
 	// Enable console output
-	config.console.output = true;
+	config = { console : { output : true } };
 
 	log.msg('Initializing');
 
