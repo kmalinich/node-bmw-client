@@ -705,13 +705,20 @@ function io_set(packet) {
 // Make things.. how they should be?
 function reset() {
 	// Object of autolights related values
+	// TODO: Make these config values
 	const io_object_auto_lights = {
-		dimmer_value_2              : Math.ceil(status.lights.auto.night_percentage * 254),
+		dimmer_value_2 : Math.ceil(status.lights.auto.night_percentage * 254),
+
 		output_standing_front_left  : true,
 		output_standing_front_right : true,
 		output_standing_rear_left   : true,
 		output_standing_rear_right  : true,
-		switch_lowbeam_1            : status.lights.auto.lowbeam,
+
+		// Only applicable if headlights are wired as proper bi-xenons
+		output_highbeam_front_right : true,
+		output_highbeam_front_left  : true,
+
+		switch_lowbeam_1 : status.lights.auto.lowbeam,
 	};
 
 	// Object of only comfort turn values
