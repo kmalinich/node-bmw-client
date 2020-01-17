@@ -50,9 +50,10 @@ function auto_lights_process() {
 	if (config.intf.ibus.enabled !== true) return;
 
 	// Init variables
-	let new_reason;
-	let new_lowbeam;
-	let night_percentage;
+	let new_reason  = null;
+	let new_lowbeam = false;
+
+	let night_percentage = 0;
 
 	const now_time  = Date.now();
 	const now_epoch = Math.floor(now_time / 1000);
@@ -61,21 +62,26 @@ function auto_lights_process() {
 	let now_weather = false;
 
 	// Factor in cloud cover to lights on/off time
+	// TODO: The calculation is not right, it's too aggressive
 	if (config.weather.apikey !== null) {
 		status.weather.daily.data.forEach(value => {
 			if (now_weather === true) return;
 
-			if ((now_epoch - value.time) <= 0) {
-				// Add 5 hours * current cloudCover value
-				now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
-				now_weather = true;
-			}
+			if ((now_epoch - value.time) > 0) return;
+
+			// Add 5 hours * current cloudCover value
+			now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
+			now_weather = true;
+
+			console.log({ now_epoch, now_offset, now_weather, cloudCover : value.cloudCover });
 		});
 	}
 
 	const sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 	const lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
 	const lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
+
+	console.log({ lights_on, lights_off });
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
@@ -114,14 +120,16 @@ function auto_lights_process() {
 
 	update.status('lights.auto.reason', new_reason, false);
 
-	update.status('lights.auto.night_percentage', parseFloat(night_percentage.toFixed(2)) * 100, false);
+	update.status('lights.auto.night_percentage', Math.floor(night_percentage * 100), false);
 
 	if (update.status('lights.auto.lowbeam', new_lowbeam, false)) {
 		// Show autolights status in cluster
+		// TODO: Change this to be an event listener and move to IKE
 		IKE.text_override('AL: ' + status.lights.auto.lowbeam);
 	}
 
-	reset();
+	// Apply auto light status if lowbeam should be on
+	if (status.lights.auto.lowbeam === true) reset();
 
 	// Process/send LCM data on 5 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
@@ -715,6 +723,7 @@ function reset() {
 		output_standing_rear_right  : true,
 
 		// Only applicable if headlights are wired as proper bi-xenons
+		// TODO: Make wiring configuration a config value
 		output_highbeam_front_right : true,
 		output_highbeam_front_left  : true,
 
