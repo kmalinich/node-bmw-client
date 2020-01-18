@@ -508,7 +508,7 @@ function parse_615(data) {
 //
 // Example : [ 0x40, 0x4A, 0x03, 0x3E, 0x7C, 0x00, 0x00, 0x00 ]
 function parse_720(data) {
-	// Now parsed by bmwi/intf-can.js
+	// Now (pre) parsed by bmwi/lib/intf-can.js
 	data.value = 'Coolant temp/Intake air temp/Exhaust gas temp/Oil temp/Voltage/Vehicle speed/Fuel pump duty';
 	return data;
 }
