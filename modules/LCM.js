@@ -304,7 +304,7 @@ function comfort_turn_flash(action) {
 // Decode various bits of data into usable information
 function decode(data) {
 	switch (data.msg[0]) {
-		case 0x54: { // Vehicle service data
+		case 0x54 : { // Vehicle service data
 			const parse = {
 				vin      : hex.h2a(hex.i2s(data.msg[1], false)) + hex.h2a(hex.i2s(data.msg[2], false)) + hex.i2s(data.msg[3], false) + hex.i2s(data.msg[4], false) + hex.i2s(data.msg[5], false)[0],
 				odometer : ((data.msg[6] << 8) | (data.msg[7])) * 100,
@@ -378,7 +378,7 @@ function decode(data) {
 			break;
 		}
 
-		case 0xA0: { // Decode IO status and output true/false values
+		case 0xA0 : { // Decode IO status and output true/false values
 			// Remove command byte
 			data.msg = data.msg.slice(1);
 
@@ -1031,6 +1031,46 @@ function police(action = false) {
 	pl();
 }
 
+// Request status data on an interval
+function data_refresh() {
+	clearTimeout(LCM.timeout.data_refresh);
+
+	if (config.intf.ibus.enabled !== true) return;
+
+	// Only execute if ignition is in accessory or run
+	if (status.vehicle.ignition_level !== 1 && status.vehicle.ignition_level !== 3) {
+		if (LCM.timeout.data_refresh !== null) {
+			clearTimeout(LCM.timeout.data_refresh);
+			LCM.timeout.data_refresh = null;
+			log.module('Unset data refresh timeout');
+		}
+
+		return;
+	}
+
+	log.module('Refreshing data');
+
+	request('io-status');
+
+	// Return here if vehicle ignition is off
+	if (status.vehicle.ignition_level === 0) {
+		if (LCM.timeout.data_refresh !== null) {
+			clearTimeout(LCM.timeout.data_refresh);
+			LCM.timeout.data_refresh = null;
+			log.module('Unset data refresh timeout');
+		}
+
+		return;
+	}
+
+	// setTimeout for next update
+	// TODO: Make this setTimeout delay value a config param
+	if (LCM.timeout.data_refresh === null) log.module('Set data refresh timeout');
+
+	// TODO: Make this setTimeout delay value a config param
+	LCM.timeout.data_refresh = setTimeout(data_refresh, 5000);
+}
+
 // Configure event listeners
 function init_listeners() {
 	if (config.intf.ibus.enabled !== true) return;
@@ -1050,7 +1090,10 @@ function init_listeners() {
 	});
 
 	// Activate autolights if we got 'em
-	update.on('status.vehicle.ignition', auto_lights_process);
+	update.on('status.vehicle.ignition', () => {
+		auto_lights_process();
+		data_refresh();
+	});
 
 	// Update autolights status on wiper speed change
 	update.on('status.gm.wipers.speed', () => {
@@ -1070,6 +1113,7 @@ module.exports = {
 
 	// Timeout variables
 	timeout : {
+		data_refresh   : null,
 		lights_auto    : null,
 		lights_police  : null,
 		lights_welcome : null,

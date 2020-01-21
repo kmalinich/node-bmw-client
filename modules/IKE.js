@@ -860,8 +860,9 @@ class IKE extends EventEmitter {
 
 	// Refresh various values periodically
 	// TODO: Make setTimeout delay value a config param
-	// TODO: Make functions that are not inside IKE (like LCM.request('io-status')) into their own modules
 	data_refresh() {
+		clearTimeout(this.timeout_data_refresh);
+
 		if (config.intf.ibus.enabled !== true) return;
 
 		// Only execute if ignition is in accessory or run
@@ -875,15 +876,13 @@ class IKE extends EventEmitter {
 			return;
 		}
 
-		log.module('Refreshing');
+		log.module('Refreshing data');
 
-		// Request fresh data
 		// this.request('ignition');
-		// LCM.request('io-status');
 
 		// Manually refresh HUD text if it's been too long since the last auto refresh
 		if (this.hud_override !== true) {
-			if (time_delta(this.hud_tx_last) > 9000) {
+			if (time_delta(this.hud_tx_last) > 8000) {
 				log.module('Manually refreshing HUD text');
 				this.text(status.hud.string);
 			}
@@ -907,12 +906,12 @@ class IKE extends EventEmitter {
 
 		// setTimeout for next update
 		// TODO: Make this setTimeout delay value a config param
+		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
+
 		const self = this;
 		this.timeout_data_refresh = setTimeout(() => {
 			self.data_refresh();
 		}, 10000);
-
-		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
 	}
 
 	// Broadcast: Ignition status
