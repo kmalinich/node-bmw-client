@@ -127,13 +127,14 @@ async function init() {
 	await json.reset();   // Reset vars (hack =/)
 	await socket.init();  // Start socket client(s)
 
-	api.init();       // Start Express API server
-	bluetooth.init(); // Start Linux D-Bus Bluetooth handler
-	gpio.init();      // Initialize GPIO relays
-	hdmi_cec.init();  // Open HDMI-CEC
-	hdmi_rpi.init();  // Open HDMI (RPi)
-	kodi.init();      // Start Kodi WebSocket client
-	weather.init();   // Initialize weather object
+	api.init();     // Start Express API server
+	weather.init(); // Initialize Dark Sky weather API
+
+	await bluetooth.init(); // Start Linux D-Bus Bluetooth handler
+	await gpio.init();      // Initialize GPIO relays
+	await hdmi_cec.init();  // Open HDMI-CEC
+	await hdmi_rpi.init();  // Open HDMI (RPi)
+	await kodi.init();      // Start Kodi WebSocket client
 
 	// Initialize event listeners
 	BMBT.init_listeners();
@@ -153,6 +154,7 @@ async function init() {
 	gpio.init_listeners();
 	json.init_listeners();
 	kodi.init_listeners();
+	hdmi_rpi.init_listeners();
 	power.init_listeners();
 
 	log.msg('Initialized');
