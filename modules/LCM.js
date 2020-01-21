@@ -65,19 +65,19 @@ function auto_lights_process() {
 
 	// Factor in cloud cover to lights on/off time
 	// TODO: The calculation is not right, it's too aggressive
-	// if (config.weather.apikey !== null) {
-	// 	status.weather.daily.data.forEach(value => {
-	// 		if (now_weather === true) return;
+	if (config.weather.apikey !== null) {
+		status.weather.daily.data.forEach(value => {
+			if (now_weather === true) return;
 
-	// 		if ((now_epoch - value.time) > 0) return;
+			if ((now_epoch - value.time) > 0) return;
 
-	// 		// Add 5 hours * current cloudCover value
-	// 		now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
-	// 		now_weather = true;
+			// Add 5 hours * current cloudCover value
+			now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
+			now_weather = true;
 
-	// 		console.log({ now_epoch, now_offset, now_weather, cloudCover : value.cloudCover });
-	// 	});
-	// }
+			console.log({ now_epoch, now_offset, now_weather, cloudCover : value.cloudCover });
+		});
+	}
 
 	const sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 	const lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
