@@ -49,6 +49,8 @@ function auto_lights() {
 function auto_lights_process() {
 	if (config.intf.ibus.enabled !== true) return;
 
+	clearTimeout(LCM.timeout.lights_auto);
+
 	// Init variables
 	let new_reason  = null;
 	let new_lowbeam = false;
@@ -63,25 +65,25 @@ function auto_lights_process() {
 
 	// Factor in cloud cover to lights on/off time
 	// TODO: The calculation is not right, it's too aggressive
-	if (config.weather.apikey !== null) {
-		status.weather.daily.data.forEach(value => {
-			if (now_weather === true) return;
+	// if (config.weather.apikey !== null) {
+	// 	status.weather.daily.data.forEach(value => {
+	// 		if (now_weather === true) return;
 
-			if ((now_epoch - value.time) > 0) return;
+	// 		if ((now_epoch - value.time) > 0) return;
 
-			// Add 5 hours * current cloudCover value
-			now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
-			now_weather = true;
+	// 		// Add 5 hours * current cloudCover value
+	// 		now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
+	// 		now_weather = true;
 
-			console.log({ now_epoch, now_offset, now_weather, cloudCover : value.cloudCover });
-		});
-	}
+	// 		console.log({ now_epoch, now_offset, now_weather, cloudCover : value.cloudCover });
+	// 	});
+	// }
 
 	const sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 	const lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
 	const lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
 
-	console.log({ lights_on, lights_off });
+	// console.log({ lights_on, lights_off });
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
@@ -129,6 +131,7 @@ function auto_lights_process() {
 	}
 
 	// Apply auto light status if lowbeam should be on
+	// TODO: This should only have the if statement if DRL wiring is in place
 	if (status.lights.auto.lowbeam === true) reset();
 
 	// Process/send LCM data on 5 second timeout (for safety)
@@ -715,7 +718,8 @@ function reset() {
 	// Object of autolights related values
 	// TODO: Make these config values
 	const io_object_auto_lights = {
-		dimmer_value_2 : Math.ceil(status.lights.auto.night_percentage * 254),
+		dimmer_value_1 : Math.ceil(status.lights.auto.night_percentage * (238 - 64)) + 64,
+		// dimmer_value_2 : Math.ceil(status.lights.auto.night_percentage * (238 - 64)) + 64,
 
 		output_standing_front_left  : true,
 		output_standing_front_right : true,
