@@ -57,33 +57,29 @@ function auto_lights_process() {
 
 	let night_percentage = 0;
 
-	const now_time  = Date.now();
+	const now_time  = new Date(Date.now());
 	const now_epoch = Math.floor(now_time / 1000);
 
-	let now_offset  = 0;
-	let now_weather = false;
+	const sun_times = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
+
 
 	// Factor in cloud cover to lights on/off time
-	// TODO: The calculation is not right, it's too aggressive
-	if (config.weather.apikey !== null) {
-		status.weather.daily.data.forEach(value => {
-			if (now_weather === true) return;
+	let now_offset = 0;
 
-			if ((now_epoch - value.time) > 0) return;
+	if (config.weather.apikey !== null && status.weather.daily.data[0].time !== null) {
+		const value = status.weather.daily.data[0];
 
-			// Add 5 hours * current cloudCover value
-			now_offset = value.cloudCover * 5 * 60 * 60 * 1000;
-			now_weather = true;
-
-			console.log({ now_epoch, now_offset, now_weather, cloudCover : value.cloudCover });
-		});
+		// Only use weather forecast data if for a time period less than 24 hours from now
+		if ((now_epoch - value.time) < 86400 && (now_epoch - value.time) > -86400) {
+			// Add 3 hours * current cloudCover value
+			// TODO: Make the hour multiplier a config value
+			now_offset = (value.cloudCover * 3) * (60 * 60 * 1000);
+		}
 	}
 
-	const sun_times  = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
+	// Calculate on and off times with offset (if available)
 	const lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
 	const lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
-
-	// console.log({ lights_on, lights_off });
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
@@ -120,9 +116,12 @@ function auto_lights_process() {
 		night_percentage = 1;
 	}
 
+	night_percentage = num.round2(night_percentage * 100);
+
+
 	update.status('lights.auto.reason', new_reason, false);
 
-	update.status('lights.auto.night_percentage', Math.floor(night_percentage * 100), false);
+	update.status('lights.auto.night_percentage', night_percentage, false);
 
 	if (update.status('lights.auto.lowbeam', new_lowbeam, false)) {
 		// Show autolights status in cluster
