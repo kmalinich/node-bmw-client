@@ -43,7 +43,6 @@ class EWS extends EventEmitter {
 
 			case 0x01 : {
 				data.value += 'immobilisation deactivated';
-				// update.status('immobilizer.key_present', null, false);
 				update.status('immobilizer.immobilized', false, false);
 				break;
 			}
@@ -63,7 +62,8 @@ class EWS extends EventEmitter {
 		// Key number 255/0xFF = no key
 		switch (data.msg[2]) {
 			case 0xFF : {
-				update.status('immobilizer.key_number', null, false);
+				update.status('immobilizer.key_number',  null, false);
+				update.status('immobilizer.key_present', false, false);
 				break;
 			}
 
