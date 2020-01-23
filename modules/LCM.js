@@ -33,10 +33,6 @@ function auto_lights() {
 		}
 
 		case true : {
-			if (LCM.timeout.lights_auto === null) {
-				log.module('Set autolights timeout');
-			}
-
 			// Update status object
 			update.status('lights.auto.active', true, false);
 
@@ -133,10 +129,10 @@ function auto_lights_process() {
 	// TODO: This should only have the if statement if DRL wiring is in place
 	if (status.lights.auto.lowbeam === true) reset();
 
-	// Process/send LCM data on 5 second timeout (for safety)
+	// Process/send LCM data on 8.765 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
 	// TODO: Move this value into config object
-	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 5000);
+	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 8765);
 }
 
 // Cluster/interior backlight
@@ -1052,23 +1048,12 @@ function data_refresh() {
 
 	request('io-status');
 
-	// Return here if vehicle ignition is off
-	if (status.vehicle.ignition_level === 0) {
-		if (LCM.timeout.data_refresh !== null) {
-			clearTimeout(LCM.timeout.data_refresh);
-			LCM.timeout.data_refresh = null;
-			log.module('Unset data refresh timeout');
-		}
-
-		return;
-	}
-
 	// setTimeout for next update
 	// TODO: Make this setTimeout delay value a config param
 	if (LCM.timeout.data_refresh === null) log.module('Set data refresh timeout');
 
 	// TODO: Make this setTimeout delay value a config param
-	LCM.timeout.data_refresh = setTimeout(data_refresh, 5000);
+	LCM.timeout.data_refresh = setTimeout(data_refresh, 5678);
 }
 
 // Configure event listeners
@@ -1089,10 +1074,17 @@ function init_listeners() {
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 
-	// Activate autolights if we got 'em
-	update.on('status.vehicle.ignition', () => {
-		auto_lights_process();
+	update.on('status.vehicle.ignition', data => {
+		// Activate autolights if we got 'em
+		auto_lights();
+
+		// Enable periodic data refresh
 		data_refresh();
+	});
+
+	update.on('status.immobilizer.key_present', data => {
+		// Turn off welcome lights if they're still on
+		if (data.new === true) welcome_lights(false);
 	});
 
 	// Update autolights status on wiper speed change

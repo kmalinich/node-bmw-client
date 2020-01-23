@@ -505,20 +505,17 @@ class GM extends EventEmitter {
 			if (status.doors.closed !== true) return;
 
 			switch (data.new) {
-				case 'off' : {
-					// Return if not previously in accessory position
-					// if (data.old !== 'accessory') return;
+				// case 'off' : {
+				// 	setTimeout(() => {
+				// 		// Return if doors are NOT locked
+				// 		if (status.vehicle.locked !== true) return;
 
-					setTimeout(() => {
-						// Return if doors are NOT locked
-						if (status.vehicle.locked !== true) return;
+				// 		log.module('Doors are locked and closed, toggling door locks');
 
-						log.module('Doors are locked and closed, toggling door locks');
-
-						this.timeout.ignition.unlock = setTimeout(() => { this.locks(); }, 750);
-					}, 250);
-					break;
-				}
+				// 		this.timeout.ignition.unlock = setTimeout(() => { this.locks(); }, 750);
+				// 	}, 250);
+				// 	break;
+				// }
 
 				case 'run' : {
 					// Return if not previously in start position
@@ -534,6 +531,20 @@ class GM extends EventEmitter {
 					}, 500);
 				}
 			}
+		});
+
+		update.on('status.immobilizer.key_present', data => {
+			// Return if doors are not closed
+			if (status.doors.closed !== true) return;
+
+			/// Return if key is present
+			if (data.new !== false) return;
+
+			// Return if doors are NOT locked
+			if (status.vehicle.locked !== true) return;
+
+			log.module('Doors are locked and closed, toggling door locks (from key presence)');
+			this.locks();
 		});
 
 		log.msg('Initialized listeners');
