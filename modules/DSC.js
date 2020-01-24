@@ -73,9 +73,9 @@ function encode_1a1(speed = 0) {
 //
 // Byte 0, bit 0 :
 // Byte 0, bit 1 :
-// Byte 0, bit 2 :
+// Byte 0, bit 2 : DSC off
 // Byte 0, bit 3 :
-// Byte 0, bit 4 :
+// Byte 0, bit 4 : Brake applied
 // Byte 0, bit 5 :
 // Byte 0, bit 6 :
 // Byte 0, bit 7 :
@@ -84,7 +84,7 @@ function encode_1a1(speed = 0) {
 // Byte 1, bit 1 :
 // Byte 1, bit 2 :
 // Byte 1, bit 3 :
-// Byte 1, bit 4 : Brake applied (unconfirmed)
+// Byte 1, bit 4 :
 // Byte 1, bit 5 : Speed LSB
 // Byte 1, bit 6 : Speed LSB
 // Byte 1, bit 7 : Speed LSB
@@ -221,16 +221,17 @@ function parse_1f5(data) {
 function parse_1f8(data) {
 	data.command = 'bro';
 
+	// TODO: Add brake pressure handling
 	// Brake pressure messages observed in 2002 E39 M5
 	//
-	//       B0 B1 B2 B3 B4 B5 B6 B7
-	// 077F  14 14 00 00 00 00 82 01
+	//        B0 B1 B2 B3 B4 B5 B6 B7
+	// 0x77F  14 14 00 00 00 00 82 01
 	//
 	// B6 : Pedal pressure LSB
 	// B7 : Pedal pressure MSB
 	//
-	//       XX XX    XX          XX
-	// 07B5  30 30 00 30 00 00 00 42
+	//        XX XX    XX          XX
+	// 0x7B5  30 30 00 30 00 00 00 42
 	//
 	//
 	//
