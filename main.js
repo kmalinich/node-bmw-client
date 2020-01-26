@@ -127,8 +127,8 @@ async function init() {
 	await json.reset();   // Reset vars (hack =/)
 	await socket.init();  // Start socket client(s)
 
-	api.init();     // Start Express API server
-	weather.init(); // Initialize Dark Sky weather API
+	await api.init(); // Start Express API server
+	weather.init();   // Initialize Dark Sky weather API
 
 	await bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 	await gpio.init();      // Initialize GPIO relays
@@ -173,6 +173,7 @@ async function term() {
 
 	log.msg('Terminating');
 
+	await api.term();      // Stop Express API server
 	await json.write();    // Write JSON config and status files
 	await socket.term();   // Stop socket client
 	await hdmi_cec.term(); // Close HDMI (CEC)
