@@ -323,8 +323,6 @@ class GM extends EventEmitter {
 
 	// Send message to GM
 	io_set(packet) {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// log.module('Setting IO status');
 
 		// Add 'set IO status' command to beginning of array
@@ -375,8 +373,6 @@ class GM extends EventEmitter {
 
 	// Request various things from GM
 	request(value) {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// Init variables
 		let src;
 		let cmd;
@@ -497,8 +493,6 @@ class GM extends EventEmitter {
 
 
 	init_listeners() {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// Lock and unlock doors automatically on ignition events
 		update.on('status.vehicle.ignition', data => {
 			// Return if doors are not closed

@@ -251,8 +251,6 @@ function decode_cassette_status(data) {
 
 // Send audio control commands
 function audio_control(command) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	const cmd = 0x36;
 
 	const msgs = {
@@ -339,8 +337,6 @@ function audio_control(command) {
 }
 
 function cassette_control(command) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	const cmd = 0x4A;
 
 	const msgs = {
@@ -385,8 +381,6 @@ function cassette_control(command) {
 }
 
 function volume_control(value = 1) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	let msg_value;
 	switch (value) {
 		case 5 : msg_value = 0x51; break;
@@ -416,8 +410,6 @@ function volume_control(value = 1) {
 
 // Power on DSP amp and GPIO pin for amplifier
 function audio_power(power_state = false, volume_increase = true) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
@@ -506,8 +498,7 @@ function audio_power(power_state = false, volume_increase = true) {
 
 function init_listeners() {
 	// Bounce if we're not configured to emulate the RAD module or not in an E39
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.rad       !== true) return;
+	if (config.emulate.rad !== true) return;
 
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value

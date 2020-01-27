@@ -240,8 +240,7 @@ function decode_knob(data) {
 
 // Set or unset the status timeout
 function status_loop(action) {
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.bmbt      !== true) return;
+	if (config.emulate.bmbt !== true) return;
 
 	if (status.vehicle.ignition_level < 1) action = false;
 
@@ -285,8 +284,6 @@ function status_loop(action) {
 
 // Send BMBT status, and request status from RAD
 function refresh_status() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	if (status.vehicle.ignition_level > 0) {
 		log.module('Refreshing status');
 
@@ -307,8 +304,7 @@ function refresh_status() {
 
 // Send the power on button command if needed/ready
 function toggle_power_if_ready() {
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.bmbt      !== true) return;
+	if (config.emulate.bmbt !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
 	if (BMBT.timeout.power_on !== null) return;
@@ -352,8 +348,6 @@ function toggle_power_if_ready() {
 
 // Say we have no tape in the player
 function cassette_status(value = 0x05) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	bus.data.send({
 		src : module_name,
 		dst : 'RAD',
@@ -363,8 +357,6 @@ function cassette_status(value = 0x05) {
 
 // Emulate button presses
 function button(button) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	let button_down = 0x00;
 	// let button_hold;
 	let button_up;
@@ -410,8 +402,6 @@ function button(button) {
 
 
 function init_listeners() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Perform commands on power lib active event
 	power.on('active', power_state => {
 		status_loop(power_state);

@@ -4,13 +4,11 @@ const now     = require('performance-now');
 
 // Automatic lights handling
 function auto_lights() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Default action is true (enable/process auto lights)
 	let action = true;
 
 	// Return if auto lights are disabled in the config
-	if (config.lights.auto !== true) return;
+	if (config.lights.auto !== true) action = false;
 
 	// Action is false if ignition is not in run
 	if (status.vehicle.ignition_level < 3) action = false;
@@ -43,8 +41,6 @@ function auto_lights() {
 
 // Logic based on location and time of day, determine if the low beams should be on
 function auto_lights_process() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	clearTimeout(LCM.timeout.lights_auto);
 
 	// Init variables
@@ -137,8 +133,6 @@ function auto_lights_process() {
 
 // Cluster/interior backlight
 function set_backlight(value) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	log.module('Setting backlight to ' + value);
 
 	bus.data.send({
@@ -150,8 +144,6 @@ function set_backlight(value) {
 
 // Get LCM coding data
 function coding_get() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Get all 20 blocks of coding data
 	for (let byte = 0; byte < 21; byte++) {
 		bus.data.send({
@@ -163,8 +155,6 @@ function coding_get() {
 
 // Get LCM identity data
 function identity_get() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	bus.data.send({
 		src : 'DIA',
 		msg : [ 0x00 ],
@@ -697,8 +687,6 @@ function io_encode(object) {
 
 // Send 'Set IO status' message to LCM
 function io_set(packet) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	log.module('Setting IO status');
 
 	packet.unshift(0x0C);
@@ -743,8 +731,6 @@ function reset() {
 
 // Request various things from LCM
 function request(value) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	let src;
 	let msg;
 
@@ -1031,8 +1017,6 @@ function police(action = false) {
 function data_refresh() {
 	clearTimeout(LCM.timeout.data_refresh);
 
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Only execute if ignition is in accessory or run
 	if (status.vehicle.ignition_level !== 1 && status.vehicle.ignition_level !== 3) {
 		if (LCM.timeout.data_refresh !== null) {
@@ -1058,8 +1042,6 @@ function data_refresh() {
 
 // Configure event listeners
 function init_listeners() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Refresh data on IKE event
 	IKE.on('obc-refresh', () => {
 		request('dimmer');
@@ -1076,10 +1058,10 @@ function init_listeners() {
 
 	update.on('status.vehicle.ignition', data => {
 		// Activate autolights if we got 'em
-		auto_lights();
+		auto_lights(data.new);
 
 		// Enable periodic data refresh
-		data_refresh();
+		data_refresh(data.new);
 	});
 
 	update.on('status.immobilizer.key_present', data => {

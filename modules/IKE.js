@@ -9,8 +9,6 @@ const os      = require('os');
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	bus.data.send({
 		src : 'CCM',
 		msg : [ 0x1A, 0x30, 0x00 ],
@@ -513,8 +511,6 @@ class IKE extends EventEmitter {
 	// Pretend to be IKE saying the car is on
 	// Note - this can and WILL set the alarm off - kudos to the Germans
 	ignition(state) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Format state name
 		switch (state) {
 			case 0       :
@@ -686,8 +682,6 @@ class IKE extends EventEmitter {
 	// TODO: Make this actually work, or do anything, at all
 	// Refresh custom HUD speed
 	async hud_refresh_speed() {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
 
@@ -698,8 +692,6 @@ class IKE extends EventEmitter {
 
 	// OBC set clock
 	obc_clock() {
-		if (config.intf.ibus.enabled !== true) return;
-
 		log.module('Setting OBC clock to current time');
 
 		// Time
@@ -717,8 +709,6 @@ class IKE extends EventEmitter {
 
 	// OBC data request
 	obc_data(action, value, target) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		let cmd = 0x41; // OBC data request
 
 		// Init variables
@@ -757,8 +747,6 @@ class IKE extends EventEmitter {
 
 	// Check control messages
 	text_urgent(message, timeout = 5000) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		log.module('Sending urgent IKE text message: \'' + message + '\'');
 
 		let message_hex;
@@ -779,8 +767,6 @@ class IKE extends EventEmitter {
 
 	// Check control warnings
 	text_warning(message, timeout = 10000) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		log.module('Sending warning IKE text message: \'' + message + '\'');
 
 		let message_hex;
@@ -811,8 +797,6 @@ class IKE extends EventEmitter {
 
 	// Trim IKE text string and potentially space-pad
 	text_prepare(message, pad = false) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Trim string to max length
 		message = message.substring(0, this.max_len_text);
 
@@ -835,8 +819,6 @@ class IKE extends EventEmitter {
 
 	// IKE cluster text send message - without space padding
 	async text_nopad(message, override = false) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return false;
 
@@ -862,8 +844,6 @@ class IKE extends EventEmitter {
 	// TODO: Make setTimeout delay value a config param
 	data_refresh() {
 		clearTimeout(this.timeout_data_refresh);
-
-		if (config.intf.ibus.enabled !== true) return;
 
 		// Only execute if ignition is in accessory or run
 		if (status.vehicle.ignition_level !== 1 && status.vehicle.ignition_level !== 3) {
@@ -1068,8 +1048,6 @@ class IKE extends EventEmitter {
 	}
 
 	init_listeners() {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Refresh data on interface connection
 		socket.on('ready', intf => {
 			// Only refresh on new IBUS interface connection
@@ -1141,8 +1119,6 @@ class IKE extends EventEmitter {
 
 	// Refresh OBC data
 	obc_refresh() {
-		if (config.intf.ibus.enabled !== true) return;
-
 		this.emit('obc-refresh');
 
 		log.module('Refreshing all OBC data');
@@ -1214,8 +1190,6 @@ class IKE extends EventEmitter {
 
 	// Request various things from IKE
 	request(value) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		let cmd = null;
 		let src = 'VID';
 		let dst = module_name;
@@ -1287,8 +1261,6 @@ class IKE extends EventEmitter {
 
 	// IKE cluster text send message
 	async text(message, override = false) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return;
 
@@ -1317,8 +1289,6 @@ class IKE extends EventEmitter {
 
 	// IKE cluster text send message, override other messages
 	async text_override(message, timeout = 2500, direction = 'left', turn = false) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return;
 
