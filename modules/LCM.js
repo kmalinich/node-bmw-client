@@ -896,27 +896,34 @@ function pl() {
 		IKE.text_warning('   Police lights!   ', 0);
 	}
 
+	// TODO: Load police lights config from config object
 	const object = {
 		front : {
 			left : {
-				fog      : false,
+				fog : false,
+
 				// highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				lowbeam  : false,
-				standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
-				turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+
+				// standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				// standing : pl_check([ 2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 ]),
-				// turn     : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
+				// turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
+
+				turn : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
 			},
 			right : {
-				fog      : false,
+				fog : false,
+
 				// highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				lowbeam  : false,
-				standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
-				turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+
+				// standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				// standing : pl_check([ 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 ]),
-				// turn     : pl_check([ 0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27 ]),
+				// turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
+
+				turn : pl_check([ 0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27 ]),
 			},
 		},
 
@@ -981,7 +988,7 @@ function pl() {
 
 	io_encode(io_object);
 
-	update.status('lcm.police_lights.counts.main', (status.lcm.police_lights.counts.main + 1));
+	status.lcm.police_lights.counts.main++;
 
 	if (status.lcm.police_lights.counts.main === 32) {
 		update.status('lcm.police_lights.counts.main', 0);
@@ -989,7 +996,7 @@ function pl() {
 	}
 
 	LCM.timeout.lights_police = setTimeout(pl, config.lights.police_lights.delay);
-}
+} // pl()
 
 // Check if the current police lights count is in the provided array
 function pl_check(data) {
