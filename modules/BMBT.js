@@ -139,12 +139,10 @@ function decode_button(data) {
 
 			// Controls not dependent on Bluetooth or Kodi being enabled
 			switch (status.bmbt.last.action + status.bmbt.last.button) {
-				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 1000); break;
-				case 'depress2' : LCM.police(false);                              break;
+				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 2000); break;
 
-				case 'depress4' : LCM.police(true); setTimeout(LCM.police, 400); break;
-				case 'depress5' : LCM.police(true); setTimeout(LCM.police, 500); break;
-				case 'depress6' : LCM.police(true);                              break;
+				case 'depress2' : LCM.police(false); break;
+				case 'depress3' : LCM.police(true);  break;
 
 				case 'depressmode' : {
 					// To use holding the phone button in to toggle RPi display on/off
