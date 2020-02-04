@@ -746,6 +746,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Check control messages
+	// TODO: Limit text length with configurable value
 	text_urgent(message, timeout = 5000) {
 		log.module('Sending urgent IKE text message: \'' + message + '\'');
 
@@ -766,6 +767,7 @@ class IKE extends EventEmitter {
 	} // text_urgent(message, timeout)
 
 	// Check control warnings
+	// TODO: Limit text length with configurable value
 	text_warning(message, timeout = 10000) {
 		log.module('Sending warning IKE text message: \'' + message + '\'');
 
@@ -796,6 +798,7 @@ class IKE extends EventEmitter {
 	}
 
 	// Trim IKE text string and potentially space-pad
+	// TODO: Limit text length with configurable value
 	text_prepare(message, pad = false) {
 		// Trim string to max length
 		message = message.substring(0, this.max_len_text);
@@ -818,6 +821,8 @@ class IKE extends EventEmitter {
 	}
 
 	// IKE cluster text send message - without space padding
+	// TODO: Limit text length with configurable value
+	// TODO: Make this actually work, lol
 	async text_nopad(message, override = false) {
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return false;
@@ -1260,6 +1265,7 @@ class IKE extends EventEmitter {
 	}
 
 	// IKE cluster text send message
+	// TODO: Limit text length with configurable value
 	async text(message, override = false) {
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return;
@@ -1288,6 +1294,7 @@ class IKE extends EventEmitter {
 	} // async text(message, override)
 
 	// IKE cluster text send message, override other messages
+	// TODO: Limit text length with configurable value
 	async text_override(message, timeout = 2500, direction = 'left', turn = false) {
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return;
