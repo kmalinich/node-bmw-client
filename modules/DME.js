@@ -614,7 +614,7 @@ function init_listeners() {
 
 	// Update fuel pump % value when fuel pump duty value changes
 	update.on('status.fuel.pump.duty', data => {
-		update.status('fuel.pump.percent', num.floor2(data.msg[7] / 2.55));
+		update.status('fuel.pump.percent', num.floor2(data.new / 2.55));
 	});
 
 	// Calculate and update mmhg and psi atmospheric pressure values from mbar
