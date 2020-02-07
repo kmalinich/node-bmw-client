@@ -502,6 +502,7 @@ function init_listeners() {
 
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value
+	//       .. and make it config.rad.delay.power_active and config.rad.delay.after_start
 	power.on('active', power_state => {
 		setTimeout(() => { audio_power(power_state); }, 300);
 	});
@@ -509,6 +510,7 @@ function init_listeners() {
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
 	IKE.on('ignition-start-end', () => {
 		// Specify to not increase the volume on this possibly second power on event
+		// TODO: Change this to seconds
 		setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
 	});
 
