@@ -11,8 +11,8 @@ function c2f(deg_c) {
 }
 
 // Horsepower = ((torque * RPM) / 5252)
-function tq2hp(torque, rpm) {
-	return Math.round((torque * rpm) / 5252);
+function tq2hp(torque) {
+	return Math.round((torque * status.engine.rpm) / 5252);
 }
 
 
@@ -645,16 +645,16 @@ function init_listeners() {
 	// Calculate and update horsepower value
 	// Horsepower = (torque * RPM)/5252
 	update.on('status.engine.torque_value.after_interventions', data => {
-		update.status('engine.horsepower.after_interventions', tq2hp(data.new, status.engine.rpm));
+		update.status('engine.horsepower.after_interventions', tq2hp(data.new));
 	});
 	update.on('status.engine.torque_value.before_interventions', data => {
-		update.status('engine.horsepower.before_interventions', tq2hp(data.new, status.engine.rpm));
+		update.status('engine.horsepower.before_interventions', tq2hp(data.new));
 	});
 	update.on('status.engine.torque_value.loss', data => {
-		update.status('engine.horsepower.loss', tq2hp(data.new, status.engine.rpm));
+		update.status('engine.horsepower.loss', tq2hp(data.new));
 	});
 	update.on('status.engine.torque_value.output', data => {
-		update.status('engine.horsepower.output', tq2hp(data.new, status.engine.rpm));
+		update.status('engine.horsepower.output', tq2hp(data.new));
 	});
 
 
