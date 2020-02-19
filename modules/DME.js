@@ -97,10 +97,10 @@ function parse_316(data) {
 		},
 
 		torque : {
-			after_interventions  : num.round2(data.msg[1] / 2.55),
-			before_interventions : num.round2(data.msg[4] / 2.55),
-			loss                 : num.round2(data.msg[5] / 2.55),
-			output               : num.round2(data.msg[7] / 2.55),
+			after_interventions  : num.round2((data.msg[1] / 2.55), 1),
+			before_interventions : num.round2((data.msg[4] / 2.55), 1),
+			loss                 : num.round2((data.msg[5] / 2.55), 1),
+			output               : num.round2((data.msg[7] / 2.55), 1),
 		},
 	};
 
