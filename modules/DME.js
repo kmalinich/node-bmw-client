@@ -630,16 +630,16 @@ function init_listeners() {
 
 	// Calculate and update torque value
 	update.on('status.engine.torque.after_interventions', data => {
-		update.status('engine.torque_value.after_interventions', Math.round(config.engine.torque_max * data.new));
+		update.status('engine.torque_value.after_interventions', Math.round(config.engine.torque_max * (data.new / 100)));
 	});
 	update.on('status.engine.torque.before_interventions', data => {
-		update.status('engine.torque_value.before_interventions', Math.round(config.engine.torque_max * data.new));
+		update.status('engine.torque_value.before_interventions', Math.round(config.engine.torque_max * (data.new / 100)));
 	});
 	update.on('status.engine.torque.loss', data => {
-		update.status('engine.torque_value.loss', Math.round(config.engine.torque_max * data.new));
+		update.status('engine.torque_value.loss', Math.round(config.engine.torque_max * (data.new / 100)));
 	});
 	update.on('status.engine.torque.output', data => {
-		update.status('engine.torque_value.output', Math.round(config.engine.torque_max * data.new));
+		update.status('engine.torque_value.output', Math.round(config.engine.torque_max * (data.new / 100)));
 	});
 
 	// Calculate and update horsepower value
