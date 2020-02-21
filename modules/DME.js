@@ -111,17 +111,6 @@ function parse_316(data) {
 	// update.status('vehicle.key.run',       parse.key.run,       false);
 	// update.status('vehicle.key.start',     parse.key.start,     false);
 
-
-	// If the engine is newly running
-	const engine_running = (parse.rpm > 0);
-	if (engine_running === true) {
-		update.status('engine.rpm', parse.rpm);
-
-		if (update.status('engine.running', engine_running, false)) {
-			update.status('engine.start_time_last', Date.now(), false);
-		}
-	}
-
 	update.status('engine.ac.clutch',           parse.ac.clutch,           false);
 	update.status('engine.dsc_error',           parse.dsc_error,           false);
 	update.status('engine.maf_error',           parse.maf_error,           false);
@@ -132,6 +121,19 @@ function parse_316(data) {
 	update.status('engine.torque.before_interventions', parse.torque.before_interventions);
 	update.status('engine.torque.loss',                 parse.torque.loss);
 	update.status('engine.torque.output',               parse.torque.output);
+
+	update.status('engine.rpm', parse.rpm);
+
+	// Return here if engine is not running
+	if (parse.rpm === 0) {
+		update.status('engine.running', false, false);
+		return data;
+	}
+
+	// If the engine is newly running
+	if (update.status('engine.running', true, false)) {
+		update.status('engine.start_time_last', Date.now(), false);
+	}
 
 	return data;
 }
