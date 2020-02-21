@@ -495,34 +495,37 @@ class GM extends EventEmitter {
 	init_listeners() {
 		// Lock and unlock doors automatically on ignition events
 		update.on('status.vehicle.ignition', data => {
-			// Return if doors are not closed
-			if (status.doors.closed !== true) return;
-
 			switch (data.new) {
-				// case 'off' : {
-				// 	setTimeout(() => {
-				// 		// Return if doors are NOT locked
-				// 		if (status.vehicle.locked !== true) return;
+				case 'off' : {
+					this.timeout.ignition.unlock = setTimeout(() => {
+						// Return if doors are not closed
+						if (status.doors.closed !== true) return;
 
-				// 		log.module('Doors are locked and closed, toggling door locks');
+						// Return if doors are NOT locked
+						if (status.vehicle.locked !== true) return;
 
-				// 		this.timeout.ignition.unlock = setTimeout(() => { this.locks(); }, 750);
-				// 	}, 250);
-				// 	break;
-				// }
+						log.module('Doors are closed and locked, toggling door locks (from ignition state)');
+
+						this.locks();
+					}, 250);
+					break;
+				}
 
 				case 'run' : {
 					// Return if not previously in start position
 					if (data.old !== 'start') return;
 
 					this.timeout.ignition.lock = setTimeout(() => {
+						// Return if doors are not closed
+						if (status.doors.closed !== true) return;
+
 						// Return if doors are locked
 						if (status.vehicle.locked === true) return;
 
-						log.module('Doors are unlocked and closed, toggling door locks');
+						log.module('Doors are closed and unlocked, toggling door locks (from ignition state)');
 
 						this.locks();
-					}, 500);
+					}, 250);
 				}
 			}
 		});
@@ -531,13 +534,14 @@ class GM extends EventEmitter {
 			// Return if doors are not closed
 			if (status.doors.closed !== true) return;
 
-			/// Return if key is present
+			// Return if key is present
 			if (data.new !== false) return;
 
 			// Return if doors are NOT locked
 			if (status.vehicle.locked !== true) return;
 
-			log.module('Doors are locked and closed, toggling door locks (from key presence)');
+			log.module('Doors are closed and locked, and key is not present, toggling door locks (from key presence)');
+
 			this.locks();
 		});
 
