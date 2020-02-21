@@ -148,11 +148,13 @@ function parse_329(data) {
 
 			cruise : {
 				button : {
-					resume :  bitmask.test(data.msg[3], 0x20) &&  bitmask.test(data.msg[3], 0x40),
+					// Something that forcibly disengages the cruise control (like pressing brake or clutch)
+					deactivator :  bitmask.test(data.msg[3], 0x01),
+
 					minus  : !bitmask.test(data.msg[3], 0x20) &&  bitmask.test(data.msg[3], 0x40),
-					plus   :  bitmask.test(data.msg[3], 0x20) && !bitmask.test(data.msg[3], 0x40),
 					onoff  :  bitmask.test(data.msg[3], 0x80),
-					unk1   :  bitmask.test(data.msg[3], 0x01),
+					plus   :  bitmask.test(data.msg[3], 0x20) && !bitmask.test(data.msg[3], 0x40),
+					resume :  bitmask.test(data.msg[3], 0x20) &&  bitmask.test(data.msg[3], 0x40),
 				},
 
 				status : {
@@ -172,11 +174,11 @@ function parse_329(data) {
 	// Update status object
 	update.status('engine.atmospheric_pressure.hpa', parse.engine.atmospheric_pressure.hpa);
 
-	update.status('vehicle.cruise.button.minus',  parse.vehicle.cruise.button.minus,  false);
-	update.status('vehicle.cruise.button.onoff',  parse.vehicle.cruise.button.onoff,  false);
-	update.status('vehicle.cruise.button.plus',   parse.vehicle.cruise.button.plus,   false);
-	update.status('vehicle.cruise.button.resume', parse.vehicle.cruise.button.resume, false);
-	update.status('vehicle.cruise.button.unk1',   parse.vehicle.cruise.button.unk1,   false);
+	update.status('vehicle.cruise.button.deactivator', parse.vehicle.cruise.button.deactivator, false);
+	update.status('vehicle.cruise.button.minus',       parse.vehicle.cruise.button.minus,       false);
+	update.status('vehicle.cruise.button.onoff',       parse.vehicle.cruise.button.onoff,       false);
+	update.status('vehicle.cruise.button.plus',        parse.vehicle.cruise.button.plus,        false);
+	update.status('vehicle.cruise.button.resume',      parse.vehicle.cruise.button.resume,      false);
 
 	update.status('vehicle.cruise.status.activating', parse.vehicle.cruise.status.activating, false);
 	update.status('vehicle.cruise.status.active',     parse.vehicle.cruise.status.active,     false);
