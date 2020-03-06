@@ -1035,9 +1035,11 @@ function data_refresh() {
 		return;
 	}
 
-	log.module('Refreshing data');
-
-	request('io-status');
+	// Only request io-status if not configured to get voltage from CANBUS or ignition is not in run
+	if (config.canbus.voltage !== true || status.vehicle.ignition_level < 3) {
+		log.module('Refreshing io-status');
+		request('io-status');
+	}
 
 	// setTimeout for next update
 	// TODO: Make this setTimeout delay value a config param
@@ -1065,10 +1067,10 @@ function init_listeners() {
 
 	update.on('status.vehicle.ignition', data => {
 		// Activate autolights if we got 'em
-		auto_lights(data.new);
+		auto_lights();
 
 		// Enable periodic data refresh
-		data_refresh(data.new);
+		data_refresh();
 	});
 
 	update.on('status.immobilizer.key_present', data => {

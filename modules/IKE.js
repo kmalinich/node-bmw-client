@@ -874,7 +874,7 @@ class IKE extends EventEmitter {
 		}
 
 		// Only request temperatures if not configured to get both from CANBUS or ignition is not in run
-		if (config.canbus.coolant === false || config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
+		if (config.canbus.coolant !== true || config.canbus.exterior !== true || status.vehicle.ignition_level < 3) {
 			this.request('temperature');
 		}
 
