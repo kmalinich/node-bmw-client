@@ -64,7 +64,7 @@
 		"url": "git+https://github.com/kmalinich/node-bmw-client.git"
 	},
 	"scripts": {
-		"postinstall": "/usr/bin/env bash ./postinstall"
+		"preinstall": "/usr/bin/env bash ./preinstall"
 	},
 	"type": "script",
 	"version": "0.0.1"
