@@ -108,8 +108,6 @@ function auto_lights_process(ignition_level = 0) {
 		night_percentage = 1;
 	}
 
-	night_percentage = num.round2(night_percentage * 100);
-
 
 	update.status('lights.auto.reason', new_reason, false);
 
@@ -402,9 +400,6 @@ function decode(data) {
 			update.status('lcm.io.30', data.msg[30], false); // Voltage: Turn signal
 			update.status('lcm.io.31', data.msg[31], false);
 
-			// Decode values
-			update.status('lcm.dimmer.value_2', data.msg[15], false);
-
 			const voltages = {
 				pot : {
 					dimmer : num.round2((data.msg[15] * 5) / 255),
@@ -651,27 +646,27 @@ function io_encode(object) {
 		b12 : status.lcm.io[12],
 		b13 : status.lcm.io[13],
 		b14 : status.lcm.io[14],
-		b15 : status.lcm.io[15], // dimmer_value_2
-		b16 : status.lcm.io[16], // Something to do with autoleveling
+		b15 : status.lcm.io[15], // Voltage: Potentiometer, dimmer
+		b16 : status.lcm.io[16], // Voltage: Potentiometer, LWR
 		b17 : status.lcm.io[17],
 		b18 : status.lcm.io[18],
 		b19 : status.lcm.io[19],
 		b20 : status.lcm.io[20],
 		b21 : status.lcm.io[21],
 		b22 : status.lcm.io[22],
-		b23 : status.lcm.io[23], // Something to do with autoleveling
-		b24 : status.lcm.io[24], // Something to do with autoleveling
+		b23 : status.lcm.io[23], // Voltage: LWR sensor, front
+		b24 : status.lcm.io[24], // Voltage: LWR sensor, rear
 		b25 : status.lcm.io[25],
 		b26 : status.lcm.io[26],
 		b27 : status.lcm.io[27],
 		b28 : status.lcm.io[28],
-		b29 : status.lcm.io[29],
-		b30 : status.lcm.io[30],
+		b29 : status.lcm.io[29], // Voltage: Flash to pass
+		b30 : status.lcm.io[30], // Voltage: Turn signal
 		b31 : status.lcm.io[31],
 	};
 
-	// LCM dimmer
-	if (object.dimmer_value_2) bitmask.b15 = parseInt(object.dimmer_value_2);
+	// Potentiometer, dimmer
+	if (object.dimmer) bitmask.b15 = parseInt(object.dimmer);
 
 	// Suspect
 	// object.clamp_58g
@@ -701,8 +696,7 @@ function reset() {
 	// Object of autolights related values
 	// TODO: Make these config values
 	const io_object_auto_lights = {
-		dimmer_value_1 : Math.ceil(status.lights.auto.night_percentage * (238 - 64)) + 64,
-		// dimmer_value_2 : Math.ceil(status.lights.auto.night_percentage * (238 - 64)) + 64,
+		dimmer : Math.ceil(status.lights.auto.night_percentage * (238 - 64)) + 64,
 
 		output_standing_front_left  : true,
 		output_standing_front_right : true,
@@ -792,9 +786,9 @@ function parse_out(data) {
 
 		case 0x5C : { // Broadcast: light dimmer status
 			data.command = 'bro';
-			data.value   = 'dimmer value 1';
+			data.value   = 'dimmer value';
 
-			update.status('lcm.dimmer.value_1', data.msg[1], false);
+			update.status('lcm.dimmer.value', data.msg[1], false);
 			break;
 		}
 

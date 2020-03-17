@@ -461,36 +461,37 @@ function audio_power(power_state = false, volume_increase = true) {
 			array_request.forEach(module_request => {
 				setTimeout(() => {
 					bus.cmds.request_device_status(module_name, module_request);
-				}, (count_request * 100));
+				}, (count_request * 150));
 
 				count_request++;
 			});
 
 			// Set DSP source to whatever is configured
 			count_request++;
-			setTimeout(() => { audio_control(config.media.dsp.default_source); }, (count_request * 100));
+			setTimeout(() => { audio_control(config.media.dsp.default_source); }, (count_request * 150));
 
 			// Turn on BMBT
 			count_request++;
-			setTimeout(() => { cassette_control(true); }, (count_request * 100));
+			setTimeout(() => { cassette_control(true); }, (count_request * 150));
+
+			// Send configured DSP EQ (it seems to forget over time)
+			setTimeout(() => {
+				DSP.eq_encode(config.media.dsp.eq);
+			}, (count_request * 150));
 
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			if (volume_increase === true) {
 				setTimeout(() => {
 					for (let pass = 0; pass <= config.rad.power_on_volume; pass++) {
-						setTimeout(() => { volume_control(5); }, 15 * pass);
+						setTimeout(() => { volume_control(5); }, 25 * pass);
 						count_request++;
 					}
-				}, 1300);
+				}, (2000 + (count_request * 150)));
 			}
 
-			// Send configured DSP EQ (it seems to forget over time)
-			setTimeout(() => {
-				DSP.eq_encode(config.media.dsp.eq);
-			}, (count_request * 100));
-
 			// Send play command to Bluetooth/Kodi
-			bluetooth.command('play'); kodi.command('play');
+			bluetooth.command('play');
+			kodi.command('play');
 		}
 	}
 }
