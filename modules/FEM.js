@@ -95,7 +95,7 @@ function init_listeners() {
 	});
 
 	// Set backlight based on current dimmer level
-	update.on('status.lcm.dimmer.value_1', data => {
+	update.on('status.lcm.dimmer.value', data => {
 		// 0xFF value from LCM = off
 		let value;
 		switch (data.new) {
