@@ -36,7 +36,7 @@
 		"eslint-plugin-standard": "^4.0.1"
 	},
 	"engines": {
-		"node": ">=12"
+		"node": ">=13"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
