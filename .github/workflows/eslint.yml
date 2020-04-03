@@ -1,10 +1,12 @@
-name: ESLint
+name: eslint
 
 on:
   push:
-    branches: [ master, develop ]
+    paths:
+    - '**.js'
   pull_request:
-    branches: [ master, develop ]
+    paths:
+    - '**.js'
 
 jobs:
   lint:
@@ -18,7 +20,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm ci --only=dev
+    - run: npm ci --ignore-scripts --no-optional
     - run: npm run lint
       env:
         CI: true
