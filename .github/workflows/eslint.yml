@@ -1,0 +1,34 @@
+name: eslint
+
+on:
+  push:
+    paths:
+    - '**.css'
+    - '**.js'
+    - '**.json'
+    - '**.jsx'
+    - '**.yml'
+  pull_request:
+    paths:
+    - '**.css'
+    - '**.js'
+    - '**.json'
+    - '**.jsx'
+    - '**.yml'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [13.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci --ignore-scripts --no-optional
+    - run: npm run lint
+      env:
+        CI: true
