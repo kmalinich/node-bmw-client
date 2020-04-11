@@ -1,20 +1,10 @@
 name: eslint
 
 on:
-  push:
-    paths:
-    - '**.css'
-    - '**.js'
-    - '**.json'
-    - '**.jsx'
-    - '**.yml'
   pull_request:
     paths:
-    - '**.css'
     - '**.js'
     - '**.json'
-    - '**.jsx'
-    - '**.yml'
 
 jobs:
   lint:
