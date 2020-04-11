@@ -1,20 +1,23 @@
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const EventEmitter = require('events');
-const convert      = require('node-unit-conversion');
-const moment       = require('moment');
-const now          = require('performance-now');
-const os           = require('os');
+
+const convert = require('node-unit-conversion');
+const moment  = require('moment');
+const os      = require('os');
 
 
 // Clear check control messages, then refresh HUD
 function text_urgent_off() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	bus.data.send({
 		src : 'CCM',
 		msg : [ 0x1A, 0x30, 0x00 ],
 	});
+}
+
+// Get delta time between two a previous Date.now() call and now
+function time_delta(start) {
+	return Date.now() - start;
 }
 
 
@@ -26,14 +29,28 @@ class IKE extends EventEmitter {
 		this.max_len_text = 20;
 
 		// HUD refresh vars
-		this.timeout_data_refresh = null;
-		this.hud_override         = false;
-		this.hud_override_text    = null;
-
 		this.timeout_accept_refresh = null;
+		this.timeout_bc_button_hud  = null;
+		this.timeout_data_refresh   = null;
 
-		this.hud_refresh = this.hud_refresh;
+		this.text_override_status = {
+			active : false,
+			text   : null,
+		};
 
+		// Don't refresh HUD if true
+		// (set to true for a period of time after BC button press)
+		this.hud_locked = false;
+
+		// hud_override = force a refresh even if the rendered string has not changed
+		//                this is for long period of non-changing data, where otherwise
+		//                the text would disappear from the cluster display
+		this.hud_override = false;
+
+		// Update HUD text transmit timestamp
+		this.hud_tx_last = Date.now();
+
+		// TODO: This is a hack
 		this.text_urgent_off = text_urgent_off;
 	}
 
@@ -63,12 +80,19 @@ class IKE extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'BC button';
 
-		// Extend cluster HUD refresh by 5 seconds, so you can read what's on the screen
-		update.status('hud.refresh_last', (status.hud.refresh_last + 5000));
+		// If there's already a queued timeout scheduled, cancel it
+		if (this.timeout_bc_button_hud !== null) {
+			clearTimeout(this.timeout_bc_button_hud);
+		}
 
-		// 5.2 seconds later, re-refresh it
-		setTimeout(() => {
+		// Disable HUD updates
+		this.hud_locked = true;
+
+		// 5.2 seconds later, unlock HUD refresh and refresh HUD
+		this.timeout_bc_button_hud = setTimeout(() => {
+			this.hud_locked = false;
 			this.hud_refresh();
+			this.timeout_bc_button_hud = null;
 		}, 5200);
 
 		return data;
@@ -77,7 +101,7 @@ class IKE extends EventEmitter {
 	// Broadcast: Country coding data
 	decode_country_coding_data(data) {
 		data.command = 'bro';
-		data.value   = 'TODO country coding data';
+		data.value   = 'TODO: country coding data';
 
 		return data;
 	}
@@ -85,7 +109,7 @@ class IKE extends EventEmitter {
 	// Gong status
 	decode_gong_status(data) {
 		data.command = 'bro';
-		data.value   = 'TODO gong status ' + data.msg;
+		data.value   = 'TODO: gong status ' + data.msg;
 
 		return data;
 	}
@@ -95,7 +119,7 @@ class IKE extends EventEmitter {
 		data.command = 'upd';
 
 		// data.msg[1] - Layout
-		let layout = obc_values.h2n(data.msg[1]);
+		const layout = obc_values.h2n(data.msg[1]);
 
 		switch (layout) {
 			case 'time' : {
@@ -424,9 +448,9 @@ class IKE extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'odometer';
 
-		let odometer_value1 = data.msg[3] << 16;
-		let odometer_value2 = data.msg[2] << 8;
-		let odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
+		const odometer_value1 = data.msg[3] << 16;
+		const odometer_value2 = data.msg[2] << 8;
+		const odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
 		update.status('vehicle.odometer.km', odometer_value,                                                      false);
 		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')), false);
@@ -440,7 +464,7 @@ class IKE extends EventEmitter {
 		data.value   = 'speed values';
 
 		// Update vehicle and engine speed variables
-		// Also allow update from IBUS/KBUS even if CANBUS is enabled when the ignition is not in run
+		// Also allow update from IBUS/KBUS even if CANBUS is enabled when ignition is not in run
 		if (config.canbus.speed === false || status.vehicle.ignition_level < 3) {
 			update.status('vehicle.speed.kmh', parseFloat(data.msg[1] * 2));
 			update.status('vehicle.speed.mph', parseFloat(convert(parseFloat((data.msg[1] * 2))).from('kilometre').to('us mile').toFixed(2)));
@@ -464,7 +488,7 @@ class IKE extends EventEmitter {
 			let temp_coolant = parseFloat(data.msg[2]);
 
 			// Signed value?
-			if (temp_coolant > 128) temp_coolant = temp_coolant - 256;
+			if (temp_coolant > 128) temp_coolant -= 256;
 
 			update.status('temperature.coolant.c', Math.floor(temp_coolant), false);
 			update.status('temperature.coolant.f', Math.floor(convert(temp_coolant).from('celsius').to('fahrenheit')));
@@ -475,7 +499,7 @@ class IKE extends EventEmitter {
 			let temp_exterior = parseFloat(data.msg[1]);
 
 			// Signed value?
-			if (temp_exterior > 128) temp_exterior = temp_exterior - 256;
+			if (temp_exterior > 128) temp_exterior -= 256;
 
 			update.status('temperature.exterior.c', Math.floor(temp_exterior), false);
 			update.status('temperature.exterior.f', Math.floor(convert(temp_exterior).from('celsius').to('fahrenheit')));
@@ -487,8 +511,6 @@ class IKE extends EventEmitter {
 	// Pretend to be IKE saying the car is on
 	// Note - this can and WILL set the alarm off - kudos to the Germans
 	ignition(state) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Format state name
 		switch (state) {
 			case 0       :
@@ -534,7 +556,7 @@ class IKE extends EventEmitter {
 
 		log.module('Sending ignition state: ' + state);
 
-		let ignition_msg = {
+		const ignition_msg = {
 			src : 'IKE',
 			dst : 'GLO',
 			msg : [ 0x11, value ],
@@ -548,96 +570,86 @@ class IKE extends EventEmitter {
 	}
 
 
+	// Determine if it is OK to refresh IKE HUD
 	ok2hud() {
 		// Bounce if the ignition is off
 		if (status.vehicle.ignition_level < 1) return false;
 
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
+
 		// Bounce if override is active
-		if (this.hud_override === true) return false;
+		if (this.text_override_status.active === true) return false;
 
-		let time_now = now();
-		let refresh_delta = time_now - status.hud.refresh_last;
+		const refresh_delta = time_delta(this.hud_tx_last);
+		// log.msg('HUD refresh delta [1]: ' + refresh_delta);
 
-		// Bonce if the last update was less than the configured value in milliseconds ago
-		if (refresh_delta <= config.hud.refresh_max) return false;
+		// Bounce if the last update was less than the configured value in milliseconds ago
+		if (refresh_delta < config.hud.refresh_max) return false;
 
-		update.status('hud.refresh_last', time_now);
+		log.msg('HUD refresh delta [2]: ' + refresh_delta);
 
 		return true;
 	}
 
-	// Refresh custom HUD
-	hud_refresh(override = false) {
-		if (config.intf.ibus.enabled !== true) return;
-
-		// Bounce if not in override mode AND it's not OK (yet) to post a HUD update
-		if (override === false && !this.ok2hud()) return;
-
-		this.hud_render(override, () => {
-			// Send text to IKE
-			this.text(status.hud.string);
-		});
-	}
-
-	// Refresh custom HUD speed
-	hud_refresh_speed() {
-		if (config.intf.ibus.enabled !== true) return;
-
-		// Bounce if it's not OK (yet) to post a HUD update
-		if (!this.ok2hud()) return;
-
-		// Send text to IKE
-		this.text(status.vehicle.speed.mph + 'mph');
-	}
-
-
-	// Render custom HUD string
-	hud_render(override = false, hud_render_cb = null) {
-		if (config.intf.ibus.enabled !== true) return;
-
+	// Render/refresh custom HUD string
+	async hud_refresh() {
 		// Determine Moment.js format string
-		let moment_format;
-		switch (config.hud.time.format) {
-			case '24h' : moment_format = 'H:mm'; break;
+		// let moment_format;
+		// switch (config.hud.time.format) {
+		// 	case '24h' : moment_format = 'H:mm'; break;
 
-			default : moment_format = 'h:mm';
-		}
+		// 	default : moment_format = 'h:mm';
+		// }
 
-		let hud_strings = {
-			left   : '',
-			center : '',
-			right  : '',
-
-			// TODO: Use unit from config
-			cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg',
-			egt   : Math.floor(status.temperature.exhaust.c) + '¨',
-			iat   : Math.floor(status.temperature.intake.c) + '¨',
-			load  : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
-			range : Math.floor(status.obc.range.mi) + 'mi',
-			speed : status.vehicle.speed.mph + 'mph',
-			temp  : Math.floor(status.temperature.coolant.c) + '¨',
-			time  : moment().format(moment_format),
+		const hud_data = {
+			speed : Math.ceil(status.vehicle.speed[config.hud.speed.unit]),
 			volt  : status.dme.voltage,
 
-			// Clutch count
-			cc : status.vehicle.clutch_count + 'gc',
+			// TODO: Use unit from config
+			temp : {
+				coolant : Math.floor(status.temperature.coolant.c),
+				exhaust : Math.floor(status.temperature.exhaust.c),
+				intake  : Math.floor(status.temperature.intake.c),
+				oil     : Math.floor(status.temperature.oil.c),
+			},
 		};
 
 		// Only use voltage from CANBUS if configured to do so, and ignition is in run
 		// CANBUS data is not broadcast when key is in accessory
 		if (config.canbus.voltage === false || status.vehicle.ignition_level < 3) {
-			hud_strings.volt = parseFloat(status.lcm.voltage.terminal_30.toFixed(1));
+			hud_data.volt = status.lcm.voltage.terminal_30;
 		}
+
+		const hud_strings = {
+			left   : '',
+			center : '',
+			right  : '',
+
+			speed : hud_data.speed + config.hud.speed.unit,
+			volt  : hud_data.volt.toFixed(1) + 'v',
+
+			iat  : hud_data.temp.intake  + '¨',
+			temp : hud_data.temp.coolant + '¨',
+			// egt  : hud_data.temp.exhaust.c + '¨',
+
+			load : status.system.temperature + '¨|' + Math.ceil(status.system.cpu.load_pct) + '%',
+
+			// cc    : status.vehicle.clutch_count + 'gc',
+			// cons  : status.obc.consumption.c1.mpg.toFixed(1) + 'mg',
+			// hp    : Math.floor(status.engine.horsepower.output) + 'hp',
+			// range : Math.floor(status.obc.range.mi) + 'mi',
+			// time  : moment().format(moment_format),
+		};
 
 		// Add oil temp to temp string if configured
 		if (config.hud.temp.oil === true) {
-			hud_strings.temp += ' ' + Math.floor(status.temperature.oil.c) + '¨';
+			hud_strings.temp += ' ' + hud_data.temp.oil + '¨';
 		}
-
 
 		// TODO: Use layout from config
 		hud_strings.left   = hud_strings.temp;
-		hud_strings.center = hud_strings.egt;
+		hud_strings.center = hud_strings.speed;
 		hud_strings.right  = hud_strings.iat;
 
 		// Change string to be load/CPU temp if over threshold
@@ -645,37 +657,41 @@ class IKE extends EventEmitter {
 			hud_strings.left = hud_strings.load;
 		}
 
-		// Change center string to be voltage if under threshold
-		if (status.dme.voltage <= config.hud.volt.threshold) {
-			hud_strings.center = hud_strings.volt + 'v';
+		// Change center string to be voltage
+		//   if voltage       is at or under threshold, or
+		//   if vehicle speed is at or under threshold
+		if (hud_data.volt <= config.hud.volt.threshold || hud_data.speed <= config.hud.speed.threshold) {
+			hud_strings.center = hud_strings.volt;
 		}
 
 		// Space-pad HUD strings
 		if (typeof hud_strings.left.padEnd    === 'function') hud_strings.left  = hud_strings.left.padEnd(9);
 		if (typeof hud_strings.right.padStart === 'function') hud_strings.right = hud_strings.right.padStart(4);
 
-		if (typeof hud_strings.center.padEnd  === 'function') {
+		if (typeof hud_strings.center.padEnd === 'function') {
 			hud_strings.center = hud_strings.center.padStart(6);
 			hud_strings.center = hud_strings.center.padEnd(7);
 		}
 
 		// Update hud string in status object
-		let hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
-
-		// If the newly rendered string matches the existing string, bail out
-		if (override === false && status.hud.string === hud_string_rendered) return;
-
+		const hud_string_rendered = hud_strings.left + hud_strings.center + hud_strings.right;
 		update.status('hud.string', hud_string_rendered);
+	} // async hud_refresh(override, retry)
 
-		typeof hud_render_cb === 'function' && process.nextTick(hud_render_cb);
-		hud_render_cb = undefined;
-	}
+
+	// TODO: Make this actually work, or do anything, at all
+	// Refresh custom HUD speed
+	async hud_refresh_speed() {
+		// Bounce if it's not OK (yet) to post a HUD update
+		if (!this.ok2hud()) return;
+
+		// Send text to IKE
+		await this.text(status.vehicle.speed.mph + 'mph');
+	} // async hud_refresh_speed()
 
 
 	// OBC set clock
 	obc_clock() {
-		if (config.intf.ibus.enabled !== true) return;
-
 		log.module('Setting OBC clock to current time');
 
 		// Time
@@ -693,8 +709,6 @@ class IKE extends EventEmitter {
 
 	// OBC data request
 	obc_data(action, value, target) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		let cmd = 0x41; // OBC data request
 
 		// Init variables
@@ -727,14 +741,13 @@ class IKE extends EventEmitter {
 
 		bus.data.send({
 			src : 'GT',
-			msg : msg,
+			msg,
 		});
 	}
 
 	// Check control messages
+	// TODO: Limit text length with configurable value
 	text_urgent(message, timeout = 5000) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		log.module('Sending urgent IKE text message: \'' + message + '\'');
 
 		let message_hex;
@@ -751,12 +764,11 @@ class IKE extends EventEmitter {
 
 		// Clear the message after 5 seconds
 		if (timeout !== 0) setTimeout(this.text_urgent_off, timeout);
-	}
+	} // text_urgent(message, timeout)
 
 	// Check control warnings
+	// TODO: Limit text length with configurable value
 	text_warning(message, timeout = 10000) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		log.module('Sending warning IKE text message: \'' + message + '\'');
 
 		let message_hex;
@@ -786,9 +798,8 @@ class IKE extends EventEmitter {
 	}
 
 	// Trim IKE text string and potentially space-pad
+	// TODO: Limit text length with configurable value
 	text_prepare(message, pad = false) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		// Trim string to max length
 		message = message.substring(0, this.max_len_text);
 
@@ -810,73 +821,82 @@ class IKE extends EventEmitter {
 	}
 
 	// IKE cluster text send message - without space padding
-	text_nopad(message, cb = null, override = false) {
-		if (config.intf.ibus.enabled !== true) return;
+	// TODO: Limit text length with configurable value
+	// TODO: Make this actually work, lol
+	async text_nopad(message, override = false) {
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
 
 		// Bounce if override is active
-		if (override === false && this.hud_override === true) {
+		if (override === false && this.text_override_status.active === true) {
 			log.module('NOT sending non-padded IKE text message: \'' + message + '\'');
-
-			// Exec callback function if present
-			typeof cb === 'function' && cb();
 			return;
 		}
 
 		let message_hex;
 
 		message_hex = [ 0x23, 0x42, 0x04 ];
-		message_hex = message_hex.concat(this.text_prepare(message, false));
+		message_hex = await message_hex.concat(this.text_prepare(message, false));
 
-		bus.data.send({
+		await bus.data.send({
 			src : 'TEL',
 			msg : message_hex,
 		});
-
-		// Exec callback function if present
-		typeof cb === 'function' && cb();
 	}
 
 
-	// Refresh various values every 12 seconds
+	// Refresh various values periodically
+	// TODO: Make setTimeout delay value a config param
 	data_refresh() {
-		if (config.intf.ibus.enabled !== true) return;
+		clearTimeout(this.timeout_data_refresh);
 
 		// Only execute if ignition is in accessory or run
 		if (status.vehicle.ignition_level !== 1 && status.vehicle.ignition_level !== 3) {
 			if (this.timeout_data_refresh !== null) {
 				clearTimeout(this.timeout_data_refresh);
 				this.timeout_data_refresh = null;
-
 				log.module('Unset data refresh timeout');
+			}
 
-				return;
+			return;
+		}
+
+		log.module('Refreshing data');
+
+		// this.request('ignition');
+
+		// Manually refresh HUD text if it's been too long since the last auto refresh
+		if (this.hud_override !== true) {
+			if (time_delta(this.hud_tx_last) > 5000) {
+				log.module('Manually refreshing HUD text');
+				this.text(status.hud.string);
 			}
 		}
 
-		log.module('Refreshing');
-
-		// Request fresh data
-		this.request('ignition');
-		// LCM.request('io-status');
-
-		// Refresh HUD display
-		this.hud_refresh(true);
-
 		// Only request temperatures if not configured to get both from CANBUS or ignition is not in run
-		if (config.canbus.coolant === false || config.canbus.exterior === false || status.vehicle.ignition_level < 3) {
+		if (config.canbus.coolant !== true || config.canbus.exterior !== true || status.vehicle.ignition_level < 3) {
 			this.request('temperature');
 		}
 
-		if (status.vehicle.ignition_level === 0) return;
+		// Return here if vehicle ignition is off
+		if (status.vehicle.ignition_level === 0) {
+			if (this.timeout_data_refresh !== null) {
+				clearTimeout(this.timeout_data_refresh);
+				this.timeout_data_refresh = null;
+				log.module('Unset data refresh timeout');
+			}
 
-		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
+			return;
+		}
 
 		// setTimeout for next update
 		// TODO: Make this setTimeout delay value a config param
-		let self = this;
+		if (this.timeout_data_refresh === null) log.module('Set data refresh timeout');
+
+		const self = this;
 		this.timeout_data_refresh = setTimeout(() => {
 			self.data_refresh();
-		}, 12000);
+		}, 10000);
 	}
 
 	// Broadcast: Ignition status
@@ -884,7 +904,7 @@ class IKE extends EventEmitter {
 		let new_level_name;
 
 		// Save previous ignition status
-		let previous_level = status.vehicle.ignition_level;
+		const previous_level = status.vehicle.ignition_level;
 
 		// Set ignition status value
 		if (update.status('vehicle.ignition_level', data.msg[1], false)) {
@@ -923,6 +943,9 @@ class IKE extends EventEmitter {
 
 					log.module('Run state');
 					this.emit('ignition-run');
+
+					// TODO: Make this a config option
+					this.obc_data('reset', 'consumption-1');
 
 					// Refresh OBC data
 					if (config.options.obc_refresh_on_start === true) this.obc_refresh();
@@ -1013,7 +1036,7 @@ class IKE extends EventEmitter {
 		update.status('vehicle.handbrake', bitmask.test(data.msg[1], bitmask.bit[0]), false);
 
 		// If the engine is newly running
-		let engine_running = bitmask.test(data.msg[2], bitmask.bit[0]);
+		const engine_running = bitmask.test(data.msg[2], bitmask.bit[0]);
 		if (update.status('engine.running', engine_running, false) && engine_running === true) {
 			this.emit('engine-running');
 			update.status('engine.start_time_last', Date.now(), false);
@@ -1030,20 +1053,10 @@ class IKE extends EventEmitter {
 	}
 
 	init_listeners() {
-		if (config.intf.ibus.enabled !== true) return;
-
-		// Bring up last HUD refresh time
-		update.status('hud.refresh_last', now());
-
 		// Refresh data on interface connection
-		socket.on('recv-host-connect', (data) => {
-			// Show warning message in cluster if app running for longer than 30 seconds
-			if (now() > 30000) {
-				this.text_urgent('    ' + data.intf + ' restart    ');
-			}
-
+		socket.on('ready', intf => {
 			// Only refresh on new IBUS interface connection
-			if (data.intf !== 'ibus') return;
+			if (intf !== 'ibus') return;
 
 			// Clear existing timeout if exists
 			if (this.timeout_accept_refresh !== null) {
@@ -1061,32 +1074,33 @@ class IKE extends EventEmitter {
 
 
 		// Refresh data on GM keyfob unlock event
-		GM.on('keyfob', (keyfob) => {
+		GM.on('keyfob', keyfob => {
 			switch (keyfob.button) {
 				case 'unlock' : this.data_refresh();
 			}
 		});
 
 		// Refresh HUD after certain data values update
-		update.on('status.dme.voltage',             () => { this.hud_refresh(); });
-		update.on('status.lcm.voltage.terminal_30', () => { this.hud_refresh(); });
-		// update.on('status.obc.consumption.c1.mpg',  () => { this.hud_refresh(); });
-		// update.on('status.obc.range.mi',            () => { this.hud_refresh(); });
-		update.on('status.system.temperature',      () => { this.hud_refresh(); });
-		update.on('status.temperature.coolant.c',   () => { this.hud_refresh(); });
-		update.on('status.temperature.exhaust.c',   () => { this.hud_refresh(); });
-		update.on('status.temperature.intake.c',    () => { this.hud_refresh(); });
-		update.on('status.temperature.oil.c',       () => { this.hud_refresh(); });
-		// update.on('status.vehicle.clutch_count',    () => { this.hud_refresh(); });
-		// update.on('status.vehicle.speed.mph',       () => { this.hud_refresh(); });
+		update.on('status.dme.voltage',             async () => { await this.hud_refresh(); });
+		update.on('status.lcm.voltage.terminal_30', async () => { await this.hud_refresh(); });
+		update.on('status.system.temperature',      async () => { await this.hud_refresh(); });
+		update.on('status.temperature.coolant.c',   async () => { await this.hud_refresh(); });
+		update.on('status.temperature.intake.c',    async () => { await this.hud_refresh(); });
+		update.on('status.temperature.oil.c',       async () => { await this.hud_refresh(); });
+
+		update.on('status.temperature.exhaust.c',  async () => { await this.hud_refresh(); });
+		update.on('status.obc.consumption.c1.mpg', async () => { await this.hud_refresh(); });
+		update.on('status.obc.range.mi',           async () => { await this.hud_refresh(); });
+		update.on('status.vehicle.clutch_count',   async () => { await this.hud_refresh(); });
+		update.on('status.vehicle.speed.mph',      async () => { await this.hud_refresh(); });
 
 		// DSC off CC message
-		update.on('status.vehicle.dsc.active', (value) => {
+		update.on('status.vehicle.dsc.active', value => {
 			switch (value.new) {
 				case false : {
 					// Don't send CC message if engine is not running or was started in the last 15 seconds
-					if (status.engine.running === false)                      break;
-					if ((Date.now() - status.engine.start_time_last) < 15000) break;
+					if (status.engine.running === false)                   break;
+					if (time_delta(status.engine.start_time_last) < 15000) break;
 
 					this.text_warning('  DSC deactivated!  ');
 					break;
@@ -1094,13 +1108,22 @@ class IKE extends EventEmitter {
 			}
 		});
 
-		log.msg('Initialized listeners');
+		// Update IKE cluster text
+		update.on('status.hud.string', data => {
+			if (!this.ok2hud() && this.hud_override === false) return;
+
+			// Update HUD text transmit timestamp
+			this.hud_tx_last = Date.now();
+
+			this.text(data.new);
+		});
+
+		log.module('Initialized listeners');
 	}
+
 
 	// Refresh OBC data
 	obc_refresh() {
-		if (config.intf.ibus.enabled !== true) return;
-
 		this.emit('obc-refresh');
 
 		log.module('Refreshing all OBC data');
@@ -1172,8 +1195,6 @@ class IKE extends EventEmitter {
 
 	// Request various things from IKE
 	request(value) {
-		if (config.intf.ibus.enabled !== true) return;
-
 		let cmd = null;
 		let src = 'VID';
 		let dst = module_name;
@@ -1215,7 +1236,7 @@ class IKE extends EventEmitter {
 			case 'status-short' : {
 				log.module('Requesting \'' + value + '\'');
 
-				bus.modules.modules_check.forEach((loop_dst) => {
+				bus.modules.modules_check.forEach(loop_dst => {
 					src = module_name;
 
 					switch (loop_dst) {
@@ -1237,22 +1258,21 @@ class IKE extends EventEmitter {
 		log.module('Requesting \'' + value + '\'');
 
 		bus.data.send({
-			src : src,
-			dst : dst,
+			src,
+			dst,
 			msg : cmd,
 		});
 	}
 
 	// IKE cluster text send message
-	text(message, cb = null, override = false) {
-		if (config.intf.ibus.enabled !== true) return;
+	// TODO: Limit text length with configurable value
+	async text(message, override = false) {
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return;
 
 		// Bounce if override is active
-		if (override === false && this.hud_override === true) {
+		if (override === false && this.text_override_status.active === true) {
 			log.module('NOT sending space-padded IKE text message: \'' + message + '\'');
-
-			// Exec callback function if present
-			typeof cb === 'function' && cb();
 			return;
 		}
 
@@ -1266,19 +1286,18 @@ class IKE extends EventEmitter {
 		message_hex = message_hex.concat(0x04);
 		// message_hex = message_hex.concat(0x66);
 
-		bus.data.send({
+		await bus.data.send({
 			src : 'RAD',
 			dst : 'IKE',
 			msg : message_hex,
 		});
-
-		// Exec callback function if present
-		typeof cb === 'function' && cb();
-	}
+	} // async text(message, override)
 
 	// IKE cluster text send message, override other messages
-	text_override(message, timeout = 2500, direction = 'left', turn = false) {
-		if (config.intf.ibus.enabled !== true) return;
+	// TODO: Limit text length with configurable value
+	async text_override(message, timeout = 2500, direction = 'left', turn = false) {
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return;
 
 		// kodi.notify(module_name, message);
 		let scroll_delay         = 300;
@@ -1292,62 +1311,50 @@ class IKE extends EventEmitter {
 		}
 
 		// Delare that we're currently first up
-		this.hud_override      = true;
-		this.hud_override_text = message;
+		this.text_override_status.active = true;
+		this.text_override_status.text   = message;
 
 		// Equal to or less than 20 char
 		if (message.length - this.max_len_text <= 0) {
-			if (this.hud_override_text === message) this.text(message, null, true);
+			if (this.text_override_status.text === message) await this.text(message, null, true);
 		}
 		else {
 			// Adjust timeout since we will be scrolling
 			timeout = timeout + (scroll_delay * 5) + (scroll_delay * (message.length - this.max_len_text));
 
 			// Send initial string if we're currently the first up
-			if (this.hud_override_text === message) {
+			if (this.text_override_status.text === message) {
 				switch (direction) {
-					case 'left' : {
-						this.text(message, null, true);
-						break;
-					}
-
-					case 'right' : {
-						this.text(message.substring(message.length - this.max_len_text, message.length), null, true);
-					}
+					case 'left'  : await this.text(message, null, true); break;
+					case 'right' : await this.text(message.substring(message.length - this.max_len_text, message.length), null, true);
 				}
 			}
 
 			// Add a time buffer before scrolling starts (if this isn't a turn signal message)
-			setTimeout(() => {
-				for (let scroll = 0; scroll <= message.length - this.max_len_text; scroll++) {
-					setTimeout((current_scroll, message_full, direction) => {
+			setTimeout(async () => {
+				for (let scroll_count = 0; scroll_count <= message.length - this.max_len_text; scroll_count++) {
+					setTimeout(async (current_scroll, message_full, direction) => {
 						// Only send the message if we're currently the first up
-						if (this.hud_override_text !== message_full) return;
+						if (this.text_override_status.text !== message_full) return;
 
 						switch (direction) {
-							case 'left' : {
-								this.text(message.substring(current_scroll, current_scroll + this.max_len_text), null, true);
-								break;
-							}
-
-							case 'right' : {
-								this.text(message.substring(message.length - this.max_len_text - current_scroll, message.length - current_scroll), null, true);
-							}
+							case 'left'  : await this.text(message.substring(current_scroll, current_scroll + this.max_len_text), null, true); break;
+							case 'right' : await this.text(message.substring(message.length - this.max_len_text - current_scroll, message.length - current_scroll), null, true);
 						}
-					}, scroll_delay * scroll, scroll, message, direction);
+					}, (scroll_delay * scroll_count), scroll_count, message, direction);
 				}
 			}, scroll_delay_timeout);
 		}
 
 		// Clear the override flag
-		setTimeout((message_full) => {
+		setTimeout(async message_full => {
 			// Only deactivate the override if we're currently first up
-			if (this.hud_override_text === message_full) {
-				this.hud_override = false;
-				this.hud_refresh(true);
+			if (this.text_override_status.text === message_full) {
+				this.text_override_status.active = false;
+				await this.hud_refresh(true);
 			}
 		}, timeout, message);
-	}
+	} // async text_override(message, timeout, direction, turn)
 
 	// Welcome text message in cluster
 	welcome_message() {

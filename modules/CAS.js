@@ -4,6 +4,15 @@ const EventEmitter = require('events');
 
 
 class CAS extends EventEmitter {
+	constructor() {
+		super();
+
+		this.timeout = {
+			encode_ignition : null,
+		};
+	} // constructor()
+
+
 	// [0x130] Ignition status
 	decode_ignition(data) {
 		data.command = 'bro';
@@ -11,7 +20,7 @@ class CAS extends EventEmitter {
 		let new_level_name;
 
 		// Save previous ignition status
-		let previous_level = status.vehicle.ignition_level;
+		const previous_level = status.vehicle.ignition_level;
 
 		// Set ignition status value
 		update.status('vehicle.ignition_level', data.msg[0], false);
@@ -92,7 +101,74 @@ class CAS extends EventEmitter {
 		data.value = 'ignition status: ' + status.vehicle.ignition;
 
 		return data;
-	}
+	} // decode_ignition(data)
+
+	// Ignition status
+	encode_ignition(action) {
+		// Bounce if not enabled
+		if (config.emulate.cas !== true) return;
+
+		// Handle setting/unsetting timeout
+		switch (action) {
+			case false : {
+				// Return here if timeout is already null
+				if (this.timeout.encode_ignition !== null) {
+					clearTimeout(this.timeout.encode_ignition);
+					this.timeout.encode_ignition = null;
+
+					log.module('Unset ignition status timeout');
+				}
+
+				// Send ignition off message
+				bus.data.send({
+					bus  : config.cas.can_intf,
+					id   : 0x12F,
+					data : Buffer.from([ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 ]),
+				});
+
+				// Return here since we're not re-sending again
+				return;
+			}
+
+			case true : {
+				if (this.timeout.encode_ignition === null) {
+					log.module('Set ignition status timeout');
+				}
+
+				this.timeout.encode_ignition = setTimeout(this.encode_ignition, 100);
+			}
+		}
+
+		const msg = {
+			bus  : config.cas.can_intf,
+		};
+
+		switch (config.cas.generation.toLowerCase()) {
+			case 'exx' : { // CIC
+				msg.id   = 0x4F8;
+				msg.data = [ 0x00, 0x42, 0xFE, 0x01, 0xFF, 0xFF, 0xFF, 0xFF ];
+				break;
+			}
+
+			case 'fxx' : { // NBT
+				msg.id   = 0x12F;
+				msg.data = [ 0x37, 0x7C, 0x8A, 0xDD, 0xD4, 0x05, 0x33, 0x6B ];
+				break;
+			}
+
+			default : {
+				log.error('config.cas.generation must be set to one of Exx or Fxx');
+				return;
+			}
+		}
+
+		// Convert data array to Buffer
+		msg.data = Buffer.from(msg.data);
+
+		// Send message
+		bus.data.send(msg);
+	} // encode_ignition(action)
+
 
 	// Broadcast: Key fob status
 	// [0x23A] Decode a key fob bitmask message, and act upon the results
@@ -100,9 +176,9 @@ class CAS extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'key fob status - ';
 
-		let mask = bitmask.check(data.msg[2]).mask;
+		const mask = bitmask.check(data.msg[2]).mask;
 
-		let keyfob = {
+		const keyfob = {
 			button     : null,
 			button_str : null,
 			buttons    : {
@@ -114,12 +190,11 @@ class CAS extends EventEmitter {
 		};
 
 		// Loop button object to populate log string
-		for (let button in keyfob.buttons) {
-			if (keyfob.buttons[button] === true) {
-				keyfob.button     = button;
-				keyfob.button_str = 'button: ' + button;
-				break;
-			}
+		for (const button in keyfob.buttons) {
+			if (keyfob.buttons[button] !== true) continue;
+			keyfob.button     = button;
+			keyfob.button_str = 'button: ' + button;
+			break;
 		}
 
 		// Update status object
@@ -136,7 +211,7 @@ class CAS extends EventEmitter {
 		data.value += keyfob.key_str + ', ' + keyfob.button_str + ', ' + keyfob.low_batt_str;
 
 		return data;
-	}
+	} // decode_status_keyfob(data)
 
 	// [0x2FC] Decode a door status message from CAS and act upon the results
 	decode_status_opened(data) {
@@ -152,18 +227,31 @@ class CAS extends EventEmitter {
 		update.status('doors.trunk',       bitmask.test(data.msg[2], 0x01), false);
 
 		// Set status.doors.closed if all doors are closed
-		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
+		const update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
 		update.status('doors.closed', update_closed_doors, false);
 
 		// Set status.doors.opened if any doors are opened
 		update.status('doors.opened', (update_closed_doors === false), false);
 
 		// Set status.doors.sealed if all doors and flaps are closed
-		let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
+		const update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
 		update.status('doors.sealed', update_sealed_doors, false);
 
 		return data;
-	}
+	} // decode_status_opened(data)
+
+
+	init_listeners() {
+		// Bounce if not enabled
+		if (config.emulate.cas !== true && config.retrofit.cas !== true) return;
+
+		// Perform commands on power lib active event
+		power.on('active', data => {
+			this.encode_ignition(data.new);
+		});
+
+		log.module('Initialized listeners');
+	} // init_listeners()
 
 
 	// Parse data sent to module
@@ -172,18 +260,18 @@ class CAS extends EventEmitter {
 		if (config.emulate.cas !== true) return;
 
 		return data;
-	}
+	} // parse_in(data);
 
 	// Parse data sent from module
 	parse_out(data) {
 		switch (data.src.id) {
-			case 0x130 : return this.decode_ignition(data);
+			case 0x130 : return this.decode_ignition(data); // 0x12F / 0x4F8
 			case 0x23A : return this.decode_status_keyfob(data);
 			case 0x2FC : return this.decode_status_opened(data);
 		}
 
 		return data;
-	}
+	} // parse_out();
 }
 
 

@@ -6,9 +6,8 @@
 .DS_Store
 
 /*.json
+
 /json.bak/
-
+/log/
 /node_modules/
-
-/candump/
 /test/

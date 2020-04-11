@@ -27,7 +27,7 @@ function decode_button(data) {
 	update.status('szm.button.' + button + '.state', state, false);
 
 	// Translate SZM messages for active backrest to active seat equivalent
-	// TODO Add config option for translation operations
+	// TODO: Add config option for translation operations
 	switch (button) {
 		case 'active.backrest.driver'    : encode_button('active.seat.driver',    state); break;
 		case 'active.backrest.passenger' : encode_button('active.seat.passenger', state); break;
@@ -52,7 +52,7 @@ function decode_button(data) {
 
 // Generate a SZM button press CANBUS message
 function encode_button(button, state) {
-	let cmd_data = {
+	const cmd_data = {
 		id  : null,
 		msg : [ 0x00, 0xFF ],
 	};
@@ -102,6 +102,6 @@ function parse_out(data) {
 
 
 module.exports = {
-	encode_button : encode_button,
-	parse_out     : parse_out,
+	encode_button,
+	parse_out,
 };

@@ -11,8 +11,6 @@ const pad = require('pad');
 // 68 C0 21 00 15 06 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F 05 2F 2F 2F 2F CK
 
 function refresh_text() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	if (status.vehicle.ignition_level < 1 || config.media.mid !== true) return;
 
 	log.module('Updating MID text');
@@ -327,8 +325,6 @@ function parse_out(data) {
 
 // Emulate button presses
 function button(button) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	let button_down = 0x00;
 	let button_hold;
 	let button_up;
@@ -350,9 +346,9 @@ function button(button) {
 	log.module('Button down: ' + button + ', hold: ' + button_hold);
 
 	// Init variables
-	let command     = 0x48; // Button action
-	let packet_down = [ command, button_down ];
-	let packet_up   = [ command, button_up ];
+	const command     = 0x48; // Button action
+	const packet_down = [ command, button_down ];
+	const packet_up   = [ command, button_up ];
 
 	bus.data.send({
 		dst : 'RAD',
@@ -371,15 +367,13 @@ function button(button) {
 }
 
 function init_listeners() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Perform commands on power lib active event
-	power.on('active', (power_state) => {
+	power.on('active', power_state => {
 		status_loop(power_state);
 		text_loop(power_state);
 	});
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 
@@ -395,17 +389,17 @@ module.exports = {
 	},
 
 
-	button : button,
+	button,
 
-	init_listeners : init_listeners,
+	init_listeners,
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 
-	refresh_text : refresh_text,
+	refresh_text,
 
-	status_loop : status_loop,
-	text_loop   : text_loop,
+	status_loop,
+	text_loop,
 
-	toggle_power_if_ready : toggle_power_if_ready,
+	toggle_power_if_ready,
 };

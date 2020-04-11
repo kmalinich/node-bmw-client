@@ -48,10 +48,22 @@ const EventEmitter = require('events');
 
 
 class GM extends EventEmitter {
+	constructor() {
+		super();
+
+		this.timeout = {
+			ignition : {
+				lock   : null,
+				unlock : null,
+			},
+		};
+	}
+
+
 	// Reply: Diagnostic command acknowledged
 	decode_dia_reply(data) {
 		data.command = 'rep';
-		data.value   = 'TODO diagnostic command ack';
+		data.value   = 'TODO: diagnostic command ack';
 
 		return data;
 	}
@@ -59,7 +71,7 @@ class GM extends EventEmitter {
 	// Broadcast: Seat memory data
 	decode_seat_memory(data) {
 		data.command = 'bro';
-		data.value   = 'TODO seat memory data';
+		data.value   = 'TODO: seat memory data';
 
 		return data;
 	}
@@ -84,9 +96,9 @@ class GM extends EventEmitter {
 		data.command = 'bro';
 		data.value   = 'key fob status - ';
 
-		let mask = bitmask.check(data.msg[1]).mask;
+		const mask = bitmask.check(data.msg[1]).mask;
 
-		let keyfob = {
+		const keyfob = {
 			low_batt     : mask.bit0,
 			low_batt_str : 'battery low: ' + mask.bit0,
 
@@ -110,21 +122,21 @@ class GM extends EventEmitter {
 		};
 
 		// Loop button object to populate log string
-		for (let button in keyfob.buttons) {
-			if (keyfob.buttons[button] === true) {
-				keyfob.button     = button;
-				keyfob.button_str = 'button: ' + button;
-				break;
-			}
+		for (const button in keyfob.buttons) {
+			if (keyfob.buttons[button] !== true) continue;
+
+			keyfob.button     = button;
+			keyfob.button_str = 'button: ' + button;
+			break;
 		}
 
 		// Loop key object to populate log string
-		for (let key in keyfob.keys) {
-			if (keyfob.keys[key] === true) {
-				keyfob.key     = key;
-				keyfob.key_str = 'key: ' + key;
-				break;
-			}
+		for (const key in keyfob.keys) {
+			if (keyfob.keys[key] !== true) continue;
+
+			keyfob.key     = key;
+			keyfob.key_str = 'key: ' + key;
+			break;
 		}
 
 
@@ -194,19 +206,19 @@ class GM extends EventEmitter {
 
 
 		// Set status.doors.closed if all doors are closed
-		let update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
+		const update_closed_doors = (!status.doors.front_left && !status.doors.front_right && !status.doors.rear_left && !status.doors.rear_right);
 		update.status('doors.closed', update_closed_doors, false);
 
 		// Set status.doors.opened if any doors are opened
 		update.status('doors.opened', (update_closed_doors === false), false);
 
 		// Set status.doors.sealed if all doors and flaps are closed
-		let update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
+		const update_sealed_doors = (status.doors.closed && !status.doors.hood && !status.doors.trunk);
 		update.status('doors.sealed', update_sealed_doors, false);
 
 
 		// Set status.windows.closed if all windows are closed
-		let update_closed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
+		const update_closed_windows = (!status.windows.front_left && !status.windows.front_right && !status.windows.roof && !status.windows.rear_left && !status.windows.rear_right);
 		update.status('windows.closed', update_closed_windows, false);
 
 		// Set status.windows.opened if any windows are opened
@@ -242,7 +254,7 @@ class GM extends EventEmitter {
 		// 4+8  : sens 3
 		// 0x20 : spray
 
-		let mask = bitmask.check(data.msg[1]).mask;
+		const mask = bitmask.check(data.msg[1]).mask;
 
 		// A slightly different approach
 		data.speed = 'off';
@@ -286,9 +298,9 @@ class GM extends EventEmitter {
 
 		// Initialize bitmask variables
 		let bitmask_0  = 0x00;
-		let bitmask_1  = 0x00;
-		let bitmask_2  = 0x00;
-		let bitmask_3  = 0x00;
+		const bitmask_1  = 0x00;
+		const bitmask_2  = 0x00;
+		const bitmask_3  = 0x00;
 
 		// Set the various bitmask values according to the input object
 		if (object.clamp_30a) bitmask_0 = bitmask.set(bitmask_0, bitmask.bit[0]);
@@ -311,8 +323,6 @@ class GM extends EventEmitter {
 
 	// Send message to GM
 	io_set(packet) {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// log.module('Setting IO status');
 
 		// Add 'set IO status' command to beginning of array
@@ -328,7 +338,7 @@ class GM extends EventEmitter {
 	// Central locking
 	locks() {
 		// Send the notification to the log and the cluster
-		let notify_message = 'Toggling door locks';
+		const notify_message = 'Toggling door locks';
 		log.module(notify_message);
 
 		// TODO: Add MID message
@@ -363,8 +373,6 @@ class GM extends EventEmitter {
 
 	// Request various things from GM
 	request(value) {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// Init variables
 		let src;
 		let cmd;
@@ -386,7 +394,7 @@ class GM extends EventEmitter {
 		log.module('Requesting \'' + value + '\'');
 
 		bus.data.send({
-			src : src,
+			src,
 			msg : cmd,
 		});
 	}
@@ -485,24 +493,21 @@ class GM extends EventEmitter {
 
 
 	init_listeners() {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// Lock and unlock doors automatically on ignition events
-		update.on('status.vehicle.ignition', (data) => {
-			// Return if doors are not closed
-			if (status.doors.closed !== true) return;
-
+		update.on('status.vehicle.ignition', data => {
 			switch (data.new) {
 				case 'off' : {
-					// Return if not previously in accessory position
-					if (data.old !== 'accessory') return;
+					this.timeout.ignition.unlock = setTimeout(() => {
+						// Return if doors are not closed
+						if (status.doors.closed !== true) return;
 
-					// Return if doors are NOT locked
-					if (status.vehicle.locked !== true) return;
+						// Return if doors are NOT locked
+						if (status.vehicle.locked !== true) return;
 
-					log.module('Doors are locked and closed, toggling door locks');
+						log.module('Doors are closed and locked, toggling door locks (from ignition state)');
 
-					setTimeout(() => { this.locks(); }, 500);
+						this.locks();
+					}, 250);
 					break;
 				}
 
@@ -510,14 +515,34 @@ class GM extends EventEmitter {
 					// Return if not previously in start position
 					if (data.old !== 'start') return;
 
-					// Return if doors are locked
-					if (status.vehicle.locked === true) return;
+					this.timeout.ignition.lock = setTimeout(() => {
+						// Return if doors are not closed
+						if (status.doors.closed !== true) return;
 
-					log.module('Doors are unlocked and closed, toggling door locks');
+						// Return if doors are locked
+						if (status.vehicle.locked === true) return;
 
-					setTimeout(() => { this.locks(); }, 500);
+						log.module('Doors are closed and unlocked, toggling door locks (from ignition state)');
+
+						this.locks();
+					}, 250);
 				}
 			}
+		});
+
+		update.on('status.immobilizer.key_present', data => {
+			// Return if doors are not closed
+			if (status.doors.closed !== true) return;
+
+			// Return if key is present
+			if (data.new !== false) return;
+
+			// Return if doors are NOT locked
+			if (status.vehicle.locked !== true) return;
+
+			log.module('Doors are closed and locked, and key is not present, toggling door locks (from key presence)');
+
+			this.locks();
 		});
 
 		log.msg('Initialized listeners');

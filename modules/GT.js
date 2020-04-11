@@ -90,14 +90,18 @@ function parse_dsp_memory(data) {
 		case false : {
 			// Check if the command is setting echo amount or room size and get the value
 			switch (bitmask.test(data.msg[2], bitmask.b[5])) {
-				case false : { // Room size
+				// Room size
+				case false : {
 					data.value += 'room size - ';
+
 					amount = data.msg[2];
 					break;
 				}
 
-				case true : { // Echo
+				// Echo
+				case true : {
 					data.value += 'echo amount - ';
+
 					// Remove 0x20 from the value
 					amount = bitmask.unset(data.msg[2], bitmask.b[5]);
 				}
@@ -107,9 +111,9 @@ function parse_dsp_memory(data) {
 		}
 
 		case true : {
-			let mask = bitmask.check(data.msg[3]).mask;
+			const mask = bitmask.check(data.msg[3]).mask;
 
-			let dsp_memory = {
+			const dsp_memory = {
 				negative     : mask.bit4,
 				low_batt_str : 'negative: ' + mask.bit4,
 
@@ -127,7 +131,7 @@ function parse_dsp_memory(data) {
 			};
 
 			// Loop band object to populate log string
-			for (let band in dsp_memory.bands) {
+			for (const band in dsp_memory.bands) {
 				if (dsp_memory.bands[band] === true) {
 					dsp_memory.band     = band;
 					dsp_memory.band_str = 'band: ' + band;
@@ -149,8 +153,8 @@ function parse_control_lcd(data) {
 	data.command = 'con';
 	data.value   = 'LCD ';
 
-	let mask_m1  = bitmask.check(data.msg[1]).mask;
-	let parse_m1 = {
+	const mask_m1  = bitmask.check(data.msg[1]).mask;
+	const parse_m1 = {
 		on          : mask_m1.b4,
 		source_name : null,
 		source      : {
@@ -177,8 +181,8 @@ function parse_control_lcd(data) {
 
 	// Only if data.msg[2] is populated
 	if (data.msg.length >= 3) {
-		let mask_m2  = bitmask.check(data.msg[2]).mask;
-		let parse_m2 = {
+		const mask_m2  = bitmask.check(data.msg[2]).mask;
+		const parse_m2 = {
 			aspect_ratio : mask_m2.b4 && '16:9' || '4:3',
 			refresh_rate : mask_m2.b1 && '50Hz' || '60Hz',
 			zoom         : mask_m2.b5,
@@ -199,9 +203,10 @@ function parse_control_lcd(data) {
 // Parse data sent from GT module
 function parse_out(data) {
 	switch (data.msg[0]) {
-		case 0x2B : { // Broadcast: Indicator status
+		// Broadcast: Indicator status
+		case 0x2B : {
 			data.command = 'bro';
-			data.value   = 'indicator status TODO';
+			data.value   = 'TODO: indicator status';
 			break;
 		}
 
@@ -211,11 +216,12 @@ function parse_out(data) {
 		// Control: Select menu
 		case 0x37 : {
 			data.command = 'con';
-			data.value   = 'select menu TODO : 0x' + data.msg[1].toString(16);
+			data.value   = 'TODO: select menu 0x' + data.msg[1].toString(16);
 			break;
 		}
 
-		case 0x41 : { // Control: Aux heat/vent
+		// Control: Aux heat/vent
+		case 0x41 : {
 			data.command = 'con';
 
 			switch (data.msg[1]) {
@@ -228,13 +234,15 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x45 : { // Request: Radio status
+		// Request: Radio status
+		case 0x45 : {
 			data.command = 'req';
-			data.value   = 'radio status TODO, ' + hex.i2s(data.msg[1]);
+			data.value   = 'TODO: radio status ' + hex.i2s(data.msg[1]);
 			break;
 		}
 
-		case 0x4A : { // Control: Cassette
+		// Control: Cassette
+		case 0x4A : {
 			BMBT.cassette_status(data.msg[1]);
 
 			data.command = 'con';
@@ -248,14 +256,22 @@ function parse_out(data) {
 			break;
 		}
 
-		case 0x4E : { // Control: Audio source selection
+		// Control: Audio source selection
+		case 0x4E : {
 			data.command = 'con';
-			data.value   = 'audio source selection TODO, ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
+			data.value   = 'TODO: audio source selection ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
 			break;
 		}
 
 		// Control: LCD (screen in dash)
 		case 0x4F : return parse_control_lcd(data);
+
+		// Control: DSP EQ delta update
+		case 0x95 : {
+			data.command = 'con';
+			data.value   = 'TODO: DSP EQ delta update';
+			break;
+		}
 	}
 
 	return data;
@@ -263,5 +279,5 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_out : parse_out,
+	parse_out,
 };

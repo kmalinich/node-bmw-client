@@ -10,7 +10,7 @@ class EWS extends EventEmitter {
 
 		switch (value) {
 			case 'immobilizerstatus' : {
-				// cmd = [0x73, 0x00, 0x00, 0x80];
+				// cmd = [ 0x73, 0x00, 0x00, 0x80 ];
 				cmd = [ 0x73 ];
 				break;
 			}
@@ -32,26 +32,31 @@ class EWS extends EventEmitter {
 		// 0x00 = no key detected
 		// 0x01 = immobilisation deactivated
 		// 0x04 = valid key detected
+		const immobilizer = {
+			immobilized : null,
+			key_number  : 0,
+			key_present : null,
+		};
+
 
 		// Key detected/vehicle immobilised
 		switch (data.msg[1]) {
 			case 0x00 : {
 				data.value += 'no key';
-				update.status('immobilizer.key_present', false, false);
+				immobilizer.key_present = false;
 				break;
 			}
 
 			case 0x01 : {
 				data.value += 'immobilisation deactivated';
-				// update.status('immobilizer.key_present', null, false);
-				update.status('immobilizer.immobilized', false, false);
+				immobilizer.immobilized = false;
 				break;
 			}
 
 			case 0x04 : {
 				data.value += 'valid key';
-				update.status('immobilizer.key_present', true,  false);
-				update.status('immobilizer.immobilized', false, false);
+				immobilizer.key_present = true;
+				immobilizer.immobilized = false;
 				break;
 			}
 
@@ -63,16 +68,26 @@ class EWS extends EventEmitter {
 		// Key number 255/0xFF = no key
 		switch (data.msg[2]) {
 			case 0xFF : {
-				update.status('immobilizer.key_number', null, false);
+				immobilizer.key_number  = null;
+				immobilizer.key_present = false;
 				break;
 			}
 
 			default : {
-				update.status('immobilizer.key_number', data.msg[2], false);
+				immobilizer.key_number = data.msg[2];
 			}
 		}
 
-		data.value += ', key ' + status.immobilizer.key_number;
+		data.value += ', key ' + immobilizer.key_number;
+
+
+		// Update status object
+		update.status('immobilizer.immobilized', immobilizer.immobilized, false);
+		update.status('immobilizer.key_number',  immobilizer.key_number,  false);
+		update.status('immobilizer.key_present', immobilizer.key_present, false);
+
+		// Emit immobilizer event
+		this.emit('immobilizer', immobilizer);
 
 		return data;
 	}

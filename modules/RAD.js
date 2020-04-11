@@ -14,7 +14,7 @@ function decode_audio_control_command(data) {
 	// 0xC0 - treble
 	// 0xE0 - dsp1+
 
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
 
 	// Bounce if bit8 (no bits set) is true
 	if (mask.bit8) {
@@ -163,7 +163,7 @@ function decode_audio_control(data) {
 	// 0xE0 - dsp1+
 
 	let cmd_value;
-	let cmd_type = decode_audio_control_command(data);
+	const cmd_type = decode_audio_control_command(data);
 	switch (cmd_type) {
 		case 'balance' : cmd_value = data.msg[1] - 0x50; break;
 		case 'bass'    : cmd_value = data.msg[1] - 0x60; break;
@@ -213,94 +213,47 @@ function decode_audio_control(data) {
 	return data;
 }
 
-// Broadcast: BM button
-function decode_bm_button(data) {
-	let action = 'depress';
-	let button;
 
-	// Determine action
-	let mask = bitmask.check(data.msg[1]).mask;
-	switch (mask.b6) {
-		case true : {
-			switch (mask.b7) {
-				case true  : break;
-				case false : {
-					// Remove hold bit from button value
-					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[6]);
-					action      = 'hold';
-				}
-			}
-			break;
-		}
-
-		case false : {
-			switch (mask.b7) {
-				case false : break;
-				case true  : {
-					// Remove release bit from button value
-					data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
-					action      = 'release';
-				}
-			}
-		}
-	}
-
-	// Determine button
-	switch (data.msg[1]) {
-		case 0x00 : button = 'right';    break;
-		case 0x01 : button = '2';        break;
-		case 0x02 : button = '4';        break;
-		case 0x03 : button = '6';        break;
-		case 0x04 : button = 'tone';     break;
-		case 0x05 : button = 'knob';     break;
-		case 0x06 : button = 'power';    break;
-		case 0x07 : button = 'clock';    break;
-		case 0x08 : button = 'phone';    break;
-		case 0x10 : button = 'left';     break;
-		case 0x11 : button = '1';        break;
-		case 0x12 : button = '3';        break;
-		case 0x13 : button = '5';        break;
-		case 0x14 : button = '<>';       break;
-		case 0x20 : button = 'select';   break;
-		case 0x21 : button = 'am';       break;
-		case 0x22 : button = 'rds';      break;
-		case 0x23 : button = 'mode';     break;
-		case 0x24 : button = 'eject';    break;
-		case 0x30 : button = 'rad menu'; break;
-		case 0x31 : button = 'fm';       break;
-		case 0x32 : button = 'pty/tp';   break;
-		case 0x33 : button = 'dolby';    break;
-		case 0x34 : button = 'gt menu';  break;
-		case 0x38 : button = 'info';     break;
-		default   : button = 'Unknown';
-	}
-
-	data.value += action + ' ' + button;
-
-	switch (action) {
-		case 'release' : {
-			switch (button) {
-				case 'power' : {
-					log.module('[0x' + data.msg[1].toString(16) + '] Received BMBT button: ' + action + ' ' + button);
-					audio_power('toggle');
-					break;
-				}
-			}
-
-			break;
-		}
-	}
+// Broadcast: BMBT button
+// Even if RAD is emulated, we should decode BMBT output in the BMBT module (BMBT.js)
+function decode_bmbt_button(data) {
+	data.command = 'bro';
+	data.value   = 'BMBT button';
 
 	return data;
 }
 
+// Broadcast: BMBT button
+function decode_bmbt_knob(data) {
+	data.command = 'bro';
+	data.value   = 'BMBT knob';
+
+	return data;
+}
+
+// Broadcast: BMBT button
+function decode_bmbt_status(data) {
+	data.command = 'bro';
+	data.value   = 'BMBT status';
+
+	return data;
+}
+
+
+// Broadcast: Cassette status
+function decode_cassette_status(data) {
+	data.command = 'bro';
+	data.value   = 'Cassette status';
+
+	return data;
+}
+
+
 // Send audio control commands
 function audio_control(command) {
-	if (config.intf.ibus.enabled !== true) return;
+	const cmd = 0x36;
 
-	let cmd = 0x36;
-
-	let msgs = {
+	const msgs = {
 		off : [ cmd, 0xAF ],
 
 		dsp : {
@@ -379,16 +332,14 @@ function audio_control(command) {
 	bus.data.send({
 		src : module_name,
 		dst : 'LOC',
-		msg : msg,
+		msg,
 	});
 }
 
 function cassette_control(command) {
-	if (config.intf.ibus.enabled !== true) return;
+	const cmd = 0x4A;
 
-	let cmd = 0x4A;
-
-	let msgs = {
+	const msgs = {
 		on  : [ cmd, 0xFF ],
 		off : [ cmd, 0x00 ],
 	};
@@ -425,13 +376,11 @@ function cassette_control(command) {
 	bus.data.send({
 		src : module_name,
 		dst : 'BMBT',
-		msg : msg,
+		msg,
 	});
 }
 
 function volume_control(value = 1) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	let msg_value;
 	switch (value) {
 		case 5 : msg_value = 0x51; break;
@@ -461,8 +410,6 @@ function volume_control(value = 1) {
 
 // Power on DSP amp and GPIO pin for amplifier
 function audio_power(power_state = false, volume_increase = true) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
@@ -479,7 +426,6 @@ function audio_power(power_state = false, volume_increase = true) {
 			log.module('Setting audio power to state : ' + power_state);
 
 			audio_control(false);
-			cassette_control(false);
 
 			update.status('dsp.ready', false, false);
 			update.status('dsp.reset', true,  false);
@@ -489,6 +435,8 @@ function audio_power(power_state = false, volume_increase = true) {
 
 			// Send pause command to Kodi
 			kodi.command('pause');
+
+			setTimeout(() => { cassette_control(false); }, 500);
 
 			break;
 		}
@@ -504,41 +452,45 @@ function audio_power(power_state = false, volume_increase = true) {
 			bus.cmds.send_device_status(module_name);
 
 			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
-			let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
-			array_request.forEach((module_request) => {
-				bus.cmds.request_device_status(module_name, module_request);
+			// TODO: Make this a config array
+
+			// let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
+			const array_request = [ 'BMBT', 'DSP' ];
+
+			let count_request = 1;
+			array_request.forEach(module_request => {
+				setTimeout(() => {
+					bus.cmds.request_device_status(module_name, module_request);
+				}, (count_request * 150));
+
+				count_request++;
 			});
 
 			// Set DSP source to whatever is configured
-			audio_control(config.media.dsp.default_source);
+			count_request++;
+			setTimeout(() => { audio_control(config.media.dsp.default_source); }, (count_request * 150));
 
 			// Turn on BMBT
-			setTimeout(() => { cassette_control(true); }, 250);
-
-
-			// DSP powers up with volume set to 0, so bring up volume by configured amount
-			if (volume_increase === true) {
-				setTimeout(() => {
-					for (let pass = 0; pass < config.rad.power_on_volume; pass++) {
-						setTimeout(() => { volume_control(5); }, 10 * pass);
-					}
-				}, 500);
-			}
-
-
-			// Delay sending EQ command 750ms + 12ms per volume step
-			let dsp_eq_delay = (750 + (12 * config.rad.power_on_volume));
+			count_request++;
+			setTimeout(() => { cassette_control(true); }, (count_request * 150));
 
 			// Send configured DSP EQ (it seems to forget over time)
 			setTimeout(() => {
 				DSP.eq_encode(config.media.dsp.eq);
-			}, dsp_eq_delay);
+			}, (count_request * 150));
 
+			// DSP powers up with volume set to 0, so bring up volume by configured amount
+			if (volume_increase === true) {
+				setTimeout(() => {
+					for (let pass = 0; pass <= config.rad.power_on_volume; pass++) {
+						setTimeout(() => { volume_control(5); }, 25 * pass);
+						count_request++;
+					}
+				}, (2000 + (count_request * 150)));
+			}
 
-			// Send play command to Bluetooth device
+			// Send play command to Bluetooth/Kodi
 			bluetooth.command('play');
-
-			// Send play command to Kodi
 			kodi.command('play');
 		}
 	}
@@ -547,23 +499,24 @@ function audio_power(power_state = false, volume_increase = true) {
 
 function init_listeners() {
 	// Bounce if we're not configured to emulate the RAD module or not in an E39
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.rad       !== true) return;
+	if (config.emulate.rad !== true) return;
 
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value
-	power.on('active', (power_state) => {
+	//       .. and make it config.rad.delay.power_active and config.rad.delay.after_start
+	power.on('active', power_state => {
 		setTimeout(() => { audio_power(power_state); }, 300);
 	});
 
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
 	IKE.on('ignition-start-end', () => {
 		// Specify to not increase the volume on this possibly second power on event
-		setTimeout(() => { audio_power(true, false); }, config.rad.after_start_delay);
+		// TODO: Change this to seconds
+		setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
 	});
 
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 
@@ -576,19 +529,11 @@ function parse_in(data) {
 			break;
 		}
 
-		case 0x47 : { // Broadcast: BM status
-			return data;
-		}
-
-		case 0x48 : return decode_bm_button(data);
-
-		case 0x49 : { // Broadcast: BM knob
-			return data;
-		}
-
-		case 0x4B : { // Broadcast: Cassette status
-			return data;
-		}
+		// Even if RAD is emulated we should decode BMBT output in the BMBT module (BMBT.js)
+		case 0x47 : return decode_bmbt_status(data);     // Broadcast: BMBT status
+		case 0x48 : return decode_bmbt_button(data);     // Broadcast: BMBT button
+		case 0x49 : return decode_bmbt_knob(data);       // Broadcast: BMBT knob
+		case 0x4B : return decode_cassette_status(data); // Broadcast: Cassette status
 	}
 
 	return data;
@@ -663,8 +608,6 @@ function parse_out(data) {
 		}
 
 		case 0x4A : { // Control: Cassette
-			BMBT.cassette_status(data.msg[1]);
-
 			data.command = 'con';
 			data.value   = 'cassette: ';
 
@@ -689,7 +632,7 @@ function parse_out(data) {
 
 		case 0xA5 : { // Control: Screen text
 			data.command = 'con';
-			data.value   = 'screen text TODO';
+			data.value   = 'TODO: screen text';
 			break;
 		}
 	}
@@ -699,13 +642,13 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 
-	init_listeners : init_listeners,
+	init_listeners,
 
-	audio_power      : audio_power,
-	audio_control    : audio_control,
-	cassette_control : cassette_control,
-	volume_control   : volume_control,
+	audio_power,
+	audio_control,
+	cassette_control,
+	volume_control,
 };

@@ -3,7 +3,7 @@ const convert = require('node-unit-conversion');
 
 // Parse wheel speed LSB and MSB into KPH value
 function parse_wheel(byte0, byte1) {
-	let parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
+	const parsed_wheel_speed = (((byte0 & 0xFF) | ((byte1 & 0x0F) << 8)) / 16);
 
 	if (parsed_wheel_speed < 3) {
 		return {
@@ -13,8 +13,8 @@ function parse_wheel(byte0, byte1) {
 	}
 
 	return {
-		kmh : num.round2(parsed_wheel_speed, 1),
-		mph : num.round2(convert(parsed_wheel_speed).from('kilometre').to('us mile'), 1),
+		kmh : Math.round(parsed_wheel_speed),
+		mph : Math.round(convert(parsed_wheel_speed).from('kilometre').to('us mile')),
 	};
 }
 
@@ -35,12 +35,12 @@ function parse_wheel(byte0, byte1) {
 function encode_1a1(speed = 0) {
 	log.module('Sending CAN 0x1A1 packet for ' + speed + ' KPH');
 
-	speed = speed * 100;
+	speed *= 100;
 
-	let lsb = speed        & 0xFF || 0; // LSB
-	let msb = (speed >> 8) & 0xFF || 0; // MSB
+	const lsb = speed        & 0xFF || 0; // LSB
+	const msb = (speed >> 8) & 0xFF || 0; // MSB
 
-	let msg = [ 0x00, 0x00, lsb, msb, 0x00 ];
+	const msg = [ 0x00, 0x00, lsb, msb, 0x00 ];
 
 	// Send packet
 	bus.data.send({
@@ -73,9 +73,9 @@ function encode_1a1(speed = 0) {
 //
 // Byte 0, bit 0 :
 // Byte 0, bit 1 :
-// Byte 0, bit 2 :
+// Byte 0, bit 2 : DSC off
 // Byte 0, bit 3 :
-// Byte 0, bit 4 :
+// Byte 0, bit 4 : Brake applied
 // Byte 0, bit 5 :
 // Byte 0, bit 6 :
 // Byte 0, bit 7 :
@@ -84,7 +84,7 @@ function encode_1a1(speed = 0) {
 // Byte 1, bit 1 :
 // Byte 1, bit 2 :
 // Byte 1, bit 3 :
-// Byte 1, bit 4 : Brake applied (unconfirmed)
+// Byte 1, bit 4 :
 // Byte 1, bit 5 : Speed LSB
 // Byte 1, bit 6 : Speed LSB
 // Byte 1, bit 7 : Speed LSB
@@ -106,7 +106,7 @@ function parse_153(data) {
 	// A4 61 01 FF 00 FE FF 0B
 	//
 	// B3 and B6 change during torque reduction
-	let parse = {
+	const parse = {
 		vehicle : {
 			brake : bitmask.test(data.msg[1], 0x10),
 
@@ -131,7 +131,7 @@ function parse_1f0(data) {
 	data.command = 'bro';
 	data.value   = 'Wheel speeds';
 
-	let wheel_speed = {
+	const wheel_speed = {
 		front : {
 			left  : parse_wheel(data.msg[0], data.msg[1]),
 			right : parse_wheel(data.msg[2], data.msg[3]),
@@ -144,13 +144,13 @@ function parse_1f0(data) {
 	};
 
 	// Calculate vehicle speed from average of all 4 sensors
-	let vehicle_speed_total = wheel_speed.front.left.kmh + wheel_speed.front.right.kmh + wheel_speed.rear.left.kmh + wheel_speed.rear.right.kmh;
+	const vehicle_speed_total = wheel_speed.front.left.kmh + wheel_speed.front.right.kmh + wheel_speed.rear.left.kmh + wheel_speed.rear.right.kmh;
 
 	// Average all wheel speeds together
-	let vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
+	const vehicle_speed_kmh = num.round2(vehicle_speed_total / 4, 1);
 
 	// Calculate vehicle speed value in MPH
-	let vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
+	const vehicle_speed_mph = num.round2(convert(vehicle_speed_kmh).from('kilometre').to('us mile'), 1);
 
 	// Update status object
 	update.status('vehicle.wheel_speed.front.left',  wheel_speed.front.left.mph);
@@ -185,17 +185,31 @@ function parse_1f5(data) {
 	data.command = 'bro';
 	data.value   = 'Steering angle';
 
-	// Create new Int8Array objects from CAN message
-	let data_int8 = new Int8Array(data.msg);
+	// Thanks babe
+	const sign = {
+		angle    : -1,
+		velocity : -1,
+	};
 
-	// Calculate steering angle and velocity from Int8Array data
-	let angle    = (data_int8[1] << 8) + data_int8[0];
-	let velocity = (data_int8[3] << 8) + data_int8[2];
+	// Handle signed values (in a very bad way)
+	if (data.msg[1] >= 0x80) {
+		sign.angle = 1;
+		data.msg[1] -= 0x80;
+	}
+
+	if (data.msg[3] >= 0x80) {
+		sign.velocity = 1;
+		data.msg[3] -= 0x80;
+	}
+
+	// Calculate steering angle and velocity values
+	const angle    = (data.msg[1] << 8) + data.msg[0];
+	const velocity = (data.msg[3] << 8) + data.msg[2];
 
 	// Steering multiplier = 0.043393 = 3.75 turns, lock to lock (1350 degrees of total rotation)
-	let steering = {
-		angle    : Math.floor(angle    * config.vehicle.steering_multiplier) * -1, // Thanks babe
-		velocity : Math.floor(velocity * config.vehicle.steering_multiplier) * -1,
+	const steering = {
+		angle    : Math.floor(angle    * config.vehicle.steering_multiplier) * sign.angle,
+		velocity : Math.floor(velocity * config.vehicle.steering_multiplier) * sign.velocity,
 	};
 
 	update.status('vehicle.steering.angle',    steering.angle);
@@ -207,16 +221,17 @@ function parse_1f5(data) {
 function parse_1f8(data) {
 	data.command = 'bro';
 
+	// TODO: Add brake pressure handling
 	// Brake pressure messages observed in 2002 E39 M5
 	//
-	//       B0 B1 B2 B3 B4 B5 B6 B7
-	// 077F  14 14 00 00 00 00 82 01
+	//        B0 B1 B2 B3 B4 B5 B6 B7
+	// 0x77F  14 14 00 00 00 00 82 01
 	//
 	// B6 : Pedal pressure LSB
 	// B7 : Pedal pressure MSB
 	//
-	//       XX XX    XX          XX
-	// 07B5  30 30 00 30 00 00 00 42
+	//        XX XX    XX          XX
+	// 0x7B5  30 30 00 30 00 00 00 42
 	//
 	//
 	//
@@ -291,7 +306,7 @@ function init_listeners() {
 	});
 
 	// Reset torque reduction values when engine not running
-	update.on('status.engine.running', (data) => {
+	update.on('status.engine.running', data => {
 		switch (data.new) {
 			case false : {
 				update.status('vehicle.dsc.torque_reduction_1', 0);
@@ -301,21 +316,21 @@ function init_listeners() {
 	});
 
 	// Reset torque reduction values when ignition not in run
-	update.on('status.vehicle.ignition', (data) => {
+	update.on('status.vehicle.ignition', data => {
 		if (data.new === 'run') return;
 
 		update.status('vehicle.dsc.torque_reduction_1', 0);
 		update.status('vehicle.dsc.torque_reduction_2', 0);
 	});
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 
 module.exports = {
-	init_listeners : init_listeners,
+	init_listeners,
 
-	encode_1a1 : encode_1a1,
+	encode_1a1,
 
-	parse_out : parse_out,
+	parse_out,
 };

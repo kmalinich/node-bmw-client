@@ -4,7 +4,7 @@
 // Broadcast: Telephone data
 function decode_data_telephone(data) {
 	data.command = 'bro';
-	data.value   = 'telephone data TODO';
+	data.value   = 'TODO: telephone data';
 
 	// A9 03 30 30, NAV,TEL, Telephone data Current_network_request     Count_0
 	// A9 0A 30 30, NAV,TEL, Telephone data Current_phone_status        Count_0
@@ -30,10 +30,10 @@ function decode_status_indicator(data) {
 	// Bit4 = green,  solid
 	// Bit5 = green,  flash
 
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
 
 	// If 'flash' and 'solid' for the same color are passed, the LED flashes
-	let led = {
+	const led = {
 		green : {
 			flash : !mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 &&                mask.bit5 && !mask.bit8,
 			solid : !mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 &&  mask.bit4 && !mask.bit5 && !mask.bit8,
@@ -61,7 +61,7 @@ function decode_status_indicator(data) {
 // Broadcast: Telephone status
 function decode_status_telephone(data) {
 	data.command = 'bro';
-	data.value   = 'telephone status TODO';
+	data.value   = 'TODO: telephone status';
 
 	// Bitmask
 	// Bit0 : Handsfree
@@ -78,7 +78,7 @@ function decode_status_telephone(data) {
 // Request: Special indicators
 function decode_special(data) {
 	data.command = 'req';
-	data.value   = 'special indicators TODO';
+	data.value   = 'TODO: special indicators';
 
 	return data;
 }
@@ -140,6 +140,6 @@ function parse_out(data) {
 
 
 module.exports = {
-	led       : led,
-	parse_out : parse_out,
+	led,
+	parse_out,
 };

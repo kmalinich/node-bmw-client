@@ -7,28 +7,32 @@ function decode_button(data) {
 	data.command = 'bro';
 	data.value   = 'BM button ';
 
+	// 0x47 messages (SELECT button, etc) have slightly different format
+	if (data.msg[0] === 0x47 && data.msg.length === 3) {
+		data.msg[1] = data.msg[2];
+	}
+
 	let action = 'depress';
 	let button;
 
 	// Depress
 	// [ 72, 5 ]
-	// BIT7 FALSE!
-	// BIT7 FALSE + BIT6 FALSE!
-
-	// Release
-	// [ 72, 133 ]
-	// BIT7 TRUE!
-	// BIT7 TRUE + BIT6 FALSE!
+	// BIT7 FALSE + BIT6 FALSE
 
 	// Hold
 	// [ 72, 69 ]
-	// BIT7 FALSE!
-	// BIT7 FALSE + BIT6 TRUE!
+	// BIT7 FALSE + BIT6 TRUE
+
+	// Release
+	// [ 72, 133 ]
+	// BIT7 TRUE + BIT6 FALSE
 
 	// Determine action
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
+
+
 	switch (mask.b7) {
-		case false : {
+		case false : { // bit7 false
 			switch (mask.b6) {
 				case false : {
 					action = 'depress';
@@ -43,9 +47,9 @@ function decode_button(data) {
 			}
 
 			break;
-		}
+		} // bit7 false
 
-		case true : {
+		case true : { // bit7 true
 			switch (mask.b6) {
 				case false : {
 					// Remove release bit from button value
@@ -53,8 +57,9 @@ function decode_button(data) {
 					action      = 'release';
 				}
 			}
-		}
+		} // bit7 true
 	}
+
 
 	// Determine button
 	switch (data.msg[1]) {
@@ -67,12 +72,13 @@ function decode_button(data) {
 		case 0x06 : button = 'power';    break;
 		case 0x07 : button = 'clock';    break;
 		case 0x08 : button = 'phone';    break;
+		case 0x0F : button = 'select';   break; // 0x47 message
 		case 0x10 : button = 'left';     break;
 		case 0x11 : button = '1';        break;
 		case 0x12 : button = '3';        break;
 		case 0x13 : button = '5';        break;
 		case 0x14 : button = '<>';       break;
-		case 0x20 : button = 'select';   break;
+		case 0x20 : button = 'select';   break; // No
 		case 0x21 : button = 'am';       break;
 		case 0x22 : button = 'rds';      break;
 		case 0x23 : button = 'mode';     break;
@@ -101,7 +107,7 @@ function decode_button(data) {
 			}
 
 			break;
-		}
+		} // current action = depress
 
 		case 'release' : {
 			switch (config.bmbt.media) {
@@ -133,19 +139,22 @@ function decode_button(data) {
 
 			// Controls not dependent on Bluetooth or Kodi being enabled
 			switch (status.bmbt.last.action + status.bmbt.last.button) {
-				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 200); break;
-				case 'depress2' : LCM.police(true); setTimeout(LCM.police, 300); break;
-				case 'depress4' : LCM.police(true); setTimeout(LCM.police, 400); break;
-				case 'depress5' : LCM.police(true); setTimeout(LCM.police, 500); break;
+				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 2000); break;
 
-				case 'depress3' : LCM.police(false); break;
-				case 'depress6' : LCM.police(true);  break;
+				case 'depress2' : LCM.police(false); break;
+				case 'depress3' : LCM.police(true);  break;
 
 				case 'depressmode' : {
 					// To use holding the phone button in to toggle RPi display on/off
 					update.status('hdmi.rpi.power_override', true, false);
 					hdmi_rpi.command('toggle');
 
+					break;
+				}
+
+				case 'depresspower' : {
+					// To use pressing the BMBT power knob button (left side) to toggle RAD power
+					RAD.audio_power('toggle');
 					break;
 				}
 
@@ -156,7 +165,7 @@ function decode_button(data) {
 			}
 
 			break;
-		}
+		} // current action = release
 
 		case 'hold' : {
 			switch (config.bmbt.media) {
@@ -167,7 +176,7 @@ function decode_button(data) {
 					}
 				}
 			}
-		}
+		} // current action = hold
 	}
 
 	// Update status object
@@ -200,17 +209,16 @@ function decode_knob(data) {
 	data.value   = 'BM knob ';
 
 	let direction = 'left';
-	let steps;
 
 	// Determine rotation direction
 	// Bit7 : Right
-	let mask = bitmask.check(data.msg[1]).mask;
+	const mask = bitmask.check(data.msg[1]).mask;
 	if (mask.b7) {
 		data.msg[1] = bitmask.unset(data.msg[1], bitmask.b[7]);
 		direction   = 'right';
 	}
 
-	steps = data.msg[1];
+	const steps = data.msg[1];
 
 	data.value += direction + ' ' + steps + ' steps';
 
@@ -230,8 +238,7 @@ function decode_knob(data) {
 
 // Set or unset the status timeout
 function status_loop(action) {
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.bmbt      !== true) return;
+	if (config.emulate.bmbt !== true) return;
 
 	if (status.vehicle.ignition_level < 1) action = false;
 
@@ -275,8 +282,6 @@ function status_loop(action) {
 
 // Send BMBT status, and request status from RAD
 function refresh_status() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	if (status.vehicle.ignition_level > 0) {
 		log.module('Refreshing status');
 
@@ -297,8 +302,7 @@ function refresh_status() {
 
 // Send the power on button command if needed/ready
 function toggle_power_if_ready() {
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.bmbt      !== true) return;
+	if (config.emulate.bmbt !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
 	if (BMBT.timeout.power_on !== null) return;
@@ -342,8 +346,6 @@ function toggle_power_if_ready() {
 
 // Say we have no tape in the player
 function cassette_status(value = 0x05) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	bus.data.send({
 		src : module_name,
 		dst : 'RAD',
@@ -353,8 +355,6 @@ function cassette_status(value = 0x05) {
 
 // Emulate button presses
 function button(button) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	let button_down = 0x00;
 	// let button_hold;
 	let button_up;
@@ -376,9 +376,9 @@ function button(button) {
 	log.module('Button down ' + button);
 
 	// Init variables
-	let command     = 0x48; // Button action
-	let packet_down = [ command, button_down ];
-	let packet_up   = [ command, button_up ];
+	const command     = 0x48; // Button action
+	const packet_down = [ command, button_down ];
+	const packet_up   = [ command, button_up ];
 
 	bus.data.send({
 		src : module_name,
@@ -400,14 +400,12 @@ function button(button) {
 
 
 function init_listeners() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Perform commands on power lib active event
-	power.on('active', (power_state) => {
+	power.on('active', power_state => {
 		status_loop(power_state);
 	});
 
-	log.msg('Initialized listeners');
+	log.module('Initialized listeners');
 }
 
 
@@ -444,16 +442,16 @@ module.exports = {
 	},
 
 
-	button : button,
+	button,
 
-	cassette_status : cassette_status,
+	cassette_status,
 
-	init_listeners : init_listeners,
+	init_listeners,
 
-	parse_in  : parse_in,
-	parse_out : parse_out,
+	parse_in,
+	parse_out,
 
-	status_loop : status_loop,
+	status_loop,
 
-	toggle_power_if_ready : toggle_power_if_ready,
+	toggle_power_if_ready,
 };

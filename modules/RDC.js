@@ -3,7 +3,7 @@ function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x62 : { // Broadcast: RDC status
 			data.command = 'bro';
-			data.value   = 'RDC status TODO, ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
+			data.value   = 'TODO: RDC status ' + hex.i2s(data.msg[1]) + ' ' + hex.i2s(data.msg[2]);
 			break;
 		}
 	}
@@ -13,5 +13,5 @@ function parse_out(data) {
 
 
 module.exports = {
-	parse_out : parse_out,
+	parse_out,
 };

@@ -1,3 +1,52 @@
 #!/usr/bin/env bash
 
-npm link amp-message callers-path defaults-deep express jsonfile object-path performance-now socket.io trucolor
+# npm packages bmwcd and bmwi share
+ARRAY_LINK=(
+'callers-path'
+'defaults-deep'
+'eslint'
+'eslint-plugin-import'
+'eslint-plugin-node'
+'eslint-plugin-promise'
+'eslint-plugin-standard'
+'express'
+'json-socket'
+'jsonfile'
+'object-path'
+'performance-now'
+'socket.io'
+'trucolor'
+)
+
+FILE_TMP="$(mktemp)"
+
+# Create temporary list of package names with versions
+jq .dependencies    package.json | awk -F '"' '/"/ {print $2 "@" $4}' >  "${FILE_TMP}"
+jq .devDependencies package.json | awk -F '"' '/"/ {print $2 "@" $4}' >> "${FILE_TMP}"
+
+
+# Install version-specific npm packages globally
+for DEP in "${ARRAY_LINK[@]}"; do
+	DEP_FULL="$(grep -E "^${DEP}@" "${FILE_TMP}")"
+
+	if [[ -z "${DEP_FULL}" ]]; then
+		echo "Failed finding full dependency name for '${DEP}', cannot continue"
+		exit 1
+	fi
+
+	[[ "${1}" == "--no-install" ]] && continue
+
+	echo "npm -g i '${DEP_FULL}'"
+	npm -g i "${DEP_FULL}" --unsafe-perm
+	echo
+done
+echo
+
+# Link npm packages from global to local
+echo "npm link '${ARRAY_LINK[*]}'"
+npm link "${ARRAY_LINK[@]}"
+
+# Clean up
+rm -f "${FILE_TMP}"
+
+exit 0

@@ -7,15 +7,15 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"amp-message": "^0.1.2",
 		"body-parser": "^1.19.0",
 		"callers-path": "^1.0.5",
-		"chump": "git+https://github.com/kmalinich/chump.git",
+		"chump": "github:kmalinich/chump",
 		"dark-sky": "^1.1.5",
 		"defaults-deep": "^0.2.4",
 		"express": "^4.17.1",
 		"json-colorizer": "^2.2.1",
-		"jsonfile": "^5.0.0",
+		"json-socket": "^0.3.0",
+		"jsonfile": "^6.0.1",
 		"kodi-ws": "^2.4.3",
 		"moment": "^2.24.0",
 		"node-unit-conversion": "^0.1.1",
@@ -24,35 +24,49 @@
 		"performance-now": "^2.1.0",
 		"socket.io": "^2.3.0",
 		"suncalc": "^1.8.0",
-		"trucolor": "^1.0.6"
+		"trucolor": "^2.0.2"
 	},
-	"description": "NodeJS-powered BMW IBUS client interface",
-	"devDependencies": {},
+	"description": "NodeJS-powered BMW interface",
+	"devDependencies": {
+		"eslint": "^6.8.0",
+		"eslint-config-esnext": "^4.0.0",
+		"eslint-plugin-import": "^2.20.2",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-promise": "^4.2.1",
+		"eslint-plugin-standard": "^4.0.1"
+	},
+	"engines": {
+		"node": ">=13"
+	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
 		"bmw",
 		"canbus",
+		"dcan",
+		"kcan",
 		"dbus",
 		"ibus",
 		"kbus"
 	],
 	"license": "MIT",
-	"main": "launch.sh",
+	"main": "main.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
-		"node-cec": "git+https://github.com/kmalinich/node-cec.git",
-		"onoff": "^5.0.0",
+		"node-cec": "github:kmalinich/node-cec",
+		"onoff": "^5.0.1",
 		"pi-temperature": "^2.1.0",
-		"rpi-hdmi": "git+https://github.com/kmalinich/rpi-hdmi.git"
+		"rpi-hdmi": "github:kmalinich/rpi-hdmi"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/kmalinich/node-bmw-client.git"
 	},
 	"scripts": {
-		"postinstall": "/usr/bin/env bash ./postinstall"
+		"lint": "./node_modules/.bin/eslint .",
+		"preinstall": "/usr/bin/env bash ./preinstall"
 	},
+	"type": "script",
 	"version": "0.0.1"
 }
