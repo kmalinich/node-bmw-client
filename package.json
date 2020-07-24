@@ -17,20 +17,20 @@
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.0.1",
 		"kodi-ws": "^2.4.3",
-		"moment": "^2.25.3",
+		"moment": "^2.27.0",
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.4",
 		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
 		"socket.io": "^2.3.0",
 		"suncalc": "^1.8.0",
-		"trucolor": "^2.0.2"
+		"trucolor": "^2.0.4"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^7.0.0",
-		"eslint-config-esnext": "^4.0.0",
-		"eslint-plugin-import": "^2.20.2",
+		"eslint": "^7.5.0",
+		"eslint-config-esnext": "^4.1.0",
+		"eslint-plugin-import": "^2.22.0",
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-promise": "^4.2.1",
 		"eslint-plugin-standard": "^4.0.1"
