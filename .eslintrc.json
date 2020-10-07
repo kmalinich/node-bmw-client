@@ -152,8 +152,7 @@
 		"socket": false,
 		"status": true,
 		"terminating": false,
-		"update": false,
-		"weather": false
+		"update": false
 	},
 	"parserOptions": {
 		"ecmaFeatures": {

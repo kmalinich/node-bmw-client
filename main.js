@@ -22,7 +22,6 @@ json       = require('json');
 log        = require('log-output');
 num        = require('num');
 obc_values = require('obc-values');
-weather    = require('weather');
 
 // Class/event-based modules
 power  = new (require('power'))();  // External device power control library
@@ -128,7 +127,6 @@ async function init() {
 	await socket.init();  // Start socket client(s)
 
 	await api.init(); // Start Express API server
-	weather.init();   // Initialize Dark Sky weather API
 
 	await bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 	await gpio.init();      // Initialize GPIO relays

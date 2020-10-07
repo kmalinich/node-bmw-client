@@ -50,28 +50,11 @@ function auto_lights_process(ignition_level = 0) {
 	let night_percentage = 0;
 
 	const now_time  = new Date(Date.now());
-	const now_epoch = Math.floor(now_time / 1000);
-
 	const sun_times = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 
-
-	// Factor in cloud cover to lights on/off time
-	let now_offset = 0;
-
-	if (config.weather.apikey !== null && status.weather.daily.data[0].time !== null) {
-		const value = status.weather.daily.data[0];
-
-		// Only use weather forecast data if for a time period less than 24 hours from now
-		if ((now_epoch - value.time) < 86400 && (now_epoch - value.time) > -86400) {
-			// Add 3 hours * current cloudCover value
-			// TODO: Make the hour multiplier a config value
-			now_offset = (value.cloudCover * 3) * (60 * 60 * 1000);
-		}
-	}
-
 	// Calculate on and off times with offset (if available)
-	const lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
-	const lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
+	const lights_on  = new Date(sun_times.sunsetStart.getTime());
+	const lights_off = new Date(sun_times.sunriseEnd.getTime());
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
