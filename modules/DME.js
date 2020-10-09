@@ -247,13 +247,9 @@ function parse_338(data) {
 // byte 3, bit 2 : Oil level error   (red)
 // byte 3, bit 3 : Coolant overtemperature light
 
-// 0x10 : 5500RPM and up illuminated (oil 63 deg C)
-// 0x20 : 5500RPM and up illuminated (oil 63 deg C)
-//
 // byte 3, bit 4 : M3/M5 tachometer light
 // byte 3, bit 5 : M3/M5 tachometer light
 // byte 3, bit 6 : M3/M5 tachometer light
-
 
 // byte 4 : Oil temperature (ºC = X - 48)
 //
@@ -269,6 +265,8 @@ function parse_338(data) {
 // byte 6 : CSL oil level (format unclear)
 //
 // byte 7 : Possibly MSS54 TPM trigger
+//
+// Now partially (pre) parsed by bmwi/lib/intf-can.js
 function parse_545(data) {
 	data.value = 'CEL/Fuel cons/Overheat/Oil temp/Charging/Brake light switch/Cruise control';
 
@@ -284,19 +282,6 @@ function parse_545(data) {
 			consumption : consumption_current - DME.consumption.last.msg,
 		},
 
-		status : {
-			// Byte 0
-			check_engine  : bitmask.test(data.msg[0], bitmask.b[1]),
-			check_gas_cap : bitmask.test(data.msg[0], bitmask.b[7]),
-			cruise        : bitmask.test(data.msg[0], bitmask.b[3]),
-			eml           : bitmask.test(data.msg[0], bitmask.b[4]),
-
-			// Byte 5
-			ac_switch           : bitmask.test(data.msg[5], bitmask.b[3]),
-			oil_pressure_light : !bitmask.test(data.msg[5], bitmask.b[0]),
-			battery_light      : !bitmask.test(data.msg[5], bitmask.b[4]),
-		},
-
 		// Skipping due to 0x720 ARBID broadcast
 		// TODO: Add config value for this
 		// temperature : {
@@ -307,19 +292,10 @@ function parse_545(data) {
 	};
 
 	// Update status object
-	update.status('dme.status.check_engine',  parse.status.check_engine,  false);
-	update.status('dme.status.check_gas_cap', parse.status.check_gas_cap, false);
-	update.status('dme.status.cruise',        parse.status.cruise,        false);
-	update.status('dme.status.eml',           parse.status.eml,           false);
-
-	update.status('dme.status.ac_switch',          parse.status.ac_switch,          false);
-	update.status('dme.status.oil_pressure_light', parse.status.oil_pressure_light, false);
-	update.status('dme.status.battery_light',      parse.status.battery_light,      false);
 
 	// Skipping due to 0x720 ARBID broadcast
 	// TODO: Add config value for this
 	// update.status('temperature.oil.c', parse.temperature.oil.c, false);
-
 
 	// Update fuel consumption value if consumption process flag is true
 	// if (process_consumption === true) update.status('fuel.consumption', Math.round((parse.fuel.consumption + status.fuel.consumption) / 2));
