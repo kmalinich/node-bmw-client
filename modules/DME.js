@@ -285,10 +285,16 @@ function parse_545(data) {
 		},
 
 		status : {
+			// Byte 0
 			check_engine  : bitmask.test(data.msg[0], bitmask.b[1]),
 			check_gas_cap : bitmask.test(data.msg[0], bitmask.b[7]),
 			cruise        : bitmask.test(data.msg[0], bitmask.b[3]),
 			eml           : bitmask.test(data.msg[0], bitmask.b[4]),
+
+			// Byte 5
+			ac_switch           : bitmask.test(data.msg[5], bitmask.b[3]),
+			oil_pressure_light : !bitmask.test(data.msg[5], bitmask.b[0]),
+			battery_light      : !bitmask.test(data.msg[5], bitmask.b[4]),
 		},
 
 		// Skipping due to 0x720 ARBID broadcast
@@ -305,6 +311,10 @@ function parse_545(data) {
 	update.status('dme.status.check_gas_cap', parse.status.check_gas_cap, false);
 	update.status('dme.status.cruise',        parse.status.cruise,        false);
 	update.status('dme.status.eml',           parse.status.eml,           false);
+
+	update.status('dme.status.ac_switch',          parse.status.ac_switch,          false);
+	update.status('dme.status.oil_pressure_light', parse.status.oil_pressure_light, false);
+	update.status('dme.status.battery_light',      parse.status.battery_light,      false);
 
 	// Skipping due to 0x720 ARBID broadcast
 	// TODO: Add config value for this
