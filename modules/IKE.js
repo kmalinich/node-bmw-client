@@ -66,7 +66,7 @@ class IKE extends EventEmitter {
 			case 0x00 : aux_heat_led = 'off';   break;
 			case 0x04 : aux_heat_led = 'on';    break;
 			case 0x08 : aux_heat_led = 'blink'; break;
-			default   :	aux_heat_led = Buffer.from(data.msg);
+			default   : aux_heat_led = Buffer.from(data.msg);
 		}
 
 		update.status('obc.aux_heat_led', aux_heat_led, false);
