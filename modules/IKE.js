@@ -66,7 +66,7 @@ class IKE extends EventEmitter {
 			case 0x00 : aux_heat_led = 'off';   break;
 			case 0x04 : aux_heat_led = 'on';    break;
 			case 0x08 : aux_heat_led = 'blink'; break;
-			default   : aux_heat_led = Buffer.from(data.msg);
+			default   :	aux_heat_led = Buffer.from(data.msg);
 		}
 
 		update.status('obc.aux_heat_led', aux_heat_led, false);
@@ -1300,7 +1300,7 @@ class IKE extends EventEmitter {
 		if (this.hud_locked !== false) return;
 
 		// kodi.notify(module_name, message);
-		let scroll_delay         = 300;
+		let scroll_delay         = 200;
 		let scroll_delay_timeout = scroll_delay * 5;
 
 		// Override scroll_delay_timeout if we're showing a turn signal message
