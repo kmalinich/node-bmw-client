@@ -27,11 +27,10 @@
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^7.24.0",
+		"eslint": "^7.25.0",
 		"eslint-plugin-import": "^2.22.1",
 		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^5.1.0",
-		"eslint-plugin-standard": "^4.1.0"
+		"eslint-plugin-promise": "^5.1.0"
 	},
 	"engines": {
 		"node": ">=14"
@@ -47,13 +46,13 @@
 		"kbus"
 	],
 	"license": "MIT",
-	"main": "main.js",
+	"main": "index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
-		"onoff": "^6.0.2",
+		"onoff": "^6.0.3",
 		"pi-temperature": "^2.1.0",
 		"rpi-hdmi": "github:kmalinich/rpi-hdmi"
 	},
@@ -63,7 +62,8 @@
 	},
 	"scripts": {
 		"lint": "./node_modules/.bin/eslint .",
-		"preinstall": "/usr/bin/env bash ./preinstall"
+		"preinstall": "/usr/bin/env bash ./bin/preinstall"
 	},
+	"type": "commonjs",
 	"version": "0.0.1"
 }

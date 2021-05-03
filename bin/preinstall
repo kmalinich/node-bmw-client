@@ -8,7 +8,6 @@ ARRAY_LINK=(
 'eslint-plugin-import'
 'eslint-plugin-node'
 'eslint-plugin-promise'
-'eslint-plugin-standard'
 'express'
 'json-socket'
 'jsonfile'
