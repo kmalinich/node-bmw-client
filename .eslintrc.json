@@ -8,8 +8,7 @@
 		"worker": false
 	},
 	"extends": [
-		"eslint:recommended",
-		"esnext"
+		"eslint:recommended"
 	],
 	"globals": {
 		"ABG": false,
@@ -166,8 +165,7 @@
 	"plugins": [
 		"import",
 		"node",
-		"promise",
-		"standard"
+		"promise"
 	],
 	"rules": {
 		"accessor-pairs": "error",
@@ -555,11 +553,6 @@
 				}
 			}
 		],
-		"standard/computed-property-even-spacing": [
-			"error",
-			"even"
-		],
-		"standard/no-callback-literal": "error",
 		"symbol-description": "error",
 		"template-curly-spacing": [
 			"error",
