@@ -154,4 +154,4 @@ async function term() {
 
 
 // FASTEN SEATBELTS
-init();
+(async () => { await init(); })();
