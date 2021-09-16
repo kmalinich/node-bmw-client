@@ -34,21 +34,57 @@ function auto_lights(ignition_level = 0) {
 			// Update status object
 			update.status('lights.auto.active', true, false);
 
-			auto_lights_process(ignition_level);
+			auto_lights_execute(ignition_level);
 		}
 	}
 }
 
+function auto_lights_process(wiperSpeed, timeNow, timeLightsOff, timeLightsOn) {
+	if (wiperSpeed !== null && wiperSpeed !== 'off' && wiperSpeed !== 'spray') {
+		return {
+			new_reason       : 'wipers on',
+			new_lowbeam      : true,
+			night_percentage : 1,
+		};
+	}
+
+	// Check time of day
+	if (timeNow < timeLightsOff) {
+		return {
+			new_reason       : 'before dawn',
+			new_lowbeam      : true,
+			night_percentage : timeNow / timeLightsOff,
+		};
+	}
+
+	if (timeNow > timeLightsOff && timeNow < timeLightsOn) {
+		return {
+			new_reason       : 'after dawn, before dusk',
+			new_lowbeam      : false,
+			night_percentage : 0,
+		};
+	}
+
+	if (timeNow > timeLightsOn) {
+		return {
+			new_reason       : 'after dusk',
+			new_lowbeam      : true,
+			night_percentage : timeLightsOn / timeNow,
+		};
+	}
+
+	return {
+		new_reason       : 'failsafe',
+		new_lowbeam      : true,
+		night_percentage : 1,
+	};
+}
+
 // Logic based on location and time of day, determine if the low beams should be on
-function auto_lights_process(ignition_level = 0) {
+function auto_lights_execute(ignition_level = 0) {
 	clearTimeout(LCM.timeout.lights_auto);
 
 	// Init variables
-	let new_reason  = null;
-	let new_lowbeam = false;
-
-	let night_percentage = 0;
-
 	const now_time  = new Date(Date.now());
 	const sun_times = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 
@@ -63,40 +99,14 @@ function auto_lights_process(ignition_level = 0) {
 		return;
 	}
 
-	// Check wipers
-	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
-		new_reason       = 'wipers on';
-		new_lowbeam      = true;
-		night_percentage = 1;
-	}
-	// Check time of day
-	else if (now_time < lights_off) {
-		new_reason       = 'before dawn';
-		new_lowbeam      = true;
-		night_percentage = now_time / lights_off;
-	}
-	else if (now_time > lights_off && now_time < lights_on) {
-		new_reason       = 'after dawn, before dusk';
-		new_lowbeam      = false;
-		night_percentage = 0;
-	}
-	else if (now_time > lights_on) {
-		new_reason       = 'after dusk';
-		new_lowbeam      = true;
-		night_percentage = lights_on / now_time;
-	}
-	else {
-		new_reason       = 'failsafe';
-		new_lowbeam      = true;
-		night_percentage = 1;
-	}
+	// Get reason, lowbeam status, and "night percentage"
+	const processData = auto_lights_process(status.gm.wipers.speed, now_time, lights_off, lights_on);
 
+	update.status('lights.auto.reason', processData.new_reason, false);
 
-	update.status('lights.auto.reason', new_reason, false);
+	update.status('lights.auto.night_percentage', processData.night_percentage, false);
 
-	update.status('lights.auto.night_percentage', night_percentage, false);
-
-	if (update.status('lights.auto.lowbeam', new_lowbeam, false)) {
+	if (update.status('lights.auto.lowbeam', processData.new_lowbeam, false)) {
 		// Show autolights status in cluster
 		// TODO: Change this to be an event listener and move to IKE
 		IKE.text_override('AL: ' + status.lights.auto.lowbeam);
@@ -109,7 +119,7 @@ function auto_lights_process(ignition_level = 0) {
 	// Process/send LCM data on 8.765 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
 	// TODO: Move this value into config object
-	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 8765);
+	LCM.timeout.lights_auto = setTimeout(auto_lights_execute, 8765);
 }
 
 // Cluster/interior backlight
@@ -1057,8 +1067,8 @@ function init_listeners() {
 
 	// Update autolights status on wiper speed change
 	update.on('status.gm.wipers.speed', () => {
-		// Call auto_lights_process() after 1.5s, else just tapping mist/spray turns on the lights
-		setTimeout(auto_lights_process, 1500);
+		// Call auto_lights_execute() after 1.5s, else just tapping mist/spray turns on the lights
+		setTimeout(auto_lights_execute, 1500);
 	});
 
 	log.module('Initialized listeners');
@@ -1083,6 +1093,7 @@ module.exports = {
 	decode,
 
 	auto_lights,
+	auto_lights_execute,
 	auto_lights_process,
 	comfort_turn_flash,
 	init_listeners,
