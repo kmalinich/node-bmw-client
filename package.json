@@ -7,11 +7,11 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"body-parser": "^1.19.0",
+		"body-parser": "^1.19.1",
 		"callers-path": "^1.0.5",
 		"chump": "github:kmalinich/chump",
 		"defaults-deep": "^0.2.4",
-		"express": "^4.17.1",
+		"express": "^4.17.2",
 		"json-colorizer": "^2.2.2",
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.1.0",
@@ -21,19 +21,17 @@
 		"object-path": "^0.11.8",
 		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
-		"socket.io": "^4.2.0",
+		"socket.io": "^4.4.0",
 		"suncalc": "^1.8.0",
-		"trucolor": "^2.0.4"
+		"trucolor": "1.0.6"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^7.32.0",
-		"eslint-plugin-import": "^2.24.2",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^5.1.0"
+		"eslint": "^8.5.0",
+		"eslint-plugin-node": "^11.1.0"
 	},
 	"engines": {
-		"node": ">=14"
+		"node": ">=17"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
@@ -46,7 +44,7 @@
 		"kbus"
 	],
 	"license": "MIT",
-	"main": "index.js",
+	"main": "./index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
 		"dbus-native": "^0.4.0",
@@ -61,7 +59,7 @@
 		"url": "git+https://github.com/kmalinich/node-bmw-client.git"
 	},
 	"scripts": {
-		"lint": "./node_modules/.bin/eslint .",
+		"lint": "eslint .",
 		"preinstall": "/usr/bin/env bash ./bin/preinstall"
 	},
 	"type": "commonjs",

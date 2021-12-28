@@ -4,6 +4,9 @@
 
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 // All the possible values to send to GM
 // let array_of_possible_values = {

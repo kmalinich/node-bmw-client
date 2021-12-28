@@ -2,6 +2,9 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 const convert = require('node-unit-conversion');
 const moment  = require('moment');
 const os      = require('os');

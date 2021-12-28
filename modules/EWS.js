@@ -1,5 +1,8 @@
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 class EWS extends EventEmitter {
 	// Request various things from EWS
