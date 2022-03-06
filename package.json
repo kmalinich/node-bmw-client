@@ -7,11 +7,11 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"body-parser": "^1.19.1",
+		"body-parser": "^1.19.2",
 		"callers-path": "^1.0.5",
 		"chump": "github:kmalinich/chump",
 		"defaults-deep": "^0.2.4",
-		"express": "^4.17.2",
+		"express": "^4.17.3",
 		"json-colorizer": "^2.2.2",
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.1.0",
@@ -21,14 +21,18 @@
 		"object-path": "^0.11.8",
 		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
-		"socket.io": "^4.4.0",
-		"suncalc": "^1.8.0",
+		"socket.io": "^4.4.1",
+		"suncalc": "^1.9.0",
 		"trucolor": "1.0.6"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^8.5.0",
+		"eslint": "^8.10.0",
 		"eslint-plugin-node": "^11.1.0"
+	},
+	"directories": {
+		"lib": "./lib",
+		"share": "./share"
 	},
 	"engines": {
 		"node": ">=17"
@@ -37,11 +41,11 @@
 	"keywords": [
 		"bmw",
 		"canbus",
-		"dcan",
-		"kcan",
 		"dbus",
+		"dcan",
 		"ibus",
-		"kbus"
+		"kbus",
+		"kcan"
 	],
 	"license": "MIT",
 	"main": "./index.js",
