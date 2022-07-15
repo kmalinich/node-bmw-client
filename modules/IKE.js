@@ -1258,7 +1258,7 @@ class IKE extends EventEmitter {
 			default : return;
 		}
 
-		log.module('Requesting \'' + value + '\'');
+		log.module(`Requesting '${value}'`);
 
 		bus.data.send({
 			src,
