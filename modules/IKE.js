@@ -483,6 +483,8 @@ class IKE extends EventEmitter {
 	// Broadcast: Coolant temp and external temp
 	// Update exterior and engine coolant temperature data
 	decode_temperature_values(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'temperature values';
 

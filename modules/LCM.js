@@ -770,6 +770,7 @@ function parse_out(data) {
 		}
 
 		case 0x5B : { // Broadcast: light status
+			data.skipLog = true;
 			data.command = 'bro';
 			data.value   = 'light status';
 

@@ -120,7 +120,7 @@ async function init() {
 	log.msg('Initialized');
 
 	// Disable console output
-	config.console.output = false;
+	// config.console.output = false;
 } // async init()
 
 // Global term
@@ -144,7 +144,7 @@ async function term() {
 	log.msg('Terminated');
 
 	// Disable console output
-	config.console.output = false;
+	// config.console.output = false;
 
 	process.exit();
 } // async term()
