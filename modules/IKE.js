@@ -2,6 +2,9 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 const convert = require('node-unit-conversion');
 const moment  = require('moment');
 const os      = require('os');
@@ -480,6 +483,8 @@ class IKE extends EventEmitter {
 	// Broadcast: Coolant temp and external temp
 	// Update exterior and engine coolant temperature data
 	decode_temperature_values(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'temperature values';
 
@@ -1255,7 +1260,7 @@ class IKE extends EventEmitter {
 			default : return;
 		}
 
-		log.module('Requesting \'' + value + '\'');
+		log.module(`Requesting '${value}'`);
 
 		bus.data.send({
 			src,

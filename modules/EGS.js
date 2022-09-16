@@ -1,5 +1,8 @@
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 class EGS extends EventEmitter {
 	parse_304(data) {

@@ -2,6 +2,9 @@
 
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 class CAS extends EventEmitter {
 	constructor() {

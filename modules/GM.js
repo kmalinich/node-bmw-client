@@ -4,6 +4,9 @@
 
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 // All the possible values to send to GM
 // let array_of_possible_values = {
@@ -182,6 +185,8 @@ class GM extends EventEmitter {
 	// Broadcast: Opened doors (flaps)/windows status
 	// [0x7A] Decode a door status message from GM and act upon the results
 	decode_status_opened(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'door status';
 

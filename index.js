@@ -2,9 +2,6 @@
 /* eslint no-global-assign : 0 */
 
 
-// Bump up default max event listeners
-require('events').EventEmitter.defaultMaxListeners = 20;
-
 app_path = __dirname;
 app_name = 'bmwcd';
 app_intf = 'client';
@@ -12,7 +9,7 @@ app_intf = 'client';
 terminating = false;
 
 // node-bmw shared libraries
-[	'api', 'bitmask', 'gpio', 'hex', 'json', 'log-output', 'num', 'obc-values' ].reduce((obj, id) => {
+[ 'api', 'bitmask', 'gpio', 'hex', 'json', 'log-output', 'num', 'obc-values' ].reduce((obj, id) => {
 	const varName = id.replace('-', '_').replace('_output', '');
 	obj[varName] = require(`${id}`); return obj;
 }, global);
@@ -43,7 +40,7 @@ async function load_modules() {
 	}, global);
 
 	// Other libraries
-	[	'bluetooth', 'hdmi-cec', 'hdmi-rpi', 'kodi', 'bus' ].reduce((obj, id) => {
+	[ 'bluetooth', 'hdmi-cec', 'hdmi-rpi', 'kodi', 'bus' ].reduce((obj, id) => {
 		const varName = id.replace('-', '_');
 		obj[varName] = require(`${id}`); return obj;
 	}, global);
@@ -123,7 +120,7 @@ async function init() {
 	log.msg('Initialized');
 
 	// Disable console output
-	config.console.output = false;
+	// config.console.output = false;
 } // async init()
 
 // Global term
@@ -147,7 +144,7 @@ async function term() {
 	log.msg('Terminated');
 
 	// Disable console output
-	config.console.output = false;
+	// config.console.output = false;
 
 	process.exit();
 } // async term()

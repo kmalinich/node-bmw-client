@@ -84,10 +84,10 @@ function eq_decode(data) {
 
 // Send EQ delta-update to DSP
 function eq_delta(band, value) {
-	value = parseInt(value);
-
 	// Save original integer value for log message
-	const value_orig = value;
+	const value_orig = parseInt(value);
+
+	value = parseInt(value);
 
 	// Ensure band is string type and lowercase
 	band = band.toString().toLowerCase();

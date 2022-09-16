@@ -1,11 +1,8 @@
 {
 	"env": {
-		"browser": false,
-		"es6": true,
-		"jquery": false,
-		"node": true,
-		"serviceworker": false,
-		"worker": false
+		"amd": true,
+		"es2021": true,
+		"node": true
 	},
 	"extends": [
 		"eslint:recommended"
@@ -159,13 +156,12 @@
 			"impliedStrict": true,
 			"jsx": false
 		},
-		"ecmaVersion": 11,
+		"ecmaVersion": 12,
 		"sourceType": "module"
 	},
 	"plugins": [
 		"import",
-		"node",
-		"promise"
+		"node"
 	],
 	"rules": {
 		"accessor-pairs": "error",
@@ -240,13 +236,6 @@
 			"error",
 			"^(err|error)$"
 		],
-		"import/export": "error",
-		"import/first": "error",
-		"import/no-amd": "warn",
-		"import/no-commonjs": "off",
-		"import/no-duplicates": "error",
-		"import/no-nodejs-modules": "off",
-		"import/no-webpack-loader-syntax": "error",
 		"indent": [
 			"error",
 			"tab",
@@ -473,7 +462,6 @@
 			}
 		],
 		"prefer-promise-reject-errors": "error",
-		"promise/param-names": "error",
 		"quotes": [
 			"error",
 			"single",
@@ -588,16 +576,5 @@
 			"error",
 			"never"
 		]
-	},
-	"settings": {
-		"import/resolver": {
-			"node": {
-				"moduleDirectory": [
-					"node_modules",
-					"lib/",
-					"share/"
-				]
-			}
-		}
 	}
 }

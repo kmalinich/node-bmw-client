@@ -4,6 +4,7 @@
 *.swp
 ._*
 .DS_Store
+.eslintcache
 
 /*.json
 
@@ -11,6 +12,3 @@
 /log/
 /node_modules/
 /test/
-
-
-/*.eslintcache
