@@ -160,7 +160,6 @@
 		"sourceType": "module"
 	},
 	"plugins": [
-		"import",
 		"node"
 	],
 	"rules": {
