@@ -5,7 +5,6 @@ ARRAY_LINK=(
 'callers-path'
 'defaults-deep'
 'eslint'
-'eslint-plugin-import'
 'eslint-plugin-node'
 'express'
 'json-socket'
