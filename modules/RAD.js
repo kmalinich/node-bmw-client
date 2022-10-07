@@ -416,8 +416,7 @@ function audio_power(power_state = false, volume_increase = true) {
 	switch (power_state) {
 		case 'toggle' : {
 			log.module('Toggling audio power, current source: ' + status.rad.source_name);
-			audio_power((status.rad.source_name === 'off'));
-			return;
+			return audio_power((status.rad.source_name === 'off'));
 		}
 
 		case 0     :
@@ -437,7 +436,6 @@ function audio_power(power_state = false, volume_increase = true) {
 			kodi.command('pause');
 
 			setTimeout(() => { cassette_control(false); }, 500);
-
 			break;
 		}
 
@@ -475,9 +473,14 @@ function audio_power(power_state = false, volume_increase = true) {
 			setTimeout(() => { cassette_control(true); }, (count_request * 150));
 
 			// Send configured DSP EQ (it seems to forget over time)
+			count_request++;
 			setTimeout(() => {
 				DSP.eq_encode(config.media.dsp.eq);
 			}, (count_request * 150));
+
+			// Send configured DSP loudness value
+			count_request++;
+			DSP.loudness(config.media.dsp.loudness);
 
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			if (volume_increase === true) {

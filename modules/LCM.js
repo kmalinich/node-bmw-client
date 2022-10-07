@@ -890,26 +890,20 @@ function pl() {
 			left : {
 				fog : false,
 
-				// highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
-				lowbeam  : false,
 
 				// standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				// standing : pl_check([ 2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 ]),
-				// turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 
 				turn : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
 			},
 			right : {
 				fog : false,
 
-				// highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
-				lowbeam  : false,
 
 				// standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				// standing : pl_check([ 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 ]),
-				// turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 
 				turn : pl_check([ 0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27 ]),
 			},
@@ -927,12 +921,14 @@ function pl() {
 		rear : {
 			left : {
 				brake    : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
+				fog      : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
 				reverse  : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				standing : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
 				turn     : pl_check([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]),
 			},
 			right : {
 				brake    : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
+				fog      : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
 				reverse  : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				standing : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
 				turn     : pl_check([ 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ]),
@@ -957,6 +953,9 @@ function pl() {
 		output_brake_rear_left   : object.rear.left.brake,
 		output_brake_rear_middle : object.rear.middle.brake,
 		output_brake_rear_right  : object.rear.right.brake,
+
+		output_fog_rear_left  : object.rear.left.fog,
+		output_fog_rear_right : object.rear.right.fog,
 
 		output_reverse_rear_left  : object.rear.left.reverse,
 		output_reverse_rear_right : object.rear.right.reverse,
