@@ -300,6 +300,8 @@ function init_listeners() {
 	// Send vehicle speed 0 to CAN1 on power module events
 	// This is because vehicle speed isn't received via CAN0 when key is in accessory
 	power.on('active', () => {
+		if (config.translate.dsc !== true) return;
+
 		setTimeout(() => {
 			encode_1a1(0);
 		}, 250);

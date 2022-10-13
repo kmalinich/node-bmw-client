@@ -15,7 +15,9 @@ function auto_lights(ignition_level = 0) {
 
 	switch (action) {
 		case false : {
-			io_encode({});
+			if (config.lights.auto === true) {
+				io_encode({});
+			}
 
 			if (LCM.timeout.lights_auto !== null) {
 				clearTimeout(LCM.timeout.lights_auto);
