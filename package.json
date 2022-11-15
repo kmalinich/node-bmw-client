@@ -7,12 +7,11 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"bluez": "^0.4.5",
-		"body-parser": "^1.20.0",
+		"body-parser": "^1.20.1",
 		"callers-path": "^1.0.5",
 		"chump": "github:kmalinich/chump",
 		"defaults-deep": "^0.2.4",
-		"express": "^4.18.1",
+		"express": "^4.18.2",
 		"json-colorizer": "^2.2.2",
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.1.0",
@@ -22,13 +21,13 @@
 		"object-path": "^0.11.8",
 		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
-		"socket.io": "^4.5.2",
+		"socket.io": "^4.5.3",
 		"suncalc": "^1.9.0",
 		"trucolor": "2.0.4"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^8.24.0",
+		"eslint": "^8.27.0",
 		"eslint-plugin-node": "^11.1.0"
 	},
 	"directories": {
@@ -52,6 +51,7 @@
 	"main": "./index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
+		"bluez": "^0.4.5",
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
