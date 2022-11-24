@@ -1,0 +1,5 @@
+depcheck:
+  ignoreMatches: ["bus-*", "config-*", "eslint-*", "status-*"]
+
+
+# vim: set filetype=yaml ts=2 sw=2 tw=0 et :
