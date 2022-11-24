@@ -21,13 +21,13 @@
 		"object-path": "^0.11.8",
 		"pad": "^3.2.0",
 		"performance-now": "^2.1.0",
-		"socket.io": "^4.5.3",
+		"socket.io": "^4.5.4",
 		"suncalc": "^1.9.0",
 		"trucolor": "2.0.4"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^8.27.0",
+		"eslint": "^8.28.0",
 		"eslint-plugin-node": "^11.1.0"
 	},
 	"directories": {
