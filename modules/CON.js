@@ -1,7 +1,5 @@
 /* eslint key-spacing : 0 */
 
-const time_now = require('performance-now');
-
 
 function button_check(button) {
 	// Workaround for the last of a proper 'release' message when in 'joystick mode'
@@ -17,7 +15,7 @@ function button_check(button) {
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for <configured> milliseconds
-	const rotation_gap = time_now() - status.con.rotation.last_msg;
+	const rotation_gap = Date.now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
 		update.status('con.rotation.horizontal', false, false);
@@ -317,7 +315,7 @@ function decode_rotation(data) {
 
 	// Dynamic timeout for the 'horizontal' and 'volume' rotation modes -
 	// Instead of a fixed timeout, you have to leave the knob alone for 3000 milliseconds
-	const rotation_gap = time_now() - status.con.rotation.last_msg;
+	const rotation_gap = Date.now() - status.con.rotation.last_msg;
 
 	if (rotation_gap >= config.con.timeout.rotation_mode) {
 		update.status('con.rotation.horizontal', false, false);
@@ -366,7 +364,7 @@ function decode_rotation(data) {
 		}
 	}
 
-	update.status('con.rotation.last_msg', time_now());
+	update.status('con.rotation.last_msg', Date.now());
 
 	return data;
 }
@@ -450,7 +448,7 @@ function decode_init(data) {
 
 function init_listeners() {
 	// Stamp last message time as now
-	update.status('con.rotation.last_msg', time_now());
+	update.status('con.rotation.last_msg', Date.now());
 
 	log.module('Initialized listeners');
 }
