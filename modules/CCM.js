@@ -3,7 +3,7 @@ import hex from '../share/hex.js';
 // Broadcast: check control message
 function parse_cc_message(data) {
 	data.command = 'bro';
-	data.value   = 'check control message TODO: ' + hex.h2a(data.msg);
+	data.value   = 'TODO: check control message ' + hex.h2a(data.msg);
 
 	return data;
 }

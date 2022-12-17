@@ -4,6 +4,7 @@
 *.swp
 ._*
 .DS_Store
+.eslintcache
 
 /*.json
 

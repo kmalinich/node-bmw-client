@@ -1,6 +1,6 @@
 function parse_eq_encode(data) {
 	data.command = 'con';
-	data.value   = 'DSP EQ: TODO';
+	data.value   = 'TODO: DSP EQ';
 
 	return data;
 }

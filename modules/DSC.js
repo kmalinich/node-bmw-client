@@ -75,9 +75,9 @@ function encode_1a1(speed = 0) {
 //
 // Byte 0, bit 0 :
 // Byte 0, bit 1 :
-// Byte 0, bit 2 :
+// Byte 0, bit 2 : DSC off
 // Byte 0, bit 3 :
-// Byte 0, bit 4 :
+// Byte 0, bit 4 : Brake applied
 // Byte 0, bit 5 :
 // Byte 0, bit 6 :
 // Byte 0, bit 7 :
@@ -86,7 +86,7 @@ function encode_1a1(speed = 0) {
 // Byte 1, bit 1 :
 // Byte 1, bit 2 :
 // Byte 1, bit 3 :
-// Byte 1, bit 4 : Brake applied (unconfirmed)
+// Byte 1, bit 4 :
 // Byte 1, bit 5 : Speed LSB
 // Byte 1, bit 6 : Speed LSB
 // Byte 1, bit 7 : Speed LSB
@@ -195,13 +195,13 @@ function parse_1f5(data) {
 
 	// Handle signed values (in a very bad way)
 	if (data.msg[1] >= 0x80) {
-		sign.angle   = 1;
+		sign.angle = 1;
 		data.msg[1] -= 0x80;
 	}
 
 	if (data.msg[3] >= 0x80) {
 		sign.velocity = 1;
-		data.msg[3]  -= 0x80;
+		data.msg[3] -= 0x80;
 	}
 
 	// Calculate steering angle and velocity values
@@ -223,16 +223,17 @@ function parse_1f5(data) {
 function parse_1f8(data) {
 	data.command = 'bro';
 
+	// TODO: Add brake pressure handling
 	// Brake pressure messages observed in 2002 E39 M5
 	//
-	//       B0 B1 B2 B3 B4 B5 B6 B7
-	// 077F  14 14 00 00 00 00 82 01
+	//        B0 B1 B2 B3 B4 B5 B6 B7
+	// 0x77F  14 14 00 00 00 00 82 01
 	//
 	// B6 : Pedal pressure LSB
 	// B7 : Pedal pressure MSB
 	//
-	//       XX XX    XX          XX
-	// 07B5  30 30 00 30 00 00 00 42
+	//        XX XX    XX          XX
+	// 0x7B5  30 30 00 30 00 00 00 42
 	//
 	//
 	//
@@ -301,13 +302,15 @@ function init_listeners() {
 	// Send vehicle speed 0 to CAN1 on power module events
 	// This is because vehicle speed isn't received via CAN0 when key is in accessory
 	power.on('active', () => {
+		if (config.translate.dsc !== true) return;
+
 		setTimeout(() => {
 			encode_1a1(0);
 		}, 250);
 	});
 
 	// Reset torque reduction values when engine not running
-	update.on('status.engine.running', (data) => {
+	update.on('status.engine.running', data => {
 		switch (data.new) {
 			case false : {
 				update.status('vehicle.dsc.torque_reduction_1', 0);
@@ -317,7 +320,7 @@ function init_listeners() {
 	});
 
 	// Reset torque reduction values when ignition not in run
-	update.on('status.vehicle.ignition', (data) => {
+	update.on('status.vehicle.ignition', data => {
 		if (data.new === 'run') return;
 
 		update.status('vehicle.dsc.torque_reduction_1', 0);

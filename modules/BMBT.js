@@ -139,12 +139,10 @@ function decode_button(data) {
 
 			// Controls not dependent on Bluetooth or Kodi being enabled
 			switch (status.bmbt.last.action + status.bmbt.last.button) {
-				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 1000); break;
-				case 'depress2' : LCM.police(false);                              break;
+				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 2000); break;
 
-				case 'depress4' : LCM.police(true); setTimeout(LCM.police, 400); break;
-				case 'depress5' : LCM.police(true); setTimeout(LCM.police, 500); break;
-				case 'depress6' : LCM.police(true);                              break;
+				case 'depress2' : LCM.police(false); break;
+				case 'depress3' : LCM.police(true);  break;
 
 				case 'depressmode' : {
 					// To use holding the phone button in to toggle RPi display on/off
@@ -240,8 +238,7 @@ function decode_knob(data) {
 
 // Set or unset the status timeout
 function status_loop(action) {
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.bmbt      !== true) return;
+	if (config.emulate.bmbt !== true) return;
 
 	if (status.vehicle.ignition_level < 1) action = false;
 
@@ -285,8 +282,6 @@ function status_loop(action) {
 
 // Send BMBT status, and request status from RAD
 function refresh_status() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	if (status.vehicle.ignition_level > 0) {
 		log.module('Refreshing status');
 
@@ -307,8 +302,7 @@ function refresh_status() {
 
 // Send the power on button command if needed/ready
 function toggle_power_if_ready() {
-	if (config.intf.ibus.enabled !== true) return;
-	if (config.emulate.bmbt      !== true) return;
+	if (config.emulate.bmbt !== true) return;
 
 	// Only setTimeout if we don't already have one waiting
 	if (BMBT.timeout.power_on !== null) return;
@@ -352,8 +346,6 @@ function toggle_power_if_ready() {
 
 // Say we have no tape in the player
 function cassette_status(value = 0x05) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	bus.data.send({
 		src : module_name,
 		dst : 'RAD',
@@ -363,8 +355,6 @@ function cassette_status(value = 0x05) {
 
 // Emulate button presses
 function button(button) {
-	if (config.intf.ibus.enabled !== true) return;
-
 	let button_down = 0x00;
 	// let button_hold;
 	let button_up;
@@ -410,10 +400,8 @@ function button(button) {
 
 
 function init_listeners() {
-	if (config.intf.ibus.enabled !== true) return;
-
 	// Perform commands on power lib active event
-	power.on('active', (power_state) => {
+	power.on('active', power_state => {
 		status_loop(power_state);
 	});
 

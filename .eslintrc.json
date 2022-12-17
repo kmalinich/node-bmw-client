@@ -1,15 +1,11 @@
 {
 	"env": {
-		"browser": false,
-		"es6": true,
-		"jquery": false,
-		"node": true,
-		"serviceworker": false,
-		"worker": false
+		"amd": true,
+		"es2021": true,
+		"node": true
 	},
 	"extends": [
-		"eslint:recommended",
-		"esnext"
+		"eslint:recommended"
 	],
 	"globals": {
 		"ABG": false,
@@ -129,6 +125,9 @@
 		"VVT1": false,
 		"VVT2": false,
 		"api": false,
+		"app_intf": true,
+		"app_name": true,
+		"app_path": true,
 		"bitmask": false,
 		"bluetooth": false,
 		"bus": false,
@@ -148,18 +147,21 @@
 		"power": false,
 		"socket": false,
 		"status": true,
-		"update": false,
-		"weather": false
+		"terminating": true,
+		"update": false
 	},
 	"parserOptions": {
-		"ecmaVersion": 9,
+		"ecmaFeatures": {
+			"globalReturn": false,
+			"impliedStrict": true,
+			"jsx": false
+		},
+		"ecmaVersion": 12,
 		"sourceType": "module"
 	},
 	"plugins": [
 		"import",
-		"node",
-		"promise",
-		"standard"
+		"node"
 	],
 	"rules": {
 		"accessor-pairs": "error",
@@ -186,6 +188,7 @@
 			}
 		],
 		"camelcase": "off",
+		"class-methods-use-this": "off",
 		"comma-dangle": [
 			"error",
 			{
@@ -272,9 +275,9 @@
 			"error",
 			"unix"
 		],
-		"new-cap": "warn",
+		"new-cap": "off",
 		"new-parens": "error",
-		"newline-per-chained-call": "warn",
+		"newline-per-chained-call": "off",
 		"no-array-constructor": "error",
 		"no-caller": "error",
 		"no-class-assign": "error",
@@ -466,7 +469,6 @@
 			}
 		],
 		"prefer-promise-reject-errors": "error",
-		"promise/param-names": "error",
 		"quotes": [
 			"error",
 			"single",
@@ -546,11 +548,6 @@
 				}
 			}
 		],
-		"standard/computed-property-even-spacing": [
-			"error",
-			"even"
-		],
-		"standard/no-callback-literal": "error",
 		"symbol-description": "error",
 		"template-curly-spacing": [
 			"error",

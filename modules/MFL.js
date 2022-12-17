@@ -15,7 +15,7 @@
 // }
 
 // Decode media button action message
-function decode_button_media(data) {
+async function decode_button_media(data) {
 	data.command = 'con';
 	data.value   = 'media button - ';
 
@@ -32,11 +32,14 @@ function decode_button_media(data) {
 
 	const mask   = bitmask.check(data.msg[1]).mask;
 	const unmask = {
+		action  : null,
 		actions : {
 			depress : !mask.bit4 && !mask.bit5 && !mask.bit8,
 			hold    : mask.bit4  && !mask.bit5 && !mask.bit8,
 			release : !mask.bit4 &&  mask.bit5 && !mask.bit8,
 		},
+
+		button  : null,
 		buttons : {
 			right : mask.bit0  && !mask.bit3 && !mask.bit7 && !mask.bit8,
 			left  : !mask.bit0 &&  mask.bit3 && !mask.bit7 && !mask.bit8,
@@ -47,18 +50,16 @@ function decode_button_media(data) {
 
 	// Loop action object to populate log string
 	for (const action in unmask.actions) {
-		if (unmask.actions[action] === true) {
-			unmask.action = action;
-			break;
-		}
+		if (unmask.actions[action] !== true) continue;
+		unmask.action = action;
+		break;
 	}
 
 	// Loop button object to populate log string
 	for (const button in unmask.buttons) {
-		if (unmask.buttons[button] === true) {
-			unmask.button = button;
-			break;
-		}
+		if (unmask.buttons[button] !== true) continue;
+		unmask.button = button;
+		break;
 	}
 
 	// Assemble log string and output message
@@ -80,8 +81,8 @@ function decode_button_media(data) {
 
 				case 'kodi' : // Kodi version
 					switch (unmask.button) {
-						case 'left'  : kodi.command('seek-rewind');  break;
-						case 'right' : kodi.command('seek-forward'); break;
+						case 'left'  : await kodi.command('seek-rewind');  break;
+						case 'right' : await kodi.command('seek-forward'); break;
 						case 'voice' : break;
 					}
 			}
@@ -92,9 +93,9 @@ function decode_button_media(data) {
 			switch (config.mfl.media) {
 				case 'bluetooth' : // Bluetooth version
 					switch (status.mfl.last.action + status.mfl.last.button) {
-						case 'depressleft'  : bluetooth.command('previous'); break;
-						case 'depressright' : bluetooth.command('next');     break;
-						case 'depressvoice' : bluetooth.command('toggle');   break;
+						case 'depressleft'  : await bluetooth.command('previous'); break;
+						case 'depressright' : await bluetooth.command('next');     break;
+						case 'depressvoice' : await bluetooth.command('toggle');   break;
 
 						case 'holdleft'  : break;
 						case 'holdright' : break;
@@ -104,12 +105,12 @@ function decode_button_media(data) {
 
 				case 'kodi' : // Kodi version
 					switch (status.mfl.last.action + status.mfl.last.button) {
-						case 'depressleft'  : kodi.command('previous'); break;
-						case 'depressright' : kodi.command('next');     break;
-						case 'depressvoice' : kodi.command('toggle');   break;
+						case 'depressleft'  : await kodi.command('previous'); break;
+						case 'depressright' : await kodi.command('next');     break;
+						case 'depressvoice' : await kodi.command('toggle');   break;
 
-						case 'holdleft'  : kodi.command('toggle'); break;
-						case 'holdright' : kodi.command('toggle'); break;
+						case 'holdleft'  : await kodi.command('toggle'); break;
+						case 'holdright' : await kodi.command('toggle'); break;
 						case 'holdvoice' : break;
 					}
 			}
@@ -122,7 +123,7 @@ function decode_button_media(data) {
 	update.status('mfl.last.button', unmask.button, false);
 
 	return data;
-}
+} // async decode_button_media(data)
 
 // Decode recirculation button action message
 function decode_button_recirc(data) {
@@ -230,7 +231,7 @@ function translate_button_media(unmask) {
 			});
 		}
 	}
-}
+} // translate_button_media(unmask)
 
 
 // Parse data sent from MFL module

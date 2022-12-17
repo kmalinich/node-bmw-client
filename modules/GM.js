@@ -5,6 +5,9 @@ import EventEmitter from 'events';
 // Bump up default max event listeners
 EventEmitter.defaultMaxListeners = 20;
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 // All the possible values to send to GM
 // let array_of_possible_values = {
@@ -49,6 +52,18 @@ EventEmitter.defaultMaxListeners = 20;
 
 
 class GM extends EventEmitter {
+	constructor() {
+		super();
+
+		this.timeout = {
+			ignition : {
+				lock   : null,
+				unlock : null,
+			},
+		};
+	}
+
+
 	// Reply: Diagnostic command acknowledged
 	decode_dia_reply(data) {
 		data.command = 'rep';
@@ -112,20 +127,20 @@ class GM extends EventEmitter {
 
 		// Loop button object to populate log string
 		for (const button in keyfob.buttons) {
-			if (keyfob.buttons[button] === true) {
-				keyfob.button     = button;
-				keyfob.button_str = 'button: ' + button;
-				break;
-			}
+			if (keyfob.buttons[button] !== true) continue;
+
+			keyfob.button     = button;
+			keyfob.button_str = 'button: ' + button;
+			break;
 		}
 
 		// Loop key object to populate log string
 		for (const key in keyfob.keys) {
-			if (keyfob.keys[key] === true) {
-				keyfob.key     = key;
-				keyfob.key_str = 'key: ' + key;
-				break;
-			}
+			if (keyfob.keys[key] !== true) continue;
+
+			keyfob.key     = key;
+			keyfob.key_str = 'key: ' + key;
+			break;
 		}
 
 
@@ -171,6 +186,8 @@ class GM extends EventEmitter {
 	// Broadcast: Opened doors (flaps)/windows status
 	// [0x7A] Decode a door status message from GM and act upon the results
 	decode_status_opened(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'door status';
 
@@ -312,8 +329,6 @@ class GM extends EventEmitter {
 
 	// Send message to GM
 	io_set(packet) {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// log.module('Setting IO status');
 
 		// Add 'set IO status' command to beginning of array
@@ -364,8 +379,6 @@ class GM extends EventEmitter {
 
 	// Request various things from GM
 	request(value) {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// Init variables
 		let src;
 		let cmd;
@@ -486,25 +499,20 @@ class GM extends EventEmitter {
 
 
 	init_listeners() {
-		if (config.intf.ibus.enabled !== true && config.intf.kbus.enabled !== true) return;
-
 		// Lock and unlock doors automatically on ignition events
-		update.on('status.vehicle.ignition', (data) => {
-			// Return if doors are not closed
-			if (status.doors.closed !== true) return;
-
+		update.on('status.vehicle.ignition', data => {
 			switch (data.new) {
 				case 'off' : {
-					// Return if not previously in accessory position
-					// if (data.old !== 'accessory') return;
+					this.timeout.ignition.unlock = setTimeout(() => {
+						// Return if doors are not closed
+						if (status.doors.closed !== true) return;
 
-					setTimeout(() => {
 						// Return if doors are NOT locked
 						if (status.vehicle.locked !== true) return;
 
-						log.module('Doors are locked and closed, toggling door locks');
+						log.module('Doors are closed and locked, toggling door locks (from ignition state)');
 
-						setTimeout(() => { this.locks(); }, 750);
+						this.locks();
 					}, 250);
 					break;
 				}
@@ -513,16 +521,34 @@ class GM extends EventEmitter {
 					// Return if not previously in start position
 					if (data.old !== 'start') return;
 
-					setTimeout(() => {
+					this.timeout.ignition.lock = setTimeout(() => {
+						// Return if doors are not closed
+						if (status.doors.closed !== true) return;
+
 						// Return if doors are locked
 						if (status.vehicle.locked === true) return;
 
-						log.module('Doors are unlocked and closed, toggling door locks');
+						log.module('Doors are closed and unlocked, toggling door locks (from ignition state)');
 
 						this.locks();
-					}, 500);
+					}, 250);
 				}
 			}
+		});
+
+		update.on('status.immobilizer.key_present', data => {
+			// Return if doors are not closed
+			if (status.doors.closed !== true) return;
+
+			// Return if key is present
+			if (data.new !== false) return;
+
+			// Return if doors are NOT locked
+			if (status.vehicle.locked !== true) return;
+
+			log.module('Doors are closed and locked, and key is not present, toggling door locks (from key presence)');
+
+			this.locks();
 		});
 
 		log.msg('Initialized listeners');
