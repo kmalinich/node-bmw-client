@@ -1,5 +1,4 @@
 const suncalc = require('suncalc');
-const now     = require('performance-now');
 
 
 // Automatic lights handling
@@ -208,14 +207,14 @@ function comfort_turn(data) {
 	if (before === after) return;
 
 	// Mark the currently active signal's depress timestamp
-	if (after !== null) update.status('lights.turn.' + after + '.depress', now());
+	if (after !== null) update.status('lights.turn.' + after + '.depress', Date.now());
 
 	// If NEITHER signal WAS active, or EITHER signal IS active, bounce
 	// That way we only continue if we're going from ON to OFF
 	if (before === null || after !== null) return;
 
 	// Update the previously active signal's elapsed time
-	update.status('lights.turn.depress_elapsed', now() - status.lights.turn[before].depress);
+	update.status('lights.turn.depress_elapsed', Date.now() - status.lights.turn[before].depress);
 
 	// Attempt to fire comfort turn signal
 	comfort_turn_flash(before);

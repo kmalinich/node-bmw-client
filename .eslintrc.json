@@ -160,7 +160,9 @@
 		"sourceType": "module"
 	},
 	"plugins": [
-		"node"
+		"import",
+		"node",
+		"promise"
 	],
 	"rules": {
 		"accessor-pairs": "error",
