@@ -409,7 +409,7 @@ function volume_control(value = 1) {
 
 
 // Power on DSP amp and GPIO pin for amplifier
-function audio_power(power_state = false, volume_increase = true) {
+async function audio_power(power_state = false, volume_increase = true) {
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
@@ -435,7 +435,8 @@ function audio_power(power_state = false, volume_increase = true) {
 			// Send pause command to Kodi
 			kodi.command('pause');
 
-			setTimeout(() => { cassette_control(false); }, 500);
+			await new Promise(resolve => setTimeout(resolve, 500));
+			cassette_control(false);
 			break;
 		}
 
@@ -455,41 +456,40 @@ function audio_power(power_state = false, volume_increase = true) {
 			// let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
 			const array_request = [ 'BMBT', 'DSP' ];
 
-			let count_request = 1;
-			array_request.forEach(module_request => {
-				setTimeout(() => {
-					bus.cmds.request_device_status(module_name, module_request);
-				}, (count_request * 150));
-
-				count_request++;
-			});
+			for await (const module_request of array_request) {
+				await new Promise(resolve => setTimeout(resolve, 150));
+				bus.cmds.request_device_status(module_name, module_request);
+			}
 
 			// Set DSP source to whatever is configured
-			count_request++;
-			setTimeout(() => { audio_control(config.media.dsp.default_source); }, (count_request * 150));
+			await new Promise(resolve => setTimeout(resolve, 150));
+			audio_control(config.media.dsp.default_source);
 
 			// Turn on BMBT
-			count_request++;
-			setTimeout(() => { cassette_control(true); }, (count_request * 150));
+			await new Promise(resolve => setTimeout(resolve, 150));
+			cassette_control(true);
 
 			// Send configured DSP EQ (it seems to forget over time)
-			count_request++;
-			setTimeout(() => {
-				DSP.eq_encode(config.media.dsp.eq);
-			}, (count_request * 150));
+			// await new Promise(resolve => setTimeout(resolve, 150));
+			// DSP.eq_encode(config.media.dsp.eq);
 
 			// Send configured DSP loudness value
-			count_request++;
+			await new Promise(resolve => setTimeout(resolve, 150));
 			DSP.loudness(config.media.dsp.loudness);
 
 			// DSP powers up with volume set to 0, so bring up volume by configured amount
 			if (volume_increase === true) {
-				setTimeout(() => {
-					for (let pass = 0; pass <= config.rad.power_on_volume; pass++) {
-						setTimeout(() => { volume_control(5); }, 25 * pass);
-						count_request++;
-					}
-				}, (2000 + (count_request * 150)));
+				await new Promise(resolve => setTimeout(resolve, 1000));
+
+				// TODO: Fix so it reads from config.rad.power_on_volume again
+				await new Promise(resolve => setTimeout(resolve, 150));
+				volume_control(5);
+				await new Promise(resolve => setTimeout(resolve, 150));
+				volume_control(5);
+				await new Promise(resolve => setTimeout(resolve, 150));
+				volume_control(5);
+				await new Promise(resolve => setTimeout(resolve, 150));
+				volume_control(5);
 			}
 
 			// Send play command to Bluetooth/Kodi
@@ -497,7 +497,7 @@ function audio_power(power_state = false, volume_increase = true) {
 			kodi.command('play');
 		}
 	}
-}
+} // async function audio_power(power_state, volume_increase)
 
 
 function init_listeners() {
@@ -507,15 +507,17 @@ function init_listeners() {
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value
 	//       .. and make it config.rad.delay.power_active and config.rad.delay.after_start
-	power.on('active', power_state => {
-		setTimeout(() => { audio_power(power_state); }, 300);
+	power.on('active', async power_state => {
+		await new Promise(resolve => setTimeout(resolve, 300));
+		await audio_power(power_state);
 	});
 
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
-	IKE.on('ignition-start-end', () => {
+	IKE.on('ignition-start-end', async () => {
 		// Specify to not increase the volume on this possibly second power on event
 		// TODO: Change this to seconds
-		setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
+		await new Promise(resolve => setTimeout(resolve, config.rad.after_start_delay));
+		await audio_power(true, false);
 	});
 
 
