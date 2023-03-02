@@ -257,8 +257,8 @@ function audio_control(command) {
 		off : [ cmd, 0xAF ],
 
 		dsp : {
-			function_0 : [ cmd, 0xE1 ],
-			function_1 : [ cmd, 0x30 ],
+			function_0 : [ cmd, 0x30 ],
+			function_1 : [ cmd, 0xE1 ],
 		},
 
 		source : {
@@ -378,7 +378,7 @@ function cassette_control(command) {
 		dst : 'BMBT',
 		msg,
 	});
-}
+} // cassette_control(command)
 
 function volume_control(value = 1) {
 	let msg_value;
@@ -435,7 +435,7 @@ async function audio_power(power_state = false, volume_increase = true) {
 			// Send pause command to Kodi
 			kodi.command('pause');
 
-			await new Promise(resolve => setTimeout(resolve, 500));
+			await new Promise(resolve => setTimeout(resolve, 1000));
 			cassette_control(false);
 			break;
 		}
@@ -453,48 +453,46 @@ async function audio_power(power_state = false, volume_increase = true) {
 			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
 			// TODO: Make this a config array
 
-			// let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
 			const array_request = [ 'BMBT', 'DSP' ];
 
 			for await (const module_request of array_request) {
-				await new Promise(resolve => setTimeout(resolve, 150));
+				await new Promise(resolve => setTimeout(resolve, 100));
 				bus.cmds.request_device_status(module_name, module_request);
 			}
 
-			// Set DSP source to whatever is configured
-			await new Promise(resolve => setTimeout(resolve, 150));
-			audio_control(config.media.dsp.default_source);
-
 			// Turn on BMBT
-			await new Promise(resolve => setTimeout(resolve, 150));
+			await new Promise(resolve => setTimeout(resolve, 250));
 			cassette_control(true);
 
-			// Send configured DSP EQ (it seems to forget over time)
-			// await new Promise(resolve => setTimeout(resolve, 150));
-			// DSP.eq_encode(config.media.dsp.eq);
-
-			// Send configured DSP loudness value
-			await new Promise(resolve => setTimeout(resolve, 150));
-			DSP.loudness(config.media.dsp.loudness);
-
-			// DSP powers up with volume set to 0, so bring up volume by configured amount
-			if (volume_increase === true) {
-				await new Promise(resolve => setTimeout(resolve, 1000));
-
-				// TODO: Fix so it reads from config.rad.power_on_volume again
-				await new Promise(resolve => setTimeout(resolve, 150));
-				volume_control(5);
-				await new Promise(resolve => setTimeout(resolve, 150));
-				volume_control(5);
-				await new Promise(resolve => setTimeout(resolve, 150));
-				volume_control(5);
-				await new Promise(resolve => setTimeout(resolve, 150));
-				volume_control(5);
-			}
+			// Set DSP source to whatever is configured
+			await new Promise(resolve => setTimeout(resolve, 250));
+			audio_control(config.media.dsp.default_source);
 
 			// Send play command to Bluetooth/Kodi
 			bluetooth.command('play');
 			kodi.command('play');
+
+			if (volume_increase === true) {
+				// DSP powers up with volume set to 0, so bring up volume by configured amount
+				await new Promise(resolve => setTimeout(resolve, 1000));
+
+				// TODO: Fix so it reads from config.rad.power_on_volume again
+				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
+				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
+				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
+			}
+
+			// Send configured DSP EQ (it seems to forget over time)
+			await new Promise(resolve => setTimeout(resolve, 500));
+			await DSP.eq_encode(config.media.dsp.eq);
+
+			// Send configured DSP mode
+			await new Promise(resolve => setTimeout(resolve, 500));
+			DSP.dsp_mode(`memory-${config.media.dsp.eq.memory}`);
+
+			// Send configured DSP loudness value
+			await new Promise(resolve => setTimeout(resolve, 500));
+			DSP.loudness(config.media.dsp.loudness);
 		}
 	}
 } // async function audio_power(power_state, volume_increase)
@@ -579,7 +577,6 @@ function parse_out(data) {
 
 				case 0x95 : {
 					data.value += 'memory set';
-					update.status('dsp.m_audio', false, false);
 					break;
 				}
 
@@ -643,7 +640,7 @@ function parse_out(data) {
 	}
 
 	return data;
-}
+} // parse_out(data)
 
 
 module.exports = {

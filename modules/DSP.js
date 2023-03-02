@@ -192,17 +192,27 @@ async function eq_encode(data) {
 	const echo_out = [ 0x34, 0x94 + data.memory, data.echo & 0x0F ];
 	eq_send(echo_out);
 	log.module('DSP EQ echo encoded');
+	await new Promise(resolve => setTimeout(resolve, 250));
 
 	const room_size_out = [ 0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20 ];
 	eq_send(room_size_out);
 	log.module('DSP EQ room size encoded');
+	await new Promise(resolve => setTimeout(resolve, 250));
 
-	for (let band_num = 0; band_num < 7; band_num++) {
+	// TODO: Workaround for await `for (let bandNum)` loop
+	const eqBands = [ 0, 1, 2, 3, 4, 5, 6 ];
+
+	for await (const eqBand of eqBands) {
 		// ... Don't look at me
-		const band_out = [ 0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F))) ];
+		const band_out = [
+			0x34,
+			0x14 + (data.memory - 1),
+			(((eqBand * 2) << 4) & 0xF0) | ((data.band[eqBand] < 0 ? (0x10 | (Math.abs(data.band[eqBand]) & 0x0F)) : (data.band[eqBand] & 0x0F))),
+		];
 		eq_send(band_out);
 
-		log.module('DSP EQ band ' + band_num + ' encoded');
+		log.module(`DSP EQ band ${eqBand} encoded`);
+		await new Promise(resolve => setTimeout(resolve, 250));
 	}
 }
 
@@ -296,8 +306,6 @@ function request(value) {
 	let src;
 	let cmd;
 
-	log.module('Requesting \'' + value + '\'');
-
 	switch (value) {
 		case 'io-status' : { // Get IO status
 			src = 'DIA';
@@ -308,8 +316,16 @@ function request(value) {
 		case 'memory' : { // Get DSP memory
 			src = 'RAD';
 			cmd = [ 0x34, 0x08 ];
+			break;
+		}
+
+		default : {
+			log.module(`Invalid value '${value}', cannot request`);
+			return;
 		}
 	}
+
+	log.module(`Requesting '${value}'`);
 
 	bus.data.send({
 		src,

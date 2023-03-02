@@ -3,7 +3,7 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Broadcast: BM button
 // Decode various BMBT button presses
-function decode_button(data) {
+async function decode_button(data) {
 	data.command = 'bro';
 	data.value   = 'BM button ';
 
@@ -154,13 +154,13 @@ function decode_button(data) {
 
 				case 'depresspower' : {
 					// To use pressing the BMBT power knob button (left side) to toggle RAD power
-					RAD.audio_power('toggle');
+					await RAD.audio_power('toggle');
 					break;
 				}
 
 				case 'depressgt menu' : {
 					// To use pressing the BMBT menu button (right side) to force the DSP amp on
-					RAD.audio_power('on');
+					await RAD.audio_power('on');
 				}
 			}
 
