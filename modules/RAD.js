@@ -456,16 +456,16 @@ async function audio_power(power_state = false, volume_increase = true) {
 			const array_request = [ 'BMBT', 'DSP' ];
 
 			for await (const module_request of array_request) {
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise(resolve => setTimeout(resolve, 50));
 				bus.cmds.request_device_status(module_name, module_request);
 			}
 
 			// Turn on BMBT
-			await new Promise(resolve => setTimeout(resolve, 250));
+			await new Promise(resolve => setTimeout(resolve, 50));
 			cassette_control(true);
 
 			// Set DSP source to whatever is configured
-			await new Promise(resolve => setTimeout(resolve, 250));
+			await new Promise(resolve => setTimeout(resolve, 50));
 			audio_control(config.media.dsp.default_source);
 
 			// Send play command to Bluetooth/Kodi
@@ -474,7 +474,7 @@ async function audio_power(power_state = false, volume_increase = true) {
 
 			if (volume_increase === true) {
 				// DSP powers up with volume set to 0, so bring up volume by configured amount
-				await new Promise(resolve => setTimeout(resolve, 1000));
+				await new Promise(resolve => setTimeout(resolve, 2000));
 
 				// TODO: Fix so it reads from config.rad.power_on_volume again
 				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
@@ -484,11 +484,7 @@ async function audio_power(power_state = false, volume_increase = true) {
 
 			// Send configured DSP EQ (it seems to forget over time)
 			await new Promise(resolve => setTimeout(resolve, 500));
-			await DSP.eq_encode(config.media.dsp.eq);
-
-			// Send configured DSP mode
-			await new Promise(resolve => setTimeout(resolve, 500));
-			DSP.dsp_mode(`memory-${config.media.dsp.eq.memory}`);
+			await DSP.eq_encode();
 
 			// Send configured DSP loudness value
 			await new Promise(resolve => setTimeout(resolve, 500));

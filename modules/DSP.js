@@ -188,15 +188,16 @@ function eq_delta(band, value) {
 //   room_size : 10,
 // };
 
-async function eq_encode(data) {
+async function eq_encode(data = config.media.dsp.eq) {
 	const echo_out = [ 0x34, 0x94 + data.memory, data.echo & 0x0F ];
 	eq_send(echo_out);
-	log.module('DSP EQ echo encoded');
+	log.module(`Sent DSP EQ echo value ${data.echo} for memory ${data.memory}`);
+
 	await new Promise(resolve => setTimeout(resolve, 250));
 
 	const room_size_out = [ 0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20 ];
 	eq_send(room_size_out);
-	log.module('DSP EQ room size encoded');
+	log.module(`Sent DSP EQ room size value ${data.room_size} for memory ${data.memory}`);
 	await new Promise(resolve => setTimeout(resolve, 250));
 
 	// TODO: Workaround for await `for (let bandNum)` loop
@@ -211,10 +212,13 @@ async function eq_encode(data) {
 		];
 		eq_send(band_out);
 
-		log.module(`DSP EQ band ${eqBand} encoded`);
-		await new Promise(resolve => setTimeout(resolve, 250));
+		log.module(`Sent DSP EQ band ${eqBand} value ${data.band[eqBand]} for memory ${data.memory}`);
+		await new Promise(resolve => setTimeout(resolve, 100));
 	}
-}
+
+	await new Promise(resolve => setTimeout(resolve, 250));
+	dsp_mode(`memory-${data.memory}`);
+} // async eq_encode(data)
 
 // Send EQ data to DSP
 function eq_send(msg) {
