@@ -1,4 +1,4 @@
-/* eslint key-spacing : 0 */
+/* eslint key-spacing :  */
 
 const convert = require('node-unit-conversion');
 
@@ -43,7 +43,7 @@ function encode_316(rpm = 10000) {
 		}, (i / 75));
 	}
 
-	log.module('Sent ' + count + 'x encoded CANBUS packets, ARBID 0x316, with RPM : ' + rpm_orig);
+	log.module(`Sent ${count}x encoded CANBUS packets, ARBID 0x316, with RPM : ${rpm_orig}`);
 }
 
 
@@ -149,7 +149,7 @@ function parse_329(data) {
 			cruise : {
 				button : {
 					// Something that forcibly disengages the cruise control (like pressing brake or clutch)
-					deactivator :  bitmask.test(data.msg[3], 0x01),
+					deactivator : bitmask.test(data.msg[3], 0x01),
 
 					minus  : !bitmask.test(data.msg[3], 0x20) &&  bitmask.test(data.msg[3], 0x40),
 					onoff  :  bitmask.test(data.msg[3], 0x80),
