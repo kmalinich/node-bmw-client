@@ -447,6 +447,9 @@ async function audio_power(power_state = false, volume_increase = true) {
 
 			log.module('Setting audio power to state : ' + power_state);
 
+			// Send connect command to Bluetooth
+			bluetooth.command('connect');
+
 			// Send device status
 			bus.cmds.send_device_status(module_name);
 
@@ -468,10 +471,6 @@ async function audio_power(power_state = false, volume_increase = true) {
 			await new Promise(resolve => setTimeout(resolve, 50));
 			audio_control(config.media.dsp.default_source);
 
-			// Send play command to Bluetooth/Kodi
-			bluetooth.command('play');
-			kodi.command('play');
-
 			if (volume_increase === true) {
 				// DSP powers up with volume set to 0, so bring up volume by configured amount
 				await new Promise(resolve => setTimeout(resolve, 2000));
@@ -489,6 +488,11 @@ async function audio_power(power_state = false, volume_increase = true) {
 			// Send configured DSP loudness value
 			await new Promise(resolve => setTimeout(resolve, 500));
 			DSP.loudness(config.media.dsp.loudness);
+
+			// Send play command to Bluetooth/Kodi
+			await new Promise(resolve => setTimeout(resolve, 500));
+			bluetooth.command('play');
+			kodi.command('play');
 		}
 	}
 } // async function audio_power(power_state, volume_increase)
