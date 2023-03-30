@@ -2,7 +2,7 @@ const suncalc = require('suncalc');
 
 
 // Automatic lights handling
-function auto_lights(ignition_level = 0) {
+function auto_lights() {
 	// Default action is true (enable/process auto lights)
 	let action = true;
 
@@ -10,7 +10,7 @@ function auto_lights(ignition_level = 0) {
 	if (config.lights.auto !== true) action = false;
 
 	// Action is false if ignition is not in run
-	if (ignition_level < 3) action = false;
+	if (status.vehicle.ignition_level < 3) action = false;
 
 	switch (action) {
 		case false : {
@@ -35,7 +35,7 @@ function auto_lights(ignition_level = 0) {
 			// Update status object
 			update.status('lights.auto.active', true, false);
 
-			auto_lights_execute(ignition_level);
+			auto_lights_execute();
 		}
 	}
 }
@@ -82,7 +82,7 @@ function auto_lights_process(wiperSpeed, timeNow, timeLightsOff, timeLightsOn) {
 }
 
 // Logic based on location and time of day, determine if the low beams should be on
-function auto_lights_execute(ignition_level = 0) {
+function auto_lights_execute() {
 	clearTimeout(LCM.timeout.lights_auto);
 
 	// Init variables
@@ -95,7 +95,7 @@ function auto_lights_execute(ignition_level = 0) {
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
-	if (ignition_level < 3 || config.lights.auto !== true) {
+	if (status.vehicle.ignition_level < 3 || config.lights.auto !== true) {
 		auto_lights();
 		return;
 	}
@@ -1009,13 +1009,13 @@ function police(action = false) {
 }
 
 // Request status data on an interval
-function data_refresh(ignition_level = 0) {
-	log.module(`data_refresh(ignition_level = ${ignition_level})`);
+function data_refresh() {
+	log.module(`data_refresh()`);
 
 	clearTimeout(LCM.timeout.data_refresh);
 
 	// Only execute if ignition is in accessory or run
-	if (ignition_level !== 1 && ignition_level !== 3) {
+	if (status.vehicle.ignition_level !== 1 && status.vehicle.ignition_level !== 3) {
 		if (LCM.timeout.data_refresh !== null) {
 			clearTimeout(LCM.timeout.data_refresh);
 			LCM.timeout.data_refresh = null;
@@ -1026,7 +1026,7 @@ function data_refresh(ignition_level = 0) {
 	}
 
 	// Only request io-status if not configured to get voltage from CANBUS or ignition is not in run
-	if (config.canbus.voltage !== true || ignition_level < 3) {
+	if (config.canbus.voltage !== true || status.vehicle.ignition_level < 3) {
 		log.module('Refreshing io-status');
 		request('io-status');
 	}
@@ -1055,12 +1055,12 @@ function init_listeners() {
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 
-	update.on('status.vehicle.ignition_level', data => {
+	update.on('status.vehicle.ignition_level', () => {
 		// Activate autolights if we got 'em
-		auto_lights(data.new);
+		auto_lights();
 
 		// Enable periodic data refresh
-		data_refresh(data.new);
+		data_refresh();
 	});
 
 	update.on('status.immobilizer.key_present', data => {
@@ -1086,7 +1086,8 @@ module.exports = {
 
 	// Timeout variables
 	timeout : {
-		data_refresh   : null,
+		data_refresh : null,
+
 		lights_auto    : null,
 		lights_police  : null,
 		lights_welcome : null,
