@@ -1010,6 +1010,8 @@ function police(action = false) {
 
 // Request status data on an interval
 function data_refresh(ignition_level = 0) {
+	log.module(`data_refresh(ignition_level = ${ignition_level})`);
+
 	clearTimeout(LCM.timeout.data_refresh);
 
 	// Only execute if ignition is in accessory or run
