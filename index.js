@@ -92,7 +92,7 @@ async function init() {
 
 	await bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 	await gpio.init();      // Initialize GPIO relays
-	await hdmi_cec.init();  // Open HDMI-CEC
+	await hdmi_cec.init();  // Open HDMI (CEC)
 	await hdmi_rpi.init();  // Open HDMI (RPi)
 	await kodi.init();      // Start Kodi WebSocket client
 

@@ -411,6 +411,9 @@ function init_listeners() {
 
 // Parse data sent to BMBT module
 function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.bmbt !== true) return;
+
 	switch (data.msg[0]) {
 		case 0x4A : { // Cassette control
 			cassette_status();

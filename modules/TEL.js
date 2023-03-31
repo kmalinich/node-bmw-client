@@ -125,6 +125,17 @@ function led(object) {
 }
 
 
+// Parse data sent to TEL module
+function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.tel !== true) return;
+
+	// switch (data.msg[0]) {
+	// }
+
+	return data;
+} // parse_in(data)
+
 // Parse data sent from TEL module
 function parse_out(data) {
 	switch (data.msg[0]) {
@@ -141,5 +152,7 @@ function parse_out(data) {
 
 module.exports = {
 	led,
+
+	parse_in,
 	parse_out,
 };

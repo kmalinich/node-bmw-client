@@ -515,7 +515,7 @@ function init_listeners() {
 		// Specify to not increase the volume on this possibly second power on event
 		// TODO: Change this to seconds
 		await new Promise(resolve => setTimeout(resolve, config.rad.after_start_delay));
-		await audio_power(true, false);
+		await audio_power(true);
 	});
 
 
@@ -525,6 +525,9 @@ function init_listeners() {
 
 // Parse data sent to RAD module
 function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.rad !== true) return;
+
 	switch (data.msg[0]) {
 		case 0x01 : {
 			// When RAD receives a device status request, send DSP a device status request
@@ -540,7 +543,7 @@ function parse_in(data) {
 	}
 
 	return data;
-}
+} // parse_in(data)
 
 // Parse data sent from RAD module
 function parse_out(data) {
