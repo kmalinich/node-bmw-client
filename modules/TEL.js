@@ -94,6 +94,9 @@ function decode_text(data) {
 
 // Turn on/off/flash the TEL LED by encoding a bitmask from an input object
 function led(object) {
+	// Return immediately if ignition is off
+	if (status.vehicle.ignition_level === 0) return;
+
 	// Bitmask
 	// 0x00 = all off
 	// Bit0 = red, solid

@@ -1110,6 +1110,10 @@ class IKE extends EventEmitter {
 					this.text_warning('  DSC deactivated!  ');
 					break;
 				}
+
+				case true : {
+					this.text_urgent_off();
+				}
 			}
 		});
 
@@ -1134,6 +1138,7 @@ class IKE extends EventEmitter {
 		log.module('Refreshing all OBC data');
 
 		// Immo+GM data
+		// TODO: Move to EWS/GM/IKHA/DME modules
 		EWS.request('immobilizerstatus');
 		GM.request('io-status');
 		GM.request('door-status');
@@ -1284,7 +1289,9 @@ class IKE extends EventEmitter {
 		let message_hex;
 
 		// message_hex = [ 0x23, 0x42, 0x30 ];
-		message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
+
+		// message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
+		message_hex = [ 0x23, 0x41, 0x10, 0x07 ];
 
 		message_hex = message_hex.concat(this.text_prepare(message));
 
