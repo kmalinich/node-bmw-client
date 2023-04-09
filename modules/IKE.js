@@ -1274,6 +1274,37 @@ class IKE extends EventEmitter {
 		});
 	}
 
+
+	// IKE cluster text send message
+	// TODO: Limit text length with configurable value
+	async textiWithOptions(string, options) {
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return;
+
+		// Bounce if override is active
+		if (options.override === false && this.text_override_status.active === true) {
+			log.module('NOT sending IKE text message: \'' + string + '\'');
+			return;
+		}
+
+		let messageHex;
+
+		// messageHex = [ 0x23, 0x42, 0x30 ];
+		// messageHex = [ 0x23, 0x41, 0x30, 0x07 ];
+		messageHex = [ 0x23, 0x41, 0x10, 0x07 ];
+
+		messageHex = messageHex.concat(this.text_prepare(string));
+
+		messageHex = messageHex.concat(0x04);
+		// messageHex = messageHex.concat(0x66);
+
+		await bus.data.send({
+			src : 'RAD',
+			dst : 'IKE',
+			msg : messageHex,
+		});
+	} // async text(message, override)
+
 	// IKE cluster text send message
 	// TODO: Limit text length with configurable value
 	async text(message, override = false) {
