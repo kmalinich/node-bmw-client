@@ -823,7 +823,7 @@ class IKE extends EventEmitter {
 
 		// Convert ASCII to hex and return
 		return hex.a2h(message);
-	}
+	} // text_prepare(message, pad) {
 
 	// IKE cluster text send message - without space padding
 	// TODO: Limit text length with configurable value
@@ -847,7 +847,7 @@ class IKE extends EventEmitter {
 			src : 'TEL',
 			msg : message_hex,
 		});
-	}
+	} // async text_nopad(message, override0
 
 
 	// Refresh various values periodically
