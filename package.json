@@ -34,7 +34,7 @@
 		"kbus"
 	],
 	"license": "MIT",
-	"main": "launch.sh",
+	"main": "main.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
 		"dbus-native": "^0.4.0",
