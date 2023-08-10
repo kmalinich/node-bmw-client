@@ -61,6 +61,8 @@ class IKE extends EventEmitter {
 	// Broadcast: Aux heat LED status
 	// This actually is a bitmask but.. this is also a freetime project
 	decode_aux_heat_led(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 
 		let aux_heat_led;
@@ -76,7 +78,7 @@ class IKE extends EventEmitter {
 		data.value = 'aux heat LED: ' + status.obc.aux_heat_led;
 
 		return data;
-	}
+	} // decode_aux_heat_led(data)
 
 	// Broadcast: BC button press (MFL BC stalk button)
 	decode_bc_button(data) {
@@ -99,7 +101,7 @@ class IKE extends EventEmitter {
 		}, 5200);
 
 		return data;
-	}
+	} // decode_bc_button(data)
 
 	// Broadcast: Country coding data
 	decode_country_coding_data(data) {
@@ -448,6 +450,8 @@ class IKE extends EventEmitter {
 
 	// Broadcast: Odometer
 	decode_odometer(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'odometer';
 
@@ -459,7 +463,7 @@ class IKE extends EventEmitter {
 		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')), false);
 
 		return data;
-	}
+	} // decode_odometer(data)
 
 	// Broadcast: Vehicle speed and RPM
 	decode_speed_values(data) {
