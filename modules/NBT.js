@@ -167,8 +167,6 @@ function init_listeners() {
 	// Bounce if not enabled
 	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
-	log.module('Initializing listeners');
-
 	// Perform commands on EGS gear changes
 	EGS.on('gear', reverse_camera);
 

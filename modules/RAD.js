@@ -502,8 +502,6 @@ function init_listeners() {
 	// Bounce if we're not configured to emulate the RAD module or not in an E39
 	if (config.emulate.rad !== true) return;
 
-	log.module('Initializing listeners');
-
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value
 	//       .. and make it config.rad.delay.power_active and config.rad.delay.after_start

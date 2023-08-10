@@ -498,8 +498,6 @@ class GM extends EventEmitter {
 
 
 	init_listeners() {
-		log.module('Initializing listeners');
-
 		// Lock and unlock doors automatically on ignition events
 		update.on('status.vehicle.ignition', data => {
 			switch (data.new) {
