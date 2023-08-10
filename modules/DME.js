@@ -583,11 +583,9 @@ function init_listeners() {
 	update.on('status.vehicle.ignition', data => {
 		if (data.new === 'run') return;
 
-		// TODO: Make this an array loop
-		update.status('engine.torque.after_interventions',  0);
-		update.status('engine.torque.before_interventions', 0);
-		update.status('engine.torque.loss',                 0);
-		update.status('engine.torque.output',               0);
+		// Reset torque values
+		const keys = [ 'after_interventions', 'before_interventions', 'loss', 'output' ];
+		for (const key of keys) update.status(`engine.torque.${key}`, 0);
 	});
 
 
