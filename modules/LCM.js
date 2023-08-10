@@ -1041,6 +1041,8 @@ function data_refresh() {
 
 // Configure event listeners
 function init_listeners() {
+	log.module('Initializing listeners');
+
 	// Refresh data on IKE event
 	IKE.on('obc-refresh', () => {
 		request('dimmer');

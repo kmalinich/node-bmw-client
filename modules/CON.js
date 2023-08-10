@@ -437,7 +437,7 @@ function decode_touchpad(data) {
 	return data;
 }
 
-function decode_init(data) {
+function decode_rotationInit(data) {
 	data.command = 'con';
 	data.value   = 'CON rotation init';
 
@@ -447,6 +447,8 @@ function decode_init(data) {
 
 
 function init_listeners() {
+	log.module('Initializing listeners');
+
 	// Stamp last message time as now
 	update.status('con.rotation.last_msg', Date.now());
 
@@ -463,7 +465,7 @@ function parse_out(data) {
 		case 0x0BF : return decode_touchpad(data);
 		case 0x264 : return decode_rotation(data);
 		case 0x267 : return decode_button(data);
-		case 0x273 : return decode_init(data);
+		case 0x273 : return decode_rotationInit(data);
 		case 0x277 : return decode_ack(data);
 
 		case 0x4E7 :

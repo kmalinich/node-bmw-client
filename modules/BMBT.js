@@ -16,20 +16,19 @@ async function decode_button(data) {
 	let button;
 
 	// Depress
-	// [ 72, 5 ]
+	// [ 0x48, 0x05 ]
 	// BIT7 FALSE + BIT6 FALSE
 
 	// Hold
-	// [ 72, 69 ]
+	// [ 0x48, 0x45 ]
 	// BIT7 FALSE + BIT6 TRUE
 
 	// Release
-	// [ 72, 133 ]
+	// [ 0x48, 0x85 ]
 	// BIT7 TRUE + BIT6 FALSE
 
 	// Determine action
 	const mask = bitmask.check(data.msg[1]).mask;
-
 
 	switch (mask.b7) {
 		case false : { // bit7 false
@@ -89,7 +88,8 @@ async function decode_button(data) {
 		case 0x33 : button = 'dolby';    break;
 		case 0x34 : button = 'gt menu';  break;
 		case 0x38 : button = 'info';     break;
-		default   : button = 'Unknown';
+
+		default : button = 'Unknown';
 	}
 
 	data.value += action + ' ' + button;
@@ -113,8 +113,10 @@ async function decode_button(data) {
 			switch (config.bmbt.media) {
 				case 'bluetooth' : { // Bluetooth version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depressleft'  : bluetooth.command('previous'); break;
-						case 'depressright' : bluetooth.command('next');
+						case 'depressleft'  : await bluetooth.command('previous'); break;
+						case 'depressright' : await bluetooth.command('next');     break;
+
+						case 'depressphone' : await bluetooth.command('connect', true);
 					}
 
 					break;
@@ -122,8 +124,6 @@ async function decode_button(data) {
 
 				case 'kodi' : { // Kodi version
 					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depressphone'  : kodi.command('toggle'); break;
-
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 
@@ -169,6 +169,14 @@ async function decode_button(data) {
 
 		case 'hold' : {
 			switch (config.bmbt.media) {
+				case 'bluetooth' : { // Bluetooth version
+					switch (button) {
+						case 'phone': await bluetooth.command('disconnect', true);
+					}
+
+					break;
+				}
+
 				case 'kodi' : { // Kodi version
 					switch (button) {
 						case 'left'  : kodi.command('seek-rewind'); break;
@@ -400,6 +408,8 @@ function button(button) {
 
 
 function init_listeners() {
+	log.module('Initializing listeners');
+
 	// Perform commands on power lib active event
 	power.on('active', power_state => {
 		status_loop(power_state);

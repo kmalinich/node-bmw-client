@@ -109,6 +109,7 @@ async function init() {
 	MID.init_listeners();
 	NBT.init_listeners();
 	RAD.init_listeners();
+	TEL.init_listeners();
 
 	bus.data.init_listeners();
 	gpio.init_listeners();

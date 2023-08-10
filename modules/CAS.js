@@ -248,6 +248,8 @@ class CAS extends EventEmitter {
 		// Bounce if not enabled
 		if (config.emulate.cas !== true && config.retrofit.cas !== true) return;
 
+		log.module('Initializing listeners');
+
 		// Perform commands on power lib active event
 		power.on('active', data => {
 			this.encode_ignition(data.new);

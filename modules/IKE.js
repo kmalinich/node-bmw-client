@@ -959,6 +959,8 @@ class IKE extends EventEmitter {
 	}
 
 	init_listeners() {
+		log.module('Initializing listeners');
+
 		// Refresh data on interface connection
 		socket.on('ready', intf => {
 			// Only refresh on new IBUS interface connection

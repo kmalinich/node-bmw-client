@@ -72,6 +72,8 @@ function decode_backlight(data) {
 
 
 function init_listeners() {
+	log.module('Initializing listeners');
+
 	power.on('active', power_state => {
 		switch (power_state) {
 			case false : { // Fade off backlight when power shuts off
