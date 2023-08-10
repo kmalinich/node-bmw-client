@@ -196,6 +196,8 @@ async function decode_button(data) {
 
 // Broadcast: Cassette status
 function decode_cassette_status(data) {
+	data.skipLog = true;
+
 	data.command = 'sta';
 	data.value   = 'cassette: ';
 
@@ -206,6 +208,8 @@ function decode_cassette_status(data) {
 		case 0xFF : data.value += 'on';      break;
 		default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
 	}
+
+	update.status('bmbt.status.cassette', data.value);
 
 	return data;
 }

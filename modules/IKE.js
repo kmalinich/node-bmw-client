@@ -811,6 +811,8 @@ class IKE extends EventEmitter {
 
 	// Broadcast: Ignition status
 	decode_ignition_status(data) {
+		data.skipLog = true;
+
 		let new_level_name;
 
 		// Save previous ignition status
