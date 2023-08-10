@@ -780,6 +780,7 @@ function parse_out(data) {
 		}
 
 		case 0x5C : { // Broadcast: light dimmer status
+			data.skipLog = true;
 			data.command = 'bro';
 			data.value   = 'dimmer value';
 
