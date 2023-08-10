@@ -375,8 +375,6 @@ function init_listeners() {
 	// Bounce if not enabled
 	if (config.emulate.mid !== true) return;
 
-	log.module('Initializing listeners');
-
 	// Perform commands on power lib active event
 	power.on('active', power_state => {
 		status_loop(power_state);

@@ -297,8 +297,6 @@ function parse_out(data) {
 
 
 function init_listeners() {
-	log.module('Initializing listeners');
-
 	// Send vehicle speed 0 to CAN1 on power module events
 	// This is because vehicle speed isn't received via CAN0 when key is in accessory
 	power.on('active', () => {

@@ -566,8 +566,6 @@ function request(value) {
 
 
 function init_listeners() {
-	log.module('Initializing listeners');
-
 	// If configured, send RPM 10000 on 0x316 on ignition in run
 	update.on('status.engine.running', data => {
 		switch (data.new) {

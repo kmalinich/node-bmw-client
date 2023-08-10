@@ -166,8 +166,6 @@ function parse_out(data) {
 }
 
 function init_listeners() {
-	log.module('Initializing listeners');
-
 	update.on('status.bluetooth.device.connected', setLEDs);
 	update.on('status.bluetooth.device.connecting', setLEDs);
 	update.on('status.bluetooth.device.disconnecting', setLEDs);

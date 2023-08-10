@@ -408,8 +408,6 @@ function button(button) {
 
 
 function init_listeners() {
-	log.module('Initializing listeners');
-
 	// Perform commands on power lib active event
 	power.on('active', power_state => {
 		status_loop(power_state);
