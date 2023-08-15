@@ -116,7 +116,8 @@ async function decode_button(data) {
 						case 'depressleft'  : await bluetooth.command('previous'); break;
 						case 'depressright' : await bluetooth.command('next');     break;
 
-						case 'depressphone' : await bluetooth.command('connect', true);
+						case 'depressphone' : await bluetooth.command('connect', true); break;
+						case 'holdphone'    : await bluetooth.command('disconnect', true);
 					}
 
 					break;
@@ -170,10 +171,6 @@ async function decode_button(data) {
 		case 'hold' : {
 			switch (config.bmbt.media) {
 				case 'bluetooth' : { // Bluetooth version
-					switch (button) {
-						case 'phone': await bluetooth.command('disconnect', true);
-					}
-
 					break;
 				}
 
