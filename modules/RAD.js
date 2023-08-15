@@ -481,13 +481,15 @@ async function audio_power(power_state = false, volume_increase = true) {
 				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
 			}
 
+			DSP.dsp_mode('off');
+
 			// Send configured DSP EQ (it seems to forget over time)
-			await new Promise(resolve => setTimeout(resolve, 500));
-			await DSP.eq_encode();
+			// await new Promise(resolve => setTimeout(resolve, 500));
+			// await DSP.eq_encode();
 
 			// Send configured DSP loudness value
-			await new Promise(resolve => setTimeout(resolve, 500));
-			DSP.loudness(config.media.dsp.loudness);
+			// await new Promise(resolve => setTimeout(resolve, 500));
+			// DSP.loudness(config.media.dsp.loudness);
 
 			// Send play command to Bluetooth/Kodi
 			await new Promise(resolve => setTimeout(resolve, 500));
