@@ -19,14 +19,14 @@
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.8",
 		"pad": "^3.2.0",
-		"socket.io": "^4.7.1",
+		"socket.io": "^4.7.2",
 		"suncalc": "^1.9.0",
 		"trucolor": "2.0.4"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^8.46.0",
-		"eslint-plugin-import": "^2.28.0",
+		"eslint": "^8.49.0",
+		"eslint-plugin-import": "^2.28.1",
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-promise": "^6.1.1"
 	},

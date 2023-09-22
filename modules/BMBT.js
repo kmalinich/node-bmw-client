@@ -149,7 +149,12 @@ async function decode_button(data) {
 					// To use holding the phone button in to toggle RPi display on/off
 					update.status('hdmi.rpi.power_override', true, false);
 					hdmi_rpi.command('toggle');
+					break;
+				}
 
+				case 'depressgt menu' : {
+					// To use pressing the BMBT menu button (right side) to force the DSP amp on
+					await RAD.audio_power('on');
 					break;
 				}
 
@@ -159,21 +164,18 @@ async function decode_button(data) {
 					break;
 				}
 
-				case 'depressgt menu' : {
-					// To use pressing the BMBT menu button (right side) to force the DSP amp on
-					await RAD.audio_power('on');
-				}
-			}
+				case 'depresstone' : DSP.loudness(false);
+			} // switch (status.bmbt.last.action + status.bmbt.last.button)
 
 			break;
 		} // current action = release
 
 		case 'hold' : {
-			switch (config.bmbt.media) {
-				case 'bluetooth' : { // Bluetooth version
-					break;
-				}
+			switch (button) {
+				case 'tone' : DSP.loudness(true);
+			}
 
+			switch (config.bmbt.media) {
 				case 'kodi' : { // Kodi version
 					switch (button) {
 						case 'left'  : kodi.command('seek-rewind'); break;
@@ -182,7 +184,7 @@ async function decode_button(data) {
 				}
 			}
 		} // current action = hold
-	}
+	} // switch (action)
 
 	// Update status object
 	update.status('bmbt.last.action', action, false);
