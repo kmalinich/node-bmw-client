@@ -26,7 +26,7 @@ function dsp_mode(mode) {
 		default : return;
 	}
 
-	log.module('Setting DSP mode set to \'' + mode + '\'');
+	log.module(`Setting DSP mode set to '${mode}'`);
 
 	bus.data.send({
 		src : 'DSPC',
@@ -200,7 +200,7 @@ async function eq_encode(data = config.media.dsp.eq) {
 	log.module(`Sent DSP EQ room size value ${data.room_size} for memory ${data.memory}`);
 	await new Promise(resolve => setTimeout(resolve, 250));
 
-	// TODO: Workaround for await `for (let bandNum)` loop
+	// TODO: Workaround for `for await (const eqBand of eqBands)` loop
 	const eqBands = [ 0, 1, 2, 3, 4, 5, 6 ];
 
 	for await (const eqBand of eqBands) {
@@ -210,6 +210,7 @@ async function eq_encode(data = config.media.dsp.eq) {
 			0x14 + (data.memory - 1),
 			(((eqBand * 2) << 4) & 0xF0) | ((data.band[eqBand] < 0 ? (0x10 | (Math.abs(data.band[eqBand]) & 0x0F)) : (data.band[eqBand] & 0x0F))),
 		];
+
 		eq_send(band_out);
 
 		log.module(`Sent DSP EQ band ${eqBand} value ${data.band[eqBand]} for memory ${data.memory}`);

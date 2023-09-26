@@ -90,60 +90,72 @@ async function decode_button(data) {
 		case 0x38 : button = 'info';     break;
 
 		default : button = 'Unknown';
-	}
+	} // switch (data.msg[1])
+
 
 	data.value += action + ' ' + button;
+
+	const lastActionButton = status.bmbt.last.action + status.bmbt.last.button;
+
 
 	switch (action) {
 		case 'depress' : {
 			switch (button) {
-				case 'mode' : {
-					// To use depressing the mode button in to toggle RPi display on/off
-					update.status('hdmi.rpi.power_override', true, false);
-					hdmi_rpi.command('toggle');
-
-					break;
+				case 'knob' : {
+					if (config.bmbt.media === 'kodi') kodi.input('in');
 				}
-			}
+			} // switch (button)
 
 			break;
 		} // current action = depress
 
+		case 'hold' : {
+			switch (button) {
+				case 'left'  : if (config.bmbt.media === 'kodi') kodi.command('seek-rewind');  break;
+				case 'right' : if (config.bmbt.media === 'kodi') kodi.command('seek-forward'); break;
+
+				case 'tone' : DSP.loudness(true);
+			} // switch (button)
+
+			break;
+		} // current action = hold
+
 		case 'release' : {
 			switch (config.bmbt.media) {
-				case 'bluetooth' : { // Bluetooth version
-					switch (status.bmbt.last.action + status.bmbt.last.button) {
+				case 'bluetooth' : {
+					switch (lastActionButton) {
 						case 'depressleft'  : await bluetooth.command('previous'); break;
 						case 'depressright' : await bluetooth.command('next');     break;
-
-						case 'depressphone' : await bluetooth.command('connect', true); break;
-						case 'holdphone'    : await bluetooth.command('disconnect', true);
 					}
 
 					break;
-				}
+				} // case 'bluetooth'
 
-				case 'kodi' : { // Kodi version
-					switch (status.bmbt.last.action + status.bmbt.last.button) {
+				case 'kodi' : {
+					switch (lastActionButton) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 
-						case 'depressknob' : kodi.input('in'); break;
-
-						case 'holdleft'  : kodi.command('toggle'); break; // This resumes normal playback after doing fast-forward or fast-reverse when lifting off the button
+						// These resume normal playback when releasing the button, after doing fast-forward or fast-reverse
+						case 'holdleft'  : kodi.command('toggle'); break;
 						case 'holdright' : kodi.command('toggle');
 					}
 
 					break;
-				}
-			}
+				} // case 'kodi'
+			} // switch (config.bmbt.media)
+
 
 			// Controls not dependent on Bluetooth or Kodi being enabled
-			switch (status.bmbt.last.action + status.bmbt.last.button) {
-				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 2000); break;
+			switch (lastActionButton) {
+				case 'depress1' : DSP.dsp_mode('memory-1'); break;
+				case 'depress2' : DSP.dsp_mode('memory-2'); break;
+				case 'depress3' : DSP.dsp_mode('memory-3'); break;
+				case 'depress4' : DSP.dsp_mode('off');     break;
 
-				case 'depress2' : LCM.police(false); break;
-				case 'depress3' : LCM.police(true);  break;
+				case 'depressphone' : await bluetooth.command('connect', true);    break;
+				case 'holdphone'    : await bluetooth.command('disconnect', true); break;
+
 
 				case 'depressmode' : {
 					// To use holding the phone button in to toggle RPi display on/off
@@ -164,26 +176,10 @@ async function decode_button(data) {
 					break;
 				}
 
-				case 'depresstone' : DSP.loudness(false);
-			} // switch (status.bmbt.last.action + status.bmbt.last.button)
-
-			break;
+				case 'depresstone' : DSP.loudness(false); break;
+				case 'holdtone'    : DSP.loudness(true);
+			} // switch (lastActionButton)
 		} // current action = release
-
-		case 'hold' : {
-			switch (button) {
-				case 'tone' : DSP.loudness(true);
-			}
-
-			switch (config.bmbt.media) {
-				case 'kodi' : { // Kodi version
-					switch (button) {
-						case 'left'  : kodi.command('seek-rewind'); break;
-						case 'right' : kodi.command('seek-forward');
-					}
-				}
-			}
-		} // current action = hold
 	} // switch (action)
 
 	// Update status object
@@ -234,7 +230,7 @@ function decode_knob(data) {
 	data.value += direction + ' ' + steps + ' steps';
 
 	switch (config.bmbt.media) {
-		case 'kodi' : { // Kodi version
+		case 'kodi' : {
 			switch (direction) {
 				case 'left'  : kodi.input('up'); break;
 				case 'right' : kodi.input('down');
