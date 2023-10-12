@@ -969,7 +969,7 @@ function pl() {
 		output_turn_side_right : object.side.right.turn,
 
 		output_turn_front_left  : object.front.left.turn,
-		output_turn_front_right : object.front.left.turn,
+		output_turn_front_right : object.front.right.turn,
 
 		output_highbeam_front_left  : object.front.left.highbeam,
 		output_highbeam_front_right : object.front.right.highbeam,
