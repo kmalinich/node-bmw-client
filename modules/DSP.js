@@ -174,11 +174,11 @@ function eq_delta(band, value) {
 	}
 
 	bus.data.send({
-		src : 'RAD', // Might also be one of BMBT, DSPC, GT, RAD..
+		src : 'DSPC', // Might also be one of BMBT, DSPC, GT, RAD..
 		msg,
 	});
 
-	log.module(`DSP EQ delta update sent, band: '${band}', minus: '${minus}', value: ${value_orig} (0x${value.toString(16).padStart(2, '0').toUpperCase()}`);
+	log.module(`DSP EQ delta update sent, band: '${band}', minus: '${minus}', value: ${value_orig} (0x${value.toString(16).padStart(2, '0').toUpperCase()})`);
 }
 
 // let dsp_data = {
@@ -305,7 +305,7 @@ function loudness(state = true) {
 		msg : [ 0x1C, 0x01, 0x03, state ],
 	});
 
-	log.module('Set loudness to state: ' + (state === 0x01));
+	log.module(`Set loudness to state: ${(state === 0x01)}`);
 }
 
 // Request various things from DSP

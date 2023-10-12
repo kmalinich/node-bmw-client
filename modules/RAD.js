@@ -174,7 +174,7 @@ function decode_audio_control(data) {
 		case 'treble'  : cmd_value = data.msg[1] - 0xC0; break;
 
 		default : {
-			data.value += 'unknown cmd_type ' + cmd_type + ' - 0x' + data.msg[1].toString(16);
+			data.value += `unknown cmd_type ${cmd_type} - 0x${data.msg[1].toString(16)}`;
 			return data;
 		}
 	}
@@ -183,27 +183,30 @@ function decode_audio_control(data) {
 	// Further command-type-specific processing
 	switch (cmd_type) {
 		case 'source' : {
+			let sourceName;
 			switch (cmd_value) {
 				case 0x00 :
-				case 0xA0 : update.status('rad.source_name', 'cd', false); break;
+				case 0xA0 : sourceName = 'cd'; break;
 
 				case 0x01 :
-				case 0xA1 : update.status('rad.source_name', 'tuner/tape', false); break;
+				case 0xA1 : sourceName = 'tuner/tape'; break;
 
 				case 0x0F :
-				case 0xAF : update.status('rad.source_name', 'off', false); break;
+				case 0xAF : sourceName = 'off'; break;
 
-				default : update.status('rad.source_name', 'unknown', false);
+				default : sourceName = 'unknown';
 			}
 
+			update.status('rad.source_name', sourceName, false);
+
 			// Technically not legit
-			data.value += 'source ' + status.rad.source_name;
+			data.value += `source ${status.rad.source_name}`;
 			break;
 		}
 
 		default : {
 			// Technically not legit
-			data.value += 'command ' + cmd_type + ' ' + cmd_value;
+			data.value +=  `command ${cmd_type} ${cmd_value}`;
 		}
 	}
 
