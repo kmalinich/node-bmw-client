@@ -285,14 +285,16 @@ function speaker_test(command) {
 }
 
 function loudness(state = true) {
-	// Cast state to boolean
+	// Cast state to integer
 	switch (state) {
 		case 'on'   :
 		case 'true' :
+		case true   :
 		case 1      : state = 0x01; break;
 
 		case 'off'   :
 		case 'false' :
+		case  false  :
 		case 0       : state = 0x00; break;
 
 		default : return;
