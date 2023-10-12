@@ -980,8 +980,10 @@ function pl() {
 	status.lcm.police_lights.counts.main++;
 
 	if (status.lcm.police_lights.counts.main === 32) {
-		update.status('lcm.police_lights.counts.main', 0);
-		update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1), false);
+		status.lcm.police_lights.counts.main = 0;
+		status.lcm.police_lights.counts.loop++;
+		// update.status('lcm.police_lights.counts.main', 0);
+		// update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1), false);
 	}
 
 	LCM.timeout.lights_police = setTimeout(pl, config.lights.police_lights.delay);
