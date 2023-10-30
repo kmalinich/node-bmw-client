@@ -25,8 +25,8 @@
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^8.49.0",
-		"eslint-plugin-import": "^2.28.1",
+		"eslint": "^8.52.0",
+		"eslint-plugin-import": "^2.29.0",
 		"eslint-plugin-node": "^11.1.0",
 		"eslint-plugin-promise": "^6.1.1"
 	},
