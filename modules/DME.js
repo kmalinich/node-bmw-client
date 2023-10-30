@@ -1,5 +1,6 @@
 /* eslint key-spacing :  */
 
+
 const convert = require('node-unit-conversion');
 
 
@@ -122,8 +123,8 @@ function parse_329(data) {
 	const parse = {
 		engine : {
 			throttle : {
-				cruise : num.round2(data.msg[4] / 2.54),
-				pedal  : num.round2(data.msg[5] / 2.54),
+				cruise : num.round2((data.msg[4] / 2.54), 1),
+				pedal  : num.round2((data.msg[5] / 2.54), 1),
 			},
 
 			atmospheric_pressure : {
