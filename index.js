@@ -6,6 +6,8 @@ app_path = __dirname;
 app_name = 'bmwcd';
 app_intf = 'client';
 
+process.title = app_name;
+
 terminating = false;
 
 // node-bmw shared libraries
