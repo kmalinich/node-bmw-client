@@ -1261,6 +1261,7 @@ class IKE extends EventEmitter {
 	async textWithOptions(string, options) {
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return;
+
 		// Bounce if override is active
 		if (options.override === false && this.text_override_status.active === true) {
 			log.module(`NOT sending IKE text message: '${string}'`);
@@ -1284,14 +1285,10 @@ class IKE extends EventEmitter {
 		if (options.flags.bit2 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[2]);
 		if (options.flags.bit3 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[3]);
 		if (options.flags.bit4 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[4]);
-		if (options.flags.bit5 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[5]);
-		if (options.flags.bit6 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[6]);
-		if (options.flags.bit7 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[7]);
 
 		if (options.flags.clearScreen === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[5]);
 		if (options.flags.partTx      === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[6]);
 		if (options.flags.setCursor   === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[7]);
-
 
 		let messageHex;
 
@@ -1304,9 +1301,12 @@ class IKE extends EventEmitter {
 		messageHex = messageHex.concat(0x04);
 		// messageHex = messageHex.concat(0x66);
 
+		if (typeof options.src === 'undefined' || options.src === null) options.src = 'RAD';
+		if (typeof options.dst === 'undefined' || options.dst === null) options.dst = 'IKE';
+
 		await bus.data.send({
-			src : 'RAD',
-			dst : 'IKE',
+			src : options.src,
+			dst : options.dst,
 			msg : messageHex,
 		});
 	} // async textWithOptions(string, options)
