@@ -1300,7 +1300,7 @@ class IKE extends EventEmitter {
 		}
 
 
-		let messageHex = [ layoutValue, flagsBitmask ];
+		let messageHex = [ 0x23, flagsBitmask, layoutValue ];
 		messageHex = messageHex.concat(options.messagePrefix);
 		messageHex = messageHex.concat(this.text_prepare(string));
 		messageHex = messageHex.concat(options.messageSuffix);
