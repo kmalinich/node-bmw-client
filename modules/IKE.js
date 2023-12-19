@@ -1290,16 +1290,21 @@ class IKE extends EventEmitter {
 		if (options.flags.partTx      === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[6]);
 		if (options.flags.setCursor   === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[7]);
 
-		let messageHex;
 
-		// messageHex = [ layoutValue, flagsBitmask, 0x30 ];
-		// messageHex = [ layoutValue, flagsBitmask, 0x30, 0x07 ];
-		messageHex = [ layoutValue, flagsBitmask, 0x10, 0x07 ];
+		if (typeof options.messagePrefix === 'undefined' || options.messagePrefix === null) {
+			options.messagePrefix = [ 0x10, 0x07 ];
+		}
 
+		if (typeof options.messageSuffix === 'undefined' || options.messageSuffix === null) {
+			options.messageSuffix = [ 0x04 ];
+		}
+
+
+		let messageHex = [ layoutValue, flagsBitmask ];
+		messageHex = messageHex.concat(options.messagePrefix);
 		messageHex = messageHex.concat(this.text_prepare(string));
+		messageHex = messageHex.concat(options.messageSuffix);
 
-		messageHex = messageHex.concat(0x04);
-		// messageHex = messageHex.concat(0x66);
 
 		if (typeof options.src === 'undefined' || options.src === null) options.src = 'RAD';
 		if (typeof options.dst === 'undefined' || options.dst === null) options.dst = 'IKE';
