@@ -126,7 +126,7 @@ async function decode_button(data) {
 					switch (lastActionButton) {
 						case 'depressleft'  : await bluetooth.command('previous'); break;
 						case 'depressright' : await bluetooth.command('next');     break;
-					}
+					} // switch (lastActionButton)
 
 					break;
 				} // case 'bluetooth'
@@ -139,7 +139,7 @@ async function decode_button(data) {
 						// These resume normal playback when releasing the button, after doing fast-forward or fast-reverse
 						case 'holdleft'  : kodi.command('toggle'); break;
 						case 'holdright' : kodi.command('toggle');
-					}
+					} // switch (lastActionButton)
 
 					break;
 				} // case 'kodi'
@@ -378,7 +378,7 @@ function button(button) {
 			button_up = bitmask.set(button_down, bitmask.bit[7]);
 			break;
 		}
-	}
+	} // switch (button)
 
 	log.module('Button down ' + button);
 
