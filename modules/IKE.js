@@ -1303,7 +1303,7 @@ class IKE extends EventEmitter {
 
 
 		if (typeof options.messagePrefix === 'undefined' || options.messagePrefix === null) {
-			options.messagePrefix = [ 0x10, 0x07 ];
+			options.messagePrefix = [ 0x07 ];
 		}
 
 		if (typeof options.messageSuffix === 'undefined' || options.messageSuffix === null) {
