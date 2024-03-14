@@ -1268,6 +1268,11 @@ class IKE extends EventEmitter {
 			return;
 		}
 
+
+		if (typeof options.layout === 'undefined' || options.layout === null) {
+			options.layout = 'radio1';
+		}
+
 		let layoutValue;
 		switch (options.layout) {
 			case 'checkcontrol' : layoutValue = 0x24; break;
@@ -1275,8 +1280,14 @@ class IKE extends EventEmitter {
 			case 'display'      : layoutValue = 0x40; break;
 			case 'phone'        : layoutValue = 0x00; break;
 			case 'radio1'       : layoutValue = 0x41; break;
-			case 'radio2'       : layoutValue = 0x62;
+			case 'radio2'       : layoutValue = 0x62; break;
+
+			default : {
+				options.layout = 'radio1';
+				layoutValue    = 0x41;
+			}
 		}
+
 
 		let flagsBitmask = 0x00;
 
@@ -1300,7 +1311,7 @@ class IKE extends EventEmitter {
 		}
 
 
-		let messageHex = [ 0x23, flagsBitmask, layoutValue ];
+		let messageHex = [ 0x23, layoutValue, flagsBitmask ];
 		messageHex = messageHex.concat(options.messagePrefix);
 		messageHex = messageHex.concat(this.text_prepare(string));
 		messageHex = messageHex.concat(options.messageSuffix);
@@ -1319,32 +1330,41 @@ class IKE extends EventEmitter {
 	// IKE cluster text send message
 	// TODO: Limit text length with configurable value
 	async text(message, override = false) {
-		// Return if HUD refresh is locked
-		if (this.hud_locked !== false) return;
+		await this.textWithOptions(message, {
+			override,
 
-		// Bounce if override is active
-		if (override === false && this.text_override_status.active === true) {
-			log.module(`NOT sending space-padded IKE text message: '${message}'`);
-			return;
-		}
+			layout : 'radio1',
 
-		let message_hex;
-
-		// message_hex = [ 0x23, 0x42, 0x30 ];
-
-		// message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
-		message_hex = [ 0x23, 0x41, 0x10, 0x07 ];
-
-		message_hex = message_hex.concat(this.text_prepare(message));
-
-		message_hex = message_hex.concat(0x04);
-		// message_hex = message_hex.concat(0x66);
-
-		await bus.data.send({
-			src : 'RAD',
-			dst : 'IKE',
-			msg : message_hex,
+			flags : {
+				bit4        : true,
+				clearScreen : true,
+			},
 		});
+
+		// Return if HUD refresh is locked
+		// if (this.hud_locked !== false) return;
+
+		// // Bounce if override is active
+		// if (override === false && this.text_override_status.active === true) {
+		// 	log.module(`NOT sending space-padded IKE text message: '${message}'`);
+		// 	return;
+		// }
+
+		// let message_hex;
+
+		// // message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
+		// message_hex = [ 0x23, 0x41, 0x10, 0x07 ];
+
+		// message_hex = message_hex.concat(this.text_prepare(message));
+
+		// message_hex = message_hex.concat(0x04);
+		// // message_hex = message_hex.concat(0x66);
+
+		// await bus.data.send({
+		// 	src : 'RAD',
+		// 	dst : 'IKE',
+		// 	msg : message_hex,
+		// });
 	} // async text(message, override)
 
 	// IKE cluster text send message - without space padding
