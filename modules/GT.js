@@ -220,15 +220,79 @@ function parse_out(data) {
 			break;
 		}
 
-		// Control: Aux heat/vent
+		// Control: Set time/date
+		// TODO: Parsing
+		case 0x40 : {
+			data.command = 'con';
+			data.value   = 'Set time/date';
+			console.dir({ msg : data.msg });
+			break;
+		}
+
+		// Request: On-board computer data
+		// 00    --- OBC_Mode_00
+		// 01 01 --- Time current value request
+		// 01    --- Time
+		// 02 01 --- Date current value request
+		// 02    --- Date
+		// 03 01 --- Outside_Temp current value request
+		// 03    --- Outside_Temp
+		// 04 01 --- Consumption_1 current value request
+		// 04    --- Consumption_1
+		// 05 01 --- Consumption_2 current value request
+		// 06 01 --- Range current value request
+		// 07 01 --- Distance current value request
+		// 08 01 --- Arrival current value request
+		// 09 01 --- Limit current value request
+		// 09 02 --- Limit status request
+		// 0A 01 --- Average_Speed current value request
+		// 0D 02 --- Code status request
+		// 0E 01 --- Stopwatch current value request
+		// 0E 03 --- Stopwatch current value request status request
+		// 0F 01 --- Timer_1 current value request
+		// 10 01 --- Timer_2 current value request
+		// 10    --- Timer_2
+		// 11    --- Aux_Heating_Off
+		// 12    --- Aux_Heating_On
+		// 13    --- Aux_Vent_Off
+		// 14    --- Aux_Vent_On
+		// 15    --- End_Stellmode
+		// 16    --- Emergency_Disarm
+		// 17    --- OBC_Mode_17
+		// 18    --- OBC_Mode_18
+		// 1A 01 --- Interim_Time current value request
+		// 1B 03 --- Aux_Heat/Vent current value request status request
 		case 0x41 : {
 			data.command = 'con';
 
 			switch (data.msg[1]) {
-				case 0x11: data.value = 'Aux heat off'; break;
-				case 0x12: data.value = 'Aux heat on';  break;
-				case 0x13: data.value = 'Aux vent off'; break;
-				case 0x14: data.value = 'Aux vent on';
+				case 0x00: data.value = 'OBC mode 0';           break;
+				case 0x01: data.value = 'Time';                 break;
+				case 0x02: data.value = 'Date';                 break;
+				case 0x03: data.value = 'Outside temp';         break;
+				case 0x04: data.value = 'Consumption 1';        break;
+				case 0x05: data.value = 'Consumption 2';        break;
+				case 0x06: data.value = 'Range';                break;
+				case 0x07: data.value = 'Distance';             break;
+				case 0x08: data.value = 'Arrival';              break;
+				case 0x09: data.value = 'Speed limit';          break;
+				case 0x0A: data.value = 'Average speed';        break;
+				case 0x0D: data.value = 'Code';                 break;
+				case 0x0E: data.value = 'Stopwatch';            break;
+				case 0x0F: data.value = 'Timer 1';              break;
+				case 0x10: data.value = 'Timer 2';              break;
+				case 0x11: data.value = 'Aux heat off';         break;
+				case 0x12: data.value = 'Aux heat on';          break;
+				case 0x13: data.value = 'Aux vent off';         break;
+				case 0x14: data.value = 'Aux vent on';          break;
+				case 0x15: data.value = 'End adjustment mode';  break;
+				case 0x16: data.value = 'Emergency disarm';     break;
+				case 0x17: data.value = 'OBC mode 17';          break;
+				case 0x18: data.value = 'OBC mode 18';          break;
+				case 0x1A: data.value = 'Interim time';         break;
+				case 0x1B: data.value = 'Aux heat/vent status'; break;
+
+				default: data.value = `Unknown ${hex.i2s(data.msg[1])}`;
 			}
 
 			break;

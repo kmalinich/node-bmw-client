@@ -1,7 +1,8 @@
 // Broadcast: check control message
 function parse_cc_message(data) {
 	data.command = 'bro';
-	data.value   = 'TODO: check control message ' + hex.h2s(data.msg);
+	data.value   = 'TODO: check control message';
+	console.dir({ msg : data.msg });
 
 	return data;
 }
