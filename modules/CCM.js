@@ -2,10 +2,10 @@
 function parse_cc_message(data) {
 	data.command = 'bro';
 
-	const checkControlMessage = hex.h2s(data.msg.slice(3, 20));
+	const checkControlMessage = hex.h2s(data.msg);
 
 	data.value = `TODO: check control message - values: ${hex.i2s(data.msg[1])} ${hex.i2s(data.msg[2])} - message: ${checkControlMessage}`;
-	console.dir({ msg : data.msg });
+	console.dir({ msg : data.msg, checkControlMessage });
 
 	return data;
 }
