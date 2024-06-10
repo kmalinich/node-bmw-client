@@ -11,7 +11,7 @@
 		"callers-path": "^1.0.5",
 		"defaults-deep": "^0.2.4",
 		"express": "^4.19.2",
-		"json-colorizer": "^2.2.2",
+		"json-colorizer": "^3.0.1",
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.1.0",
 		"kodi-ws": "^2.4.3",
@@ -25,12 +25,12 @@
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"@eslint/js": "^9.0.0",
-		"eslint": "^9.0.0",
+		"@eslint/js": "^9.4.0",
+		"eslint": "^9.4.0",
 		"eslint-plugin-import": "^2.29.1",
 		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^6.1.1",
-		"globals": "^15.0.0"
+		"eslint-plugin-promise": "^6.2.0",
+		"globals": "^15.4.0"
 	},
 	"directories": {
 		"lib": "./lib",
