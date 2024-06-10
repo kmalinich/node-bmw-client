@@ -181,6 +181,11 @@ function parse_1f0(data) {
 }
 
 // 00 00 05 FF 39 7D 5D 00
+//
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F3_ASC3
+//
+// Refresh rate: 20ms
+//
 // byte2 bit3 : brake applied
 function parse_1f3(data) {
 	data.command = 'bro';
@@ -190,6 +195,11 @@ function parse_1f3(data) {
 }
 
 // [0x1F5] Steering angle sensor data
+//
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F5_LWS1
+//
+// Refresh rate: 10ms
+//
 // Steering angle and change velocity
 function parse_1f5(data) {
 	data.command = 'bro';
