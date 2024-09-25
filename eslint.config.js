@@ -2,7 +2,6 @@ const globals = require('globals');
 const js      = require('@eslint/js');
 
 const eslintPlugins = {
-	import  : require('eslint-plugin-import'),
 	node    : require('eslint-plugin-node'),
 	promise : require('eslint-plugin-promise'),
 };
@@ -591,6 +590,10 @@ const eslintConfig = {
 
 module.exports = [
 	js.configs.recommended,
+
+	{
+		ignores : [ 'test/' ],
+	},
 
 	eslintConfig,
 ];
