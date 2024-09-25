@@ -592,7 +592,12 @@ module.exports = [
 	js.configs.recommended,
 
 	{
-		ignores : [ 'test/' ],
+		ignores : [
+			'.git/',
+			'candump/',
+			'node_modules/',
+			'test/',
+		],
 	},
 
 	eslintConfig,
