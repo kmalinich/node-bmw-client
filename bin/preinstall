@@ -2,12 +2,15 @@
 
 # npm packages bmwcd and bmwi share
 ARRAY_LINK=(
+'@eslint/js'
 'body-parser'
 'callers-path'
 'defaults-deep'
 'eslint'
 'eslint-plugin-node'
+'eslint-plugin-promise'
 'express'
+'globals'
 'json-socket'
 'jsonfile'
 'object-path'
