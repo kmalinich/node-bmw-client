@@ -10,12 +10,12 @@ ARRAY_LINK=(
 'eslint-plugin-node'
 'eslint-plugin-promise'
 'express'
-'globals'
 'json-socket'
 'jsonfile'
 'object-path'
 'trucolor'
 )
+#'globals'
 
 
 # Only run on Raspberry Pi
