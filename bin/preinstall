@@ -29,6 +29,7 @@ FILE_TMP="$(mktemp)"
 jq .dependencies    package.json | awk -F '"' '/"/ {print $2 "@" $4}' >  "${FILE_TMP}"
 jq .devDependencies package.json | awk -F '"' '/"/ {print $2 "@" $4}' >> "${FILE_TMP}"
 
+ARRAY_INSTALL=()
 
 # Install version-specific npm packages globally
 for DEP in "${ARRAY_LINK[@]}"; do
@@ -39,13 +40,14 @@ for DEP in "${ARRAY_LINK[@]}"; do
 		exit 1
 	fi
 
-	[[ "${1}" == "--no-install" ]] && continue
-
-	echo "npm -g i '${DEP_FULL}'"
-	npm -g i "${DEP_FULL}" --unsafe-perm
-	echo
+	ARRAY_INSTALL+=("${DEP_FULL}")
 done
-echo
+
+if [[ "${1}" != "--no-install" ]]; then
+	echo "npm -g i '${ARRAY_INSTALL[*]}'"
+	npm -g i "${ARRAY_INSTALL[@]}" --unsafe-perm
+	echo
+fi
 
 # Link npm packages from global to local
 echo "npm link '${ARRAY_LINK[*]}'"
