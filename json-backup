@@ -4,7 +4,7 @@ DIR_BASE="/usr/local"
 DIR_BMWCD="${DIR_BASE}/bmwcd"
 DIR_BAK="${DIR_BMWCD}/json.bak"
 
-DATE_STR="$(date '+%Y%m%d')"
+DATE_STR="$(date '+%Y%m%d-%H%M%S')"
 
 ARRAY_FILES=(
 'config.json'

@@ -181,7 +181,7 @@ function init_listeners() {
 
 // Parse data sent to module
 function parse_in(data) {
-	// Bounce if not enabled
+	// Bounce if emulation isn't enabled
 	if (config.emulate.nbt !== true) return data;
 
 	return data;
@@ -196,6 +196,7 @@ function parse_out(data) {
 		case 0x273 :
 		case 0x563 : return decode_init_con(data);
 
+		// TODO: I think this should be parsed in CON.js
 		case 0x277 : { // NBT ACK to rotational initialization message
 			data.command = 'rep';
 			data.value   = 'CON => NBT : ACK init';

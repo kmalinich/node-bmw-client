@@ -1,5 +1,9 @@
 /* eslint key-spacing :  */
 
+
+// References:
+// https://www.ms4x.net/index.php?title=Siemens_MS43_CAN_Bus
+
 const convert = require('node-unit-conversion');
 
 
@@ -48,6 +52,10 @@ function encode_316(rpm = 10000) {
 
 
 // CAN ARBID 0x316 (DME1)
+//
+// https://www.ms4x.net/index.php?title=Siemens_MS43_CAN_Bus
+//
+// Refresh Rate: 10ms
 //
 // byte 0, bit 0 : Something is pushed here, but I'm having a hard time tracing what it is. Appears it would always be 1 if everything is running normally
 // byte 0, bit 1 : ??
@@ -99,21 +107,27 @@ function parse_316(data) {
 
 // CAN ARBID 0x329 (DME2)
 //
+// Refresh rate: 10ms
+//
 // byte 0 : ??
 // byte 1 : coolant temp
 // byte 2 : atmospheric pressure
 //
-// byte 3, bit 0      : clutch switch (0 = engaged, 1 = disengage/neutral)
-// byte 3, bit 2      : Hardcoded to 1 (on MSS54, could be used on other DMEs)
-// byte 3, bit 4      : possibly motor status (0 = on, 1 = off)
-// byte 3, bits 5+6+7 : tank evap duty cycle?
+// byte 3, bit 0 : clutch switch state (0 = engaged, 1 = disengage/neutral)
+// byte 3, bit 1 : idle regulator state (0 = idle above threshold, 1 = idle below threshold)
+// byte 3, bit 2 : Acknowledgment of ACC1 CAN message
+// byte 3, bit 3 : Engine running state (0 = engine stopped, 1 = engine running)
+// byte 3, bit 4 : STATE_CRU_CAN (possibly)
+// byte 3, bit 5 : STATE_MSW_CAN[0]
+// byte 3, bit 6 : STATE_MSW_CAN[1]
+// byte 3, bit 8 : STATE_MSW_CAN[2]
 //
 // byte 4 : driver desired torque, relative (0x00 - 0xFE)
 // byte 5 : throttle position               (0x00 - 0xFE)
 //
-// byte 6, bit 2 : kickdown switch depressed
-// byte 6, bit 1 : brake light switch error
-// byte 6, bit 0 : brake pedal depressed
+// byte 6, bit 0 : brake switch state (0 = not depressed, 1 = depressed)
+// byte 6, bit 1 : brake switch status (0 = OK, 1 = fault)
+// byte 6, bit 2 : kickdown switch state (0 = not depressed, 1 = depressed)
 //
 // byte 7 : ??
 function parse_329(data) {
@@ -122,8 +136,8 @@ function parse_329(data) {
 	const parse = {
 		engine : {
 			throttle : {
-				cruise : num.round2(data.msg[4] / 2.54),
-				pedal  : num.round2(data.msg[5] / 2.54),
+				cruise : num.round2((data.msg[4] / 2.54), 1),
+				pedal  : num.round2((data.msg[5] / 2.54), 1),
 			},
 
 			atmospheric_pressure : {
@@ -206,7 +220,10 @@ function parse_329(data) {
 }
 
 
-// CAN ARBID 0x338
+// CAN ARBID 0x338 (DME3)
+//
+// Refresh rate: 1000ms and at signal change
+//
 // MS45/MSD80/MSV80 only
 //
 // byte2, bit 0 : Sport on (request by SMG transmission)
@@ -234,10 +251,16 @@ function parse_338(data) {
 
 // CAN ARBID 0x545 (DME4)
 //
-// byte 0, bit 1 : Check engine
+// Refresh Rate: 10ms
+//
+// byte 0, bit 0 : Unused
+// byte 0, bit 1 : Check engine light
+// byte 0, bit 2 : Unused
 // byte 0, bit 3 : Cruise
-// byte 0, bit 4 : EML
-// byte 0, bit 7 : Check gas cap
+// byte 0, bit 4 : Engine malfunction light
+// byte 0, bit 5 : Unused
+// byte 0, bit 6 : Check gas cap
+// byte 0, bit 7 : Unused
 //
 // byte 1 : Fuel consumption LSB
 // byte 2 : Fuel consumption MSB
@@ -246,10 +269,10 @@ function parse_338(data) {
 // byte 3, bit 1 : Oil level warning (yellow)
 // byte 3, bit 2 : Oil level error   (red)
 // byte 3, bit 3 : Coolant overtemperature light
-
 // byte 3, bit 4 : M3/M5 tachometer light
 // byte 3, bit 5 : M3/M5 tachometer light
 // byte 3, bit 6 : M3/M5 tachometer light
+// byte 3, bit 7 : Upshift indicator
 
 // byte 4 : Oil temperature (ºC = X - 48)
 //
@@ -310,6 +333,7 @@ function parse_545(data) {
 	return data;
 }
 
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x610_ICL1
 function parse_610(data) {
 	data.value = 'VIN/info';
 
@@ -317,11 +341,16 @@ function parse_610(data) {
 }
 
 
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x615_ICL3
+//
+// Refresh rate: 200ms
+
 // byte 0 : Odometer LSB
 // byte 1 : Odometer MSB
-// byte 2 : Fuel level
+// byte 2 : FTL_CAN - Fuel Tank Level (Bits 0-6, Bit 7: FTL_RES_CAN [Fuel Tank Level Reserve Switch])
 // byte 3 : Running clock LSB
 // byte 4 : Running clock MSB
+// byte 5 : FTL_CAN_L - Fuel Tank Level Driver Side (Bits 0-5)
 //
 // Running clock = minutes since last time battery power was lost
 //
@@ -363,6 +392,12 @@ function parse_613(data) {
 }
 
 // ARBID: 0x615 sent from the instrument cluster
+//
+// This is actually sent by IKE
+//
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x615_ICL3
+//
+// Refresh rate: 200ms
 function parse_615(data) {
 	data.value = 'A/C request/Outside air temp/Parking brake/door contacts';
 
@@ -581,11 +616,9 @@ function init_listeners() {
 	update.on('status.vehicle.ignition', data => {
 		if (data.new === 'run') return;
 
-		// TODO: Make this an array loop
-		update.status('engine.torque.after_interventions',  0);
-		update.status('engine.torque.before_interventions', 0);
-		update.status('engine.torque.loss',                 0);
-		update.status('engine.torque.output',               0);
+		// Reset torque values
+		const keys = [ 'after_interventions', 'before_interventions', 'loss', 'output' ];
+		for (const key of keys) update.status(`engine.torque.${key}`, 0);
 	});
 
 

@@ -6,6 +6,8 @@ app_path = __dirname;
 app_name = 'bmwcd';
 app_intf = 'client';
 
+process.title = app_name;
+
 terminating = false;
 
 // node-bmw shared libraries
@@ -92,7 +94,7 @@ async function init() {
 
 	await bluetooth.init(); // Start Linux D-Bus Bluetooth handler
 	await gpio.init();      // Initialize GPIO relays
-	await hdmi_cec.init();  // Open HDMI-CEC
+	await hdmi_cec.init();  // Open HDMI (CEC)
 	await hdmi_rpi.init();  // Open HDMI (RPi)
 	await kodi.init();      // Start Kodi WebSocket client
 
@@ -109,6 +111,7 @@ async function init() {
 	MID.init_listeners();
 	NBT.init_listeners();
 	RAD.init_listeners();
+	TEL.init_listeners();
 
 	bus.data.init_listeners();
 	gpio.init_listeners();

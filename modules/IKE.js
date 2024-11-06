@@ -61,6 +61,8 @@ class IKE extends EventEmitter {
 	// Broadcast: Aux heat LED status
 	// This actually is a bitmask but.. this is also a freetime project
 	decode_aux_heat_led(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 
 		let aux_heat_led;
@@ -76,7 +78,7 @@ class IKE extends EventEmitter {
 		data.value = 'aux heat LED: ' + status.obc.aux_heat_led;
 
 		return data;
-	}
+	} // decode_aux_heat_led(data)
 
 	// Broadcast: BC button press (MFL BC stalk button)
 	decode_bc_button(data) {
@@ -99,7 +101,7 @@ class IKE extends EventEmitter {
 		}, 5200);
 
 		return data;
-	}
+	} // decode_bc_button(data)
 
 	// Broadcast: Country coding data
 	decode_country_coding_data(data) {
@@ -448,6 +450,8 @@ class IKE extends EventEmitter {
 
 	// Broadcast: Odometer
 	decode_odometer(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'odometer';
 
@@ -459,7 +463,7 @@ class IKE extends EventEmitter {
 		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')), false);
 
 		return data;
-	}
+	} // decode_odometer(data)
 
 	// Broadcast: Vehicle speed and RPM
 	decode_speed_values(data) {
@@ -684,8 +688,8 @@ class IKE extends EventEmitter {
 	} // async hud_refresh(override, retry)
 
 
-	// TODO: Make this actually work, or do anything, at all
-	// Refresh custom HUD speed
+	// Refresh custom HUD speed, but JUST the speed text, nothing else
+	// TODO: Make this actually work, and use it
 	async hud_refresh_speed() {
 		// Bounce if it's not OK (yet) to post a HUD update
 		if (!this.ok2hud()) return;
@@ -750,105 +754,6 @@ class IKE extends EventEmitter {
 		});
 	}
 
-	// Check control messages
-	// TODO: Limit text length with configurable value
-	text_urgent(message, timeout = 5000) {
-		log.module('Sending urgent IKE text message: \'' + message + '\'');
-
-		let message_hex;
-
-		kodi.notify(module_name, message);
-
-		message_hex = [ 0x1A, 0x35, 0x00 ];
-		message_hex = message_hex.concat(this.text_prepare(message));
-
-		bus.data.send({
-			src : 'CCM',
-			msg : message_hex,
-		});
-
-		// Clear the message after 5 seconds
-		if (timeout !== 0) setTimeout(this.text_urgent_off, timeout);
-	} // text_urgent(message, timeout)
-
-	// Check control warnings
-	// TODO: Limit text length with configurable value
-	text_warning(message, timeout = 10000) {
-		log.module('Sending warning IKE text message: \'' + message + '\'');
-
-		let message_hex;
-
-		// 3rd byte:
-		// 0x00 : arrow: none,  sound: none
-		// 0x01 : arrow: solid, sound: none
-		// 0x02 : arrow: none,  sound: none
-		// 0x03 : arrow: flash, sound: none
-		// 0x04 : arrow: none,  sound: 1 gong,  high
-		// 0x08 : arrow: none,  sound: 2 gongs, high
-		// 0x0C : arrow: none,  sound: 3 gongs, high
-		// 0x10 : arrow: none,  sound: 1 gong,  low
-		// 0x13 : arrow: flash, sound: 1 gong,  low
-		// 0x18 : arrow: none,  sound: 3 beeps
-
-		message_hex = [ 0x1A, 0x37, 0x13 ]; // flash + 1 low gong
-		message_hex = message_hex.concat(this.text_prepare(message, true));
-
-		bus.data.send({
-			src : 'CCM',
-			msg : message_hex,
-		});
-
-		// Clear the message after the timeout
-		if (timeout !== 0) setTimeout(this.text_urgent_off, timeout);
-	}
-
-	// Trim IKE text string and potentially space-pad
-	// TODO: Limit text length with configurable value
-	text_prepare(message, pad = false) {
-		// Trim string to max length
-		message = message.substring(0, this.max_len_text);
-
-		// Space-pad if pad === true
-		switch (pad) {
-			case false : {
-				// log.module('Sending non-padded IKE text message: \'' + message + '\'');
-				break;
-			}
-
-			case true : {
-				message = message.padEnd(this.max_len_text, ' ');
-				// log.module('Sending space-padded IKE text message: \'' + message + '\'');
-			}
-		}
-
-		// Convert ASCII to hex and return
-		return hex.a2h(message);
-	}
-
-	// IKE cluster text send message - without space padding
-	// TODO: Limit text length with configurable value
-	// TODO: Make this actually work, lol
-	async text_nopad(message, override = false) {
-		// Return if HUD refresh is locked
-		if (this.hud_locked !== false) return false;
-
-		// Bounce if override is active
-		if (override === false && this.text_override_status.active === true) {
-			log.module('NOT sending non-padded IKE text message: \'' + message + '\'');
-			return;
-		}
-
-		let message_hex;
-
-		message_hex = [ 0x23, 0x42, 0x04 ];
-		message_hex = await message_hex.concat(this.text_prepare(message, false));
-
-		await bus.data.send({
-			src : 'TEL',
-			msg : message_hex,
-		});
-	}
-
 
 	// Refresh various values periodically
 	// TODO: Make setTimeout delay value a config param
@@ -906,6 +811,8 @@ class IKE extends EventEmitter {
 
 	// Broadcast: Ignition status
 	decode_ignition_status(data) {
+		data.skipLog = true;
+
 		let new_level_name;
 
 		// Save previous ignition status
@@ -1110,6 +1017,10 @@ class IKE extends EventEmitter {
 					this.text_warning('  DSC deactivated!  ');
 					break;
 				}
+
+				case true : {
+					this.text_urgent_off();
+				}
 			}
 		});
 
@@ -1134,6 +1045,7 @@ class IKE extends EventEmitter {
 		log.module('Refreshing all OBC data');
 
 		// Immo+GM data
+		// TODO: Move to EWS/GM/IKHA/DME modules
 		EWS.request('immobilizerstatus');
 		GM.request('io-status');
 		GM.request('door-status');
@@ -1269,34 +1181,216 @@ class IKE extends EventEmitter {
 		});
 	}
 
-	// IKE cluster text send message
+
+	// Trim IKE text string and potentially space-pad
 	// TODO: Limit text length with configurable value
-	async text(message, override = false) {
+	text_prepare(message, pad = false) {
+		// Trim string to max length
+		message = message.substring(0, this.max_len_text);
+
+		// Space-pad if pad === true
+		switch (pad) {
+			case false : {
+				// log.module('Sending non-padded IKE text message: \'' + message + '\'');
+				break;
+			}
+
+			case true : {
+				message = message.padEnd(this.max_len_text, ' ');
+				// log.module('Sending space-padded IKE text message: \'' + message + '\'');
+			}
+		}
+
+		// Convert ASCII to hex and return
+		return hex.a2h(message);
+	} // text_prepare(message, pad)
+
+	// Check control messages
+	// TODO: Limit text length with configurable value
+	text_urgent(message, timeout = 5000) {
+		log.module('Sending urgent IKE text message: \'' + message + '\'');
+
+		let message_hex;
+
+		kodi.notify(module_name, message);
+
+		message_hex = [ 0x1A, 0x35, 0x00 ];
+		message_hex = message_hex.concat(this.text_prepare(message));
+
+		bus.data.send({
+			src : 'CCM',
+			msg : message_hex,
+		});
+
+		// Clear the message after 5 seconds
+		if (timeout !== 0) setTimeout(this.text_urgent_off, timeout);
+	} // text_urgent(message, timeout)
+
+	// Check control warnings
+	// TODO: Limit text length with configurable value
+	text_warning(message, timeout = 10000) {
+		log.module('Sending warning IKE text message: \'' + message + '\'');
+
+		let message_hex;
+
+		// 3rd byte:
+		// 0x00 : arrow: none,  sound: none
+		// 0x01 : arrow: solid, sound: none
+		// 0x02 : arrow: none,  sound: none
+		// 0x03 : arrow: flash, sound: none
+		// 0x04 : arrow: none,  sound: 1 gong,  high
+		// 0x08 : arrow: none,  sound: 2 gongs, high
+		// 0x0C : arrow: none,  sound: 3 gongs, high
+		// 0x10 : arrow: none,  sound: 1 gong,  low
+		// 0x13 : arrow: flash, sound: 1 gong,  low
+		// 0x18 : arrow: none,  sound: 3 beeps
+
+		message_hex = [ 0x1A, 0x37, 0x13 ]; // flash + 1 low gong
+		message_hex = message_hex.concat(this.text_prepare(message, true));
+
+		bus.data.send({
+			src : 'CCM',
+			msg : message_hex,
+		});
+
+		// Clear the message after the timeout
+		if (timeout !== 0) setTimeout(this.text_urgent_off, timeout);
+	} // text_warning(message, timeout)
+
+	// IKE cluster text with various options
+	async textWithOptions(string, options) {
 		// Return if HUD refresh is locked
 		if (this.hud_locked !== false) return;
 
 		// Bounce if override is active
+		if (options.override === false && this.text_override_status.active === true) {
+			log.module(`NOT sending IKE text message: '${string}'`);
+			return;
+		}
+
+
+		if (typeof options.layout === 'undefined' || options.layout === null) {
+			options.layout = 'radio1';
+		}
+
+		let layoutValue;
+		switch (options.layout) {
+			case 'checkcontrol' : layoutValue = 0x24; break;
+			case 'cluster'      : layoutValue = 0x50; break;
+			case 'display'      : layoutValue = 0x40; break;
+			case 'phone'        : layoutValue = 0x00; break;
+			case 'radio1'       : layoutValue = 0x41; break;
+			case 'radio2'       : layoutValue = 0x62; break;
+
+			default : {
+				options.layout = 'radio1';
+				layoutValue    = 0x41;
+			}
+		}
+
+
+		let flagsBitmask = 0x00;
+
+		if (options.flags.bit0 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[0]);
+		if (options.flags.bit1 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[1]);
+		if (options.flags.bit2 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[2]);
+		if (options.flags.bit3 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[3]);
+		if (options.flags.bit4 === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[4]);
+
+		if (options.flags.clearScreen === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[5]);
+		if (options.flags.partTx      === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[6]);
+		if (options.flags.setCursor   === true) flagsBitmask = bitmask.set(flagsBitmask, bitmask.bit[7]);
+
+
+		if (typeof options.messagePrefix === 'undefined' || options.messagePrefix === null) {
+			options.messagePrefix = [ 0x07 ];
+		}
+
+		if (typeof options.messageSuffix === 'undefined' || options.messageSuffix === null) {
+			options.messageSuffix = [ 0x04 ];
+		}
+
+
+		let messageHex = [ 0x23, layoutValue, flagsBitmask ];
+		messageHex = messageHex.concat(options.messagePrefix);
+		messageHex = messageHex.concat(this.text_prepare(string));
+		messageHex = messageHex.concat(options.messageSuffix);
+
+
+		if (typeof options.src === 'undefined' || options.src === null) options.src = 'RAD';
+		if (typeof options.dst === 'undefined' || options.dst === null) options.dst = 'IKE';
+
+		await bus.data.send({
+			src : options.src,
+			dst : options.dst,
+			msg : messageHex,
+		});
+	} // async textWithOptions(string, options)
+
+	// IKE cluster text send message
+	// TODO: Limit text length with configurable value
+	async text(message, override = false) {
+		await this.textWithOptions(message, {
+			override,
+
+			layout : 'radio1',
+
+			flags : {
+				bit4        : true,
+				clearScreen : true,
+			},
+		});
+
+		// Return if HUD refresh is locked
+		// if (this.hud_locked !== false) return;
+
+		// // Bounce if override is active
+		// if (override === false && this.text_override_status.active === true) {
+		// 	log.module(`NOT sending space-padded IKE text message: '${message}'`);
+		// 	return;
+		// }
+
+		// let message_hex;
+
+		// // message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
+		// message_hex = [ 0x23, 0x41, 0x10, 0x07 ];
+
+		// message_hex = message_hex.concat(this.text_prepare(message));
+
+		// message_hex = message_hex.concat(0x04);
+		// // message_hex = message_hex.concat(0x66);
+
+		// await bus.data.send({
+		// 	src : 'RAD',
+		// 	dst : 'IKE',
+		// 	msg : message_hex,
+		// });
+	} // async text(message, override)
+
+	// IKE cluster text send message - without space padding
+	// TODO: Limit text length with configurable value
+	// TODO: Make this actually work, lol
+	async text_nopad(message, override = false) {
+		// Return if HUD refresh is locked
+		if (this.hud_locked !== false) return false;
+
+		// Bounce if override is active
 		if (override === false && this.text_override_status.active === true) {
-			log.module('NOT sending space-padded IKE text message: \'' + message + '\'');
+			log.module('NOT sending non-padded IKE text message: \'' + message + '\'');
 			return;
 		}
 
 		let message_hex;
 
-		// message_hex = [ 0x23, 0x42, 0x30 ];
-		message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
-
-		message_hex = message_hex.concat(this.text_prepare(message));
-
-		message_hex = message_hex.concat(0x04);
-		// message_hex = message_hex.concat(0x66);
+		message_hex = [ 0x23, 0x42, 0x04 ];
+		message_hex = await message_hex.concat(this.text_prepare(message, false));
 
 		await bus.data.send({
-			src : 'RAD',
-			dst : 'IKE',
+			src : 'TEL',
 			msg : message_hex,
 		});
-	} // async text(message, override)
+	} // async text_nopad(message, override)
+
 
 	// IKE cluster text send message, override other messages
 	// TODO: Limit text length with configurable value
@@ -1360,6 +1454,7 @@ class IKE extends EventEmitter {
 			}
 		}, timeout, message);
 	} // async text_override(message, timeout, direction, turn)
+
 
 	// Welcome text message in cluster
 	welcome_message() {
