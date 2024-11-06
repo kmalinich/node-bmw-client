@@ -72,10 +72,10 @@ function request(value) {
 function parse_out(data) {
 	switch (data.msg[0]) {
 		case 0x83 : { // Broadcast: AC compressor status
-			update.status('ihka.ac', bitmask.test(data.msg[1], 0x80), false);
+			update.status('ihka.ac_compressor', bitmask.test(data.msg[1], 0x80), false);
 
 			data.command = 'bro';
-			data.value   = 'AC compressor status ' + data.msg;
+			data.value   = 'TODO AC compressor status ' + data.msg;
 			break;
 		}
 

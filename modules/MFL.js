@@ -20,31 +20,34 @@ async function decode_button_media(data) {
 	data.value   = 'media button - ';
 
 	// Bitmask:
-	// 0x00 : Nothing
-	// 0x01 : button : right
-	// 0x02 : ??
-	// 0x04 : ??
-	// 0x08 : button : left
-	// 0x10 : action : hold
-	// 0x20 : action : release
-	// 0x40 : ??
-	// 0x80 : button : voice command (sneezing man)
+	// 0x01/bit0 : button : right
+	// 0x02/bit1 : ??
+	// 0x04/bit2 : ??
+	// 0x08/bit3 : button : left
+	// 0x10/bit4 : action : hold
+	// 0x20/bit5 : action : release
+	// 0x40/bit6 : button : R/T
+	// 0x80/bit7 : button : voice command (sneezing man)
 
 	const mask   = bitmask.check(data.msg[1]).mask;
 	const unmask = {
 		action  : null,
 		actions : {
 			depress : !mask.bit4 && !mask.bit5 && !mask.bit8,
-			hold    : mask.bit4  && !mask.bit5 && !mask.bit8,
+			hold    :  mask.bit4 && !mask.bit5 && !mask.bit8,
 			release : !mask.bit4 &&  mask.bit5 && !mask.bit8,
+			none    : !mask.bit4 && !mask.bit5 &&  mask.bit8,
 		},
 
-		button  : null,
+		button  : `unknown button - ${hex.i2s(data.msg[1])}`,
 		buttons : {
-			right : mask.bit0  && !mask.bit3 && !mask.bit7 && !mask.bit8,
-			left  : !mask.bit0 &&  mask.bit3 && !mask.bit7 && !mask.bit8,
-			voice : !mask.bit0 && !mask.bit3 &&  mask.bit7 && !mask.bit8,
-			none  : !mask.bit0 && !mask.bit3 && !mask.bit7 &&  mask.bit8,
+			right :  mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 && !mask.bit6 && !mask.bit7 && !mask.bit8,
+			left  : !mask.bit0 && !mask.bit1 && !mask.bit2 &&  mask.bit3 && !mask.bit6 && !mask.bit7 && !mask.bit8,
+			voice : !mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 && !mask.bit6 &&  mask.bit7 && !mask.bit8,
+			unk1  : !mask.bit0 &&  mask.bit1 && !mask.bit2 && !mask.bit3 && !mask.bit6 && !mask.bit7 && !mask.bit8,
+			unk2  : !mask.bit0 && !mask.bit1 &&  mask.bit2 && !mask.bit3 && !mask.bit6 && !mask.bit7 && !mask.bit8,
+			rt    : !mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 &&  mask.bit6 && !mask.bit7 && !mask.bit8,
+			none  : !mask.bit0 && !mask.bit1 && !mask.bit2 && !mask.bit3 && !mask.bit6 && !mask.bit7 &&  mask.bit8,
 		},
 	};
 
@@ -246,11 +249,11 @@ function parse_out(data) {
 	}
 
 	return data;
-}
+} // parse_out(data)
 
 
 module.exports = {
-	// decode_button_com    : decode_button_com,
+	// decode_button_com,
 	decode_button_media,
 	decode_button_recirc,
 

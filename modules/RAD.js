@@ -174,7 +174,7 @@ function decode_audio_control(data) {
 		case 'treble'  : cmd_value = data.msg[1] - 0xC0; break;
 
 		default : {
-			data.value += 'unknown cmd_type ' + cmd_type + ' - 0x' + data.msg[1].toString(16);
+			data.value += `unknown cmd_type ${cmd_type} - 0x${data.msg[1].toString(16)}`;
 			return data;
 		}
 	}
@@ -183,27 +183,30 @@ function decode_audio_control(data) {
 	// Further command-type-specific processing
 	switch (cmd_type) {
 		case 'source' : {
+			let sourceName;
 			switch (cmd_value) {
 				case 0x00 :
-				case 0xA0 : update.status('rad.source_name', 'cd', false); break;
+				case 0xA0 : sourceName = 'cd'; break;
 
 				case 0x01 :
-				case 0xA1 : update.status('rad.source_name', 'tuner/tape', false); break;
+				case 0xA1 : sourceName = 'tuner/tape'; break;
 
 				case 0x0F :
-				case 0xAF : update.status('rad.source_name', 'off', false); break;
+				case 0xAF : sourceName = 'off'; break;
 
-				default : update.status('rad.source_name', 'unknown', false);
+				default : sourceName = 'unknown';
 			}
 
+			update.status('rad.source_name', sourceName, false);
+
 			// Technically not legit
-			data.value += 'source ' + status.rad.source_name;
+			data.value += `source ${status.rad.source_name}`;
 			break;
 		}
 
 		default : {
 			// Technically not legit
-			data.value += 'command ' + cmd_type + ' ' + cmd_value;
+			data.value +=  `command ${cmd_type} ${cmd_value}`;
 		}
 	}
 
@@ -257,8 +260,8 @@ function audio_control(command) {
 		off : [ cmd, 0xAF ],
 
 		dsp : {
-			function_0 : [ cmd, 0xE1 ],
-			function_1 : [ cmd, 0x30 ],
+			function_0 : [ cmd, 0x30 ],
+			function_1 : [ cmd, 0xE1 ],
 		},
 
 		source : {
@@ -378,7 +381,7 @@ function cassette_control(command) {
 		dst : 'BMBT',
 		msg,
 	});
-}
+} // cassette_control(command)
 
 function volume_control(value = 1) {
 	let msg_value;
@@ -409,15 +412,14 @@ function volume_control(value = 1) {
 
 
 // Power on DSP amp and GPIO pin for amplifier
-function audio_power(power_state = false, volume_increase = true) {
+async function audio_power(power_state = false, volume_increase = true) {
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
 	switch (power_state) {
 		case 'toggle' : {
 			log.module('Toggling audio power, current source: ' + status.rad.source_name);
-			audio_power((status.rad.source_name === 'off'));
-			return;
+			return audio_power((status.rad.source_name === 'off'));
 		}
 
 		case 0     :
@@ -436,8 +438,8 @@ function audio_power(power_state = false, volume_increase = true) {
 			// Send pause command to Kodi
 			kodi.command('pause');
 
-			setTimeout(() => { cassette_control(false); }, 500);
-
+			await new Promise(resolve => setTimeout(resolve, 1000));
+			cassette_control(false);
 			break;
 		}
 
@@ -448,53 +450,48 @@ function audio_power(power_state = false, volume_increase = true) {
 
 			log.module('Setting audio power to state : ' + power_state);
 
+			// Send connect command to Bluetooth
+			bluetooth.command('connect');
+
 			// Send device status
 			bus.cmds.send_device_status(module_name);
+			await new Promise(resolve => setTimeout(resolve, 100));
 
 			// Request status from BMBT, CDC, DSP, and MID (this should be a loop)
 			// TODO: Make this a config array
 
-			// let array_request = [ 'BMBT', 'CDC', 'DSP', 'MID' ];
 			const array_request = [ 'BMBT', 'DSP' ];
 
-			let count_request = 1;
-			array_request.forEach(module_request => {
-				setTimeout(() => {
-					bus.cmds.request_device_status(module_name, module_request);
-				}, (count_request * 150));
-
-				count_request++;
-			});
-
-			// Set DSP source to whatever is configured
-			count_request++;
-			setTimeout(() => { audio_control(config.media.dsp.default_source); }, (count_request * 150));
+			for await (const module_request of array_request) {
+				bus.cmds.request_device_status(module_name, module_request);
+				await new Promise(resolve => setTimeout(resolve, 100));
+			}
 
 			// Turn on BMBT
-			count_request++;
-			setTimeout(() => { cassette_control(true); }, (count_request * 150));
+			// await new Promise(resolve => setTimeout(resolve, 100));
+			cassette_control(true);
+			await new Promise(resolve => setTimeout(resolve, 100));
 
-			// Send configured DSP EQ (it seems to forget over time)
-			setTimeout(() => {
-				DSP.eq_encode(config.media.dsp.eq);
-			}, (count_request * 150));
-
-			// DSP powers up with volume set to 0, so bring up volume by configured amount
-			if (volume_increase === true) {
-				setTimeout(() => {
-					for (let pass = 0; pass <= config.rad.power_on_volume; pass++) {
-						setTimeout(() => { volume_control(5); }, 25 * pass);
-						count_request++;
-					}
-				}, (2000 + (count_request * 150)));
-			}
+			// Set DSP source to whatever is configured
+			audio_control(config.media.dsp.default_source);
+			await new Promise(resolve => setTimeout(resolve, 100));
 
 			// Send play command to Bluetooth/Kodi
 			bluetooth.command('play');
 			kodi.command('play');
+
+			if (volume_increase === true) {
+				// DSP powers up with volume set to 0, so bring up volume by configured amount
+				await new Promise(resolve => setTimeout(resolve, 500));
+
+				// TODO: Fix so it reads from config.rad.power_on_volume again
+				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
+				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
+				await new Promise(resolve => setTimeout(resolve, 250)); volume_control(5);
+			}
 		}
 	}
-}
+} // async function audio_power(power_state, volume_increase)
 
 
 function init_listeners() {
@@ -504,15 +501,17 @@ function init_listeners() {
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value
 	//       .. and make it config.rad.delay.power_active and config.rad.delay.after_start
-	power.on('active', power_state => {
-		setTimeout(() => { audio_power(power_state); }, 300);
+	power.on('active', async power_state => {
+		await new Promise(resolve => setTimeout(resolve, 300));
+		await audio_power(power_state);
 	});
 
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
-	IKE.on('ignition-start-end', () => {
+	IKE.on('ignition-start-end', async () => {
 		// Specify to not increase the volume on this possibly second power on event
 		// TODO: Change this to seconds
-		setTimeout(() => { audio_power(true); }, config.rad.after_start_delay);
+		await new Promise(resolve => setTimeout(resolve, config.rad.after_start_delay));
+		await audio_power(true);
 	});
 
 
@@ -522,6 +521,9 @@ function init_listeners() {
 
 // Parse data sent to RAD module
 function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.rad !== true) return;
+
 	switch (data.msg[0]) {
 		case 0x01 : {
 			// When RAD receives a device status request, send DSP a device status request
@@ -537,7 +539,7 @@ function parse_in(data) {
 	}
 
 	return data;
-}
+} // parse_in(data)
 
 // Parse data sent from RAD module
 function parse_out(data) {
@@ -574,7 +576,6 @@ function parse_out(data) {
 
 				case 0x95 : {
 					data.value += 'memory set';
-					update.status('dsp.m_audio', false, false);
 					break;
 				}
 
@@ -638,7 +639,7 @@ function parse_out(data) {
 	}
 
 	return data;
-}
+} // parse_out(data)
 
 
 module.exports = {

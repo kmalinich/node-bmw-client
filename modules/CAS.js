@@ -2,6 +2,9 @@
 
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 class CAS extends EventEmitter {
 	constructor() {
@@ -256,7 +259,7 @@ class CAS extends EventEmitter {
 
 	// Parse data sent to module
 	parse_in(data) {
-		// Bounce if not enabled
+		// Bounce if emulation isn't enabled
 		if (config.emulate.cas !== true) return;
 
 		return data;

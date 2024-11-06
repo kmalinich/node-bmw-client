@@ -1,9 +1,8 @@
 const suncalc = require('suncalc');
-const now     = require('performance-now');
 
 
 // Automatic lights handling
-function auto_lights(ignition_level = 0) {
+function auto_lights() {
 	// Default action is true (enable/process auto lights)
 	let action = true;
 
@@ -11,11 +10,13 @@ function auto_lights(ignition_level = 0) {
 	if (config.lights.auto !== true) action = false;
 
 	// Action is false if ignition is not in run
-	if (ignition_level < 3) action = false;
+	if (status.vehicle.ignition_level < 3) action = false;
 
 	switch (action) {
 		case false : {
-			io_encode({});
+			if (config.lights.auto === true) {
+				io_encode({});
+			}
 
 			if (LCM.timeout.lights_auto !== null) {
 				clearTimeout(LCM.timeout.lights_auto);
@@ -34,86 +35,79 @@ function auto_lights(ignition_level = 0) {
 			// Update status object
 			update.status('lights.auto.active', true, false);
 
-			auto_lights_process(ignition_level);
+			auto_lights_execute();
 		}
 	}
 }
 
+function auto_lights_process(wiperSpeed, timeNow, timeLightsOff, timeLightsOn) {
+	if (wiperSpeed !== null && wiperSpeed !== 'off' && wiperSpeed !== 'spray') {
+		return {
+			new_reason       : 'wipers on',
+			new_lowbeam      : true,
+			night_percentage : 1,
+		};
+	}
+
+	// Check time of day
+	if (timeNow < timeLightsOff) {
+		return {
+			new_reason       : 'before dawn',
+			new_lowbeam      : true,
+			night_percentage : timeNow / timeLightsOff,
+		};
+	}
+
+	if (timeNow > timeLightsOff && timeNow < timeLightsOn) {
+		return {
+			new_reason       : 'after dawn, before dusk',
+			new_lowbeam      : false,
+			night_percentage : 0,
+		};
+	}
+
+	if (timeNow > timeLightsOn) {
+		return {
+			new_reason       : 'after dusk',
+			new_lowbeam      : true,
+			night_percentage : timeLightsOn / timeNow,
+		};
+	}
+
+	return {
+		new_reason       : 'failsafe',
+		new_lowbeam      : true,
+		night_percentage : 1,
+	};
+}
+
 // Logic based on location and time of day, determine if the low beams should be on
-function auto_lights_process(ignition_level = 0) {
+function auto_lights_execute() {
 	clearTimeout(LCM.timeout.lights_auto);
 
 	// Init variables
-	let new_reason  = null;
-	let new_lowbeam = false;
-
-	let night_percentage = 0;
-
 	const now_time  = new Date(Date.now());
-	const now_epoch = Math.floor(now_time / 1000);
-
 	const sun_times = suncalc.getTimes(now_time, config.location.latitude, config.location.longitude);
 
-
-	// Factor in cloud cover to lights on/off time
-	let now_offset = 0;
-
-	if (config.weather.apikey !== null && status.weather.daily.data[0].time !== null) {
-		const value = status.weather.daily.data[0];
-
-		// Only use weather forecast data if for a time period less than 24 hours from now
-		if ((now_epoch - value.time) < 86400 && (now_epoch - value.time) > -86400) {
-			// Add 3 hours * current cloudCover value
-			// TODO: Make the hour multiplier a config value
-			now_offset = (value.cloudCover * 3) * (60 * 60 * 1000);
-		}
-	}
-
 	// Calculate on and off times with offset (if available)
-	const lights_on  = new Date(sun_times.sunsetStart.getTime() - now_offset);
-	const lights_off = new Date(sun_times.sunriseEnd.getTime()  + now_offset);
+	const lights_on  = new Date(sun_times.sunsetStart.getTime());
+	const lights_off = new Date(sun_times.sunriseEnd.getTime());
 
 	// If ignition is not in run or auto lights are disabled in config,
 	// call auto_lights() to clean up
-	if (ignition_level < 3 || config.lights.auto !== true) {
+	if (status.vehicle.ignition_level < 3 || config.lights.auto !== true) {
 		auto_lights();
 		return;
 	}
 
-	// Check wipers
-	if (status.gm.wipers.speed !== null && status.gm.wipers.speed !== 'off' && status.gm.wipers.speed !== 'spray') {
-		new_reason       = 'wipers on';
-		new_lowbeam      = true;
-		night_percentage = 1;
-	}
-	// Check time of day
-	else if (now_time < lights_off) {
-		new_reason       = 'before dawn';
-		new_lowbeam      = true;
-		night_percentage = now_time / lights_off;
-	}
-	else if (now_time > lights_off && now_time < lights_on) {
-		new_reason       = 'after dawn, before dusk';
-		new_lowbeam      = false;
-		night_percentage = 0;
-	}
-	else if (now_time > lights_on) {
-		new_reason       = 'after dusk';
-		new_lowbeam      = true;
-		night_percentage = lights_on / now_time;
-	}
-	else {
-		new_reason       = 'failsafe';
-		new_lowbeam      = true;
-		night_percentage = 1;
-	}
+	// Get reason, lowbeam status, and "night percentage"
+	const processData = auto_lights_process(status.gm.wipers.speed, now_time, lights_off, lights_on);
 
+	update.status('lights.auto.reason', processData.new_reason, false);
 
-	update.status('lights.auto.reason', new_reason, false);
+	update.status('lights.auto.night_percentage', processData.night_percentage, false);
 
-	update.status('lights.auto.night_percentage', night_percentage, false);
-
-	if (update.status('lights.auto.lowbeam', new_lowbeam, false)) {
+	if (update.status('lights.auto.lowbeam', processData.new_lowbeam, false)) {
 		// Show autolights status in cluster
 		// TODO: Change this to be an event listener and move to IKE
 		IKE.text_override('AL: ' + status.lights.auto.lowbeam);
@@ -126,7 +120,7 @@ function auto_lights_process(ignition_level = 0) {
 	// Process/send LCM data on 8.765 second timeout (for safety)
 	// LCM diag command timeout is 15 seconds
 	// TODO: Move this value into config object
-	LCM.timeout.lights_auto = setTimeout(auto_lights_process, 8765);
+	LCM.timeout.lights_auto = setTimeout(auto_lights_execute, 8765);
 }
 
 // Cluster/interior backlight
@@ -213,14 +207,14 @@ function comfort_turn(data) {
 	if (before === after) return;
 
 	// Mark the currently active signal's depress timestamp
-	if (after !== null) update.status('lights.turn.' + after + '.depress', now());
+	if (after !== null) update.status('lights.turn.' + after + '.depress', Date.now());
 
 	// If NEITHER signal WAS active, or EITHER signal IS active, bounce
 	// That way we only continue if we're going from ON to OFF
 	if (before === null || after !== null) return;
 
 	// Update the previously active signal's elapsed time
-	update.status('lights.turn.depress_elapsed', now() - status.lights.turn[before].depress);
+	update.status('lights.turn.depress_elapsed', Date.now() - status.lights.turn[before].depress);
 
 	// Attempt to fire comfort turn signal
 	comfort_turn_flash(before);
@@ -777,6 +771,7 @@ function parse_out(data) {
 		}
 
 		case 0x5B : { // Broadcast: light status
+			data.skipLog = true;
 			data.command = 'bro';
 			data.value   = 'light status';
 
@@ -785,6 +780,7 @@ function parse_out(data) {
 		}
 
 		case 0x5C : { // Broadcast: light dimmer status
+			data.skipLog = true;
 			data.command = 'bro';
 			data.value   = 'dimmer value';
 
@@ -896,26 +892,20 @@ function pl() {
 			left : {
 				fog : false,
 
-				// highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				highbeam : pl_check([ 0, 2, 8, 16, 18, 24 ]),
-				lowbeam  : false,
 
 				// standing : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				// standing : pl_check([ 2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31 ]),
-				// turn     : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 
 				turn : pl_check([ 4, 5, 6, 7, 12, 13, 14, 15, 20, 21, 22, 23, 28, 29, 30, 31 ]),
 			},
 			right : {
 				fog : false,
 
-				// highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				highbeam : pl_check([ 4, 6, 10, 20, 22, 26 ]),
-				lowbeam  : false,
 
 				// standing : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				// standing : pl_check([ 0, 1, 4, 5, 8, 9, 12, 13, 16, 17, 20, 21, 24, 25, 28, 29 ]),
-				// turn     : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 
 				turn : pl_check([ 0, 1, 2, 3, 8, 9, 10, 11, 16, 17, 18, 19, 24, 25, 26, 27 ]),
 			},
@@ -933,12 +923,14 @@ function pl() {
 		rear : {
 			left : {
 				brake    : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
+				fog      : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
 				reverse  : pl_check([ 4, 6, 10, 20, 22, 26 ]),
 				standing : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
 				turn     : pl_check([ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ]),
 			},
 			right : {
 				brake    : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
+				fog      : pl_check([ 2, 3, 4, 5, 10, 11, 12, 13, 18, 19, 20, 21, 26, 27, 28, 29 ]),
 				reverse  : pl_check([ 0, 2, 8, 16, 18, 24 ]),
 				standing : pl_check([ 0, 1, 6, 7, 8, 9, 14, 15, 16, 17, 22, 23, 24, 25, 30, 31 ]),
 				turn     : pl_check([ 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ]),
@@ -964,6 +956,9 @@ function pl() {
 		output_brake_rear_middle : object.rear.middle.brake,
 		output_brake_rear_right  : object.rear.right.brake,
 
+		output_fog_rear_left  : object.rear.left.fog,
+		output_fog_rear_right : object.rear.right.fog,
+
 		output_reverse_rear_left  : object.rear.left.reverse,
 		output_reverse_rear_right : object.rear.right.reverse,
 
@@ -974,7 +969,7 @@ function pl() {
 		output_turn_side_right : object.side.right.turn,
 
 		output_turn_front_left  : object.front.left.turn,
-		output_turn_front_right : object.front.left.turn,
+		output_turn_front_right : object.front.right.turn,
 
 		output_highbeam_front_left  : object.front.left.highbeam,
 		output_highbeam_front_right : object.front.right.highbeam,
@@ -985,8 +980,10 @@ function pl() {
 	status.lcm.police_lights.counts.main++;
 
 	if (status.lcm.police_lights.counts.main === 32) {
-		update.status('lcm.police_lights.counts.main', 0);
-		update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1), false);
+		status.lcm.police_lights.counts.main = 0;
+		status.lcm.police_lights.counts.loop++;
+		// update.status('lcm.police_lights.counts.main', 0);
+		// update.status('lcm.police_lights.counts.loop', (status.lcm.police_lights.counts.loop + 1), false);
 	}
 
 	LCM.timeout.lights_police = setTimeout(pl, config.lights.police_lights.delay);
@@ -1015,11 +1012,13 @@ function police(action = false) {
 }
 
 // Request status data on an interval
-function data_refresh(ignition_level = 0) {
+function data_refresh() {
+	log.module(`data_refresh()`);
+
 	clearTimeout(LCM.timeout.data_refresh);
 
 	// Only execute if ignition is in accessory or run
-	if (ignition_level !== 1 && ignition_level !== 3) {
+	if (status.vehicle.ignition_level !== 1 && status.vehicle.ignition_level !== 3) {
 		if (LCM.timeout.data_refresh !== null) {
 			clearTimeout(LCM.timeout.data_refresh);
 			LCM.timeout.data_refresh = null;
@@ -1030,7 +1029,7 @@ function data_refresh(ignition_level = 0) {
 	}
 
 	// Only request io-status if not configured to get voltage from CANBUS or ignition is not in run
-	if (config.canbus.voltage !== true || ignition_level < 3) {
+	if (config.canbus.voltage !== true || status.vehicle.ignition_level < 3) {
 		log.module('Refreshing io-status');
 		request('io-status');
 	}
@@ -1059,12 +1058,12 @@ function init_listeners() {
 		if (keyfob.button !== 'none') welcome_lights((keyfob.button === 'unlock'));
 	});
 
-	update.on('status.vehicle.ignition_level', data => {
+	update.on('status.vehicle.ignition_level', () => {
 		// Activate autolights if we got 'em
-		auto_lights(data.new);
+		auto_lights();
 
 		// Enable periodic data refresh
-		data_refresh(data.new);
+		data_refresh();
 	});
 
 	update.on('status.immobilizer.key_present', data => {
@@ -1074,8 +1073,8 @@ function init_listeners() {
 
 	// Update autolights status on wiper speed change
 	update.on('status.gm.wipers.speed', () => {
-		// Call auto_lights_process() after 1.5s, else just tapping mist/spray turns on the lights
-		setTimeout(auto_lights_process, 1500);
+		// Call auto_lights_execute() after 1.5s, else just tapping mist/spray turns on the lights
+		setTimeout(auto_lights_execute, 1500);
 	});
 
 	log.module('Initialized listeners');
@@ -1090,7 +1089,8 @@ module.exports = {
 
 	// Timeout variables
 	timeout : {
-		data_refresh   : null,
+		data_refresh : null,
+
 		lights_auto    : null,
 		lights_police  : null,
 		lights_welcome : null,
@@ -1100,6 +1100,7 @@ module.exports = {
 	decode,
 
 	auto_lights,
+	auto_lights_execute,
 	auto_lights_process,
 	comfort_turn_flash,
 	init_listeners,

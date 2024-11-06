@@ -4,6 +4,9 @@
 
 const EventEmitter = require('events');
 
+// Bump up default max event listeners
+EventEmitter.defaultMaxListeners = 20;
+
 
 // All the possible values to send to GM
 // let array_of_possible_values = {
@@ -64,6 +67,7 @@ class GM extends EventEmitter {
 	decode_dia_reply(data) {
 		data.command = 'rep';
 		data.value   = 'TODO: diagnostic command ack';
+		console.dir({ msg : data.msg });
 
 		return data;
 	}
@@ -72,12 +76,30 @@ class GM extends EventEmitter {
 	decode_seat_memory(data) {
 		data.command = 'bro';
 		data.value   = 'TODO: seat memory data';
+		console.dir({ msg : data.msg });
+
+		return data;
+	}
+
+	// Broadcast: Sunroof control
+	//
+	// 7D 00 00,GM,SHD,Sunroof control,Lock
+	// 7D 10 60,GM,SHD,Sunroof control,Unlock DB2=0x10
+	// 7D 30 40,GM,SHD,Sunroof control,Unlock DB2=0x30
+	// 7D 50 20,GM,SHD,Sunroof control,Unlock DB2=0x50
+	// 7D 70 00,GM,SHD,Sunroof control,Unlock DB2=0x70
+	decode_sunroof_control(data) {
+		data.command = 'bro';
+
+		const sunroofLock = (data.msg[1] === 0x00);
+
+		data.value = `TODO: sunroof control - sunroof lock: ${sunroofLock}, values: ${hex.i2s(data.msg[1])}, ${hex.i2s(data.msg[2])}`;
 
 		return data;
 	}
 
 
-	// Broadcast: 'Crash alarm'
+	// Broadcast: Crash alarm
 	decode_status_crash_alarm(data) {
 		data.command = 'bro';
 		data.value   = 'crash alarm - ';
@@ -182,6 +204,8 @@ class GM extends EventEmitter {
 	// Broadcast: Opened doors (flaps)/windows status
 	// [0x7A] Decode a door status message from GM and act upon the results
 	decode_status_opened(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'door status';
 
@@ -283,7 +307,7 @@ class GM extends EventEmitter {
 	}
 
 
-	// This is just a dumb placeholder
+	// TODO: This is just a dumb placeholder
 	// Decode GM bitmask string and output an array of true/false values
 	io_decode(data) {
 		return {
@@ -557,6 +581,7 @@ class GM extends EventEmitter {
 			case 0x77 : return this.decode_status_wiper(data);
 			case 0x78 : return this.decode_seat_memory(data);
 			case 0x7A : return this.decode_status_opened(data);
+			case 0x7D : return this.decode_sunroof_control(data);
 			case 0xA0 : return this.decode_dia_reply(data);
 		}
 

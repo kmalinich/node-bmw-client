@@ -1,9 +1,6 @@
 # node-bmw-client
 Do magic with an E38/E39/E46/E53-ish BMW, Raspberry Pi 3, and Node.js 9.x.  
 
-<img src="https://scontent-ort2-1.cdninstagram.com/vp/2676221027a5b7ec3d03cbd2ea9ea186/5B3BA3C1/t51.2885-15/e35/28157425_885385814964454_2616694797724811264_n.jpg" width="400">
-<img src="https://darksky.net/dev/img/attribution/poweredby-oneline.png" width="200">  
-
 
 ## Advisory
 I dev way faster than I document.  

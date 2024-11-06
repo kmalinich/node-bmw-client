@@ -1,7 +1,11 @@
 // Broadcast: check control message
 function parse_cc_message(data) {
 	data.command = 'bro';
-	data.value   = 'TODO: check control message ' + hex.h2a(data.msg);
+
+	const checkControlMessage = hex.h2s(data.msg);
+
+	data.value = `TODO: check control message - values: ${hex.i2s(data.msg[1])} ${hex.i2s(data.msg[2])} - message: ${checkControlMessage}`;
+	console.dir({ msg : data.msg, checkControlMessage });
 
 	return data;
 }
@@ -16,7 +20,7 @@ function parse_cc_sensors(data) {
 		case 0x00 : data.value += 'none';                  break;
 		case 0x04 : data.value += 'key in ignition';       break;
 		case 0x12 : data.value += 'seatbelt not fastened'; break;
-		default   : data.value += data.msg[1];
+		default   : data.value += hex.i2s(data.msg[1]);
 	}
 
 	return data;

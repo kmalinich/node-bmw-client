@@ -7,56 +7,57 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"body-parser": "^1.19.0",
+		"body-parser": "^1.20.3",
 		"callers-path": "^1.0.5",
-		"chump": "github:kmalinich/chump",
-		"dark-sky": "^1.1.5",
 		"defaults-deep": "^0.2.4",
-		"express": "^4.17.1",
-		"json-colorizer": "^2.2.1",
+		"express": "^4.21.0",
+		"json-colorizer": "^3.0.1",
 		"json-socket": "^0.3.0",
-		"jsonfile": "^6.0.1",
+		"jsonfile": "^6.1.0",
 		"kodi-ws": "^2.4.3",
-		"moment": "^2.24.0",
+		"moment": "^2.30.1",
 		"node-unit-conversion": "^0.1.1",
-		"object-path": "^0.11.4",
+		"object-path": "^0.11.8",
 		"pad": "^3.2.0",
-		"performance-now": "^2.1.0",
-		"socket.io": "^2.3.0",
-		"suncalc": "^1.8.0",
-		"trucolor": "^2.0.2"
+		"socket.io": "^4.8.0",
+		"suncalc": "^1.9.0",
+		"trucolor": "2.0.4"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^6.8.0",
-		"eslint-config-esnext": "^4.0.0",
-		"eslint-plugin-import": "^2.20.2",
+		"@eslint/js": "^9.11.1",
+		"eslint": "^9.11.1",
 		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^4.2.1",
-		"eslint-plugin-standard": "^4.0.1"
+		"eslint-plugin-promise": "^7.1.0",
+		"globals": "^15.9.0"
+	},
+	"directories": {
+		"lib": "./lib",
+		"share": "./share"
 	},
 	"engines": {
-		"node": ">=13"
+		"node": ">=22"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
 		"bmw",
 		"canbus",
-		"dcan",
-		"kcan",
 		"dbus",
+		"dcan",
 		"ibus",
-		"kbus"
+		"kbus",
+		"kcan"
 	],
 	"license": "MIT",
-	"main": "main.js",
+	"main": "./index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
+		"bluez": "^0.4.5",
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
-		"onoff": "^5.0.1",
-		"pi-temperature": "^2.1.0",
+		"onoff": "^6.0.3",
+		"pi-temperature": "^3.0.0",
 		"rpi-hdmi": "github:kmalinich/rpi-hdmi"
 	},
 	"repository": {
@@ -64,9 +65,9 @@
 		"url": "git+https://github.com/kmalinich/node-bmw-client.git"
 	},
 	"scripts": {
-		"lint": "./node_modules/.bin/eslint .",
-		"preinstall": "/usr/bin/env bash ./preinstall"
+		"lint": "eslint --ignore-pattern 'test/*' .",
+		"preinstall": "/usr/bin/env bash ./bin/preinstall"
 	},
-	"type": "script",
+	"type": "commonjs",
 	"version": "0.0.1"
 }
