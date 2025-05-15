@@ -7,10 +7,10 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"body-parser": "^1.20.3",
+		"body-parser": "^2.2.0",
 		"callers-path": "^1.0.5",
 		"defaults-deep": "^0.2.4",
-		"express": "^4.21.2",
+		"express": "^5.1.0",
 		"json-colorizer": "^3.0.1",
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.1.0",
@@ -25,18 +25,18 @@
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"@eslint/js": "^9.22.0",
-		"eslint": "^9.22.0",
-		"eslint-plugin-node": "^11.1.0",
+		"@eslint/js": "^9.26.0",
+		"eslint": "^9.26.0",
+		"eslint-plugin-n": "^17.18.0",
 		"eslint-plugin-promise": "^7.2.1",
-		"globals": "^16.0.0"
+		"globals": "^16.1.0"
 	},
 	"directories": {
 		"lib": "./lib",
 		"share": "./share"
 	},
 	"engines": {
-		"node": ">=22"
+		"node": ">=23"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
