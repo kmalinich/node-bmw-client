@@ -10,7 +10,6 @@ ARRAY_LINK=(
 'eslint-plugin-n'
 'eslint-plugin-promise'
 'express'
-'globals'
 'json-socket'
 'jsonfile'
 'object-path'
