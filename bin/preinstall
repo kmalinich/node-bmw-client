@@ -45,7 +45,7 @@ done
 
 if [[ "${1}" != "--no-install" ]]; then
 	echo "npm -g i '${ARRAY_INSTALL[*]}'"
-	npm -g i "${ARRAY_INSTALL[@]}" --unsafe-perm
+	npm -g i "${ARRAY_INSTALL[@]}"
 	echo
 fi
 

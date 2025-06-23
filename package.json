@@ -25,11 +25,11 @@
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"@eslint/js": "^9.26.0",
-		"eslint": "^9.26.0",
-		"eslint-plugin-n": "^17.18.0",
+		"@eslint/js": "^9.29.0",
+		"eslint": "^9.29.0",
+		"eslint-plugin-n": "^17.20.0",
 		"eslint-plugin-promise": "^7.2.1",
-		"globals": "^16.1.0"
+		"globals": "^16.2.0"
 	},
 	"directories": {
 		"lib": "./lib",
