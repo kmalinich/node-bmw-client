@@ -7,7 +7,6 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"body-parser": "^2.2.0",
 		"callers-path": "^1.0.5",
 		"defaults-deep": "^0.2.4",
 		"express": "^5.1.0",
@@ -52,7 +51,6 @@
 	"main": "./index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
-		"bluez": "^0.4.5",
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
