@@ -15,13 +15,28 @@ function parse_cc_sensors(data) {
 	data.command = 'bro';
 	data.value   = 'check control sensors - ';
 
-	// TODO: Le sigh.. this is a bitmask, not done properly
-	switch (data.msg[1]) {
-		case 0x00 : data.value += 'none';                  break;
-		case 0x04 : data.value += 'key in ignition';       break;
-		case 0x12 : data.value += 'seatbelt not fastened'; break;
-		default   : data.value += hex.i2s(data.msg[1]);
+	const mask = bitmask.check(data.msg[1]).mask;
+
+	const checkControlMessages = {
+		none : (data.msg[1] === 0x00),
+
+		keyInIgnition       : mask.b2,
+		seatbeltNotFastened : mask.b3,
+
+		bit4 : mask.bit4,
+		bit5 : mask.bit5,
+		bit6 : mask.bit6,
+		bit7 : mask.bit7,
+	};
+
+	let checkControlString = '';
+
+	for (const checkControlMessage in checkControlMessages) {
+		if (checkControlMessages[checkControlMessage] !== true) continue;
+		checkControlString += checkControlMessage + ' ';
 	}
+
+	data.value = checkControlString.trim();
 
 	return data;
 }
