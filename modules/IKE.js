@@ -121,6 +121,7 @@ class IKE extends EventEmitter {
 
 	// Update: OBC text
 	decode_obc_text(data) {
+		data.skipLog = true;
 		data.command = 'upd';
 
 		// data.msg[1] - Layout
@@ -240,8 +241,8 @@ class IKE extends EventEmitter {
 				}
 
 				// Update status object
-				update.status('obc.consumption.c1.mpg',  parseFloat(consumption_mpg.toFixed(2)),  false);
-				update.status('obc.consumption.c1.l100', parseFloat(consumption_l100.toFixed(2)), false);
+				update.status('obc.consumption.c1.mpg',  parseFloat(consumption_mpg.toFixed(2)), false);
+				update.status('obc.consumption.c1.l100', parseFloat(consumption_l100.toFixed(2)));
 				break;
 			}
 
@@ -274,8 +275,8 @@ class IKE extends EventEmitter {
 				}
 
 				// Update status object
-				update.status('obc.consumption.c2.mpg',  parseFloat(consumption_mpg.toFixed(2)),  false);
-				update.status('obc.consumption.c2.l100', parseFloat(consumption_l100.toFixed(2)), false);
+				update.status('obc.consumption.c2.mpg',  parseFloat(consumption_mpg.toFixed(2)), false);
+				update.status('obc.consumption.c2.l100', parseFloat(consumption_l100.toFixed(2)));
 				break;
 			}
 
@@ -295,16 +296,16 @@ class IKE extends EventEmitter {
 					case 'ml' : {
 						update.status('coding.unit.distance', 'mi', false);
 
-						update.status('obc.range.mi', string_range,                                                                      false);
-						update.status('obc.range.km', parseFloat(convert(string_range).from('kilometre').to('us mile').toFixed(2)) || 0, false);
+						update.status('obc.range.km', parseFloat(convert(string_range).from('kilometre').to('us mile').toFixed(2)) || 0);
+						update.status('obc.range.mi', string_range, false);
 						break;
 					}
 
 					case 'km' : {
 						update.status('coding.unit.distance', 'km', false);
 
+						update.status('obc.range.km', string_range);
 						update.status('obc.range.mi', parseFloat(convert(string_range).from('us mile').to('kilometre').toFixed(2)) || 0, false);
-						update.status('obc.range.km', string_range,                                                                      false);
 					}
 				}
 
@@ -443,7 +444,7 @@ class IKE extends EventEmitter {
 			}
 		}
 
-		data.value = 'OBC ' + layout.replace(/-/, ' ') + ': \'' + hex.h2s(data.msg) + '\'';
+		data.value = `OBC ${layout.replace(/-/, ' ')}: '${hex.h2s(data.msg)}'`;
 
 		return data;
 	}
@@ -459,7 +460,7 @@ class IKE extends EventEmitter {
 		const odometer_value2 = data.msg[2] << 8;
 		const odometer_value  = odometer_value1 + odometer_value2 + data.msg[1];
 
-		update.status('vehicle.odometer.km', odometer_value,                                                      false);
+		update.status('vehicle.odometer.km', odometer_value);
 		update.status('vehicle.odometer.mi', Math.floor(convert(odometer_value).from('kilometre').to('us mile')), false);
 
 		return data;
