@@ -74,6 +74,9 @@ function parse_out(data) {
 		case 0x83 : { // Broadcast: AC compressor status
 			update.status('ihka.ac_compressor', bitmask.test(data.msg[1], 0x80), false);
 
+			update.status('engine.ac.request', data.msg[1]);
+			update.status('engine.ac.torque', data.msg[2]);
+
 			data.command = 'bro';
 			data.value   = 'TODO AC compressor status ' + data.msg;
 			break;

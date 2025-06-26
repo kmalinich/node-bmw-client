@@ -596,7 +596,7 @@ class IKE extends EventEmitter {
 		// Bounce if the last update was less than the configured value in milliseconds ago
 		if (refresh_delta < config.hud.refresh_max) return false;
 
-		log.msg('HUD refresh delta [2]: ' + refresh_delta);
+		// log.msg('HUD refresh delta [2]: ' + refresh_delta);
 
 		return true;
 	}
