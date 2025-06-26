@@ -2,6 +2,10 @@ import convert from 'node-unit-conversion';
 
 import num from '../share/num.js';
 
+// References:
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F5_LWS1
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F0_ASC2
+
 
 // Parse wheel speed LSB and MSB into KPH value
 function parse_wheel(byte0, byte1) {
@@ -55,6 +59,10 @@ function encode_1a1(speed = 0) {
 
 // 0x153
 //
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x153_ASC1
+//
+// Refresh rate: 10ms for ASC and 20ms for DSC
+//
 // Example
 // B0 B1 B2 B3 B4 B5 B6 B7
 // 00 E0 3D FF 00 FE FF 08
@@ -92,11 +100,11 @@ function encode_1a1(speed = 0) {
 // Byte 1, bit 7 : Speed LSB
 
 // Byte 2 : Speed MSB [Signal startbit: 12, Bit length: 12, 0x0008 = 1 km/hr]
-// Byte 3 : Torque reduction 1
-// Byte 4 :
-// Byte 5 :
-// Byte 6 : Torque reduction 2
-// Byte 7 :
+// Byte 3 : Torque intervention for ASC function
+// Byte 4 : Torque intervention for MSR function
+// Byte 5 : Unused
+// Byte 6 : Torque intervention for ASC LM function
+// Byte 7 : Alive counter
 function parse_153(data) {
 	data.command = 'bro';
 	data.value   = 'Speed/DSC light';
@@ -115,16 +123,18 @@ function parse_153(data) {
 			dsc : {
 				active : !(bitmask.test(data.msg[1], 0x01) && bitmask.test(data.msg[0], 0x04)),
 
-				torque_reduction_1 : num.round2(100 - (data.msg[3] / 2.55)),
-				torque_reduction_2 : num.round2(100 - (data.msg[6] / 2.55)),
+				torque_intervention_asc    : num.round2(100 - (data.msg[3] * 0.390625)),
+				torque_intervention_asc_lm : num.round2(100 - (data.msg[6] * 0.390625)),
+				torque_intervention_msr    : num.round2(100 - (data.msg[4] * 0.390625)),
 			},
 		},
 	};
 
 	// update.status('vehicle.brake',                  parse.vehicle.brake);
-	update.status('vehicle.dsc.torque_reduction_1', parse.vehicle.dsc.torque_reduction_1);
-	update.status('vehicle.dsc.torque_reduction_2', parse.vehicle.dsc.torque_reduction_2);
-	update.status('vehicle.dsc.active',             parse.vehicle.dsc.active, false);
+	update.status('vehicle.dsc.active',                     parse.vehicle.dsc.active, false);
+	update.status('vehicle.dsc.torque_intervention_asc',    parse.vehicle.dsc.torque_intervention_asc);
+	update.status('vehicle.dsc.torque_intervention_asc_lm', parse.vehicle.dsc.torque_intervention_asc_lm);
+	update.status('vehicle.dsc.torque_intervention_msr',    parse.vehicle.dsc.torque_intervention_msr);
 
 	return data;
 }
@@ -173,6 +183,11 @@ function parse_1f0(data) {
 }
 
 // 00 00 05 FF 39 7D 5D 00
+//
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F3_ASC3
+//
+// Refresh rate: 20ms
+//
 // byte2 bit3 : brake applied
 function parse_1f3(data) {
 	data.command = 'bro';
@@ -182,6 +197,11 @@ function parse_1f3(data) {
 }
 
 // [0x1F5] Steering angle sensor data
+//
+// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F5_LWS1
+//
+// Refresh rate: 10ms
+//
 // Steering angle and change velocity
 function parse_1f5(data) {
 	data.command = 'bro';
@@ -313,8 +333,9 @@ function init_listeners() {
 	update.on('status.engine.running', data => {
 		switch (data.new) {
 			case false : {
-				update.status('vehicle.dsc.torque_reduction_1', 0);
-				update.status('vehicle.dsc.torque_reduction_2', 0);
+				update.status('vehicle.dsc.torque_intervention_asc',    0);
+				update.status('vehicle.dsc.torque_intervention_asc_lm', 0);
+				update.status('vehicle.dsc.torque_intervention_msr',    0);
 			}
 		}
 	});
@@ -323,8 +344,9 @@ function init_listeners() {
 	update.on('status.vehicle.ignition', data => {
 		if (data.new === 'run') return;
 
-		update.status('vehicle.dsc.torque_reduction_1', 0);
-		update.status('vehicle.dsc.torque_reduction_2', 0);
+		update.status('vehicle.dsc.torque_intervention_asc',    0);
+		update.status('vehicle.dsc.torque_intervention_asc_lm', 0);
+		update.status('vehicle.dsc.torque_intervention_msr',    0);
 	});
 
 	log.module('Initialized listeners');

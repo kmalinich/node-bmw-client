@@ -3,7 +3,7 @@ const module_name = __filename.slice(__dirname.length + 1, -3);
 
 // Broadcast: BM button
 // Decode various BMBT button presses
-function decode_button(data) {
+async function decode_button(data) {
 	data.command = 'bro';
 	data.value   = 'BM button ';
 
@@ -16,20 +16,19 @@ function decode_button(data) {
 	let button;
 
 	// Depress
-	// [ 72, 5 ]
+	// [ 0x48, 0x05 ]
 	// BIT7 FALSE + BIT6 FALSE
 
 	// Hold
-	// [ 72, 69 ]
+	// [ 0x48, 0x45 ]
 	// BIT7 FALSE + BIT6 TRUE
 
 	// Release
-	// [ 72, 133 ]
+	// [ 0x48, 0x85 ]
 	// BIT7 TRUE + BIT6 FALSE
 
 	// Determine action
 	const mask = bitmask.check(data.msg[1]).mask;
-
 
 	switch (mask.b7) {
 		case false : { // bit7 false
@@ -89,95 +88,99 @@ function decode_button(data) {
 		case 0x33 : button = 'dolby';    break;
 		case 0x34 : button = 'gt menu';  break;
 		case 0x38 : button = 'info';     break;
-		default   : button = 'Unknown';
-	}
+
+		default : button = 'Unknown';
+	} // switch (data.msg[1])
+
 
 	data.value += action + ' ' + button;
+
+	const lastActionButton = status.bmbt.last.action + status.bmbt.last.button;
+
 
 	switch (action) {
 		case 'depress' : {
 			switch (button) {
-				case 'mode' : {
-					// To use depressing the mode button in to toggle RPi display on/off
-					update.status('hdmi.rpi.power_override', true, false);
-					hdmi_rpi.command('toggle');
-
-					break;
+				case 'knob' : {
+					if (config.bmbt.media === 'kodi') kodi.input('in');
 				}
-			}
+			} // switch (button)
 
 			break;
 		} // current action = depress
 
+		case 'hold' : {
+			switch (button) {
+				case 'left'  : if (config.bmbt.media === 'kodi') kodi.command('seek-rewind');  break;
+				case 'right' : if (config.bmbt.media === 'kodi') kodi.command('seek-forward'); break;
+
+				case 'tone' : DSP.loudness(true);
+			} // switch (button)
+
+			break;
+		} // current action = hold
+
 		case 'release' : {
 			switch (config.bmbt.media) {
-				case 'bluetooth' : { // Bluetooth version
-					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depressleft'  : bluetooth.command('previous'); break;
-						case 'depressright' : bluetooth.command('next');
-					}
+				case 'bluetooth' : {
+					switch (lastActionButton) {
+						case 'depressleft'  : await bluetooth.command('previous'); break;
+						case 'depressright' : await bluetooth.command('next');     break;
+					} // switch (lastActionButton)
 
 					break;
-				}
+				} // case 'bluetooth'
 
-				case 'kodi' : { // Kodi version
-					switch (status.bmbt.last.action + status.bmbt.last.button) {
-						case 'depressphone'  : kodi.command('toggle'); break;
-
+				case 'kodi' : {
+					switch (lastActionButton) {
 						case 'depressleft'  : kodi.command('previous'); break;
 						case 'depressright' : kodi.command('next');     break;
 
-						case 'depressknob' : kodi.input('in'); break;
-
-						case 'holdleft'  : kodi.command('toggle'); break; // This resumes normal playback after doing fast-forward or fast-reverse when lifting off the button
+						// These resume normal playback when releasing the button, after doing fast-forward or fast-reverse
+						case 'holdleft'  : kodi.command('toggle'); break;
 						case 'holdright' : kodi.command('toggle');
-					}
+					} // switch (lastActionButton)
 
 					break;
-				}
-			}
+				} // case 'kodi'
+			} // switch (config.bmbt.media)
+
 
 			// Controls not dependent on Bluetooth or Kodi being enabled
-			switch (status.bmbt.last.action + status.bmbt.last.button) {
-				case 'depress1' : LCM.police(true); setTimeout(LCM.police, 2000); break;
+			switch (lastActionButton) {
+				case 'depress1' : DSP.dsp_mode('memory-1'); break;
+				case 'depress2' : DSP.dsp_mode('memory-2'); break;
+				case 'depress3' : DSP.dsp_mode('memory-3'); break;
+				case 'depress4' : DSP.dsp_mode('off');     break;
 
-				case 'depress2' : LCM.police(false); break;
-				case 'depress3' : LCM.police(true);  break;
+				case 'depressphone' : await bluetooth.command('connect', true);    break;
+				case 'holdphone'    : await bluetooth.command('disconnect', true); break;
+
 
 				case 'depressmode' : {
 					// To use holding the phone button in to toggle RPi display on/off
 					update.status('hdmi.rpi.power_override', true, false);
 					hdmi_rpi.command('toggle');
-
-					break;
-				}
-
-				case 'depresspower' : {
-					// To use pressing the BMBT power knob button (left side) to toggle RAD power
-					RAD.audio_power('toggle');
 					break;
 				}
 
 				case 'depressgt menu' : {
 					// To use pressing the BMBT menu button (right side) to force the DSP amp on
-					RAD.audio_power('on');
+					await RAD.audio_power('on');
+					break;
 				}
-			}
 
-			break;
+				case 'depresspower' : {
+					// To use pressing the BMBT power knob button (left side) to toggle RAD power
+					await RAD.audio_power('toggle');
+					break;
+				}
+
+				case 'depresstone' : DSP.loudness(false); break;
+				case 'holdtone'    : DSP.loudness(true);
+			} // switch (lastActionButton)
 		} // current action = release
-
-		case 'hold' : {
-			switch (config.bmbt.media) {
-				case 'kodi' : { // Kodi version
-					switch (button) {
-						case 'left'  : kodi.command('seek-rewind'); break;
-						case 'right' : kodi.command('seek-forward');
-					}
-				}
-			}
-		} // current action = hold
-	}
+	} // switch (action)
 
 	// Update status object
 	update.status('bmbt.last.action', action, false);
@@ -188,6 +191,8 @@ function decode_button(data) {
 
 // Broadcast: Cassette status
 function decode_cassette_status(data) {
+	data.skipLog = true;
+
 	data.command = 'sta';
 	data.value   = 'cassette: ';
 
@@ -198,6 +203,8 @@ function decode_cassette_status(data) {
 		case 0xFF : data.value += 'on';      break;
 		default   : data.value += 'unknown 0x' + data.msg[1].toString(16);
 	}
+
+	update.status('bmbt.status.cassette', data.value);
 
 	return data;
 }
@@ -223,7 +230,7 @@ function decode_knob(data) {
 	data.value += direction + ' ' + steps + ' steps';
 
 	switch (config.bmbt.media) {
-		case 'kodi' : { // Kodi version
+		case 'kodi' : {
 			switch (direction) {
 				case 'left'  : kodi.input('up'); break;
 				case 'right' : kodi.input('down');
@@ -371,7 +378,7 @@ function button(button) {
 			button_up = bitmask.set(button_down, bitmask.bit[7]);
 			break;
 		}
-	}
+	} // switch (button)
 
 	log.module('Button down ' + button);
 
@@ -411,6 +418,9 @@ function init_listeners() {
 
 // Parse data sent to BMBT module
 function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.bmbt !== true) return;
+
 	switch (data.msg[0]) {
 		case 0x4A : { // Cassette control
 			cassette_status();

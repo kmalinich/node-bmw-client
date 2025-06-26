@@ -100,6 +100,7 @@ function text_loop(action) {
 			// Send a couple through to prime the pumps
 			refresh_text();
 
+			// TODO: Change to setTimeout
 			MID.interval.text_loop = setInterval(() => {
 				refresh_text();
 			}, 5000);
@@ -141,6 +142,7 @@ function status_loop(action) {
 			// Send a couple through to prime the pumps
 			refresh_status();
 
+			// TODO: Change to setTimeout
 			MID.interval.status_loop = setInterval(() => {
 				refresh_status();
 			}, 20000);
@@ -179,6 +181,9 @@ function toggle_power_if_ready() {
 
 // Parse data sent to MID module
 function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.mid !== true) return;
+
 	switch (data.msg[0]) {
 		default : {
 			data.command = 'unk';
@@ -369,6 +374,9 @@ function button(button) {
 }
 
 function init_listeners() {
+	// Bounce if not enabled
+	if (config.emulate.mid !== true) return;
+
 	// Perform commands on power lib active event
 	power.on('active', power_state => {
 		status_loop(power_state);

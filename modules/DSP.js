@@ -26,7 +26,7 @@ function dsp_mode(mode) {
 		default : return;
 	}
 
-	log.module('Setting DSP mode set to \'' + mode + '\'');
+	log.module(`Setting DSP mode set to '${mode}'`);
 
 	bus.data.send({
 		src : 'DSPC',
@@ -174,11 +174,11 @@ function eq_delta(band, value) {
 	}
 
 	bus.data.send({
-		src : 'RAD', // Might also be one of BMBT, DSPC, GT, RAD..
+		src : 'DSPC', // Might also be one of BMBT, DSPC, GT, RAD..
 		msg,
 	});
 
-	log.module(`DSP EQ delta update sent, band: '${band}', minus: '${minus}', value: ${value_orig} (0x${value.toString(16).padStart(2, '0').toUpperCase()}`);
+	log.module(`DSP EQ delta update sent, band: '${band}', minus: '${minus}', value: ${value_orig} (0x${value.toString(16).padStart(2, '0').toUpperCase()})`);
 }
 
 // let dsp_data = {
@@ -188,23 +188,38 @@ function eq_delta(band, value) {
 //   room_size : 10,
 // };
 
-async function eq_encode(data) {
+async function eq_encode(data = config.media.dsp.eq) {
 	const echo_out = [ 0x34, 0x94 + data.memory, data.echo & 0x0F ];
 	eq_send(echo_out);
-	log.module('DSP EQ echo encoded');
+	log.module(`Sent DSP EQ echo value ${data.echo} for memory ${data.memory}`);
+
+	await new Promise(resolve => setTimeout(resolve, 250));
 
 	const room_size_out = [ 0x34, 0x94 + data.memory, (data.room_size & 0x0F) | 0x20 ];
 	eq_send(room_size_out);
-	log.module('DSP EQ room size encoded');
+	log.module(`Sent DSP EQ room size value ${data.room_size} for memory ${data.memory}`);
+	await new Promise(resolve => setTimeout(resolve, 250));
 
-	for (let band_num = 0; band_num < 7; band_num++) {
+	// TODO: Workaround for `for await (const eqBand of eqBands)` loop
+	const eqBands = [ 0, 1, 2, 3, 4, 5, 6 ];
+
+	for await (const eqBand of eqBands) {
 		// ... Don't look at me
-		const band_out = [ 0x34, 0x14 + data.memory, (((band_num * 2) << 4) & 0xF0) | ((data.band[band_num] < 0 ? (0x10 | (Math.abs(data.band[band_num]) & 0x0F)) : (data.band[band_num] & 0x0F))) ];
+		const band_out = [
+			0x34,
+			0x14 + (data.memory - 1),
+			(((eqBand * 2) << 4) & 0xF0) | ((data.band[eqBand] < 0 ? (0x10 | (Math.abs(data.band[eqBand]) & 0x0F)) : (data.band[eqBand] & 0x0F))),
+		];
+
 		eq_send(band_out);
 
-		log.module('DSP EQ band ' + band_num + ' encoded');
+		log.module(`Sent DSP EQ band ${eqBand} value ${data.band[eqBand]} for memory ${data.memory}`);
+		await new Promise(resolve => setTimeout(resolve, 100));
 	}
-}
+
+	await new Promise(resolve => setTimeout(resolve, 250));
+	dsp_mode(`memory-${data.memory}`);
+} // async eq_encode(data)
 
 // Send EQ data to DSP
 function eq_send(msg) {
@@ -270,14 +285,16 @@ function speaker_test(command) {
 }
 
 function loudness(state = true) {
-	// Cast state to boolean
+	// Cast state to integer
 	switch (state) {
 		case 'on'   :
 		case 'true' :
+		case true   :
 		case 1      : state = 0x01; break;
 
 		case 'off'   :
 		case 'false' :
+		case  false  :
 		case 0       : state = 0x00; break;
 
 		default : return;
@@ -288,15 +305,13 @@ function loudness(state = true) {
 		msg : [ 0x1C, 0x01, 0x03, state ],
 	});
 
-	log.module('Set loudness to state: ' + (state === 0x01));
+	log.module(`Set loudness to state: ${(state === 0x01)}`);
 }
 
 // Request various things from DSP
 function request(value) {
 	let src;
 	let cmd;
-
-	log.module('Requesting \'' + value + '\'');
 
 	switch (value) {
 		case 'io-status' : { // Get IO status
@@ -308,8 +323,16 @@ function request(value) {
 		case 'memory' : { // Get DSP memory
 			src = 'RAD';
 			cmd = [ 0x34, 0x08 ];
+			break;
+		}
+
+		default : {
+			log.module(`Invalid value '${value}', cannot request`);
+			return;
 		}
 	}
+
+	log.module(`Requesting '${value}'`);
 
 	bus.data.send({
 		src,

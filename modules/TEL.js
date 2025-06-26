@@ -96,6 +96,9 @@ function decode_text(data) {
 
 // Turn on/off/flash the TEL LED by encoding a bitmask from an input object
 function led(object) {
+	// Return immediately if ignition is off
+	if (status.vehicle.ignition_level === 0) return;
+
 	// Bitmask
 	// 0x00 = all off
 	// Bit0 = red, solid
@@ -124,8 +127,32 @@ function led(object) {
 		dst : 'ANZV',
 		msg : [ 0x2B, byte ], // Turn on TEL LED
 	});
-}
+} // led(object)
 
+
+function setLEDs() {
+	led({
+		solid_red    : !status.bluetooth.device.connected,
+		solid_yellow : (status.bluetooth.player.status === 'paused'),
+		solid_green  : status.bluetooth.device.connected,
+
+		flash_red    : status.bluetooth.device.disconnecting,
+		flash_yellow : (status.bluetooth.player.status === 'playing'),
+		flash_green  : status.bluetooth.device.connecting,
+	});
+} // setLEDs()
+
+
+// Parse data sent to TEL module
+function parse_in(data) {
+	// Bounce if emulation isn't enabled
+	if (config.emulate.tel !== true) return;
+
+	// switch (data.msg[0]) {
+	// }
+
+	return data;
+} // parse_in(data)
 
 // Parse data sent from TEL module
 function parse_out(data) {
@@ -140,8 +167,25 @@ function parse_out(data) {
 	return data;
 }
 
+function init_listeners() {
+	update.on('status.bluetooth.device.connected', setLEDs);
+	update.on('status.bluetooth.device.connecting', setLEDs);
+	update.on('status.bluetooth.device.disconnecting', setLEDs);
+	update.on('status.bluetooth.player.status', setLEDs);
+
+	update.on('status.vehicle.ignition_level', setLEDs);
+
+	log.module('Initialized listeners');
+} // init_listeners()
+
 
 export default {
 	led,
+
+	setLEDs,
+
+	parse_in,
 	parse_out,
+
+	init_listeners,
 };

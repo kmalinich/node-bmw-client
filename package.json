@@ -7,35 +7,35 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"body-parser": "^1.20.1",
 		"callers-path": "^1.0.5",
 		"defaults-deep": "^0.2.4",
-		"express": "^4.18.2",
-		"json-colorizer": "^2.2.2",
+		"express": "^5.1.0",
+		"json-colorizer": "^3.0.1",
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.1.0",
 		"kodi-ws": "^2.4.3",
-		"moment": "^2.29.4",
+		"moment": "^2.30.1",
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.8",
-		"pad": "^3.2.0",
-		"socket.io": "^4.5.4",
+		"pad": "^3.3.0",
+		"socket.io": "^4.8.1",
 		"suncalc": "^1.9.0",
 		"trucolor": "2.0.4"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
-		"eslint": "^8.30.0",
-		"eslint-plugin-import": "^2.26.0",
-		"eslint-plugin-node": "^11.1.0",
-		"eslint-plugin-promise": "^6.1.1"
+		"@eslint/js": "^9.29.0",
+		"eslint": "^9.29.0",
+		"eslint-plugin-n": "^17.20.0",
+		"eslint-plugin-promise": "^7.2.1",
+		"globals": "^16.2.0"
 	},
 	"directories": {
 		"lib": "./lib",
 		"share": "./share"
 	},
 	"engines": {
-		"node": ">=19"
+		"node": ">=23"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
@@ -51,12 +51,11 @@
 	"main": "./index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
-		"bluez": "^0.4.5",
 		"dbus-native": "^0.4.0",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
 		"onoff": "^6.0.3",
-		"pi-temperature": "^2.1.0",
+		"pi-temperature": "^3.0.0",
 		"rpi-hdmi": "github:kmalinich/rpi-hdmi"
 	},
 	"repository": {
@@ -64,7 +63,7 @@
 		"url": "git+https://github.com/kmalinich/node-bmw-client.git"
 	},
 	"scripts": {
-		"lint": "eslint .",
+		"lint": "eslint --ignore-pattern 'test/*' .",
 		"preinstall": "/usr/bin/env bash ./bin/preinstall"
 	},
 	"type": "module",

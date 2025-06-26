@@ -31,12 +31,14 @@ class EWS extends EventEmitter {
 
 	// Broadcast: Immobilizer status
 	parse_immobilizer_status(data) {
+		data.skipLog = true;
+
 		data.command = 'bro';
 		data.value   = 'key presence - ';
 
 		// Bitmask for data.msg[1]
 		// 0x00 = no key detected
-		// 0x01 = immobilisation deactivated
+		// 0x01 = immobilization deactivated
 		// 0x04 = valid key detected
 		const immobilizer = {
 			immobilized : null,
@@ -45,7 +47,7 @@ class EWS extends EventEmitter {
 		};
 
 
-		// Key detected/vehicle immobilised
+		// Key detected/vehicle immobilized
 		switch (data.msg[1]) {
 			case 0x00 : {
 				data.value += 'no key';
@@ -54,7 +56,7 @@ class EWS extends EventEmitter {
 			}
 
 			case 0x01 : {
-				data.value += 'immobilisation deactivated';
+				data.value += 'immobilization deactivated';
 				immobilizer.immobilized = false;
 				break;
 			}
