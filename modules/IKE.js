@@ -1025,6 +1025,17 @@ class IKE extends EventEmitter {
 			}
 		});
 
+		if (config.media.bluetooth.text.ike === true) {
+			// update.on('status.bluetooth.player.artist', this.textMediaBluetooth);
+			update.on('status.bluetooth.player.title',  this.textMediaBluetooth);
+		}
+
+		if (config.media.kodi.text.ike === true) {
+			// update.on('status.kodi.player.artist', this.textMediaKodi);
+			update.on('status.kodi.player.title',  this.textMediaKodi);
+		}
+
+
 		// Update IKE cluster text
 		update.on('status.hud.string', data => {
 			if (!this.ok2hud() && this.hud_override === false) return;
@@ -1341,31 +1352,6 @@ class IKE extends EventEmitter {
 				clearScreen : true,
 			},
 		});
-
-		// Return if HUD refresh is locked
-		// if (this.hud_locked !== false) return;
-
-		// // Bounce if override is active
-		// if (override === false && this.text_override_status.active === true) {
-		// 	log.module(`NOT sending space-padded IKE text message: '${message}'`);
-		// 	return;
-		// }
-
-		// let message_hex;
-
-		// // message_hex = [ 0x23, 0x41, 0x30, 0x07 ];
-		// message_hex = [ 0x23, 0x41, 0x10, 0x07 ];
-
-		// message_hex = message_hex.concat(this.text_prepare(message));
-
-		// message_hex = message_hex.concat(0x04);
-		// // message_hex = message_hex.concat(0x66);
-
-		// await bus.data.send({
-		// 	src : 'RAD',
-		// 	dst : 'IKE',
-		// 	msg : message_hex,
-		// });
 	} // async text(message, override)
 
 	// IKE cluster text send message - without space padding
@@ -1456,6 +1442,58 @@ class IKE extends EventEmitter {
 		}, timeout, message);
 	} // async text_override(message, timeout, direction, turn)
 
+	// Update IKE text from Bluetooth information, if configured
+	async textMediaBluetooth() {
+		if (config.media.bluetooth.text.ike !== true) return;
+
+		// Lowercase 'Feat' to 'feat'
+		const strings = {
+			artist : status.bluetooth.player.artist.replace(/feat/gi, 'feat'),
+			title  : status.bluetooth.player.title.replace(/feat/gi, 'feat'),
+		};
+
+		// Split at ' (feat. '
+		strings.artist = strings.artist.split(' (feat. ')[0];
+		strings.title  = strings.title.split(' (feat. ')[0];
+
+		// Split at ' [feat. '
+		strings.artist = strings.artist.split(' [feat. ')[0];
+		strings.title  = strings.title.split(' [feat. ')[0];
+
+		// Split at ' feat. '
+		strings.artist = strings.artist.split(' feat. ')[0];
+		strings.title  = strings.title.split(' feat. ')[0];
+
+		this.text_override(`${strings.artist} - ${strings.title}`);
+	} // async textMediaBluetooth()
+
+	// Update IKE text from Kodi information, if configured
+	async textMediaKodi() {
+		if (config.media.kodi.text.ike !== true) return;
+
+		if (status.kodi.player.status !== 'playing') return;
+
+		// Lowercase 'Feat' to 'feat'
+		const strings = {
+			artist : status.kodi.player.artist.replace(/feat/gi, 'feat'),
+			title  : status.kodi.player.title.replace(/feat/gi, 'feat'),
+		};
+
+		// Split at ' (feat. '
+		strings.artist = strings.artist.split(' (feat. ')[0];
+		strings.title  = strings.title.split(' (feat. ')[0];
+
+		// Split at ' [feat. '
+		strings.artist = strings.artist.split(' [feat. ')[0];
+		strings.title  = strings.title.split(' [feat. ')[0];
+
+		// Split at ' feat. '
+		strings.artist = strings.artist.split(' feat. ')[0];
+		strings.title  = strings.title.split(' feat. ')[0];
+
+		this.text_override(`${strings.artist} - ${strings.title}`);
+	} // async textMediaKodi()
+
 
 	// Welcome text message in cluster
 	welcome_message() {
@@ -1464,5 +1502,6 @@ class IKE extends EventEmitter {
 		this.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.floor((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
 	}
 }
+
 
 module.exports = IKE;

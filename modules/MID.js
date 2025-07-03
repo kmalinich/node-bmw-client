@@ -15,6 +15,14 @@ function refresh_text() {
 
 	log.module('Updating MID text');
 
+	if (config.media.bluetooth.text.mid === true) {
+		update.status('mid.text.right', `${status.bluetooth.player.artist} - ${status.bluetooth.player.title}`);
+	}
+
+	if (config.media.kodi.text.mid === true) {
+		update.status('mid.text.right', `${status.kodi.player.artist} - ${status.kodi.player.title}`);
+	}
+
 	let message_hex;
 
 	// Upper left - 11 char radio display
@@ -380,6 +388,12 @@ function init_listeners() {
 		status_loop(power_state);
 		text_loop(power_state);
 	});
+
+
+	if (config.media.bluetooth.text.mid === true || config.media.kodi.text.mid === true) {
+		// update.on('status.bluetooth.player.artist', refresh_text);
+		update.on('status.bluetooth.player.title', refresh_text);
+	}
 
 	log.module('Initialized listeners');
 }
