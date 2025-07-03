@@ -51,7 +51,7 @@
 	"main": "./index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
-		"dbus-native": "^0.4.0",
+		"@jellybrick/dbus-next": "^0.10.3",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
 		"onoff": "^6.0.3",
