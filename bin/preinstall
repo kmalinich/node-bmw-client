@@ -12,7 +12,6 @@ ARRAY_LINK=(
 'json-socket'
 'jsonfile'
 'object-path'
-'trucolor'
 )
 
 

@@ -1,4 +1,5 @@
 const pluginNRules = {
+	'n/hashbang'              : 'off',
 	'n/no-missing-require'    : 'off',
 	'n/no-process-exit'       : 'off',
 	'n/no-unpublished-import' : 'off',

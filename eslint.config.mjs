@@ -1,5 +1,3 @@
-import globals from 'globals';
-
 import { defineConfig } from 'eslint/config';
 
 import js from '@eslint/js';
@@ -47,10 +45,6 @@ const eslintConfigArray = [
 			sourceType : 'module',
 
 			globals : {
-				...globals.amd,
-				...globals.es2021,
-				...globals.node,
-
 				...projectGlobals,
 			},
 		},
@@ -58,6 +52,5 @@ const eslintConfigArray = [
 		rules : projectRules,
 	},
 ];
-
 
 export default defineConfig(eslintConfigArray);

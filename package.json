@@ -8,6 +8,7 @@
 	},
 	"dependencies": {
 		"callers-path": "^1.0.5",
+		"chalk": "4.1.2",
 		"defaults-deep": "^0.2.4",
 		"express": "^5.1.0",
 		"json-colorizer": "^3.0.1",
@@ -19,8 +20,7 @@
 		"object-path": "^0.11.8",
 		"pad": "^3.3.0",
 		"socket.io": "^4.8.1",
-		"suncalc": "^1.9.0",
-		"trucolor": "2.0.4"
+		"suncalc": "^1.9.0"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
@@ -35,7 +35,7 @@
 		"share": "./share"
 	},
 	"engines": {
-		"node": ">=23"
+		"node": ">=24"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
@@ -63,8 +63,8 @@
 		"url": "git+https://github.com/kmalinich/node-bmw-client.git"
 	},
 	"scripts": {
-		"lint": "eslint --ignore-pattern 'test/*' .",
-		"preinstall": "/usr/bin/env bash ./bin/preinstall"
+		"fix": "eslint --fix .",
+		"lint": "eslint ."
 	},
 	"type": "commonjs",
 	"version": "0.0.1"
