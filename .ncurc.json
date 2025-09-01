@@ -1,0 +1,9 @@
+{
+	"color": true,
+	"concurrency": 32,
+	"upgrade": true,
+
+	"reject": [
+		"chalk"
+	]
+}
