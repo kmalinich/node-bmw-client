@@ -180,14 +180,54 @@ function parse_1f0(data) {
 	return data;
 }
 
-// 00 00 05 FF 39 7D 5D 00
-//
-// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F3_ASC3
-//
+// ASC3
 // Refresh rate: 20ms
-//
-// byte2 bit3 : brake applied
 function parse_1f3(data) {
+	// 00 00 05 FF 39 7D 5D 00
+	//
+	// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F3_ASC3
+	//
+	// byte2 bit3 : brake applied
+	//
+	// AX and AY may stand for acceleration of X and Y axis of the car
+
+	// Byte 0 - Bitfield
+	// Byte 0, Bit 0 - FDR_COM
+	// Byte 0, Bit 1 - FDR_MUL [LSB]
+	// Byte 0, Bit 2 - FDR_MUL [LSB]
+	// Byte 0, Bit 3 - FDR_MUL [LSB]
+	// Byte 0, Bit 4 - FDR_MUL [LSB]
+	// Byte 0, Bit 5 - FDR_MUL [LSB]
+	// Byte 0, Bit 6 - FDR_MUL [LSB]
+	// Byte 0, Bit 7 - FDR_MUL [LSB]
+	//
+	// Byte 1 - FDR_MUL [MSB]
+	//
+	// Byte 2 - Bitfield
+	// Byte 2, Bit 0 - BAS_DEF
+	// Byte 2, Bit 1 - Q_ACC_BAS
+	// Byte 2, Bit 2 - BAS_FBR [0]
+	// Byte 2, Bit 3 - BAS_FBR [1]
+	// Byte 2, Bit 4 - BAS_STAT [0]
+	// Byte 2, Bit 5 - BAS_STAT [1]
+	// Byte 2, Bit 6 - BAS_STAT [2]
+	// Byte 2, Bit 7 - BAS_STAT [3]
+	//
+	// Byte 3 - AX_REF [LSB]
+	//
+	// Byte 4 - Bitfield
+	// Byte 4, Bit 0 - AX_REF [MSB]
+	// Byte 4, Bit 1 - AX_REF [MSB]
+	// Byte 4, Bit 2 - DSC_REG
+	// Byte 4, Bit 3 - S_HBA
+	// Byte 4, Bit 4 - BAS_CODE
+	// Byte 4, Bit 5 - BAS_CODE
+	// Byte 4, Bit 6 - AY_REF [LSB]
+	// Byte 4, Bit 7 - AY_REF [LSB]
+	//
+	// Byte 5 - AY_REF [MSB]
+	// Byte 6 - BAS_DATEN
+	// Byte 7 - Unused
 	data.command = 'bro';
 	data.value   = 'Transverse acceleration';
 
@@ -197,7 +237,6 @@ function parse_1f3(data) {
 // [0x1F5] Steering angle sensor data
 //
 // https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F5_LWS1
-//
 // Refresh rate: 10ms
 //
 // Steering angle and change velocity
@@ -238,8 +277,56 @@ function parse_1f5(data) {
 	return data;
 }
 
+// ASC4
+// Refresh rate: 20ms
 function parse_1f8(data) {
 	data.command = 'bro';
+
+	// https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x1F8_ASC4
+	//
+	// Byte 0 - S_WHEEL_ACC
+	//
+	// Byte 1 - Bitfield
+	// Byte 1, Bit 0 - S_HDC
+	// Byte 1, Bit 1 - S_HDC
+	// Byte 1, Bit 2 - S_HDC
+	//
+	// Hill Decent Control (HDC)
+	// 0x00 = HDC off
+	// 0x01 = HDC disabled, not in correct gear
+	// 0x02 = HDC disabled, not in low range (if applicable)
+	// 0x03 = HDC disabled due to excessive speed
+	// 0x04 = HDC inactive, temporarily
+	// 0x05 = HDC enabled, but not active
+	// 0x06 = HDC active (i.e. enabled and going down hill)
+	// 0x00 = HDC error
+	//
+	// Byte 1, Bit 3 - L_HDC
+	// Byte 1, Bit 4 - always 00h
+	// Byte 1, Bit 5 - B_TW_MSR
+	// Byte 1, Bit 6 - B_TW_ASC
+	// Byte 1, Bit 7 - B_Offroad
+	//
+	// Byte 2 - P_BRAKE
+	// Brake Pressure in bar
+	// Calculation = HEX * 1bar
+	// Min: 0x00 (0bar)
+	// Max: 0xFF (255bar)
+	//
+	// Byte 3 - Bitfield RDR
+	// Byte 3, Bit 0 - RDR_VL
+	// Byte 3, Bit 1 - RDR_VL
+	// Byte 3, Bit 2 - RDR_VR
+	// Byte 3, Bit 3 - RDR_VR
+	// Byte 3, Bit 4 - RDR_HL
+	// Byte 3, Bit 5 - RDR_HL
+	// Byte 3, Bit 6 - RDR_HR
+	// Byte 3, Bit 7 - RDR_HR
+	//
+	// Byte 4 - TW_IND_ASR [LSB]
+	// Byte 5 - TW_IND_ASR [MSB]
+	// Byte 6 - TW_IND_MSR [LSB]
+	// Byte 7 - TW_IND_MSR [MSB]
 
 	// TODO: Add brake pressure handling
 	// Brake pressure messages observed in 2002 E39 M5

@@ -51,16 +51,15 @@ function encode_316(rpm = 10000) {
 }
 
 
-// CAN ARBID 0x316 (DME1)
-//
+// DME1
+// ARBID        : 0x316
+// Refresh Rate : 10ms
 // https://www.ms4x.net/index.php?title=Siemens_MS43_CAN_Bus
-//
-// Refresh Rate: 10ms
 //
 // byte 0, bit 0 : Something is pushed here, but I'm having a hard time tracing what it is. Appears it would always be 1 if everything is running normally
 // byte 0, bit 1 : ??
 // byte 0, bit 2 : 1 if DSC OK
-// byte 0, bit 3 : 1 if SMG (on this DME, I guess MS45 is different)
+// byte 0, bit 3 : 1 if SMG OK (on this DME, I guess MS45 is different)
 // byte 0, bit 4 : md_st_eingriff (torque intervention status) bit 0
 // byte 0, bit 5 : md_st_eingriff (torque intervention status) bit 1
 // byte 0, bit 6 : AC clutch engaged
@@ -105,9 +104,10 @@ function parse_316(data) {
 	return data;
 }
 
-// CAN ARBID 0x329 (DME2)
-//
-// Refresh rate: 10ms
+// DME2
+// ARBID        : 0x329
+// Refresh rate : 10ms
+// https://www.ms4x.net/index.php?title=Siemens_MS43_CAN_Bus#DME2_0x329
 //
 // byte 0 : ??
 // byte 1 : coolant temp
@@ -220,9 +220,10 @@ function parse_329(data) {
 }
 
 
-// CAN ARBID 0x338 (DME3)
-//
-// Refresh rate: 1000ms and at signal change
+// DME3
+// ARBID        : 0x338
+// Refresh rate : 1000ms and at signal change
+// https://www.ms4x.net/index.php?title=Siemens_MS43_CAN_Bus#DME3_0x338
 //
 // MS45/MSD80/MSV80 only
 //
@@ -249,9 +250,10 @@ function parse_338(data) {
 	return data;
 }
 
-// CAN ARBID 0x545 (DME4)
-//
-// Refresh Rate: 10ms
+// DME4
+// ARBID        : 0x545
+// Refresh Rate : 10ms
+// https://www.ms4x.net/index.php?title=Siemens_MS43_CAN_Bus#DME4_0x545
 //
 // byte 0, bit 0 : Unused
 // byte 0, bit 1 : Check engine light
@@ -333,6 +335,8 @@ function parse_545(data) {
 	return data;
 }
 
+
+// ICL1
 // https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x610_ICL1
 function parse_610(data) {
 	data.value = 'VIN/info';
@@ -340,11 +344,12 @@ function parse_610(data) {
 	return data;
 }
 
-
+// ICL2
+// ARBID        : 0x613
+// Refresh rate : 200ms
 // https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x615_ICL3
+// This is actually sent by IKE
 //
-// Refresh rate: 200ms
-
 // byte 0 : Odometer LSB
 // byte 1 : Odometer MSB
 // byte 2 : FTL_CAN - Fuel Tank Level (Bits 0-6, Bit 7: FTL_RES_CAN [Fuel Tank Level Reserve Switch])
@@ -353,8 +358,6 @@ function parse_610(data) {
 // byte 5 : FTL_CAN_L - Fuel Tank Level Driver Side (Bits 0-5)
 //
 // Running clock = minutes since last time battery power was lost
-//
-// This is actually sent by IKE
 function parse_613(data) {
 	data.value = 'Odometer/Running clock/Fuel level [0x615 ACK]';
 
@@ -391,56 +394,77 @@ function parse_613(data) {
 	return data;
 }
 
-// ARBID: 0x615 sent from the instrument cluster
-//
-// This is actually sent by IKE
-//
+// ICL3
+// ARBID        : 0x615
+// Refresh rate : 200ms
 // https://www.ms4x.net/index.php?title=CAN_Bus_ID_0x615_ICL3
-//
-// Refresh rate: 200ms
+// This is actually sent by IKE
 function parse_615(data) {
 	data.value = 'A/C request/Outside air temp/Parking brake/door contacts';
 
-	// byte 0 : AC signal, 0x80 when on, AC torque in bits 0-4 (value can be between 0x00 and 0x1F; unit is Nm). Bits 5 and 6 are unknown
+	// byte 0 : AC signal, 0x80 when on, AC torque in bits 0-4 (value can be between 0x00 and 0x1F; unit is Nm)
+	// Byte 0 - Bitfield
+	// Byte 0, Bit 0 - TQ_ACCIN_CAN [0]
+	// Byte 0, Bit 1 - TQ_ACCIN_CAN [1]
+	// Byte 0, Bit 2 - TQ_ACCIN_CAN [2]
+	// Byte 0, Bit 3 - TQ_ACCIN_CAN [3]
+	// Byte 0, Bit 4 - TQ_ACCIN_CAN [4]
+	// Torque Offset For Air Conditioning Compressor (0-31nm)
 	//
-	// byte 1, bit 0 : ??
-	// byte 1, bit 1 : ??
-	// byte 1, bit 2 : headlights/parking lights on
-	// byte 1, bit 3 : ??
-	// byte 1, bit 4 : AC Fan-speed request
-	// byte 1, bit 5 : AC Fan-speed request
-	// byte 1, bit 6 : AC Fan-speed request
-	// byte 1, bit 7 : AC Fan-speed request
+	// Byte 0, Bit 5 - LV_REQ_TCO_L - Request For Lowering Cooling Temp (c_tco_bol_ect)
+	// Byte 0, Bit 6 - LV_ACCIN     - Air Conditioning Compressor Status (0=off, 1=on)
+	// Byte 0, Bit 7 - LV_ACIN      - Air Conditioning Request (0=off, 1=on)
 	//
-	// byte 3 : Outside air temperature
 	//
-	// byte 4, bit 0 : Driver door opened
-	// byte 4, bit 1 : Handbrake engaged
-	// byte 4, bit 2 : ??
-	// byte 4, bit 3 : ??
+	// byte 1, bit 0 : LV_REQ_HEAT - Increased Heat Request
+	// byte 1, bit 1 : LV_TOW      - Trailer Operation Mode
+	// byte 1, bit 2 : LV_LGT      - headlights/parking lights on
+	// byte 1, bit 3 : LV_HS       - Hood Switch
+	// byte 1, bit 4 : N_ECF[0] - AC Fan-speed request
+	// byte 1, bit 5 : N_ECF[1] - AC Fan-speed request
+	// byte 1, bit 6 : N_ECF[2] - AC Fan-speed request
+	// byte 1, bit 7 : N_ECF[3] - AC Fan-speed request
+
+	// Byte 2 - Bitfield
+	// Byte 2, Bit 0 - [0]
+	// Byte 2, Bit 1 - [1]
+	// Byte 2, Bit 2 - [2]
+	// Byte 2, Bit 3 - [3]
+	// Byte 2, Bit 4 - [4]
+	// Byte 2, Bit 5 - [5]
+	// Byte 2, Bit 6 - Request Raised Idle
+	// Byte 2, Bit 7 - unused
+
+	// byte 3 : TAM_CAN - Outside air temperature
+	//
+	// byte 4, bit 0 : LV_DOOR      - Driver door opened
+	// byte 4, bit 1 : LV_HBR       - Handbrake engaged
+	// byte 4, bit 2 : LV_SUSP[0]   - Suspension switch
+	// byte 4, bit 3 : LV_SUSP[1]   - Suspension switch
 	// byte 4, bit 4 : ??
-	// byte 4, bit 5 : ??
-	// byte 4, bit 6 : ??
-	// byte 4, bit 7 : ??
-	//
+	// byte 4, bit 5 : LV_REQ_TCO_L - ??
+	// byte 4, bit 6 : LC_ACCIN     - Air Conditioning Compressor Status (0=off, 1=on)
+	// byte 4, bit 7 : LV_ACIN      - Air Conditioning Request (0=off, 1=on)
+
+
 	// byte 5, bit 0 : ??
 	// byte 5, bit 1 : Left turn signal
 	// byte 5, bit 2 : Right turn signal
 	// byte 5, bit 3 : CAN_EKP_CRASH
 	// byte 5, bit 4 : CAN_EKP_CRASH
 	// byte 5, bit 5 : ??
-	// byte 5, bit 6 : ??
-	// byte 5, bit 7 : ??
-	//
-	// byte 6, bit 0 : ??
-	// byte 6, bit 1 : ??
-	// byte 6, bit 2 : ??
-	// byte 6, bit 3 : ??
-	// byte 6, bit 4 : ??
-	// byte 6, bit 5 : ??
-	// byte 6, bit 6 : ??
-	// byte 6, bit 7 : ??
-	//
+	// byte 5, bit 6 : VSS_DIS[0] - Displayed vehicle speed
+	// byte 5, bit 7 : VSS_DIS[1] - Displayed vehicle speed
+
+	// byte 6, bit 0 : VSS_DIS[2] - Displayed vehicle speed
+	// byte 6, bit 1 : VSS_DIS[3] - Displayed vehicle speed
+	// byte 6, bit 2 : VSS_DIS[4] - Displayed vehicle speed
+	// byte 6, bit 3 : VSS_DIS[5] - Displayed vehicle speed
+	// byte 6, bit 4 : VSS_DIS[6] - Displayed vehicle speed
+	// byte 6, bit 5 : VSS_DIS[7] - Displayed vehicle speed
+	// byte 6, bit 6 : VSS_DIS[8] - Displayed vehicle speed
+	// byte 6, bit 7 : VSS_DIS[9] - Displayed vehicle speed
+
 	// byte 7, bit 0 : ??
 	// byte 7, bit 1 : Key information available
 	// byte 7, bit 2 : Key number (00 = Key 1, 01 = Key 2, 10 = Key 3, 11 = Key 4)
@@ -482,7 +506,8 @@ function parse_615(data) {
 }
 
 
-// ARBID: 0x710 sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
+// ARBID: 0x710
+// Sent from MSS5x on secondary CANBUS - connector X60002 at pins 21 (low) and 22 (high)
 //
 // bit0 bit1 bit2 bit3 bit4 bit5 bit6 bit7
 // 0x01 0x02 0x04 0x08 0x10 0x20 0x40 0x80
