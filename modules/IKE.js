@@ -1124,7 +1124,7 @@ class IKE extends EventEmitter {
 
 	// Request various things from IKE
 	request(value) {
-		let cmd = null;
+		let cmd;
 		let src = 'VID';
 		let dst = module_name;
 

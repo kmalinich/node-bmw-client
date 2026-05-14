@@ -34,7 +34,7 @@
 		"share": "./share"
 	},
 	"engines": {
-		"node": ">=24"
+		"node": ">=25"
 	},
 	"homepage": "https://github.com/kmalinich/node-bmw-client#readme",
 	"keywords": [
