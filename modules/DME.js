@@ -1,4 +1,4 @@
-/* eslint key-spacing :  */
+/* eslint stylistic/key-spacing :  */
 
 
 // References:

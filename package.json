@@ -20,13 +20,14 @@
 		"object-path": "^0.11.8",
 		"pad": "^3.3.0",
 		"socket.io": "^4.8.3",
-		"suncalc": "^1.9.0"
+		"suncalc": "^2.0.2"
 	},
 	"description": "NodeJS-powered BMW interface",
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
-		"eslint": "^10.4.1",
-		"eslint-plugin-n": "^18.0.1",
+		"@stylistic/eslint-plugin": "^5.10.0",
+		"eslint": "^10.10.0",
+		"eslint-plugin-n": "^18.3.0",
 		"eslint-plugin-promise": "^7.3.0"
 	},
 	"directories": {
@@ -50,7 +51,7 @@
 	"main": "./index.js",
 	"name": "node-bmw-client",
 	"optionalDependencies": {
-		"dbus-native": "^0.4.0",
+		"dbus-native": "^0.15.2",
 		"lm_sensors.js": "^0.5.1",
 		"node-cec": "github:kmalinich/node-cec",
 		"onoff": "^6.0.3",
@@ -66,5 +67,8 @@
 		"lint": "eslint ."
 	},
 	"type": "commonjs",
-	"version": "0.0.1"
+	"version": "0.0.1",
+	"allowScripts": {
+		"epoll@4.0.2": true
+	}
 }

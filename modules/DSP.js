@@ -1,3 +1,5 @@
+/* eslint stylistic/max-statements-per-line : [ 'error', { 'max' : 3 } ] */
+
 // Array of all DSP modes
 const dsp_modes = {
 	0 : 'concert hall',

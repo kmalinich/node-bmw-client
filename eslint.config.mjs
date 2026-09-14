@@ -1,9 +1,10 @@
 import { defineConfig } from 'eslint/config';
 
-import js from '@eslint/js';
+import js        from '@eslint/js';
+import node      from 'eslint-plugin-n';
+import stylistic from '@stylistic/eslint-plugin';
 
 import { default as promise } from 'eslint-plugin-promise';
-import node                   from 'eslint-plugin-n';
 
 import projectGlobals from './eslint.globals.mjs';
 import projectRules   from './eslint.rules.mjs';
@@ -31,12 +32,14 @@ const eslintConfigArray = [
 			js,
 			node,
 			promise,
+			stylistic,
 		},
 
 		extends : [
 			'js/recommended',
 			'node/recommended',
 			'promise/flat/recommended',
+			'stylistic/recommended',
 		],
 
 		languageOptions : {
@@ -52,5 +55,6 @@ const eslintConfigArray = [
 		rules : projectRules,
 	},
 ];
+
 
 export default defineConfig(eslintConfigArray);

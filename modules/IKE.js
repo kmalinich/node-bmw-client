@@ -1,3 +1,5 @@
+/* eslint stylistic/max-statements-per-line : [ 'error', { 'max' : 3 } ] */
+
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
 const EventEmitter = require('events');

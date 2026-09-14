@@ -1,4 +1,4 @@
-/* eslint key-spacing : 0 */
+/* eslint stylistic/key-spacing : 0 */
 
 // This module.. can get confused with the AIC module
 // (AIC module is the rain-only sensor)

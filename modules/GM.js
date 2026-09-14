@@ -1,4 +1,4 @@
-/* eslint key-spacing : 0 */
+/* eslint stylistic/key-spacing : 0 */
 /* eslint no-console  : 0 */
 
 

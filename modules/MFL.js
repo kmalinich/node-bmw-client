@@ -1,4 +1,4 @@
-/* eslint key-spacing : 0 */
+/* eslint stylistic/key-spacing : 0 */
 
 
 // Decode R/T button message (just a status request if you don't have the module)

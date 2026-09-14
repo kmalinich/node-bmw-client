@@ -59,7 +59,7 @@ function parse_control_dsp(data) {
 	return data;
 }
 
-/* eslint key-spacing : 0 */
+/* eslint stylistic/key-spacing : 0 */
 function parse_dsp_memory(data) {
 	data.value += 'memory set - ';
 

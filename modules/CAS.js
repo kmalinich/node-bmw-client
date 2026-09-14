@@ -1,4 +1,4 @@
-/* eslint key-spacing : 0 */
+/* eslint stylistic/key-spacing : 0 */
 
 const EventEmitter = require('events');
 

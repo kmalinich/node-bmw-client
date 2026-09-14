@@ -1,4 +1,4 @@
-/* eslint key-spacing : 0 */
+/* eslint stylistic/key-spacing : 0 */
 
 const module_name = __filename.slice(__dirname.length + 1, -3);
 
