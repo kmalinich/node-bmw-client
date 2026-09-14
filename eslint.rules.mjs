@@ -147,7 +147,7 @@ const pluginStylisticRules = {
 	'stylistic/max-statements-per-line' : [
 		'error',
 		{
-			'max' : 2,
+			'max' : 3,
 		},
 	],
 
