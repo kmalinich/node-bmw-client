@@ -15,7 +15,7 @@
 		"json-socket": "^0.3.0",
 		"jsonfile": "^6.2.1",
 		"kodi-ws": "^2.4.3",
-		"moment": "^2.30.1",
+		"moment": "^2.31.0",
 		"node-unit-conversion": "^0.1.1",
 		"object-path": "^0.11.8",
 		"pad": "^3.3.0",
