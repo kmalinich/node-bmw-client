@@ -76,8 +76,8 @@ async function decode_button_media(data) {
 			switch (config.mfl.media) {
 				case 'bluetooth' : // Bluetooth version
 					switch (unmask.button) {
-						case 'left'  : break;
-						case 'right' : break;
+						case 'left'  : bluetooth.command('rewind');      break;
+						case 'right' : bluetooth.command('fastforward'); break;
 						case 'voice' : break;
 					}
 					break;
@@ -100,8 +100,8 @@ async function decode_button_media(data) {
 						case 'depressright' : await bluetooth.command('next');     break;
 						case 'depressvoice' : await bluetooth.command('toggle');   break;
 
-						case 'holdleft'  : break;
-						case 'holdright' : break;
+						case 'holdleft'  : bluetooth.command.command('play'); break;
+						case 'holdright' : bluetooth.command.command('play'); break;
 						case 'holdvoice' : break;
 					}
 					break;
