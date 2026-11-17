@@ -1026,13 +1026,11 @@ class IKE extends EventEmitter {
 		});
 
 		if (config.media.bluetooth.text.ike === true) {
-			// update.on('status.bluetooth.player.artist', this.textMediaBluetooth);
-			update.on('status.bluetooth.player.title',  this.textMediaBluetooth);
+			update.on('status.bluetooth.player.title', async () => { await this.textMediaBluetooth(); });
 		}
 
 		if (config.media.kodi.text.ike === true) {
-			// update.on('status.kodi.player.artist', this.textMediaKodi);
-			update.on('status.kodi.player.title',  this.textMediaKodi);
+			update.on('status.kodi.player.title', async () => { await this.textMediaKodi(); });
 		}
 
 
@@ -1446,6 +1444,9 @@ class IKE extends EventEmitter {
 	async textMediaBluetooth() {
 		if (config.media.bluetooth.text.ike !== true) return;
 
+		if (status.bluetooth.player.artist === null) return;
+		if (status.bluetooth.player.title  === null) return;
+
 		// Lowercase 'Feat' to 'feat'
 		const strings = {
 			artist : status.bluetooth.player.artist.replace(/feat/gi, 'feat'),
@@ -1464,7 +1465,7 @@ class IKE extends EventEmitter {
 		strings.artist = strings.artist.split(' feat. ')[0];
 		strings.title  = strings.title.split(' feat. ')[0];
 
-		this.text_override(`${strings.artist} - ${strings.title}`);
+		await this.text_override(`${strings.artist} - ${strings.title}`);
 	} // async textMediaBluetooth()
 
 	// Update IKE text from Kodi information, if configured
@@ -1472,6 +1473,9 @@ class IKE extends EventEmitter {
 		if (config.media.kodi.text.ike !== true) return;
 
 		if (status.kodi.player.status !== 'playing') return;
+
+		if (status.kodi.player.artist === null) return;
+		if (status.kodi.player.title  === null) return;
 
 		// Lowercase 'Feat' to 'feat'
 		const strings = {
@@ -1491,7 +1495,7 @@ class IKE extends EventEmitter {
 		strings.artist = strings.artist.split(' feat. ')[0];
 		strings.title  = strings.title.split(' feat. ')[0];
 
-		this.text_override(`${strings.artist} - ${strings.title}`);
+		await this.text_override(`${strings.artist} - ${strings.title}`);
 	} // async textMediaKodi()
 
 
@@ -1499,7 +1503,7 @@ class IKE extends EventEmitter {
 	welcome_message() {
 		if (config.options.message_welcome !== true) return;
 
-		this.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.floor((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
+		IKE.text_override('node-bmw | Host:' + os.hostname().split('.')[0] + ' | Mem:' + Math.floor((os.freemem() / os.totalmem()) * 101) + '% | Up:' + parseFloat(os.uptime() / 3600).toFixed(2) + ' hrs');
 	}
 }
 

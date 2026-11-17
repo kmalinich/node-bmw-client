@@ -100,8 +100,8 @@ async function decode_button_media(data) {
 						case 'depressright' : await bluetooth.command('next');     break;
 						case 'depressvoice' : await bluetooth.command('toggle');   break;
 
-						case 'holdleft'  : bluetooth.command.command('play'); break;
-						case 'holdright' : bluetooth.command.command('play'); break;
+						case 'holdleft'  : bluetooth.command('play'); break;
+						case 'holdright' : bluetooth.command('play'); break;
 						case 'holdvoice' : break;
 					}
 					break;

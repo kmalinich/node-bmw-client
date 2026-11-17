@@ -432,11 +432,13 @@ async function audio_power(power_state = false, volume_increase = true) {
 			update.status('dsp.ready', false, false);
 			update.status('dsp.reset', true,  false);
 
-			// Send pause command to Bluetooth device
-			bluetooth.command('pause');
-
 			// Send pause command to Kodi
 			kodi.command('pause');
+
+			// Send pause command to Bluetooth device
+			if (status.bluetooth.device.connected === true) {
+				bluetooth.command('pause');
+			}
 
 			await new Promise(resolve => setTimeout(resolve, 1000));
 			cassette_control(false);
@@ -451,7 +453,9 @@ async function audio_power(power_state = false, volume_increase = true) {
 			log.module('Setting audio power to state : ' + power_state);
 
 			// Send connect command to Bluetooth
-			bluetooth.command('connect');
+			if (status.bluetooth.device.connected !== true) {
+				bluetooth.command('connect');
+			}
 
 			// Send device status
 			bus.cmds.send_device_status(module_name);
@@ -476,8 +480,7 @@ async function audio_power(power_state = false, volume_increase = true) {
 			audio_control(config.media.dsp.default_source);
 			await new Promise(resolve => setTimeout(resolve, 100));
 
-			// Send play command to Bluetooth/Kodi
-			bluetooth.command('play');
+			// Send play command to Kodi
 			kodi.command('play');
 
 			if (volume_increase === true) {
