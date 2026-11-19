@@ -1,3 +1,5 @@
+/* eslint stylistic/list-style : 0 */
+
 const suncalc = require('suncalc');
 
 

@@ -30,11 +30,6 @@ const pluginStylisticRules = {
 	'stylistic/space-infix-ops'               : 'warn',
 
 
-	'stylistic/array-bracket-spacing' : [
-		'error',
-		'always',
-	],
-
 	'stylistic/arrow-parens' : [
 		'error',
 		'as-needed',
@@ -144,6 +139,42 @@ const pluginStylisticRules = {
 		'unix',
 	],
 
+	'stylistic/list-style' : [
+		'error',
+		{
+			empty : 'ignore',
+
+			singleLine : {
+				maxItems : 10,
+				spacing  : 'never',
+			},
+
+			multiLine : {
+				minItems : 10,
+			},
+
+			overrides : {
+				'[]' : {
+					singleLine : {
+						spacing : 'always',
+					},
+					multiLine : {
+						minItems : 0,
+					},
+				},
+				'{}' : {
+					singleLine : {
+						maxItems : 1000,
+						spacing  : 'always',
+					},
+					multiLine : {
+						minItems : 0,
+					},
+				},
+			},
+		},
+	],
+
 	'stylistic/max-statements-per-line' : [
 		'error',
 		{
@@ -206,18 +237,6 @@ const pluginStylisticRules = {
 		},
 	],
 
-	'stylistic/object-curly-spacing' : [
-		'error',
-		'always',
-	],
-
-	'stylistic/object-property-newline' : [
-		'error',
-		{
-			'allowAllPropertiesOnSameLine' : true,
-		},
-	],
-
 	'stylistic/operator-linebreak' : [
 		'error',
 		'after',
@@ -228,6 +247,7 @@ const pluginStylisticRules = {
 			},
 		},
 	],
+
 	'stylistic/padded-blocks' : [
 		'error',
 		{

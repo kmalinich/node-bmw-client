@@ -1,5 +1,6 @@
-/* eslint no-console       : 0 */
-/* eslint no-global-assign : 0 */
+/* eslint no-console           : 0 */
+/* eslint no-global-assign     : 0 */
+/* eslint stylistic/list-style : 0 */
 
 
 app_path = __dirname;
