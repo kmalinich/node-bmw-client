@@ -7,7 +7,6 @@
 		"url": "https://github.com/kmalinich/node-bmw-client/issues"
 	},
 	"dependencies": {
-		"callers-path": "^1.0.5",
 		"chalk": "^4.1.2",
 		"defaults-deep": "^0.2.4",
 		"express": "^5.3.0",
