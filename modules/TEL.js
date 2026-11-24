@@ -129,6 +129,18 @@ function led(object) {
 
 
 function setLEDs() {
+	if (config.media.bluetooth.enable !== true) return;
+
+	if (status.bluetooth.device.name === null) {
+		led({
+			flash_red    : true,
+			flash_yellow : true,
+			flash_green  : true,
+		});
+
+		return;
+	}
+
 	led({
 		solid_red    : !status.bluetooth.device.connected,
 		solid_yellow : (status.bluetooth.player.status === 'paused'),
