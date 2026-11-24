@@ -137,6 +137,7 @@ async function term() {
 
 	log.msg('Terminating');
 
+	power.power(false);
 	await bluetooth.command('disconnect'); // Disconnect Bluetooth device
 
 	await api.term();      // Stop Express API server
