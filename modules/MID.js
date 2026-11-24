@@ -391,7 +391,8 @@ function init_listeners() {
 
 
 	if (config.media.bluetooth.text.mid === true || config.media.kodi.text.mid === true) {
-		// update.on('status.bluetooth.player.artist', refresh_text);
+		update.on('status.mid.text.left',          refresh_text);
+		update.on('status.bluetooth.device.name',  refresh_text);
 		update.on('status.bluetooth.player.title', refresh_text);
 	}
 
