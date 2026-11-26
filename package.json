@@ -29,10 +29,6 @@
 		"eslint-plugin-n": "^18.5.0",
 		"eslint-plugin-promise": "^7.3.0"
 	},
-	"directories": {
-		"lib": "./lib",
-		"share": "./share"
-	},
 	"engines": {
 		"node": ">=26"
 	},

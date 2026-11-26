@@ -11,45 +11,16 @@ process.title = app_name;
 
 terminating = false;
 
+// CANBUS/DBUS/KBUS/IBUS modules
+const modules = require('./modules.js');
+for (const module in modules) global[module] = modules[module];
+
 // node-bmw shared libraries
-[ 'api', 'bitmask', 'gpio', 'hex', 'json', 'log-output', 'num', 'obc-values' ].reduce((obj, id) => {
-	const varName = id.replace('-', '_').replace('_output', '');
-	obj[varName] = require(`${id}`); return obj;
-}, global);
+const lib = require('./lib.js');
+for (const module in lib) {
+	global[module] = lib[module];
+}
 
-
-// Class/event-based modules
-[ 'power', 'socket', 'update' ].reduce((obj, id) => {
-	obj[id] = new (require(`${id}`))(); return obj;
-}, global);
-
-
-// Function to load modules that require data from config object,
-// AFTER the config object is loaded
-async function load_modules() {
-	// CANBUS/DBUS/KBUS/IBUS modules
-	[
-		'ABG', 'ASC', 'BMBT', 'CCM', 'CDC', 'DIA', 'DSP', 'DSPC', 'DME', 'GT',
-		'IHKA', 'LCM', 'MFL', 'MID', 'NAV', 'PDC', 'RAD', 'RDC', 'RLS',
-		'TEL', 'VID', 'CON', 'DSC', 'FEM', 'KOMBI', 'NBT', 'SZM',
-	].reduce((obj, id) => {
-		obj[id] = require(`${id}`); return obj;
-	}, global);
-
-	// Class/event-based modules
-	[ 'GM', 'CAS', 'EGS', 'EWS', 'IKE' ].reduce((obj, id) => {
-		obj[id] = new (require(`${id}`))();
-		return obj;
-	}, global);
-
-	// Other libraries
-	[ 'bluetooth', 'hdmi-cec', 'hdmi-rpi', 'kodi', 'bus' ].reduce((obj, id) => {
-		const varName = id.replace('-', '_');
-		obj[varName] = require(`${id}`); return obj;
-	}, global);
-
-	log.msg('Loaded modules');
-} // async load_modules()
 
 // Configure term event listeners
 async function term_config() {
@@ -86,10 +57,9 @@ async function init() {
 
 	await term_config();
 
-	await json.read();    // Read JSON config and status files
-	await load_modules(); // Load IBUS/KBUS module node modules
-	await json.reset();   // Reset vars (hack =/)
-	await socket.init();  // Start socket client(s)
+	await json.read();   // Read JSON config and status files
+	await json.reset();  // Reset vars (hack =/)
+	await socket.init(); // Start socket client(s)
 
 	await api.init(); // Start Express API server
 
