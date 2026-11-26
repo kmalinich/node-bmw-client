@@ -1045,7 +1045,7 @@ function data_refresh() {
 }
 
 // Configure event listeners
-function init_listeners() {
+function initListeners() {
 	// Refresh data on IKE event
 	IKE.on('obc-refresh', () => {
 		request('dimmer');
@@ -1105,7 +1105,7 @@ module.exports = {
 	auto_lights_execute,
 	auto_lights_process,
 	comfort_turn_flash,
-	init_listeners,
+	initListeners,
 	io_encode,
 	parse_out,
 	police,

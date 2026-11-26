@@ -177,7 +177,7 @@ function parse_out(data) {
 	return data;
 }
 
-function init_listeners() {
+function initListeners() {
 	update.on('status.bluetooth.device.connected', setLEDs);
 	update.on('status.bluetooth.device.connecting', setLEDs);
 	update.on('status.bluetooth.device.disconnecting', setLEDs);
@@ -186,7 +186,7 @@ function init_listeners() {
 	update.on('status.vehicle.ignition_level', setLEDs);
 
 	log.module('Initialized listeners');
-} // init_listeners()
+} // initListeners()
 
 
 module.exports = {
@@ -197,5 +197,5 @@ module.exports = {
 	parse_in,
 	parse_out,
 
-	init_listeners,
+	initListeners,
 };

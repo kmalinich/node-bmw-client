@@ -71,9 +71,9 @@ function decode_backlight(data) {
 }
 
 
-function init_listeners() {
-	power.on('active', power_state => {
-		switch (power_state) {
+function initListeners() {
+	power.on('active', powerState => {
+		switch (powerState) {
 			case false : { // Fade off backlight when power shuts off
 				for (let i = status.fem.backlight.value; i >= 0; i--) {
 					setTimeout(() => {
@@ -126,7 +126,7 @@ module.exports = {
 	backlight,
 
 	// Functions
-	init_listeners,
+	initListeners,
 
 	parse_out,
 };

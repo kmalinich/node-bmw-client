@@ -403,15 +403,13 @@ function parse_out(data) {
 }
 
 
-function init_listeners() {
+function initListeners() {
 	// Send vehicle speed 0 to CAN1 on power module events
 	// This is because vehicle speed isn't received via CAN0 when key is in accessory
 	power.on('active', () => {
 		if (config.translate.dsc !== true) return;
 
-		setTimeout(() => {
-			encode_1a1(0);
-		}, 250);
+		setTimeout(() => { encode_1a1(0); }, 250);
 	});
 
 	// Reset torque reduction values when engine not running
@@ -439,7 +437,7 @@ function init_listeners() {
 
 
 module.exports = {
-	init_listeners,
+	initListeners,
 
 	encode_1a1,
 

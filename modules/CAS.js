@@ -244,17 +244,15 @@ class CAS extends EventEmitter {
 	} // decode_status_opened(data)
 
 
-	init_listeners() {
+	initListeners() {
 		// Bounce if not enabled
 		if (config.emulate.cas !== true && config.retrofit.cas !== true) return;
 
 		// Perform commands on power lib active event
-		power.on('active', data => {
-			this.encode_ignition(data.new);
-		});
+		power.on('active', this.encode_ignition);
 
 		log.module('Initialized listeners');
-	} // init_listeners()
+	} // initListeners()
 
 
 	// Parse data sent to module

@@ -412,11 +412,11 @@ function volume_control(value = 1) {
 
 
 // Power on DSP amp and GPIO pin for amplifier
-async function audio_power(power_state = false, volume_increase = true) {
+async function audio_power(powerState = false, volumeIncrease = true) {
 	// Bounce if we're not configured to emulate the RAD module
 	if (config.emulate.rad !== true) return;
 
-	switch (power_state) {
+	switch (powerState) {
 		case 'toggle' : {
 			log.module('Toggling audio power, current source: ' + status.rad.source_name);
 			return audio_power((status.rad.source_name === 'off'));
@@ -425,7 +425,7 @@ async function audio_power(power_state = false, volume_increase = true) {
 		case 0     :
 		case 'off' :
 		case false : {
-			log.module('Setting audio power to state : ' + power_state);
+			log.module('Setting audio power to state : ' + powerState);
 
 			audio_control(false);
 
@@ -450,7 +450,7 @@ async function audio_power(power_state = false, volume_increase = true) {
 		case true : {
 			if (status.power.active !== true) return;
 
-			log.module('Setting audio power to state : ' + power_state);
+			log.module('Setting audio power to state : ' + powerState);
 
 			// Send connect command to Bluetooth
 			if (status.bluetooth.device.connected !== true) {
@@ -483,7 +483,7 @@ async function audio_power(power_state = false, volume_increase = true) {
 			// Send play command to Kodi
 			kodi.command('play');
 
-			if (volume_increase === true) {
+			if (volumeIncrease === true) {
 				// DSP powers up with volume set to 0, so bring up volume by configured amount
 				await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -494,19 +494,19 @@ async function audio_power(power_state = false, volume_increase = true) {
 			}
 		}
 	}
-} // async function audio_power(power_state, volume_increase)
+} // async function audio_power(powerState, volumeIncrease)
 
 
-function init_listeners() {
+function initListeners() {
 	// Bounce if we're not configured to emulate the RAD module or not in an E39
 	if (config.emulate.rad !== true) return;
 
 	// Perform commands on power lib active event
 	// TODO: Make the delay a config value
 	//       .. and make it config.rad.delay.power_active and config.rad.delay.after_start
-	power.on('active', async power_state => {
+	power.on('active', async powerState => {
 		await new Promise(resolve => setTimeout(resolve, 300));
-		await audio_power(power_state);
+		await audio_power(powerState);
 	});
 
 	// Kick DSP amp config.rad.after_start_delay ms after engine start
@@ -649,7 +649,7 @@ module.exports = {
 	parse_in,
 	parse_out,
 
-	init_listeners,
+	initListeners,
 
 	audio_power,
 	audio_control,

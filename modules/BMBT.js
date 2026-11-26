@@ -406,10 +406,10 @@ function button(button) {
 }
 
 
-function init_listeners() {
+function initListeners() {
 	// Perform commands on power lib active event
-	power.on('active', power_state => {
-		status_loop(power_state);
+	power.on('active', powerState => {
+		status_loop(powerState);
 	});
 
 	log.module('Initialized listeners');
@@ -456,7 +456,7 @@ module.exports = {
 
 	cassette_status,
 
-	init_listeners,
+	initListeners,
 
 	parse_in,
 	parse_out,

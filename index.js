@@ -100,26 +100,26 @@ async function init() {
 	await kodi.init();      // Start Kodi WebSocket client
 
 	// Initialize event listeners
-	BMBT.init_listeners();
-	CAS.init_listeners();
-	CON.init_listeners();
-	DME.init_listeners();
-	DSC.init_listeners();
-	FEM.init_listeners();
-	GM.init_listeners();
-	IKE.init_listeners();
-	LCM.init_listeners();
-	MID.init_listeners();
-	NBT.init_listeners();
-	RAD.init_listeners();
-	TEL.init_listeners();
+	BMBT.initListeners();
+	CAS.initListeners();
+	CON.initListeners();
+	DME.initListeners();
+	DSC.initListeners();
+	FEM.initListeners();
+	GM.initListeners();
+	IKE.initListeners();
+	LCM.initListeners();
+	MID.initListeners();
+	NBT.initListeners();
+	RAD.initListeners();
+	TEL.initListeners();
 
-	bus.data.init_listeners();
-	gpio.init_listeners();
-	json.init_listeners();
-	kodi.init_listeners();
-	hdmi_rpi.init_listeners();
-	power.init_listeners();
+	bus.data.initListeners();
+	gpio.initListeners();
+	json.initListeners();
+	kodi.initListeners();
+	hdmi_rpi.initListeners();
+	power.initListeners();
 
 	log.msg('Initialized');
 

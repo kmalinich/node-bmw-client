@@ -446,7 +446,7 @@ function decode_rotationInit(data) {
 }
 
 
-function init_listeners() {
+function initListeners() {
 	// Stamp last message time as now
 	update.status('con.rotation.last_msg', Date.now());
 
@@ -476,7 +476,7 @@ function parse_out(data) {
 
 module.exports = {
 	// Functions
-	init_listeners,
+	initListeners,
 
 	parse_out,
 };

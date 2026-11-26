@@ -625,7 +625,7 @@ function request(value) {
 }
 
 
-function init_listeners() {
+function initListeners() {
 	// If configured, send RPM 10000 on 0x316 on ignition in run
 	update.on('status.engine.running', data => {
 		switch (data.new) {
@@ -717,7 +717,7 @@ module.exports = {
 	// Functions
 	encode_316,
 
-	init_listeners,
+	initListeners,
 	parse_out,
 	request,
 };

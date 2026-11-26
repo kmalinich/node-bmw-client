@@ -379,14 +379,14 @@ function button(button) {
 	}, 150);
 }
 
-function init_listeners() {
+function initListeners() {
 	// Bounce if not enabled
 	if (config.emulate.mid !== true) return;
 
 	// Perform commands on power lib active event
-	power.on('active', power_state => {
-		status_loop(power_state);
-		text_loop(power_state);
+	power.on('active', powerState => {
+		status_loop(powerState);
+		text_loop(powerState);
 	});
 
 
@@ -414,7 +414,7 @@ module.exports = {
 
 	button,
 
-	init_listeners,
+	initListeners,
 
 	parse_in,
 	parse_out,

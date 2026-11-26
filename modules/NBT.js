@@ -163,7 +163,7 @@ function encode_init_con(action = false) {
 } //  encode_init_con(action)
 
 
-function init_listeners() {
+function initListeners() {
 	// Bounce if not enabled
 	if (config.emulate.nbt !== true && config.retrofit.nbt !== true) return;
 
@@ -171,12 +171,10 @@ function init_listeners() {
 	EGS.on('gear', reverse_camera);
 
 	// Perform commands on power lib active event
-	power.on('active', data => {
-		encode_init_con(data.new);
-	});
+	power.on('active', encode_init_con);
 
 	log.module('Initialized listeners');
-} // init_listeners()
+} // initListeners()
 
 
 // Parse data sent to module
@@ -227,7 +225,7 @@ module.exports = {
 	},
 
 	// Functions
-	init_listeners,
+	initListeners,
 
 	video_source,
 
